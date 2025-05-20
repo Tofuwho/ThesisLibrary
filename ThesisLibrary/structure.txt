@@ -1,0 +1,30 @@
+/thesis-library/
+├── index.php                     ← Public search page /
+├── landing.php                   ← New landing page with login modal /
+├── student/
+│   ├── dashboard.php             ← Student portal after login
+│   ├── submit.php                ← Thesis submission form
+│   └── my-submissions.php        ← View their submitted theses
+├── admin/
+│   ├── dashboard.php             ← Admin control panel
+│   ├── manage-theses.php         ← View, approve, delete theses
+│   ├── manage-users.php          ← Admin-only: manage accounts
+├── thesis.php                    ← View full thesis detail (public)
+├── includes/
+│   ├── header.php
+│   ├── footer.php
+│   ├── landing-header.php        ← New header for landing page
+│   ├── landing-footer.php        ← New footer for landing page
+│   └── auth.php                  ← (later) for role-based access
+├── assets/
+│   ├── css/
+│   │   └── style.css             ← Updated with landing page styles
+│   │	└── categories.css
+│   │	└── landing.css
+│   ├── js/
+│   │   └── landing.js            ← New JavaScript for landing page
+│   │   └── main.js
+│   │   └── categories.js
+│   └── images/
+│       └── sample-cover.jpg
+
