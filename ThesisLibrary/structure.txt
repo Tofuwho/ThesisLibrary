@@ -1,30 +1,45 @@
 /thesis-library/
-├── index.php                     ← Public search page /
-├── landing.php                   ← New landing page with login modal /
+├── index.php                      ← Public search & browse
+├── landing.php                    ← Landing page with login modal
+├── thesis.php                     ← View thesis details (reads from file system)
+
 ├── student/
-│   ├── dashboard.php             ← Student portal after login
-│   ├── submit.php                ← Thesis submission form
-│   └── my-submissions.php        ← View their submitted theses
+│   ├── dashboard.php              ← Student dashboard
+│   ├── submit.php                 ← Upload thesis (stores files in /storage/theses/)
+│   └── my-submissions.php         ← View their own uploaded files (by user folder or naming pattern)
+
 ├── admin/
-│   ├── dashboard.php             ← Admin control panel
-│   ├── manage-theses.php         ← View, approve, delete theses
-│   ├── manage-users.php          ← Admin-only: manage accounts
-├── thesis.php                    ← View full thesis detail (public)
+│   ├── dashboard.php              ← Admin dashboard
+│   ├── manage-theses.php         ← Browse/manage files in /storage/theses/
+│   ├── manage-users.php          ← If using file-based user system (e.g. JSON, CSV)
+│   └── logs.php                  ← Optional: audit log for offline activity
+
 ├── includes/
 │   ├── header.php
 │   ├── footer.php
-│   ├── landing-header.php        ← New header for landing page
-│   ├── landing-footer.php        ← New footer for landing page
-│   └── auth.php                  ← (later) for role-based access
+│   ├── landing-header.php
+│   ├── landing-footer.php
+│   ├── auth.php                  ← File-based authentication (e.g. users.json)
+│   └── file-helper.php           ← Helpers for file/folder reading, uploading
+
 ├── assets/
 │   ├── css/
-│   │   └── style.css             ← Updated with landing page styles
-│   │	└── categories.css
-│   │	└── landing.css
+│   │   ├── style.css
+│   │   ├── categories.css
+│   │   └── landing.css
 │   ├── js/
-│   │   └── landing.js            ← New JavaScript for landing page
-│   │   └── main.js
-│   │   └── categories.js
+│   │   ├── main.js
+│   │   ├── categories.js
+│   │   └── landing.js
 │   └── images/
 │       └── sample-cover.jpg
 
+├── storage/                      ← NEW: Replaces the DB
+│   ├── theses/
+│   │   ├── 2025_Math_Juan-Dela-Cruz.pdf
+│   │   ├── 2024_CS_Maria-Clara-Thesis.docx
+│   │   └── ...
+│   └── users.json                ← JSON for user credentials (offline auth)
+
+├── .htaccess                     ← Optional: prevent direct access to /storage/
+└── README.md
