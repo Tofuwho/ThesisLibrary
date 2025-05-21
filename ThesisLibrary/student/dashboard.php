@@ -8,227 +8,184 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     exit();
 }
 
-// Include database connection
-// require_once '../includes/db_connect.php';
+$userId = $_SESSION['user_id'];
+$username = $_SESSION['username'];
 
-// Get user information
-$student_id = $_SESSION['user_id'];
-$student_name = $_SESSION['name'];
-$student_email = $_SESSION['email'];
+// Load user data from JSON file
+$usersData = json_decode(file_get_contents("../storage/users.json"), true);
 
-// Get statistics (placeholder data - replace with actual database queries)
-$total_submissions = 5;
-$approved_submissions = 3;
-$pending_submissions = 1;
-$rejected_submissions = 1;
+// Find the current user
+$currentUser = null;
+foreach ($usersData['users'] as $user) {
+    if ($user['id'] == $userId) {
+        $currentUser = $user;
+        break;
+    }
+}
 
-// Get recent activity (placeholder data - replace with actual database queries)
-$recent_activity = [
-    [
-        'date' => '2025-05-15',
-        'title' => 'Research Methodology in AI',
-        'status' => 'approved',
-        'id' => 101
-    ],
-    [
-        'date' => '2025-05-10',
-        'title' => 'Impact of Climate Change on Agriculture',
-        'status' => 'pending',
-        'id' => 102
-    ],
-    [
-        'date' => '2025-04-28',
-        'title' => 'Quantum Computing Applications',
-        'status' => 'approved',
-        'id' => 99
-    ]
-];
+if (!$currentUser) {
+    // Handle error - user not found
+    header("Location: ../landing.php?error=user_not_found");
+    exit();
+}
 
+// Get student's submissions
+$studentSubmissions = [];
+$thesesDir = "../storage/theses/";
+
+// Check if directory exists
+if (is_dir($thesesDir)) {
+    $files = scandir($thesesDir);
+    
+    foreach ($files as $file) {
+        // Skip . and .. directories
+        if ($file === '.' || $file === '..') {
+            continue;
+        }
+        
+        // Check if the file belongs to this student (using naming convention)
+        // Assuming files follow pattern: YYYY_Department_AuthorName.extension
+        $fileInfo = pathinfo($file);
+        $filename = $fileInfo['filename'];
+        
+        // Extract author name from filename
+        $parts = explode('_', $filename);
+        if (count($parts) >= 3) {
+            $authorName = str_replace('-', ' ', end($parts));
+            
+            // Simple check - if author name contains student's username
+            // This is a basic approach - you might want to refine this logic
+            if (stripos($authorName, $username) !== false || 
+                stripos($file, $userId) !== false) {
+                
+                // Get file info
+                $fileSize = filesize($thesesDir . $file);
+                $fileDate = filemtime($thesesDir . $file);
+                
+                // Get year and department from filename
+                $year = $parts[0] ?? 'Unknown';
+                $department = $parts[1] ?? 'Unknown';
+                
+                $studentSubmissions[] = [
+                    'filename' => $file,
+                    'title' => str_replace('-', ' ', $filename),
+                    'size' => $fileSize,
+                    'date' => date('F j, Y', $fileDate),
+                    'year' => $year,
+                    'department' => $department
+                ];
+            }
+        }
+    }
+}
+
+// Sort submissions by date (newest first)
+usort($studentSubmissions, function($a, $b) {
+    return strtotime($b['date']) - strtotime($a['date']);
+});
+
+// Load header
+include_once "../includes/header.php";
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard | Thesis Library</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <link rel="stylesheet" href="../assets/css/student.css">
-</head>
-<body>
-    <?php include_once "../includes/header.php"; ?>
 
-    <section class="student-dashboard">
-        <div class="container">
-            <div class="dashboard-container">
-                <!-- Sidebar -->
-                <div class="sidebar">
-                    <div class="profile-section">
-                        <div class="profile-avatar">
-                            <?php echo substr($student_name, 0, 1); ?>
-                        </div>
-                        <div class="profile-info">
-                            <h3 class="profile-name"><?php echo $student_name; ?></h3>
-                            <p class="profile-id">Student ID: <?php echo $student_id; ?></p>
-                        </div>
-                    </div>
-                    <ul class="sidebar-menu">
-                        <li>
-                            <a href="dashboard.php" class="active">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-                        <li>
-                            <a href="submit.php">
-                                <i class="fas fa-upload"></i> Submit Thesis
-                            </a>
-                        </li>
-                        <li>
-                            <a href="my-submissions.php">
-                                <i class="fas fa-file-alt"></i> My Submissions
-                            </a>
-                        </li>
-                        <li>
-                            <a href="../thesis.php">
-                                <i class="fas fa-search"></i> Browse Theses
-                            </a>
-                        </li>
-                        <li>
-                            <a href="../includes/logout.php">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Main Content -->
-                <div class="main-content">
-                    <div class="dashboard-header">
-                        <div class="welcome-text">
-                            <h2>Welcome back, <?php echo $student_name; ?>!</h2>
-                            <p>Manage your thesis submissions and track your progress</p>
-                        </div>
-                        <div class="action-buttons">
-                            <a href="submit.php" class="btn-student btn-primary">
-                                <i class="fas fa-plus btn-icon"></i>New Submission
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Stats -->
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <i class="fas fa-file-alt"></i>
-                            <div class="stat-value"><?php echo $total_submissions; ?></div>
-                            <div class="stat-label">Total Submissions</div>
-                        </div>
-                        <div class="stat-card">
-                            <i class="fas fa-check-circle"></i>
-                            <div class="stat-value"><?php echo $approved_submissions; ?></div>
-                            <div class="stat-label">Approved</div>
-                        </div>
-                        <div class="stat-card">
-                            <i class="fas fa-clock"></i>
-                            <div class="stat-value"><?php echo $pending_submissions; ?></div>
-                            <div class="stat-label">Pending Review</div>
-                        </div>
-                        <div class="stat-card">
-                            <i class="fas fa-times-circle"></i>
-                            <div class="stat-value"><?php echo $rejected_submissions; ?></div>
-                            <div class="stat-label">Needs Revision</div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Activity -->
-                    <div class="content-card">
-                        <div class="content-card-header">
-                            <h3>Recent Activity</h3>
-                            <a href="my-submissions.php" class="btn-student btn-outline-primary">View All</a>
-                        </div>
-                        <div class="content-card-body">
-                            <div class="table-responsive">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Thesis Title</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($recent_activity as $activity): ?>
-                                        <tr>
-                                            <td><?php echo date('M d, Y', strtotime($activity['date'])); ?></td>
-                                            <td><?php echo $activity['title']; ?></td>
-                                            <td>
-                                                <?php if ($activity['status'] == 'approved'): ?>
-                                                    <span class="status-badge status-approved">Approved</span>
-                                                <?php elseif ($activity['status'] == 'pending'): ?>
-                                                    <span class="status-badge status-pending">Pending</span>
-                                                <?php else: ?>
-                                                    <span class="status-badge status-rejected">Rejected</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <div class="table-actions">
-                                                    <a href="../thesis.php?id=<?php echo $activity['id']; ?>" class="action-icon action-icon-view" title="View">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <?php if ($activity['status'] != 'approved'): ?>
-                                                    <a href="submit.php?edit=<?php echo $activity['id']; ?>" class="action-icon action-icon-edit" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Guidelines Card -->
-                    <div class="content-card">
-                        <div class="content-card-header">
-                            <h3>Submission Guidelines</h3>
-                        </div>
-                        <div class="content-card-body">
-                            <p>Please follow these guidelines when submitting your thesis:</p>
-                            <ul style="padding-left: 20px; margin: 15px 0;">
-                                <li>Upload your thesis in PDF format only</li>
-                                <li>Maximum file size: 10MB</li>
-                                <li>Include an abstract of 200-300 words</li>
-                                <li>Select the appropriate academic department and subject categories</li>
-                                <li>All submissions will be reviewed by your department before appearing in the library</li>
-                            </ul>
-                            <a href="submit.php" class="btn-student btn-primary">Submit Thesis</a>
-                        </div>
+<div class="container mt-4">
+    <h1>Student Dashboard</h1>
+    <p>Welcome, <?php echo htmlspecialchars($username); ?>!</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <div class="list-group">
+                        <a href="submit.php" class="list-group-item list-group-item-action">
+                            <i class="fas fa-upload"></i> Submit New Thesis
+                        </a>
+                        <a href="my-submissions.php" class="list-group-item list-group-item-action">
+                            <i class="fas fa-folder"></i> My Submissions
+                        </a>
+                        <a href="../index.php" class="list-group-item list-group-item-action">
+                            <i class="fas fa-search"></i> Browse Theses
+                        </a>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <?php include_once "../includes/footer.php"; ?>
-
-    <script src="../assets/js/main.js"></script>
-    <script>
-        // Simple notification close functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const notifications = document.querySelectorAll('.notification');
             
-            notifications.forEach(notification => {
-                const closeBtn = notification.querySelector('.notification-close');
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', function() {
-                        notification.style.display = 'none';
-                    });
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">My Account</h5>
+                    <p><strong>Name:</strong> <?php echo htmlspecialchars($currentUser['name'] ?? $username); ?></p>
+                    <p><strong>Department:</strong> <?php echo htmlspecialchars($currentUser['department'] ?? 'Not specified'); ?></p>
+                    <p><strong>Year Level:</strong> <?php echo htmlspecialchars($currentUser['year_level'] ?? 'Not specified'); ?></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Submissions</h5>
+                </div>
+                <div class="card-body">
+                    <?php if (count($studentSubmissions) > 0): ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Thesis Title</th>
+                                        <th>Year</th>
+                                        <th>Department</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach (array_slice($studentSubmissions, 0, 5) as $submission): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($submission['title']); ?></td>
+                                        <td><?php echo htmlspecialchars($submission['year']); ?></td>
+                                        <td><?php echo htmlspecialchars($submission['department']); ?></td>
+                                        <td><?php echo htmlspecialchars($submission['date']); ?></td>
+                                        <td>
+                                            <a href="../thesis.php?file=<?php echo urlencode($submission['filename']); ?>" 
+                                               class="btn btn-sm btn-primary">View</a>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info">
+                            You haven't submitted any theses yet. 
+                            <a href="submit.php" class="alert-link">Submit your first thesis now</a>.
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?php if (count($studentSubmissions) > 5): ?>
+                <div class="card-footer">
+                    <a href="my-submissions.php" class="btn btn-outline-primary">View All Submissions</a>
+                </div>
+                <?php endif; ?>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>System Announcements</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Welcome to the offline Thesis Library system!</strong><br>
+                        This system allows you to submit and manage your thesis documents.
+                    </div>
+                    <!-- Additional announcements can be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php
+// Load footer
+include_once "../includes/footer.php";
+?>

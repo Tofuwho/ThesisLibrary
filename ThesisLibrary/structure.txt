@@ -1,45 +1,39 @@
 /thesis-library/
-├── index.php                      ← Public search & browse
-├── landing.php                    ← Landing page with login modal
-├── thesis.php                     ← View thesis details (reads from file system)
-
-├── student/
-│   ├── dashboard.php              ← Student dashboard
-│   ├── submit.php                 ← Upload thesis (stores files in /storage/theses/)
-│   └── my-submissions.php         ← View their own uploaded files (by user folder or naming pattern)
+├── landing.php                  ← Public landing page with login/signup modal
+├── index.php                    ← Now private (user must be logged in)
+├── auth/
+│   ├── login.php                ← Login handler (POST)
+│   ├── signup.php               ← Signup handler (POST)
+│   ├── logout.php               ← Ends session
+│   └── validate-session.php     ← Used in all protected pages
 
 ├── admin/
-│   ├── dashboard.php              ← Admin dashboard
-│   ├── manage-theses.php         ← Browse/manage files in /storage/theses/
-│   ├── manage-users.php          ← If using file-based user system (e.g. JSON, CSV)
-│   └── logs.php                  ← Optional: audit log for offline activity
+│   ├── dashboard.php
+│   ├── manage-theses.php
+│   ├── manage-users.php
+
+├── student/
+│   ├── dashboard.php
+│   ├── submit.php
+│   └── my-submissions.php
 
 ├── includes/
 │   ├── header.php
 │   ├── footer.php
-│   ├── landing-header.php
-│   ├── landing-footer.php
-│   ├── auth.php                  ← File-based authentication (e.g. users.json)
-│   └── file-helper.php           ← Helpers for file/folder reading, uploading
+│   ├── role-check.php           ← Redirects based on user type
+│   ├── file-helper.php
+│   └── landing-header.php
+│   └── landing-footer.php
+
+├── db/
+│   └── connection.php
+
+├── storage/
+│   └── theses/
+│       ├── 2025_CS_MariaL.pdf
+│       └── ...
 
 ├── assets/
 │   ├── css/
-│   │   ├── style.css
-│   │   ├── categories.css
-│   │   └── landing.css
 │   ├── js/
-│   │   ├── main.js
-│   │   ├── categories.js
-│   │   └── landing.js
 │   └── images/
-│       └── sample-cover.jpg
-
-├── storage/                      ← NEW: Replaces the DB
-│   ├── theses/
-│   │   ├── 2025_Math_Juan-Dela-Cruz.pdf
-│   │   ├── 2024_CS_Maria-Clara-Thesis.docx
-│   │   └── ...
-│   └── users.json                ← JSON for user credentials (offline auth)
-
-├── .htaccess                     ← Optional: prevent direct access to /storage/
-└── README.md
