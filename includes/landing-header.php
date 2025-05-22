@@ -21,12 +21,13 @@ if (session_status() === PHP_SESSION_NONE) {
             <nav>
                 <ul>
                     <?php if (isset($_SESSION['user'])): ?>
+                        <li><span class="user-welcome">Welcome, <?php echo htmlspecialchars($_SESSION['user']); ?></span></li>
                         <?php if ($_SESSION['role'] === 'admin'): ?>
-                            <li><a href="admin/dashboard.php">Admin Dashboard</a></li>
+                            <li><a href="admin/dashboard.php" class="dashboard-btn">Admin Dashboard</a></li>
                         <?php else: ?>
-                            <li><a href="student/dashboard.php">My Dashboard</a></li>
+                            <li><a href="student/dashboard.php" class="dashboard-btn">Student Dashboard</a></li>
                         <?php endif; ?>
-                        <li><a href="logout.php">Logout</a></li>
+                        <li><a href="auth/logout.php" class="logout-btn">Logout</a></li>
                     <?php else: ?>
                         <li><button id="openModal" class="login-btn">Login</button></li>
                     <?php endif; ?>
