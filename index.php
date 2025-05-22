@@ -1,5 +1,7 @@
 <?php 
 // Include the header file which contains the site's navigation and opening HTML structure
+session_start();
+require_once 'auth/validate-session.php';
 include 'includes/header.php'; 
 ?>
 

@@ -26,5 +26,6 @@
     </footer>
     
     <script src="assets/js/landing.js"></script>
+    <script src="assets/js/auth.js"></script>
 </body>
 </html>
