@@ -25,6 +25,11 @@
         </div>
     </footer>
     
+    <script>
+    const isLoggedIn = <?php echo json_encode(isset($_SESSION['username']) && isset($_SESSION['role'])); ?>;
+    console.log('isLoggedIn =', isLoggedIn);
+  </script>
+
     <script src="assets/js/landing.js"></script>
     <script src="assets/js/auth.js"></script>
 </body>

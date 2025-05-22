@@ -1,16 +1,17 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const openModalBtn = document.getElementById('openModal');
   const authModal = document.getElementById('authModal');
   const closeModalBtn = document.getElementById('closeModal');
   const authContainer = document.getElementById('auth-container');
   const signUpBtn = document.getElementById('signUp');
   const signInBtn = document.getElementById('signIn');
+  const exploreBtn = document.getElementById('exploreBtn');
 
   // Open modal when login button is clicked
   if (openModalBtn) {
     openModalBtn.addEventListener('click', () => {
       authModal.classList.add('active');
-      document.body.style.overflow = 'hidden'; // prevent scroll behind modal
+      document.body.style.overflow = 'hidden';
     });
   }
 
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (closeModalBtn) {
     closeModalBtn.addEventListener('click', () => {
       authModal.classList.remove('active');
-      document.body.style.overflow = ''; // restore scroll
+      document.body.style.overflow = '';
     });
   }
 
@@ -46,13 +47,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Fixed header scroll effect
-  window.addEventListener('scroll', function() {
+  // Explore button logic
+  if (exploreBtn) {
+    exploreBtn.addEventListener('click', (event) => {
+      event.preventDefault();  // <-- ADD THIS to stop form submission/page reload
+      
+      if (isLoggedIn) {
+        window.location.href = 'index.php';
+      } else {
+        authModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  }  
+
+  // Header scroll effect
+  window.addEventListener('scroll', function () {
     const header = document.querySelector('.landing-header');
-    if (window.scrollY > 50) {
-      header.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.2)';
-    } else {
-      header.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+    if (header) {
+      header.style.boxShadow =
+        window.scrollY > 50
+          ? '0 2px 20px rgba(0, 0, 0, 0.2)'
+          : '0 2px 10px rgba(0, 0, 0, 0.1)';
     }
   });
 });

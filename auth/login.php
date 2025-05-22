@@ -14,7 +14,7 @@ $stmt->execute([
 $user = $stmt->fetch();
 
 if ($user && password_verify($password, $user['password'])) {
-    $_SESSION['user'] = $user['username']; // Changed this to match landing-header.php
+    $_SESSION['username'] = $user['username'];
     $_SESSION['role'] = $user['role'];
     echo 'success'; // Since you're using fetch(), do not redirect here
     exit;
