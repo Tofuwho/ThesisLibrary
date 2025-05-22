@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <?php include 'includes/landing-header.php'; ?>
 
 <section class="hero-section">
@@ -5,7 +9,7 @@
         <div class="hero-content">
             <h1>Welcome to Thesis Library</h1>
             <p>Discover, explore, and contribute to our growing collection of academic research</p>
-            <a href="index.php" class="cta-button">Explore Theses</a>
+            <button id="exploreBtn" class="cta-button">Explore Theses</button>
         </div>
     </div>
 </section>

@@ -20,8 +20,8 @@ if (session_status() === PHP_SESSION_NONE) {
             </div>
             <nav>
                 <ul>
-                    <?php if (isset($_SESSION['user'])): ?>
-                        <li><span class="user-welcome">Welcome, <?php echo htmlspecialchars($_SESSION['user']); ?></span></li>
+                    <?php if (isset($_SESSION['username'])): ?>
+                        <li><span class="user-welcome">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span></li>
                         <?php if ($_SESSION['role'] === 'admin'): ?>
                             <li><a href="admin/dashboard.php" class="dashboard-btn">Admin Dashboard</a></li>
                         <?php else: ?>

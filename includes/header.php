@@ -22,7 +22,7 @@
                 </ul>
             </nav>
             <div class="auth-buttons">
-                <a href="#" class="btn btn-outline">Log Out</a>
+                <a href="auth/logout.php" class="btn btn-outline">Log Out</a>
             </div>
         </div>
     </header>
