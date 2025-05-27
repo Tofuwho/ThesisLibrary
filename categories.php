@@ -1,18 +1,10 @@
 <?php
+session_start();
 require_once 'auth/validate-session.php';
-?>
+require_once 'config.php';
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Categories - Thesis Repository</title>
-    <link rel="stylesheet" href="assets/css/categories.css">
-</head>
-<body>
-    <!-- Header -->
-    <?php include 'includes/header.php'; ?>
+include BASE_PATH . 'header.php';
+?>
 
     <!-- Main Content -->
     <main class="categories-main">
@@ -351,7 +343,7 @@ require_once 'auth/validate-session.php';
         </div>
     </main>
 
-    <!-- Footer -->
-    <?php include 'includes/footer.php'; ?>
-</body>
-</html>
+<?php 
+
+include BASE_PATH . 'footer.php';
+?>

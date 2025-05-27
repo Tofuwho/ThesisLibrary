@@ -32,7 +32,8 @@
                 </div>
             </div>
         </footer>
-        <script src="assets/js/main.js"></script>
-        <script src='assets/js/categories.js'></script>
+        <script src="<?php echo BASE_URL; ?>assets/js/main.js"></script>
+        <script src="<?php echo BASE_URL; ?>assets/js/categories.js"></script>
+        <script src="<?php echo BASE_URL; ?>assets/js/student.js"></script>
     </body>
 </html>
