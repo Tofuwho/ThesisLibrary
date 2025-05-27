@@ -11,54 +11,23 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 $userId = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 
-// Load user data
-$usersData = json_decode(file_get_contents("../storage/users.json"), true);
-
-// Find current user data
-$currentUser = null;
-foreach ($usersData['users'] as $user) {
-    if ($user['id'] == $userId) {
-        $currentUser = $user;
-        break;
-    }
-}
-
-if (!$currentUser) {
-    // Handle error - user not found
-    header("Location: ../landing.php?error=user_not_found");
-    exit();
-}
-
-// Define department options
-$departments = [
-    'CS' => 'Computer Science',
-    'IT' => 'Information Technology',
-    'Math' => 'Mathematics',
-    'Physics' => 'Physics',
-    'Chem' => 'Chemistry',
-    'Bio' => 'Biology',
-    'Eng' => 'Engineering',
-    'Edu' => 'Education',
-    'Bus' => 'Business',
-    'Arts' => 'Arts',
-    'Other' => 'Other'
-];
-
 // Process form submission
 $message = '';
 $messageType = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validate inputs
+    // Retrieve form data
     $title = trim($_POST['thesis_title'] ?? '');
     $abstract = trim($_POST['abstract'] ?? '');
-    $authors = trim($_POST['authors'] ?? '');
     $department = $_POST['department'] ?? '';
     $year = $_POST['year'] ?? date('Y');
     $keywords = trim($_POST['keywords'] ?? '');
     
+    // Retrieve co-workers
+    $coworkers = isset($_POST['coworkers']) ? $_POST['coworkers'] : [];
+
     // Validate required fields
-    if (empty($title) || empty($authors) || empty($department) || empty($year)) {
+    if (empty($title) || empty($department) || empty($year)) {
         $message = "All required fields must be filled.";
         $messageType = "danger";
     } 
@@ -109,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'abstract' => $abstract,
                         'authors' => $authors,
                         'department' => $department,
-                        'department_full' => $departments[$department] ?? $department,
                         'year' => $year,
                         'keywords' => $keywords,
                         'file' => $newFilename,
@@ -161,72 +129,44 @@ include_once "../includes/header.php";
                     <form method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="thesis_title" class="form-label">Thesis Title <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="thesis_title" name="thesis_title" required
-                                value="<?php echo htmlspecialchars($_POST['thesis_title'] ?? ''); ?>">
+                            <input type="text" class="form-control" id="thesis_title" name="thesis_title" required>
                         </div>
                         
                         <div class="mb-3">
                             <label for="authors" class="form-label">Author(s) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="authors" name="authors" required
-                                placeholder="e.g., Juan Dela Cruz"
-                                value="<?php echo htmlspecialchars($_POST['authors'] ?? $currentUser['name'] ?? $username); ?>">
-                            <div class="form-text">Multiple authors should be separated by commas.</div>
+                            <input type="text" class="form-control" id="authors" name="authors" required placeholder="e.g., Juan Dela Cruz">
                         </div>
                         
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
-                                <select class="form-select" id="department" name="department" required>
-                                    <option value="">Select Department</option>
-                                    <?php foreach ($departments as $code => $name): ?>
-                                        <option value="<?php echo htmlspecialchars($code); ?>" 
-                                            <?php echo (isset($_POST['department']) && $_POST['department'] === $code) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($name); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <label for="year" class="form-label">Year <span class="text-danger">*</span></label>
-                                <select class="form-select" id="year" name="year" required>
-                                    <?php 
-                                    $currentYear = date('Y');
-                                    for ($year = $currentYear; $year >= $currentYear - 10; $year--): 
-                                    ?>
-                                        <option value="<?php echo $year; ?>" 
-                                            <?php echo (isset($_POST['year']) && (int)$_POST['year'] === $year) || (!isset($_POST['year']) && $year === $currentYear) ? 'selected' : ''; ?>>
-                                            <?php echo $year; ?>
-                                        </option>
-                                    <?php endfor; ?>
-                                </select>
-                            </div>
+                        <div class="mb-3">
+                            <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="">Select Department</option>
+                                <?php foreach ($departments as $code => $name): ?>
+                                    <option value="<?php echo htmlspecialchars($code); ?>"><?php echo htmlspecialchars($name); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="year" class="form-label">Year <span class="text-danger">*</span></label>
+                            <select class="form-select" id="year" name="year" required>
+                                <?php 
+                                $currentYear = date('Y');
+                                for ($year = $currentYear; $year >= $currentYear - 10; $year--): 
+                                ?>
+                                    <option value="<?php echo $year; ?>"><?php echo $year; ?></option>
+                                <?php endfor; ?>
+                            </select>
                         </div>
                         
                         <div class="mb-3">
                             <label for="abstract" class="form-label">Abstract</label>
-                            <textarea class="form-control" id="abstract" name="abstract" rows="5"><?php echo htmlspecialchars($_POST['abstract'] ?? ''); ?></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="keywords" class="form-label">Keywords</label>
-                            <input type="text" class="form-control" id="keywords" name="keywords"
-                                placeholder="e.g., artificial intelligence, machine learning, neural networks"
-                                value="<?php echo htmlspecialchars($_POST['keywords'] ?? ''); ?>">
-                            <div class="form-text">Separate keywords with commas.</div>
+                            <textarea class="form-control" id="abstract" name="abstract" rows="5"></textarea>
                         </div>
                         
                         <div class="mb-3">
                             <label for="thesis_file" class="form-label">Thesis Document <span class="text-danger">*</span></label>
                             <input type="file" class="form-control" id="thesis_file" name="thesis_file" required>
-                            <div class="form-text">Allowed file types: PDF, DOC, DOCX, PPT, PPTX, TXT</div>
-                        </div>
-                        
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="agreement" name="agreement" required>
-                            <label class="form-check-label" for="agreement">
-                                I confirm that I have the right to submit this thesis and agree to make it available in the library.
-                            </label>
                         </div>
                         
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">

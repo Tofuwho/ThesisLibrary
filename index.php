@@ -2,7 +2,9 @@
 // Include the header file which contains the site's navigation and opening HTML structure
 session_start();
 require_once 'auth/validate-session.php';
-include 'includes/header.php'; 
+require_once 'config.php';
+
+include BASE_PATH . 'header.php';
 ?>
 
 <!-- Hero Section: Main introductory banner with title, subtitle, and search/filter form -->
@@ -148,5 +150,5 @@ include 'includes/header.php';
 
 <?php 
 // Include the footer file which contains closing HTML tags and scripts
-include 'includes/footer.php'; 
+include BASE_PATH . 'footer.php'; 
 ?>

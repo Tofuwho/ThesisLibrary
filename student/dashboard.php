@@ -1,191 +1,398 @@
-<?php
-// Start session
+<?php 
+// Include the configuration file
 session_start();
-
-// Check if user is logged in and is a student
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    header("Location: ../landing.php");
-    exit();
-}
-
-$userId = $_SESSION['user_id'];
-$username = $_SESSION['username'];
-
-// Load user data from JSON file
-$usersData = json_decode(file_get_contents("../storage/users.json"), true);
-
-// Find the current user
-$currentUser = null;
-foreach ($usersData['users'] as $user) {
-    if ($user['id'] == $userId) {
-        $currentUser = $user;
-        break;
-    }
-}
-
-if (!$currentUser) {
-    // Handle error - user not found
-    header("Location: ../landing.php?error=user_not_found");
-    exit();
-}
-
-// Get student's submissions
-$studentSubmissions = [];
-$thesesDir = "../storage/theses/";
-
-// Check if directory exists
-if (is_dir($thesesDir)) {
-    $files = scandir($thesesDir);
+require_once '../auth/validate-session.php';
+require_once '../config.php'; // Include the config file
     
-    foreach ($files as $file) {
-        // Skip . and .. directories
-        if ($file === '.' || $file === '..') {
-            continue;
-        }
-        
-        // Check if the file belongs to this student (using naming convention)
-        // Assuming files follow pattern: YYYY_Department_AuthorName.extension
-        $fileInfo = pathinfo($file);
-        $filename = $fileInfo['filename'];
-        
-        // Extract author name from filename
-        $parts = explode('_', $filename);
-        if (count($parts) >= 3) {
-            $authorName = str_replace('-', ' ', end($parts));
-            
-            // Simple check - if author name contains student's username
-            // This is a basic approach - you might want to refine this logic
-            if (stripos($authorName, $username) !== false || 
-                stripos($file, $userId) !== false) {
-                
-                // Get file info
-                $fileSize = filesize($thesesDir . $file);
-                $fileDate = filemtime($thesesDir . $file);
-                
-                // Get year and department from filename
-                $year = $parts[0] ?? 'Unknown';
-                $department = $parts[1] ?? 'Unknown';
-                
-                $studentSubmissions[] = [
-                    'filename' => $file,
-                    'title' => str_replace('-', ' ', $filename),
-                    'size' => $fileSize,
-                    'date' => date('F j, Y', $fileDate),
-                    'year' => $year,
-                    'department' => $department
-                ];
-            }
-        }
-    }
-}
-
-// Sort submissions by date (newest first)
-usort($studentSubmissions, function($a, $b) {
-    return strtotime($b['date']) - strtotime($a['date']);
-});
-
-// Load header
-include_once "../includes/header.php";
+include BASE_PATH . 'header.php'; 
 ?>
 
-<div class="container mt-4">
-    <h1>Student Dashboard</h1>
-    <p>Welcome, <?php echo htmlspecialchars($username); ?>!</p>
-    
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Quick Actions</h5>
-                    <div class="list-group">
-                        <a href="submit.php" class="list-group-item list-group-item-action">
-                            <i class="fas fa-upload"></i> Submit New Thesis
-                        </a>
-                        <a href="my-submissions.php" class="list-group-item list-group-item-action">
-                            <i class="fas fa-folder"></i> My Submissions
-                        </a>
-                        <a href="../index.php" class="list-group-item list-group-item-action">
-                            <i class="fas fa-search"></i> Browse Theses
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mt-3">
-                <div class="card-body">
-                    <h5 class="card-title">My Account</h5>
-                    <p><strong>Name:</strong> <?php echo htmlspecialchars($currentUser['name'] ?? $username); ?></p>
-                    <p><strong>Department:</strong> <?php echo htmlspecialchars($currentUser['department'] ?? 'Not specified'); ?></p>
-                    <p><strong>Year Level:</strong> <?php echo htmlspecialchars($currentUser['year_level'] ?? 'Not specified'); ?></p>
-                </div>
-            </div>
+    <div class="container">
+        <div class="header">
+            <h1>Thesis Submission Portal</h1>
+            <p>Submit your thesis and track your progress through the review process</p>
         </div>
-        
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Recent Submissions</h5>
+
+        <div class="dashboard-grid">
+            <div class="sidebar">
+                <div class="nav-item active" data-section="basic-info">
+                    <div class="nav-icon">1</div>
+                    Basic Information
                 </div>
-                <div class="card-body">
-                    <?php if (count($studentSubmissions) > 0): ?>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Thesis Title</th>
-                                        <th>Year</th>
-                                        <th>Department</th>
-                                        <th>Date</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach (array_slice($studentSubmissions, 0, 5) as $submission): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($submission['title']); ?></td>
-                                        <td><?php echo htmlspecialchars($submission['year']); ?></td>
-                                        <td><?php echo htmlspecialchars($submission['department']); ?></td>
-                                        <td><?php echo htmlspecialchars($submission['date']); ?></td>
-                                        <td>
-                                            <a href="../thesis.php?file=<?php echo urlencode($submission['filename']); ?>" 
-                                               class="btn btn-sm btn-primary">View</a>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php else: ?>
-                        <div class="alert alert-info">
-                            You haven't submitted any theses yet. 
-                            <a href="submit.php" class="alert-link">Submit your first thesis now</a>.
-                        </div>
-                    <?php endif; ?>
+                <div class="nav-item" data-section="thesis-details">
+                    <div class="nav-icon">2</div>
+                    Thesis Details
                 </div>
-                <?php if (count($studentSubmissions) > 5): ?>
-                <div class="card-footer">
-                    <a href="my-submissions.php" class="btn btn-outline-primary">View All Submissions</a>
+                <div class="nav-item" data-section="upload">
+                    <div class="nav-icon">3</div>
+                    File Upload
                 </div>
-                <?php endif; ?>
+                <div class="nav-item" data-section="supervisor">
+                    <div class="nav-icon">4</div>
+                    Supervisor Info
+                </div>
+                <div class="nav-item" data-section="review">
+                    <div class="nav-icon">5</div>
+                    Review & Submit
+                </div>
             </div>
-            
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h5>System Announcements</h5>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info">
-                        <strong>Welcome to the offline Thesis Library system!</strong><br>
-                        This system allows you to submit and manage your thesis documents.
+
+            <div class="main-content">
+                <form id="thesisForm" action="submit_thesis.php" method="POST" enctype="multipart/form-data">
+                    
+                    <!-- Basic Information Section -->
+                    <div class="section active" id="basic-info">
+                        <h2>Basic Information</h2>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 20%"></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name *</label>
+                                <input type="text" id="firstName" name="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name *</label>
+                                <input type="text" id="lastName" name="lastName" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="studentId">Student ID *</label>
+                                <input type="text" id="studentId" name="studentId" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                        </div>
+
+                        <!-- Co-workers Section -->
+                        <h3>Co-Workers (Optional)</h3>
+                        <div id="coworkers">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="coworker1_first_name">Collaborator 1 First Name</label>
+                                    <input type="text" id="coworker1_first_name" name="coworkers[0][first_name]" placeholder="First Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coworker1_last_name">Collaborator 1 Last Name</label>
+                                    <input type="text" id="coworker1_last_name" name="coworkers[0][last_name]" placeholder="Last Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coworker1_id">Collaborator 1 Student ID</label>
+                                    <input type="text" id="coworker1_id" name="coworkers[0][student_id]" placeholder="Student ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coworker1_email">Collaborator 1 Email</label>
+                                    <input type="email" id="coworker1_email" name="coworkers[0][email]" placeholder="Email">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="coworkers">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="coworker2_first_name">Collaborator 2 First Name</label>
+                                    <input type="text" id="coworker2_first_name" name="coworkers[1][first_name]" placeholder="First Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coworker2_last_name">Collaborator 2 Last Name</label>
+                                    <input type="text" id="coworker2_last_name" name="coworkers[1][last_name]" placeholder="Last Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coworker2_id">Collaborator 2 Student ID</label>
+                                    <input type="text" id="coworker2_id" name="coworkers[1][student_id]" placeholder="Student ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coworker2_email">Collaborator 2 Email</label>
+                                    <input type="email" id="coworker2_email" name="coworkers[1][email]" placeholder="Email">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="coworkers">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="coworker3_first_name">Collaborator 3 First Name</label>
+                                    <input type="text" id="coworker3_first_name" name="coworkers[2][first_name]" placeholder="First Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coworker3_last_name">Collaborator 3 Last Name</label>
+                                    <input type="text" id="coworker3_last_name" name="coworkers[2][last_name]" placeholder="Last Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coworker3_id">Collaborator 3 Student ID</label>
+                                    <input type="text" id="coworker3_id" name="coworkers[2][student_id]" placeholder="Student ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coworker3_email">Collaborator 3 Email</label>
+                                    <input type="email" id="coworker3_email" name="coworkers[2][email]" placeholder="Email">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="department">Department *</label>
+                                <select id="department" name="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="computer-science">Computer Science</option>
+                                    <option value="engineering">Engineering</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="physics">Physics</option>
+                                    <option value="chemistry">Chemistry</option>
+                                    <option value="biology">Biology</option>
+                                    <option value="psychology">Psychology</option>
+                                    <option value="economics">Economics</option>
+                                    <option value="business">Business</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="degreeLevel">Degree Level *</label>
+                                <select id="degreeLevel" name="degreeLevel" required>
+                                    <option value="">Select Degree Level</option>
+                                    <option value="bachelor">Bachelor's</option>
+                                    <option value="master">Master's</option>
+                                    <option value="phd">PhD</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn" onclick="nextSection('thesis-details')">Next</button>
+                        </div>
                     </div>
-                    <!-- Additional announcements can be added here -->
-                </div>
+
+                    <!-- Thesis Details Section -->
+                    <div class="section" id="thesis-details">
+                        <h2>Thesis Details</h2>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 40%"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="thesisTitle">Thesis Title *</label>
+                            <input type="text" id="thesisTitle" name="thesisTitle" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="abstract">Abstract *</label>
+                            <textarea id="abstract" name="abstract" placeholder="Provide a brief summary of your thesis..." required></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="category">Research Category *</label>
+                                <select id="category" name="category" required>
+                                    <option value="">Select Category</option>
+                                    <option value="theoretical">Theoretical Research</option>
+                                    <option value="empirical">Empirical Research</option>
+                                    <option value="experimental">Experimental Research</option>
+                                    <option value="applied">Applied Research</option>
+                                    <option value="literature-review">Literature Review</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="expectedCompletion">Expected Completion Date</label>
+                                <input type="date" id="expectedCompletion" name="expectedCompletion">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="keywords">Keywords</label>
+                            <div class="keyword-input-container">
+                                <input type="text" id="keywordInput" class="keyword-input" placeholder="Enter keyword and press Enter">
+                                <button type="button" class="btn btn-secondary" onclick="addKeyword()">Add</button>
+                            </div>
+                            <div class="keyword-tags" id="keywordTags"></div>
+                            <input type="hidden" id="keywords" name="keywords">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="previousSection('basic-info')">Previous</button>
+                            <button type="button" class="btn" onclick="nextSection('upload')">Next</button>
+                        </div>
+                    </div>
+
+                    <!-- File Upload Section -->
+                    <div class="section" id="upload">
+                        <h2>File Upload</h2>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Thesis Document (PDF) *</label>
+                            <div class="file-upload" onclick="document.getElementById('thesisFile').click()">
+                                <div class="upload-icon">📄</div>
+                                <h4>Click to upload or drag and drop</h4>
+                                <p>PDF files only (Max 50MB)</p>
+                                <input type="file" id="thesisFile" name="thesisFile" accept=".pdf" required>
+                            </div>
+                            <div class="file-list" id="thesisFileList"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Supporting Documents (Optional)</label>
+                            <div class="file-upload" onclick="document.getElementById('supportingFiles').click()">
+                                <div class="upload-icon">📎</div>
+                                <h4>Click to upload additional files</h4>
+                                <p>PDF, DOC, DOCX, PPT, PPTX (Max 10MB each)</p>
+                                <input type="file" id="supportingFiles" name="supportingFiles[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx">
+                            </div>
+                            <div class="file-list" id="supportingFilesList"></div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="previousSection('thesis-details')">Previous</button>
+                            <button type="button" class="btn" onclick="nextSection('supervisor')">Next</button>
+                        </div>
+                    </div>
+
+                    <!-- Supervisor Information Section -->
+                    <div class="section" id="supervisor">
+                        <h2>Supervisor Information</h2>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%"></div>
+                        </div>
+
+                        <div class="supervisor-info">
+                            <h4>Primary Supervisor</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="supervisorName">Supervisor Name *</label>
+                                    <input type="text" id="supervisorName" name="supervisorName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="supervisorEmail">Supervisor Email *</label>
+                                    <input type="email" id="supervisorEmail" name="supervisorEmail" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="supervisorDepartment">Department</label>
+                                    <input type="text" id="supervisorDepartment" name="supervisorDepartment">
+                                </div>
+                                <div class="form-group">
+                                    <label for="supervisorTitle">Title/Position</label>
+                                    <input type="text" id="supervisorTitle" name="supervisorTitle" placeholder="e.g., Professor, Dr., etc.">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="supervisor-info">
+                            <h4>Co-Supervisor (Optional)</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="coSupervisorName">Co-Supervisor Name</label>
+                                    <input type="text" id="coSupervisorName" name="coSupervisorName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="coSupervisorEmail">Co-Supervisor Email</label>
+                                    <input type="email" id="coSupervisorEmail" name="coSupervisorEmail">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="previousSection('upload')">Previous</button>
+                            <button type="button" class="btn" onclick="nextSection('review')">Next</button>
+                        </div>
+                    </div>
+
+                    <!-- Review & Submit Section -->
+                    <div class="section" id="review">
+                        <h2>Review & Submit</h2>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>Review your submission carefully.</strong> Once submitted, you will not be able to make changes without contacting your supervisor.
+                        </div>
+
+                        <div class="summary-card">
+                            <h3>Submission Summary</h3>
+                            <div class="summary-item">
+                                <span><strong>Student:</strong></span>
+                                <span id="reviewStudentName">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Student ID:</strong></span>
+                                <span id="reviewStudentId">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Email:</strong></span>
+                                <span id="reviewSubmitterEmail">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Department:</strong></span>
+                                <span id="reviewDepartment">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Degree Level:</strong></span>
+                                <span id="reviewDegreeLevel">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Research Category:</strong></span>
+                                <span id="reviewCategory">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Thesis Title:</strong></span>
+                                <span id="reviewThesisTitle">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Abstract:</strong></span>
+                                <span id="reviewAbstract">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Keywords:</strong></span>
+                                <span id="reviewKeywords">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Primary Supervisor:</strong></span>
+                                <span id="reviewSupervisor">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Collaborator:</strong></span>
+                                <span id="reviewCoworker1">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Collaborator:</strong></span>
+                                <span id="reviewCoworker2">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Collaborator:</strong></span>
+                                <span id="reviewCoworker3">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span><strong>Status:</strong></span>
+                                <span class="status-badge status-draft">Draft</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="confirmSubmission" name="confirmSubmission" required>
+                                I confirm that all information provided is accurate and complete. I understand that this submission will be reviewed by my supervisor and the academic committee.
+                            </label>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="previousSection('supervisor')">Previous</button>
+                            <button type="submit" class="btn" id="submitBtn">Submit Thesis</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</div>
 
-<?php
-// Load footer
-include_once "../includes/footer.php";
+<?php 
+// Include the footer file
+include BASE_PATH . 'footer.php'; 
 ?>

@@ -753,3 +753,7 @@ ul {
 .category-card:nth-child(6) {
   animation-delay: 0.6s;
 }
+
+.button-spacing {
+    margin-left: 10px; /* Adjust the value as needed */
+}
