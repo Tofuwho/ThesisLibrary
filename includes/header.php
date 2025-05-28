@@ -28,10 +28,6 @@ session_start(); // Ensure this is at the top of your PHP files
             </nav>
             <div class="auth-buttons">
                 <?php 
-                // Remove or comment out the debugging code
-                // echo '<pre>'; // For better readability
-                // print_r($_SESSION); // Print the entire session array
-                // echo '</pre>';
                 
                 if (isset($_SESSION['role'])): 
                     if ($_SESSION['role'] === 'student'): ?>

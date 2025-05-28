@@ -10,7 +10,7 @@ include BASE_PATH . 'header.php';
     <main class="categories-main">
         <div class="container">
             <div class="categories-header">
-                <h1 class="section-title">Browse Categories</h1>
+                <h2 class="section-title">Browse Categories</h2>
                 <p class="section-subtitle">Explore our vast collection of academic theses by category and filter</p>
                 
                 <!-- Search Form -->
@@ -196,12 +196,12 @@ include BASE_PATH . 'header.php';
                 </aside>
 
                 <!-- Thesis Results -->
-                <div class="thesis-results">
-                    <div class="results-header">
-                        <h2>Results <span class="results-count">(255)</span></h2>
-                        <div class="sort-options">
-                            <label for="sort-by">Sort by:</label>
-                            <select id="sort-by" class="sort-select">
+                <div class="cat-thesis-results">
+                    <div class="cat-results-header">
+                        <h2>Results <span class="cat-results-count">(255)</span></h2>
+                        <div class="cat-sort-options">
+                            <label for="cat-sort-by">Sort by:</label>
+                            <select id="cat-sort-by" class="cat-sort-select">
                                 <option value="date-desc">Date (Newest First)</option>
                                 <option value="date-asc">Date (Oldest First)</option>
                                 <option value="title-asc">Title (A-Z)</option>
@@ -210,131 +210,131 @@ include BASE_PATH . 'header.php';
                         </div>
                     </div>
 
-                    <div class="thesis-list">
+                    <div class="cat-thesis-list">
                         <!-- Thesis Item 1 -->
-                        <div class="thesis-item">
-                            <div class="thesis-item-cover">
-                                <div class="thesis-cover-placeholder">
+                        <div class="cat-thesis-item">
+                            <div class="cat-thesis-item-cover">
+                                <div class="cat-thesis-cover-placeholder">
                                     <i class="fas fa-file-alt"></i>
                                 </div>
                             </div>
-                            <div class="thesis-item-content">
-                                <h3 class="thesis-item-title">Machine Learning Applications in Healthcare: A Comprehensive Review</h3>
-                                <p class="thesis-item-author">Johnson, Michael R.</p>
-                                <div class="thesis-item-meta">
+                            <div class="cat-thesis-item-content">
+                                <h3 class="cat-thesis-item-title">Machine Learning Applications in Healthcare: A Comprehensive Review</h3>
+                                <p class="cat-thesis-item-author">Johnson, Michael R.</p>
+                                <div class="cat-thesis-item-meta">
                                     <span><i class="far fa-calendar-alt"></i> May 2025</span>
                                     <span><i class="fas fa-graduation-cap"></i> PhD Dissertation</span>
                                     <span><i class="fas fa-tag"></i> Computer Science, Healthcare</span>
                                 </div>
-                                <p class="thesis-item-abstract">This dissertation explores the applications of machine learning algorithms in healthcare settings, focusing on diagnostic accuracy, treatment optimization, and patient outcome prediction.</p>
-                                <div class="thesis-item-actions">
-                                    <a href="#" class="view-button"><i class="fas fa-eye"></i> View</a>
-                                    <a href="#" class="download-button"><i class="fas fa-download"></i> Download</a>
+                                <p class="cat-thesis-item-abstract">This dissertation explores the applications of machine learning algorithms in healthcare settings, focusing on diagnostic accuracy, treatment optimization, and patient outcome prediction.</p>
+                                <div class="cat-thesis-item-actions">
+                                    <a href="#" class="cat-view-button"><i class="fas fa-eye"></i> View</a>
+                                    <a href="#" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Thesis Item 2 -->
-                        <div class="thesis-item">
-                            <div class="thesis-item-cover">
-                                <div class="thesis-cover-placeholder">
+                        <div class="cat-thesis-item">
+                            <div class="cat-thesis-item-cover">
+                                <div class="cat-thesis-cover-placeholder">
                                     <i class="fas fa-file-alt"></i>
                                 </div>
                             </div>
-                            <div class="thesis-item-content">
-                                <h3 class="thesis-item-title">Sustainable Urban Development: Case Studies from Global Cities</h3>
-                                <p class="thesis-item-author">Smith, Jennifer K.</p>
-                                <div class="thesis-item-meta">
+                            <div class="cat-thesis-item-content">
+                                <h3 class="cat-thesis-item-title">Sustainable Urban Development: Case Studies from Global Cities</h3>
+                                <p class="cat-thesis-item-author">Smith, Jennifer K.</p>
+                                <div class="cat-thesis-item-meta">
                                     <span><i class="far fa-calendar-alt"></i> April 2025</span>
                                     <span><i class="fas fa-graduation-cap"></i> Master's Thesis</span>
                                     <span><i class="fas fa-tag"></i> Urban Planning, Sustainability</span>
                                 </div>
-                                <p class="thesis-item-abstract">This thesis examines sustainable urban development practices across major global cities, with a focus on green infrastructure, energy efficiency, and social equity considerations.</p>
-                                <div class="thesis-item-actions">
-                                    <a href="#" class="view-button"><i class="fas fa-eye"></i> View</a>
-                                    <a href="#" class="download-button"><i class="fas fa-download"></i> Download</a>
+                                <p class="cat-thesis-item-abstract">This thesis examines sustainable urban development practices across major global cities, with a focus on green infrastructure, energy efficiency, and social equity considerations.</p>
+                                <div class="cat-thesis-item-actions">
+                                    <a href="#" class="cat-view-button"><i class="fas fa-eye"></i> View</a>
+                                    <a href="#" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Thesis Item 3 -->
-                        <div class="thesis-item">
-                            <div class="thesis-item-cover">
-                                <div class="thesis-cover-placeholder">
+                        <div class="cat-thesis-item">
+                            <div class="cat-thesis-item-cover">
+                                <div class="cat-thesis-cover-placeholder">
                                     <i class="fas fa-file-alt"></i>
                                 </div>
                             </div>
-                            <div class="thesis-item-content">
-                                <h3 class="thesis-item-title">Neural Correlates of Decision-Making in Uncertain Environments</h3>
-                                <p class="thesis-item-author">Williams, David A.</p>
-                                <div class="thesis-item-meta">
+                            <div class="cat-thesis-item-content">
+                                <h3 class="cat-thesis-item-title">Neural Correlates of Decision-Making in Uncertain Environments</h3>
+                                <p class="cat-thesis-item-author">Williams, David A.</p>
+                                <div class="cat-thesis-item-meta">
                                     <span><i class="far fa-calendar-alt"></i> March 2025</span>
                                     <span><i class="fas fa-graduation-cap"></i> PhD Dissertation</span>
                                     <span><i class="fas fa-tag"></i> Neuroscience, Psychology</span>
                                 </div>
-                                <p class="thesis-item-abstract">This dissertation investigates the neural mechanisms underlying decision-making processes in environments characterized by uncertainty, utilizing fMRI and computational modeling approaches.</p>
-                                <div class="thesis-item-actions">
-                                    <a href="#" class="view-button"><i class="fas fa-eye"></i> View</a>
-                                    <a href="#" class="download-button"><i class="fas fa-download"></i> Download</a>
+                                <p class="cat-thesis-item-abstract">This dissertation investigates the neural mechanisms underlying decision-making processes in environments characterized by uncertainty, utilizing fMRI and computational modeling approaches.</p>
+                                <div class="cat-thesis-item-actions">
+                                    <a href="#" class="cat-view-button"><i class="fas fa-eye"></i> View</a>
+                                    <a href="#" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Thesis Item 4 -->
-                        <div class="thesis-item">
-                            <div class="thesis-item-cover">
-                                <div class="thesis-cover-placeholder">
+                        <div class="cat-thesis-item">
+                            <div class="cat-thesis-item-cover">
+                                <div class="cat-thesis-cover-placeholder">
                                     <i class="fas fa-file-alt"></i>
                                 </div>
                             </div>
-                            <div class="thesis-item-content">
-                                <h3 class="thesis-item-title">Biodiversity Conservation Strategies in Tropical Ecosystems</h3>
-                                <p class="thesis-item-author">Brown, Katherine L.</p>
-                                <div class="thesis-item-meta">
+                            <div class="cat-thesis-item-content">
+                                <h3 class="cat-thesis-item-title">Biodiversity Conservation Strategies in Tropical Ecosystems</h3>
+                                <p class="cat-thesis-item-author">Brown, Katherine L.</p>
+                                <div class="cat-thesis-item-meta">
                                     <span><i class="far fa-calendar-alt"></i> February 2025</span>
                                     <span><i class="fas fa-graduation-cap"></i> Master's Thesis</span>
                                     <span><i class="fas fa-tag"></i> Biology, Environmental Science</span>
                                 </div>
-                                <p class="thesis-item-abstract">This thesis evaluates various conservation strategies employed to preserve biodiversity in tropical ecosystems, with emphasis on community-based approaches and policy interventions.</p>
-                                <div class="thesis-item-actions">
-                                    <a href="#" class="view-button"><i class="fas fa-eye"></i> View</a>
-                                    <a href="#" class="download-button"><i class="fas fa-download"></i> Download</a>
+                                <p class="cat-thesis-item-abstract">This thesis evaluates various conservation strategies employed to preserve biodiversity in tropical ecosystems, with emphasis on community-based approaches and policy interventions.</p>
+                                <div class="cat-thesis-item-actions">
+                                    <a href="#" class="cat-view-button"><i class="fas fa-eye"></i> View</a>
+                                    <a href="#" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Thesis Item 5 -->
-                        <div class="thesis-item">
-                            <div class="thesis-item-cover">
-                                <div class="thesis-cover-placeholder">
+                        <div class="cat-thesis-item">
+                            <div class="cat-thesis-item-cover">
+                                <div class="cat-thesis-cover-placeholder">
                                     <i class="fas fa-file-alt"></i>
                                 </div>
                             </div>
-                            <div class="thesis-item-content">
-                                <h3 class="thesis-item-title">Quantum Computing Algorithms for Optimization Problems</h3>
-                                <p class="thesis-item-author">Miller, Alex P.</p>
-                                <div class="thesis-item-meta">
+                            <div class="cat-thesis-item-content">
+                                <h3 class="cat-thesis-item-title">Quantum Computing Algorithms for Optimization Problems</h3>
+                                <p class="cat-thesis-item-author">Miller, Alex P.</p>
+                                <div class="cat-thesis-item-meta">
                                     <span><i class="far fa-calendar-alt"></i> January 2025</span>
                                     <span><i class="fas fa-graduation-cap"></i> PhD Dissertation</span>
                                     <span><i class="fas fa-tag"></i> Computer Science, Quantum Physics</span>
                                 </div>
-                                <p class="thesis-item-abstract">This dissertation develops novel quantum computing algorithms designed to address complex optimization problems in logistics, finance, and computational biology.</p>
-                                <div class="thesis-item-actions">
-                                    <a href="#" class="view-button"><i class="fas fa-eye"></i> View</a>
-                                    <a href="#" class="download-button"><i class="fas fa-download"></i> Download</a>
+                                <p class="cat-thesis-item-abstract">This dissertation develops novel quantum computing algorithms designed to address complex optimization problems in logistics, finance, and computational biology.</p>
+                                <div class="cat-thesis-item-actions">
+                                    <a href="#" class="cat-view-button"><i class="fas fa-eye"></i> View</a>
+                                    <a href="#" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Pagination -->
-                    <div class="results-pagination">
-                        <a href="#" class="pagination-item active">1</a>
-                        <a href="#" class="pagination-item">2</a>
-                        <a href="#" class="pagination-item">3</a>
-                        <a href="#" class="pagination-item">4</a>
-                        <a href="#" class="pagination-item">5</a>
-                        <a href="#" class="pagination-item next">
+                    <div class="cat-results-pagination">
+                        <a href="#" class="cat-pagination-item active">1</a>
+                        <a href="#" class="cat-pagination-item">2</a>
+                        <a href="#" class="cat-pagination-item">3</a>
+                        <a href="#" class="cat-pagination-item">4</a>
+                        <a href="#" class="cat-pagination-item">5</a>
+                        <a href="#" class="cat-pagination-item cat-pagination-item-next">
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     </div>
