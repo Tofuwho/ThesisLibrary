@@ -1,8 +1,8 @@
-`<?php
-session_start();
-?>
+{% load static %}
+{% now "Y" as current_year %}
+<p>&copy; {{ current_year }} Thesis Library. All rights reserved.</p>
 
-<?php include 'includes/landing-header.php'; ?>
+{% include 'includes/landing-header.html' %}
 
 <section class="hero-section">
     <div class="hero-overlay">
@@ -72,4 +72,4 @@ session_start();
     </div>
 </div>
 
-<?php include 'includes/landing-footer.php'; ?>
+{% include 'includes/landing-footer.html' %}

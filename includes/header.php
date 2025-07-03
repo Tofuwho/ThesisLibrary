@@ -10,6 +10,7 @@ session_start(); // Ensure this is at the top of your PHP files
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/student.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/categories.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/about.css">
 </head>
 <body>
     <header class="main-header">
@@ -22,7 +23,7 @@ session_start(); // Ensure this is at the top of your PHP files
                 <ul>
                     <li><a href="<?php echo BASE_URL; ?>index.php" class="nav-link">Home</a></li>
                     <li><a href="<?php echo BASE_URL; ?>categories.php" class="nav-link">Categories</a></li>
-                    <li><a href="#" class="nav-link">About</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>about.php" class="nav-link">About</a></li>
                     <li><a href="#" class="nav-link">Contact</a></li>
                 </ul>
             </nav>
