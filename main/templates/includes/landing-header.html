@@ -1,0 +1,38 @@
+<?php
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thesis Library Repository</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+</head>
+<body>
+    <header class="landing-header">
+        <div class="container">
+            <div class="logo">
+                <h1>Thesis Library</h1>
+            </div>
+            <nav>
+                <ul>
+                    <?php if (isset($_SESSION['username'])): ?>
+                        <li><span class="user-welcome">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span></li>
+                        <?php if ($_SESSION['role'] === 'admin'): ?>
+                            <li><a href="admin/dashboard.php" class="dashboard-btn">Admin Dashboard</a></li>
+                        <?php else: ?>
+                            <li><a href="student/dashboard.php" class="dashboard-btn">Student Dashboard</a></li>
+                        <?php endif; ?>
+                        <li><a href="auth/logout.php" class="logout-btn">Logout</a></li>
+                    <?php else: ?>
+                        <li><button id="openModal" class="login-btn">Login</button></li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+        </div>
+    </header>
