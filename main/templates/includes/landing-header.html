@@ -1,9 +1,3 @@
-<?php
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,17 +15,17 @@ if (session_status() === PHP_SESSION_NONE) {
             </div>
             <nav>
                 <ul>
-                    <?php if (isset($_SESSION['username'])): ?>
-                        <li><span class="user-welcome">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span></li>
-                        <?php if ($_SESSION['role'] === 'admin'): ?>
-                            <li><a href="admin/dashboard.php" class="dashboard-btn">Admin Dashboard</a></li>
-                        <?php else: ?>
-                            <li><a href="student/dashboard.php" class="dashboard-btn">Student Dashboard</a></li>
-                        <?php endif; ?>
-                        <li><a href="auth/logout.php" class="logout-btn">Logout</a></li>
-                    <?php else: ?>
+                    {% if user.is_authenticated %}
+                        <li><span class="user-welcome">Welcome, {{ user.username }}</span></li>
+                        {% if user.is_staff %}
+                            <li><a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Admin Dashboard</a></li>
+                        {% else %}
+                            <li><a href="{% url 'student_dashboard' %}" class="dashboard-btn">Student Dashboard</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'logout' %}" class="logout-btn">Logout</a></li>
+                    {% else %}
                         <li><button id="openModal" class="login-btn">Login</button></li>
-                    <?php endif; ?>
+                    {% endif %}
                 </ul>
             </nav>
         </div>

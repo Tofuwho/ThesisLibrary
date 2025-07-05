@@ -19,7 +19,9 @@
     <div class="auth-container" id="auth-container">
         <span id="closeModal" class="close-modal">&times;</span>
         <div class="form-container sign-up-container">
-        <form id="signupForm" action="auth/signup.php" method="POST">
+            <form id="signupForm" action="{% url 'signup' %}" method="POST">
+            {% csrf_token %}
+
             <h2>Create Account</h2>
 
             <label for="signup_username">Username</label>
@@ -42,7 +44,9 @@
 
         </div>
         <div class="form-container sign-in-container">
-        <form id="loginForm">
+        <form id="loginForm" action="{% url 'login' %}" method="POST">
+            {% csrf_token %}
+
             <h2>Login to Thesis Library</h2>
 
             <label for="username">Username or Email</label>

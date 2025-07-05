@@ -28,9 +28,9 @@
     </footer>
 
     <script>
-    const isLoggedIn = <?php echo json_encode(isset($_SESSION['username']) && isset($_SESSION['role'])); ?>;
-    console.log('isLoggedIn =', isLoggedIn);
-  </script>
+        const isLoggedIn = {{ user.is_authenticated|yesno:"true,false" }};
+        console.log('isLoggedIn =', isLoggedIn);
+    </script>
 
     <script src="{% static 'js/landing.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>

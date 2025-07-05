@@ -18,9 +18,11 @@ from django.contrib import admin
 from django.urls import path
 
 from django.contrib import admin
-from django.urls import path, include  # ← add include
+from django.urls import path, include  # ← already correct
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('main.urls')),  # ← this sends root URLs to main app
+    path('auth/', include('authapp.urls')),  # This line adds /auth/login, /auth/signup, etc.
+    path('', include('main.urls')),          # Existing URLs for your main site
 ]
+

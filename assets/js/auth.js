@@ -1,21 +1,28 @@
+function getCSRFToken() {
+  return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // LOGIN
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault(); // Set a breakpoint here
+      e.preventDefault();
       const formData = new FormData(loginForm);
 
-      const res = await fetch('auth/login.php', {
+      const res = await fetch('/auth/login/', {
         method: 'POST',
+        headers: {
+          'X-CSRFToken': getCSRFToken()
+        },
         body: formData
       });
 
-      const text = await res.text();
-      if (text.trim() === 'success') {
-        window.location.href = 'landing.php';
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = '/';
       } else {
-        document.getElementById('loginMessage').textContent = text;
+        document.getElementById('loginMessage').textContent = data.error || 'Login failed.';
       }
     });
   }
@@ -24,19 +31,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('signupForm');
   if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
-      e.preventDefault(); // Set a breakpoint here
+      e.preventDefault();
       const formData = new FormData(signupForm);
 
-      const res = await fetch('auth/signup.php', {
+      const res = await fetch('/auth/signup/', {
         method: 'POST',
+        headers: {
+          'X-CSRFToken': getCSRFToken()
+        },
         body: formData
       });
 
-      const text = await res.text();
-      if (text.trim() === 'success') {
-        window.location.href = 'landing.php';
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = '/';
       } else {
-        document.getElementById('signupMessage').textContent = text;
+        document.getElementById('signupMessage').textContent = data.error || 'Signup failed.';
       }
     });
   }
