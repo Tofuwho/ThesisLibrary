@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'main',
+    'authapp'
 ]
 
 MIDDLEWARE = [
@@ -77,8 +78,15 @@ WSGI_APPLICATION = 'thesis_site.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'thesis_library',     # same DB as your PHP app
+        'USER': 'root',
+        'PASSWORD': '',               # set your MySQL password if any
+        'HOST': 'localhost',
+        'PORT': '3306',               # default MySQL port
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        }
     }
 }
 
