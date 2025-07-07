@@ -14,17 +14,28 @@
                 <h1>Thesis Library</h1>
             </div>
             <nav>
-                <ul>
+                <ul class="header-nav-list">
                     {% if user.is_authenticated %}
-                        <li><span class="user-welcome">Welcome, {{ user.username }}</span></li>
-                        {% if user.is_staff %}
-                            <li><a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Admin Dashboard</a></li>
-                        {% else %}
-                            <li><a href="{% url 'student_dashboard' %}" class="dashboard-btn">Student Dashboard</a></li>
-                        {% endif %}
-                        <li><a href="{% url 'logout' %}" class="logout-btn">Logout</a></li>
+                        <li class="user-welcome">Welcome, <span>{{ user.username }}</span>!</li>
+                        <li>
+                            <div class="header-buttons" role="group" aria-label="User actions">
+                                {% if user.is_staff %}
+                                    <a href="/admin/dashboard.php" class="dashboard-btn" role="button">Admin Dashboard</a>
+                                {% else %}
+                                    <a href="/student/dashboard.php" class="dashboard-btn" role="button">Student Dashboard</a>
+                                {% endif %}
+                                <form method="POST" action="{% url 'logout' %}" style="margin:0; padding:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="logout-btn" role="button">Logout</button>
+                                </form>
+                            </div>
+                        </li>
                     {% else %}
-                        <li><button id="openModal" class="login-btn">Login</button></li>
+                        <li>
+                            <div class="header-buttons" role="group" aria-label="Login">
+                                <button id="loginButton" class="login-btn" role="button">Login</button>
+                            </div>
+                        </li>
                     {% endif %}
                 </ul>
             </nav>
