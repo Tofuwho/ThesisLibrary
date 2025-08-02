@@ -8,3 +8,9 @@ def landing_page(request):
 
 def about_page(request):
     return render(request, 'main/about.html')
+
+def index_page(request):
+    return render(request, 'main/index.html')
+
+def categories_page(request):
+    return render(request, 'main/categories.html')
