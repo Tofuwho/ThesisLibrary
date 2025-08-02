@@ -1,0 +1,88 @@
+{% load static %}
+{% now "Y" as current_year %}
+
+<link rel="stylesheet" href="{% static 'css/categories.css' %}">
+
+<p>&copy; {{ current_year }} Thesis Library. All rights reserved.</p>
+{% include 'includes/landing-header.html' %}
+
+<main class="categories-main">
+    <div class="container">
+
+        <div class="categories-header">
+            <h2 class="section-title">Browse Categories</h2>
+            <p class="section-subtitle">Explore our vast collection of academic theses by category and filter</p>
+
+            <form class="search-form" method="get">
+                <input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword...">
+                <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+            </form>
+        </div>
+
+        <div class="categories-content">
+            <aside class="filter-sidebar">
+                <form method="get">
+                    <!-- Filter: Publication Date -->
+                    <div class="filter-section">
+                        <h3>Publication Date</h3>
+                        {% for year in years %}
+                            <label><input type="checkbox" name="year" value="{{ year }}"> {{ year }}</label><br>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Filter: Descriptor -->
+                    <div class="filter-section">
+                        <h3>Descriptor</h3>
+                        {% for category in categories %}
+                            <label><input type="checkbox" name="descriptor" value="{{ category.name }}"> {{ category.name }}</label><br>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="apply-filters-button"><i class="fas fa-filter"></i> Apply Filters</button>
+                    <a href="#" class="clear-filters-button"><i class="fas fa-times"></i> Clear All</a>
+                </form>
+            </aside>
+
+            <!-- Thesis Results -->
+            <div class="cat-thesis-results">
+                <div class="cat-results-header">
+                    <h2>Results <span class="cat-results-count">({{ total_results }})</span></h2>
+                    <form method="get">
+                        <label for="sort">Sort by:</label>
+                        <select name="sort" id="sort" onchange="this.form.submit()">
+                            <option value="date-desc">Date (Newest First)</option>
+                            <option value="date-asc">Date (Oldest First)</option>
+                            <option value="title-asc">Title (A-Z)</option>
+                            <option value="title-desc">Title (Z-A)</option>
+                        </select>
+                    </form>
+                </div>
+
+                <div class="cat-thesis-list">
+                    {% for thesis in theses %}
+                    <div class="cat-thesis-item">
+                        <div class="cat-thesis-item-content">
+                            <h3 class="cat-thesis-item-title">{{ thesis.title }}</h3>
+                            <p class="cat-thesis-item-author">{{ thesis.author }}</p>
+                            <div class="cat-thesis-item-meta">
+                                <span>{{ thesis.year }}</span>
+                                <span>{{ thesis.thesis_type }}</span>
+                                <span>{{ thesis.specialization }}</span>
+                            </div>
+                            <p class="cat-thesis-item-abstract">{{ thesis.abstract|truncatewords:30 }}</p>
+                            <div class="cat-thesis-item-actions">
+                                <a href="#" class="cat-view-button"><i class="fas fa-eye"></i> View</a>
+                                <a href="#" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No theses found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include 'includes/landing-footer.html' %}
