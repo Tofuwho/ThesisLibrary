@@ -37,3 +37,5 @@
 │   ├── css/
 │   ├── js/
 │   └── images/
+
+ignore for now. will  be updating it soon
