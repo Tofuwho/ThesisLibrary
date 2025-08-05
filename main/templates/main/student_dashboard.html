@@ -1,0 +1,329 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/student.css' %}">
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/student.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>Thesis Submission Portal</h1>
+        <p>Submit your thesis and track your progress through the review process</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="sidebar">
+            <div class="nav-item active" data-section="basic-info">
+                <div class="nav-icon">1</div>
+                Basic Information
+            </div>
+            <div class="nav-item" data-section="thesis-details">
+                <div class="nav-icon">2</div>
+                Thesis Details
+            </div>
+            <div class="nav-item" data-section="upload">
+                <div class="nav-icon">3</div>
+                File Upload
+            </div>
+            <div class="nav-item" data-section="supervisor">
+                <div class="nav-icon">4</div>
+                Supervisor Info
+            </div>
+            <div class="nav-item" data-section="review">
+                <div class="nav-icon">5</div>
+                Review & Submit
+            </div>
+        </div>
+
+        <div class="main-content">
+            <form id="thesisForm" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- Basic Information Section -->
+                <div class="section active" id="basic-info">
+                    <h2>Basic Information</h2>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 20%"></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="studentId">Student ID *</label>
+                            <input type="text" id="studentId" name="studentId" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                    </div>
+
+                    <!-- Co-workers Section -->
+                    <h3>Co-Workers (Optional)</h3>
+                    <div id="coworkers">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="coworker1_first_name">Collaborator 1 First Name</label>
+                                <input type="text" id="coworker1_first_name" name="coworkers[0][first_name]" placeholder="First Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="coworker1_last_name">Collaborator 1 Last Name</label>
+                                <input type="text" id="coworker1_last_name" name="coworkers[0][last_name]" placeholder="Last Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="coworker1_id">Collaborator 1 Student ID</label>
+                                <input type="text" id="coworker1_id" name="coworkers[0][student_id]" placeholder="Student ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="coworker1_email">Collaborator 1 Email</label>
+                                <input type="email" id="coworker1_email" name="coworkers[0][email]" placeholder="Email">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="coworker2_first_name">Collaborator 2 First Name</label>
+                                <input type="text" id="coworker2_first_name" name="coworkers[1][first_name]" placeholder="First Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="coworker2_last_name">Collaborator 2 Last Name</label>
+                                <input type="text" id="coworker2_last_name" name="coworkers[1][last_name]" placeholder="Last Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="coworker2_id">Collaborator 2 Student ID</label>
+                                <input type="text" id="coworker2_id" name="coworkers[1][student_id]" placeholder="Student ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="coworker2_email">Collaborator 2 Email</label>
+                                <input type="email" id="coworker2_email" name="coworkers[1][email]" placeholder="Email">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Thesis Details Section -->
+                <div class="section" id="thesis-details">
+                    <h2>Thesis Details</h2>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 40%"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="thesisTitle">Thesis Title *</label>
+                        <input type="text" id="thesisTitle" name="thesisTitle" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="abstract">Abstract *</label>
+                        <textarea id="abstract" name="abstract" placeholder="Provide a brief summary of your thesis..." required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Research Category *</label>
+                            <select id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="theoretical">Theoretical Research</option>
+                                <option value="empirical">Empirical Research</option>
+                                <option value="experimental">Experimental Research</option>
+                                <option value="applied">Applied Research</option>
+                                <option value="literature-review">Literature Review</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expectedCompletion">Expected Completion Date</label>
+                            <input type="date" id="expectedCompletion" name="expectedCompletion">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn" onclick="nextSection('upload')">Next</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevSection('basic-info')">Back</button>
+                    </div>
+                </div>
+                <!-- File Upload Section -->
+                <div class="section" id="upload">
+                    <h2>File Upload</h2>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 60%"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Thesis Document (PDF) *</label>
+                        <div class="file-upload" onclick="document.getElementById('thesisFile').click()">
+                            <div class="upload-icon">📄</div>
+                            <h4>Click to upload or drag and drop</h4>
+                            <p>PDF files only (Max 50MB)</p>
+                            <input type="file" id="thesisFile" name="thesisFile" accept=".pdf" required>
+                        </div>
+                        <div class="file-list" id="thesisFileList"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Supporting Documents (Optional)</label>
+                        <div class="file-upload" onclick="document.getElementById('supportingFiles').click()">
+                            <div class="upload-icon">📎</div>
+                            <h4>Click to upload additional files</h4>
+                            <p>PDF, DOC, DOCX, PPT, PPTX (Max 10MB each)</p>
+                            <input type="file" id="supportingFiles" name="supportingFiles[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx">
+                        </div>
+                        <div class="file-list" id="supportingFilesList"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection('thesis-details')">Previous</button>
+                        <button type="button" class="btn" onclick="nextSection('supervisor')">Next</button>
+                    </div>
+                </div>
+
+                <!-- Supervisor Information Section -->
+                <div class="section" id="supervisor">
+                    <h2>Supervisor Information</h2>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 80%"></div>
+                    </div>
+
+                    <div class="supervisor-info">
+                        <h4>Primary Supervisor</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="supervisorName">Supervisor Name *</label>
+                                <input type="text" id="supervisorName" name="supervisorName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="supervisorEmail">Supervisor Email *</label>
+                                <input type="email" id="supervisorEmail" name="supervisorEmail" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="supervisorDepartment">Department</label>
+                                <input type="text" id="supervisorDepartment" name="supervisorDepartment">
+                            </div>
+                            <div class="form-group">
+                                <label for="supervisorTitle">Title/Position</label>
+                                <input type="text" id="supervisorTitle" name="supervisorTitle" placeholder="e.g., Professor, Dr., etc.">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="supervisor-info">
+                        <h4>Co-Supervisor (Optional)</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="coSupervisorName">Co-Supervisor Name</label>
+                                <input type="text" id="coSupervisorName" name="coSupervisorName">
+                            </div>
+                            <div class="form-group">
+                                <label for="coSupervisorEmail">Co-Supervisor Email</label>
+                                <input type="email" id="coSupervisorEmail" name="coSupervisorEmail">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection('upload')">Previous</button>
+                        <button type="button" class="btn" onclick="nextSection('review')">Next</button>
+                    </div>
+                </div>
+                <!-- Review & Submit Section -->
+                <div class="section" id="review">
+                    <h2>Review & Submit</h2>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>Review your submission carefully.</strong> Once submitted, you will not be able to make changes without contacting your supervisor.
+                    </div>
+
+                    <div class="summary-card">
+                        <h3>Submission Summary</h3>
+                        <div class="summary-item">
+                            <span><strong>Student:</strong></span>
+                            <span id="reviewStudentName">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Student ID:</strong></span>
+                            <span id="reviewStudentId">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Email:</strong></span>
+                            <span id="reviewSubmitterEmail">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Department:</strong></span>
+                            <span id="reviewDepartment">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Degree Level:</strong></span>
+                            <span id="reviewDegreeLevel">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Research Category:</strong></span>
+                            <span id="reviewCategory">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Thesis Title:</strong></span>
+                            <span id="reviewThesisTitle">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Abstract:</strong></span>
+                            <span id="reviewAbstract">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Keywords:</strong></span>
+                            <span id="reviewKeywords">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Primary Supervisor:</strong></span>
+                            <span id="reviewSupervisor">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Collaborator:</strong></span>
+                            <span id="reviewCoworker1">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Collaborator:</strong></span>
+                            <span id="reviewCoworker2">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Collaborator:</strong></span>
+                            <span id="reviewCoworker3">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Status:</strong></span>
+                            <span class="status-badge status-draft">Draft</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="confirmSubmission" name="confirmSubmission" required>
+                            I confirm that all information provided is accurate and complete. I understand that this submission will be reviewed by my supervisor and the academic committee.
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection('supervisor')">Previous</button>
+                        <button type="submit" class="btn" id="submitBtn">Submit Thesis</button>
+                    </div>
+                </div>
+                <!-- More sections will be added in the next steps -->
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

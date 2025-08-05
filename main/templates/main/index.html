@@ -1,8 +1,11 @@
+{% extends 'main/base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
 {% load static %}
 {% now "Y" as current_year %}
 <p>&copy; {{ current_year }} Thesis Library. All rights reserved.</p>
 
-{% include 'includes/landing-header.html' %}
 <section class="hero">
     <div class="container">
         <h2 class="section-title">CICT Thesis Repository</h2>
@@ -118,4 +121,4 @@
     </div>
 </section>
 
-{% include 'includes/landing-footer.html' %}
+{% endblock %}

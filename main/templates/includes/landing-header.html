@@ -9,35 +9,29 @@
 </head>
 <body>
     <header class="landing-header">
-        <div class="container">
-            <div class="logo">
+        <div class="landing-header-inner">
+            <div class="logo-container">
+                <div class="logo-square"></div>
                 <h1>Thesis Library</h1>
             </div>
-            <nav>
-                <ul class="header-nav-list">
-                    {% if user.is_authenticated %}
-                        <li class="user-welcome">Welcome, <span>{{ user.username }}</span>!</li>
-                        <li>
-                            <div class="header-buttons" role="group" aria-label="User actions">
-                                {% if user.is_staff %}
-                                    <a href="/admin/dashboard.php" class="dashboard-btn" role="button">Admin Dashboard</a>
-                                {% else %}
-                                    <a href="/student/dashboard.php" class="dashboard-btn" role="button">Student Dashboard</a>
-                                {% endif %}
-                                <form method="POST" action="{% url 'logout' %}" style="margin:0; padding:0;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="logout-btn" role="button">Logout</button>
-                                </form>
-                            </div>
-                        </li>
+            <div class="header-flex-center"></div>
+            <div class="nav-right">
+                {% if user.is_authenticated %}
+                    <span class="user-welcome">Welcome, <span>{{ user.username }}</span>!</span>
+                    {% if user.is_staff %}
+                        <a href="/admin/dashboard.php" class="dashboard-btn" role="button">Admin Dashboard</a>
                     {% else %}
-                        <li>
-                            <div class="header-buttons" role="group" aria-label="Login">
-                                <button id="loginButton" class="login-btn" role="button">Login</button>
-                            </div>
-                        </li>
+                        <a href="{% url 'student_dashboard' %}" class="dashboard-btn" role="button">Student Dashboard</a>
                     {% endif %}
-                </ul>
-            </nav>
+                    <form method="POST" action="{% url 'logout' %}" style="margin:0; padding:0; display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn" role="button">Logout</button>
+                    </form>
+                {% else %}
+                    <button id="loginButton" class="login-btn" role="button">Login</button>
+                {% endif %}
+            </div>
         </div>
     </header>
+</body>
+</html>
