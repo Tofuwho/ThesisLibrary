@@ -14,3 +14,6 @@ def index_page(request):
 
 def categories_page(request):
     return render(request, 'main/categories.html')
+
+def student_dashboard(request):
+    return render(request, 'main/student_dashboard.html')

@@ -86,82 +86,172 @@ ul {
   transform: translateY(-2px);
 }
 
-/* Header Styles */
-.main-header {
-  background-color: var(--white);
-  box-shadow: var(--shadow);
+/**** HEADER STYLES FOR STUDENT DASHBOARD ****/
+.main-header, .redesigned-header {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   position: fixed;
   width: 100%;
   top: 0;
   left: 0;
   z-index: 1000;
-  transition: var(--transition);
+  padding: 0;
 }
 
-.main-header .container {
+.header-inner, .main-header .container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
   height: 70px;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
-  cursor: pointer;
+  gap: 12px;
 }
 
 .logo-square {
-  width: 28px;
-  height: 28px;
-  background-color: var(--primary-color);
-  margin-right: 12px;
-  transition: var(--transition);
-}
-
-.logo-square:hover {
-  transform: rotate(45deg);
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #7e01ff, #6801d1);
+  border-radius: 8px;
 }
 
 .logo-container h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--dark-gray);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #7e01ff;
+  letter-spacing: 1px;
 }
 
-.main-nav ul {
+.main-nav ul, .nav-center {
   display: flex;
-}
-
-.main-nav ul li {
-  margin-left: 30px;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-link {
-  position: relative;
+  color: #333;
   font-weight: 500;
-  color: var(--medium-gray);
-  padding: 5px 0;
-}
-
-.nav-link::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 2px;
-  bottom: 0;
-  left: 0;
-  background-color: var(--primary-color);
-  transition: var(--transition);
+  font-size: 1.05rem;
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
 }
 
 .nav-link:hover, .nav-link.active {
-  color: var(--primary-color);
+  color: #7e01ff;
+  border-bottom: 2px solid #7e01ff;
 }
 
-.nav-link:hover::after, .nav-link.active::after {
-  width: 100%;
+.nav-right, .auth-buttons, .header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
+
+.user-welcome {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+}
+.user-welcome span {
+  color: #7e01ff;
+  font-weight: 600;
+  margin-left: 5px;
+}
+
+.dashboard-btn, .logout-btn, .login-btn, .btn, .btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  padding: 8px 20px;
+  height: 40px;
+  min-width: 120px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1.5px solid #7e01ff;
+  background: transparent;
+  color: #7e01ff;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+  margin-left: 10px;
+  cursor: pointer;
+}
+.dashboard-btn:hover, .logout-btn:hover, .login-btn:hover, .btn-outline:hover {
+  background: rgba(126, 1, 255, 0.08);
+  color: #6801d1;
+}
+
+/* --- HEADER LAYOUT FIX --- */
+.main-header .container, .header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 70px;
+}
+
+.logo-container {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-flex-center {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.main-nav ul, .nav-center {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-right, .auth-buttons, .header-buttons {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .main-header .container, .header-inner { padding: 0 12px; }
+  .main-nav ul, .nav-center { gap: 18px; }
+}
+@media (max-width: 700px) {
+  .main-header .container, .header-inner {
+    flex-direction: column;
+    height: auto;
+    padding: 8px 4px;
+    gap: 8px;
+  }
+  .logo-container { margin-bottom: 6px; }
+  .header-flex-center { justify-content: flex-start; }
+  .main-nav ul, .nav-center { gap: 10px; font-size: 0.98rem; }
+  .nav-right, .auth-buttons, .header-buttons { gap: 6px; }
+}
+/* --- END HEADER LAYOUT FIX --- */
 
 
 .dashboard-grid {

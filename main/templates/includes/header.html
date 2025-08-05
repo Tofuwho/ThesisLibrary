@@ -1,29 +1,33 @@
 {% load static %}
 <header class="main-header">
-    <div class="container">
+    <div class="main-header-inner">
         <div class="logo-container">
             <div class="logo-square"></div>
             <h1>Thesis Library</h1>
         </div>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="{% url 'landing' %}" class="nav-link">Home</a></li>
-                <li><a href="#" class="nav-link">Categories</a></li>
-                <li><a href="{% url 'about' %}" class="nav-link">About</a></li>
-                <li><a href="#" class="nav-link">Contact</a></li>
-            </ul>
-        </nav>
-        <div class="auth-buttons">
+        <div class="header-flex-center">
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
+                    <li><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
+                    <li><a href="{% url 'about' %}" class="nav-link">About</a></li>
+                    <li><a href="#" class="nav-link">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="auth-buttons nav-right">
             {% if user.is_authenticated %}
                 {% if user.is_staff %}
-                    <a href="/admin/dashboard.php" class="btn btn-outline">Dashboard</a>
+                    <a href="/admin/dashboard.php" class="dashboard-btn">Dashboard</a>
                 {% else %}
-                    <a href="/student/dashboard.php" class="btn btn-outline">Dashboard</a>
+                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Dashboard</a>
                 {% endif %}
                 <form method="POST" action="{% url 'logout' %}" style="display:inline; margin-left:10px;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-outline">Log Out</button>
+                    <button type="submit" class="logout-btn">Log Out</button>
                 </form>
+            {% else %}
+                <button id="loginButton" class="login-btn">Login</button>
             {% endif %}
         </div>
     </div>
