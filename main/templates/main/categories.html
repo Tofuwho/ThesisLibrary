@@ -1,116 +1,154 @@
-{% extends 'main/base.html' %}
-{% block title %}Categories{% endblock %}
 {% load static %}
-{% block extra_head %}
-{% now 'U' as ts %}
-<link rel="stylesheet" href="{% static 'css/categories.css' %}?v={{ ts }}">
-{% endblock %}
+{% now "Y" as current_year %}
 
-{% block content %}
+<link rel="stylesheet" href="{% static 'css/categories.css' %}">
 
-<section class="hero">
+{% include 'includes/landing-header.html' %}
+
+<main class="categories-main">
     <div class="container">
-        <h2 class="section-title">Browse Categories</h2>
-        <p class="section-subtitle">Explore our vast collection of academic theses by category and filter</p>
 
-        <div class="search-container">
+        <!-- Header -->
+        <div class="categories-header">
+            <h2 class="section-title">Browse Categories</h2>
+            <p class="section-subtitle">Explore our vast collection of academic theses by category and filter</p>
+
+            <!-- Search Form -->
             <form class="search-form" method="get">
-                <input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
-                <button type="submit" class="search-button">Search</button>
+                <input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword...">
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i> Search
+                </button>
             </form>
         </div>
 
-        
-    </div>
-</section>
+        <div class="categories-content">
+            <!-- Filter Sidebar -->
+            <aside class="filter-sidebar">
+                <form method="get">
 
-<section class="catalog">
-    <div class="container">
-        <div class="catalog-layout">
-            <aside class="filter-panel">
-                <form method="get" id="filters">
+                    <!-- Publication Date -->
                     <div class="filter-section">
                         <h3>Publication Date</h3>
                         <ul class="filter-list">
                             {% for year in years %}
-                            <li class="filter-option">
-                                <label>
-                                    <input type="checkbox" name="year" value="{{ year }}" {% if request.GET.year|stringformat:'s' == year|stringformat:'s' %}checked{% endif %}>
-                                    <span class="label">{{ year }}</span>
-                                    <span class="count-badge">0</span>
-                                </label>
-                            </li>
+                                <li>
+                                    <label>
+                                        <input type="checkbox" name="year" value="{{ year }}">
+                                        <span>{{ year }}</span>
+                                        <span class="count">({{ year.count|default:0 }})</span>
+                                    </label>
+                                </li>
                             {% endfor %}
                         </ul>
                         <a href="#" class="show-more">Show more</a>
                     </div>
 
+                    <!-- Descriptor -->
                     <div class="filter-section">
                         <h3>Descriptor</h3>
                         <ul class="filter-list">
                             {% for category in categories %}
-                            <li class="filter-option">
-                                <label>
-                                    <input type="checkbox" name="descriptor" value="{{ category.name }}" {% if request.GET.descriptor == category.name %}checked{% endif %}>
-                                    <span class="label">{{ category.name }}</span>
-                                    <span class="count-badge">0</span>
-                                </label>
-                            </li>
+                                <li>
+                                    <label>
+                                        <input type="checkbox" name="descriptor" value="{{ category.name }}">
+                                        <span>{{ category.name }}</span>
+                                        <span class="count">({{ category.count|default:0 }})</span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <a href="#" class="show-more">Show more</a>
+                    </div>
+
+                    <!-- Author -->
+                    <div class="filter-section">
+                        <h3>Author</h3>
+                        <ul class="filter-list">
+                            {% for author in authors %}
+                                <li>
+                                    <label>
+                                        <input type="checkbox" name="author" value="{{ author.name }}">
+                                        <span>{{ author.name }}</span>
+                                        <span class="count">({{ author.count|default:0 }})</span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <a href="#" class="show-more">Show more</a>
+                    </div>
+
+                    <!-- Publication Type -->
+                    <div class="filter-section">
+                        <h3>Publication Type</h3>
+                        <ul class="filter-list">
+                            {% for type in types %}
+                                <li>
+                                    <label>
+                                        <input type="checkbox" name="type" value="{{ type.name }}">
+                                        <span>{{ type.name }}</span>
+                                        <span class="count">({{ type.count|default:0 }})</span>
+                                    </label>
+                                </li>
                             {% endfor %}
                         </ul>
                     </div>
 
-                    <div class="filters-actions">
-                        <button type="submit" class="btn-ghost">Apply Filters</button>
-                        <a href="{% url 'categories' %}" class="btn-ghost secondary">Clear All</a>
-                    </div>
+                    <button type="submit" class="apply-filters-button">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                    <a href="#" class="clear-filters-button">
+                        <i class="fas fa-times"></i> Clear All
+                    </a>
                 </form>
             </aside>
 
-            <div class="results-panel">
-                <div class="results-header-card">
-                    <h2 class="results-title">Results <span class="cat-results-count">({{ total_results }})</span></h2>
-                    <div class="sort-by">
+            <!-- Thesis Results -->
+            <div class="cat-thesis-results">
+                <div class="cat-results-header">
+                    <h2>Results <span class="cat-results-count">({{ total_results }})</span></h2>
+                    <div class="cat-sort-options">
                         <label for="sort">Sort by:</label>
-                        <select name="sort" id="sort" onchange="document.getElementById('filters').submit()">
-                            <option value="date-desc" {% if request.GET.sort == 'date-desc' or not request.GET.sort %}selected{% endif %}>Date (Newest First)</option>
-                            <option value="date-asc" {% if request.GET.sort == 'date-asc' %}selected{% endif %}>Date (Oldest First)</option>
-                            <option value="title-asc" {% if request.GET.sort == 'title-asc' %}selected{% endif %}>Title (A-Z)</option>
-                            <option value="title-desc" {% if request.GET.sort == 'title-desc' %}selected{% endif %}>Title (Z-A)</option>
+                        <select name="sort" id="sort" class="cat-sort-select" onchange="this.form.submit()">
+                            <option value="date-desc">Date (Newest First)</option>
+                            <option value="date-asc">Date (Oldest First)</option>
+                            <option value="title-asc">Title (A-Z)</option>
+                            <option value="title-desc">Title (Z-A)</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="results-list">
+                <div class="cat-thesis-list">
                     {% for thesis in theses %}
-                    <article class="result-card" style="--i: {{ forloop.counter0 }};">
-                        <div class="result-cover">
-                            <div class="cover-gradient"></div>
-                        </div>
-                        <div class="result-content">
-                            <h3 class="result-title">{{ thesis.title }}</h3>
-                            <p class="result-author">{{ thesis.author }}</p>
-                            <div class="result-meta">
-                                <span class="chip">{{ thesis.year }}</span>
-                                <span class="chip">{{ thesis.thesis_type }}</span>
-                                <span class="chip">{{ thesis.specialization }}</span>
+                        <div class="cat-thesis-item">
+                            <div class="cat-thesis-item-cover">
+                                <div class="cat-thesis-cover-placeholder">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
                             </div>
-                            <p class="result-abstract">{{ thesis.abstract|default:'No abstract available.'|truncatewords:26 }}</p>
-                            <div class="result-actions">
-                                <a href="{% url 'thesis_detail' thesis.id %}" class="btn-ghost">View</a>
-                                <a href="#" class="btn-ghost secondary">Download</a>
+                            <div class="cat-thesis-item-content">
+                                <h3 class="cat-thesis-item-title">{{ thesis.title }}</h3>
+                                <p class="cat-thesis-item-author">{{ thesis.author }}</p>
+                                <div class="cat-thesis-item-meta">
+                                    <span><i class="far fa-calendar-alt"></i> {{ thesis.year }}</span>
+                                    <span><i class="fas fa-graduation-cap"></i> {{ thesis.thesis_type }}</span>
+                                    <span><i class="fas fa-tag"></i> {{ thesis.specialization }}</span>
+                                </div>
+                                <p class="cat-thesis-item-abstract">{{ thesis.abstract|truncatewords:30 }}</p>
+                                <div class="cat-thesis-item-actions">
+                                    <a href="#" class="cat-view-button"><i class="fas fa-eye"></i> View</a>
+                                    <a href="#" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
+                                </div>
                             </div>
                         </div>
-                    </article>
                     {% empty %}
-                    <div class="no-results">
-                        <p>No theses found matching your criteria.</p>
-                    </div>
+                        <p>No theses found.</p>
                     {% endfor %}
                 </div>
             </div>
         </div>
     </div>
-</section>
+</main>
 
-{% endblock %}
+{% include 'includes/landing-footer.html' %}
+<p>&copy; {{ current_year }} Thesis Library. All rights reserved.</p>
