@@ -66,7 +66,7 @@
                     <h3 class="thesis-title">{{ thesis.title }}</h3>
                     <p class="thesis-author">By {{ thesis.author }}</p>
                     <p class="thesis-meta">{{ thesis.specialization }} | {{ thesis.year }}</p>
-                    <a href="#" class="view-button">View</a>
+                    <a href="{% url 'thesis_detail' thesis.id %}" class="view-button">View</a>
                 </div>
             </div>
             {% empty %}
