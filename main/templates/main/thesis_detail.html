@@ -1,0 +1,32 @@
+{% extends 'main/base.html' %}
+{% block title %}{{ thesis.title }}{% endblock %}
+{% load static %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <h2 class="section-title">{{ thesis.title }}</h2>
+    <p class="section-subtitle">By {{ thesis.author }} • {{ thesis.year }} • {{ thesis.thesis_type }}</p>
+  </div>
+  
+</section>
+
+<section class="recently-added">
+  <div class="container">
+    <div class="thesis-card">
+      <div class="thesis-cover">
+        <div class="thesis-cover-placeholder">📚</div>
+      </div>
+      <div class="thesis-info">
+        <p class="thesis-meta">{{ thesis.specialization }}</p>
+        <p>{{ thesis.abstract }}</p>
+        {% if thesis.file_url %}
+          <a href="{{ thesis.file_url }}" class="view-button">Download</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+
