@@ -159,7 +159,7 @@
 .show-more {
     display: inline-block;
     font-size: 0.85rem;
-    color: var(--primary-color);
+    color: purple;
     margin-top: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -412,8 +412,8 @@
 }
 
 .cat-view-button {
-    background: var(--primary-light);
-    color: var(--primary-color);
+    background: #7e01ff;
+    color: white;
 }
 
 .cat-view-button:hover {
@@ -581,6 +581,7 @@
     }
 
     .show-more {
+        color: purple;
         display: none;
     }
 }
