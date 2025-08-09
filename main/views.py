@@ -1,8 +1,7 @@
-from django.shortcuts import render, get_object_or_404
-from library.models import Thesis, Category
 
 # Create your views here.
 from django.shortcuts import render
+from .models import Thesis, Category
 
 def landing_page(request):
     return render(request, 'main/landing.html')
@@ -11,58 +10,45 @@ def about_page(request):
     return render(request, 'main/about.html')
 
 def index_page(request):
-    recent_theses = Thesis.objects.order_by('-created_at')[:6]
-    categories = Category.objects.all()[:6]
-    return render(request, 'main/index.html', {
-        'recent_theses': recent_theses,
-        'categories': categories,
-    })
+    return render(request, 'main/index.html')
 
 def categories_page(request):
-    theses = Thesis.objects.all()
-    categories = Category.objects.all()
+    # Dummy theses
+    theses = [
+        {
+            'title': 'Smart Traffic System',
+            'author': 'Alice Reyes',
+            'year': 2025,
+            'abstract': 'This thesis explores smart traffic optimization using AI...',
+            'specialization': 'Computer Science',
+            'thesis_type': 'Capstone'
+        },
+        {
+            'title': 'E-Governance via Blockchain',
+            'author': 'Mark Cruz',
+            'year': 2023,
+            'abstract': 'An application of blockchain for secure online governance...',
+            'specialization': 'Information Systems',
+            'thesis_type': 'Thesis'
+        },
+    ]
 
-    search_query = request.GET.get('search') or ''
-    selected_year = request.GET.get('year') or ''
-    selected_descriptor = request.GET.get('descriptor') or ''
-    sort = request.GET.get('sort') or 'date-desc'
+    # Dummy filter data
+    categories = [
+        {'name': 'AI'},
+        {'name': 'Blockchain'},
+        {'name': 'Mobile Apps'},
+    ]
 
-    if search_query:
-        theses = theses.filter(title__icontains=search_query) | theses.filter(author__icontains=search_query) | theses.filter(abstract__icontains=search_query)
+    # Dummy years for publication filter
+    years = [2025, 2024, 2023, 2022, 2021]
 
-    if selected_year:
-        try:
-            theses = theses.filter(year=int(selected_year))
-        except ValueError:
-            pass
-
-    if selected_descriptor:
-        theses = theses.filter(categories__name=selected_descriptor)
-
-    if sort == 'date-asc':
-        theses = theses.order_by('year', 'title')
-    elif sort == 'title-asc':
-        theses = theses.order_by('title')
-    elif sort == 'title-desc':
-        theses = theses.order_by('-title')
-    else:  # date-desc
-        theses = theses.order_by('-year', 'title')
-
-    years = Thesis.objects.order_by('-year').values_list('year', flat=True).distinct()
-    total_results = theses.count()
-
-    context = {
+    return render(request, 'main/categories.html', {
         'theses': theses,
         'categories': categories,
         'years': years,
-        'total_results': total_results,
-    }
-    return render(request, 'main/categories.html', context)
+        'total_results': len(theses),
+    })
 
 def student_dashboard(request):
     return render(request, 'main/student_dashboard.html')
-
-
-def thesis_detail(request, pk: int):
-    thesis = get_object_or_404(Thesis, pk=pk)
-    return render(request, 'main/thesis_detail.html', {'thesis': thesis})
