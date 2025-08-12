@@ -1,33 +1,29 @@
+{% extends 'main/base.html' %}
 {% load static %}
-{% now "Y" as current_year %}
 
+{% block title %}Browse Categories - Thesis Library{% endblock %}
+
+{% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/categories.css' %}">
+{% endblock %}
 
-{% include 'includes/landing-header.html' %}
-
+{% block content %}
 <main class="categories-main">
     <div class="container">
-
-        <!-- Header -->
         <div class="categories-header">
             <h2 class="section-title">Browse Categories</h2>
             <p class="section-subtitle">Explore our vast collection of academic theses by category and filter</p>
-
-            <!-- Search Form -->
-            <form class="search-form" method="get">
-                <input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword...">
-                <button type="submit" class="search-button">
-                    <i class="fas fa-search"></i> Search
-                </button>
-            </form>
+            <div class="search-container">
+                <form class="search-form" method="get">
+                    <input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
+                    <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+                </form>
+            </div>
         </div>
 
         <div class="categories-content">
-            <!-- Filter Sidebar -->
             <aside class="filter-sidebar">
                 <form method="get">
-
-                    <!-- Publication Date -->
                     <div class="filter-section">
                         <h3>Publication Date</h3>
                         <ul class="filter-list">
@@ -44,7 +40,6 @@
                         <a href="#" class="show-more">Show more</a>
                     </div>
 
-                    <!-- Descriptor -->
                     <div class="filter-section">
                         <h3>Descriptor</h3>
                         <ul class="filter-list">
@@ -61,7 +56,6 @@
                         <a href="#" class="show-more">Show more</a>
                     </div>
 
-                    <!-- Author -->
                     <div class="filter-section">
                         <h3>Author</h3>
                         <ul class="filter-list">
@@ -78,7 +72,6 @@
                         <a href="#" class="show-more">Show more</a>
                     </div>
 
-                    <!-- Publication Type -->
                     <div class="filter-section">
                         <h3>Publication Type</h3>
                         <ul class="filter-list">
@@ -94,22 +87,17 @@
                         </ul>
                     </div>
 
-                    <button type="submit" class="apply-filters-button">
-                        <i class="fas fa-filter"></i> Apply Filters
-                    </button>
-                    <a href="#" class="clear-filters-button">
-                        <i class="fas fa-times"></i> Clear All
-                    </a>
+                    <button type="submit" class="apply-filters-button"><i class="fas fa-filter"></i> Apply Filters</button>
+                    <a href="{% url 'categories' %}" class="clear-filters-button"><i class="fas fa-times"></i> Clear All</a>
                 </form>
             </aside>
 
-            <!-- Thesis Results -->
             <div class="cat-thesis-results">
                 <div class="cat-results-header">
                     <h2>Results <span class="cat-results-count">({{ total_results }})</span></h2>
                     <div class="cat-sort-options">
                         <label for="sort">Sort by:</label>
-                        <select name="sort" id="sort" class="cat-sort-select" onchange="this.form.submit()">
+                        <select name="sort" id="sort" class="cat-sort-select">
                             <option value="date-desc">Date (Newest First)</option>
                             <option value="date-asc">Date (Oldest First)</option>
                             <option value="title-asc">Title (A-Z)</option>
@@ -122,9 +110,7 @@
                     {% for thesis in theses %}
                         <div class="cat-thesis-item">
                             <div class="cat-thesis-item-cover">
-                                <div class="cat-thesis-cover-placeholder">
-                                    <i class="fas fa-file-alt"></i>
-                                </div>
+                                <div class="cat-thesis-cover-placeholder"><i class="fas fa-file-alt"></i></div>
                             </div>
                             <div class="cat-thesis-item-content">
                                 <h3 class="cat-thesis-item-title">{{ thesis.title }}</h3>
@@ -149,6 +135,4 @@
         </div>
     </div>
 </main>
-
-{% include 'includes/landing-footer.html' %}
-<p>&copy; {{ current_year }} Thesis Library. All rights reserved.</p>
+{% endblock %}
