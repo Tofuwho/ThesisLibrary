@@ -172,6 +172,7 @@
 }
 
 .apply-filters-button, .clear-filters-button {
+    display: block;            /* stack vertically and allow width/margins to apply */
     width: 100%;
     padding: 14px 20px;
     border: none;
@@ -180,9 +181,10 @@
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-bottom: 12px;
+    margin-bottom: 12px;       /* spacing between buttons */
     position: relative;
     overflow: hidden;
+    text-align: center;        /* center text for anchor variant */
 }
 
 .apply-filters-button {
