@@ -10,16 +10,24 @@
 {% block content %}
 <main class="categories-main">
     <div class="container">
-        <div class="categories-header">
-            <h2 class="section-title">Browse Categories</h2>
-            <p class="section-subtitle">Explore our vast collection of academic theses by category and filter</p>
-            <div class="search-container">
-                <form class="search-form" method="get">
-                    <input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
-                    <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
-                </form>
-            </div>
-        </div>
+		<div class="categories-hero">
+			<div class="hero-content">
+				<h1>Browse Categories</h1>
+				<p>Explore our vast collection of academic theses by category and refine with powerful filters</p>
+				<div class="hero-meta">
+					<span class="hero-chip"><span class="dot info"></span>Results: {{ total_results }}</span>
+					{% if request.GET.search %}
+					<span class="hero-chip"><span class="dot status"></span>Search: “{{ request.GET.search }}”</span>
+					{% endif %}
+				</div>
+				<div class="hero-search">
+					<form class="search-form" method="get">
+						<input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
+						<button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+					</form>
+				</div>
+			</div>
+		</div>
 
         <div class="categories-content">
             <aside class="filter-sidebar">

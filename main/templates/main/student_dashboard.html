@@ -11,9 +11,16 @@
 
 {% block content %}
 <div class="container">
-    <div class="header">
-        <h1>Thesis Submission Portal</h1>
-        <p>Submit your thesis and track your progress through the review process</p>
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h1>Thesis Submission Portal</h1>
+            <p>Submit your thesis and track your progress through the review process</p>
+            <div class="header-meta">
+                <span class="meta-chip"><span class="dot status"></span>Status: Draft</span>
+                <span class="meta-chip"><span class="dot success"></span>Auto-save Enabled</span>
+                <span class="meta-chip"><span class="dot info"></span>Welcome, {{ user.first_name|default:user.username }}</span>
+            </div>
+        </div>
     </div>
 
     <div class="dashboard-grid">

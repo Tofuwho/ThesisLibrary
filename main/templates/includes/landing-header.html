@@ -14,18 +14,18 @@
                 <div class="logo-square"></div>
                 <h1>Thesis Library</h1>
             </div>
-            <div class="header-flex-center"></div>
+            <div class="header-flex-center"><!-- intentionally empty: no nav links on landing --></div>
             <div class="nav-right">
                 {% if user.is_authenticated %}
                     <span class="user-welcome">Welcome, <span>{{ user.username }}</span>!</span>
                     {% if user.is_staff %}
-                        <a href="/admin/dashboard.php" class="dashboard-btn" role="button">Admin Dashboard</a>
+                        <a href="/admin/dashboard.php" class="dashboard-btn" role="button">Dashboard</a>
                     {% else %}
-                        <a href="{% url 'student_dashboard' %}" class="dashboard-btn" role="button">Student Dashboard</a>
+                        <a href="{% url 'student_dashboard' %}" class="dashboard-btn" role="button">Dashboard</a>
                     {% endif %}
                     <form method="POST" action="{% url 'logout' %}" style="margin:0; padding:0; display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="logout-btn" role="button">Logout</button>
+                        <button type="submit" class="logout-btn" role="button">Log Out</button>
                     </form>
                 {% else %}
                     <button id="loginButton" class="login-btn" role="button">Login</button>
