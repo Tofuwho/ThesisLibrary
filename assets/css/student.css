@@ -32,31 +32,73 @@ body {
     padding: 20px;
 }
 
-.header {
-    /* Remove any conflicting styles here */
+/* Student dashboard hero header */
+.dashboard-header {
+    position: relative;
+    margin-top: 90px; /* space below fixed site header */
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, rgba(126,1,255,0.08), rgba(126,1,255,0.04));
+    border: 1px solid rgba(126,1,255,0.15);
+    border-radius: 16px;
+    overflow: hidden;
 }
 
-.header::before {
+.dashboard-header::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--primary-medium));
+    inset: 0;
+    background: radial-gradient(1200px 200px at -10% -40%, rgba(126,1,255,0.15) 0%, rgba(126,1,255,0) 60%),
+                radial-gradient(800px 200px at 110% 120%, rgba(126,1,255,0.12) 0%, rgba(126,1,255,0) 60%);
+    pointer-events: none;
 }
 
-.header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 10px;
+.dashboard-header .header-content {
+    position: relative;
+    padding: 28px 28px;
 }
 
-.header p {
+.dashboard-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    color: var(--dark-gray);
+    margin-bottom: 6px;
+}
+
+.dashboard-header p {
     color: var(--medium-gray);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
 }
+
+.header-meta {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--white);
+    border: 1px solid var(--light-gray);
+    color: var(--medium-gray);
+    font-size: 0.95rem;
+}
+
+.meta-chip .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--light-gray);
+}
+
+.meta-chip .dot.status { background: var(--primary-color); }
+.meta-chip .dot.success { background: #22c55e; }
+.meta-chip .dot.info { background: #3b82f6; }
 
 a {
   text-decoration: none;
@@ -656,6 +698,10 @@ textarea {
 }
 
 @media (max-width: 768px) {
+    .dashboard-header { margin-top: 80px; }
+    .dashboard-header .header-content { padding: 20px; }
+    .dashboard-header h1 { font-size: 1.6rem; }
+    .header-meta { gap: 8px; }
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
@@ -664,16 +710,8 @@ textarea {
         grid-template-columns: 1fr;
     }
     
-    .header h1 {
-        font-size: 2rem;
-    }
-    
     .container {
         padding: 15px;
-    }
-    
-    .header {
-        padding: 20px;
     }
     
     .main-content, .sidebar {
