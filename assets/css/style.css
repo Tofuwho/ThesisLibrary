@@ -259,6 +259,7 @@ ul {
   border: none;
   font-size: 1rem;
   background-color: var(--light-gray);
+  color: var(--primary-color);
 }
 
 .search-input:focus {

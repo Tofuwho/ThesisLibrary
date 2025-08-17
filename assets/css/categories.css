@@ -71,12 +71,28 @@
     background: var(--light-gray);
 }
 
-.hero-chip .dot.status { background: var(--primary-color); }
-.hero-chip .dot.info { background: #3b82f6; }
+.hero-chip .dot.status {
+    background: var(--primary-color);
+ }
 
-.hero-search { margin-top: 16px; max-width: 640px; }
-.hero-search .search-form { box-shadow: var(--shadow); border-radius: 10px; overflow: hidden; }
-.hero-search .search-input { background-color: var(--light-gray); }
+.hero-chip .dot.info { 
+    background: #3b82f6; 
+}
+
+.hero-search { 
+    margin-top: 16px; max-width: 640px; 
+}
+
+.hero-search .search-form { 
+    box-shadow: var(--shadow); 
+    border-radius: 10px; 
+    overflow: hidden;
+}
+
+.hero-search .search-input { background-color: 
+    var(--light-gray); 
+    color: var(--primary-color);
+}
 
 .categories-content {
     display: flex;
