@@ -1,78 +1,128 @@
+{% extends 'main/base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
 {% load static %}
 {% now "Y" as current_year %}
 <p>&copy; {{ current_year }} Thesis Library. All rights reserved.</p>
 
-{% include 'includes/landing-header.html' %}
+<section class="hero">
+    <div class="container">
+        <h2 class="section-title">CICT Thesis Repository</h2>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <p class="section-subtitle">
+            Discover outstanding research from the College of Information and Communications Technology
+        </p>
 
-<section class="hero-section">
-    <div class="hero-overlay">
-        <div class="hero-content">
-            <h1>Welcome to Thesis Library</h1>
-            <p>Discover, explore, and contribute to our growing collection of academic research</p>
-                <a href="{% url 'index' %}" class="cta-button">Explore Theses</a>
+        <div class="search-container">
+            <form action="#" method="GET" class="search-form">
+                <input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
+                <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+            </form>
+        </div>
+
+        <div class="filter-container">
+            <div class="filter-dropdown">
+                <select name="specialization" id="specialization">
+                    <option value="">All specialization</option>
+                    <option value="cs">Computer Science</option>
+                    <option value="it">Information Technology</option>
+                    <option value="is">Information Systems</option>
+                    <option value="net">Networking</option>
+                </select>
+            </div>
+
+            <div class="filter-dropdown">
+                <select name="year" id="year">
+                    <option value="">All Years</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                </select>
+            </div>
+
+            <div class="filter-dropdown">
+                <select name="relevance" id="relevance">
+                    <option value="relevance">Relevance</option>
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="a-z">A-Z</option>
+                    <option value="z-a">Z-A</option>
+                </select>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Login Modal -->
-<div id="authModal" class="auth-modal">
-    <div class="auth-container" id="auth-container">
-        <span id="closeModal" class="close-modal">&times;</span>
-        <div class="form-container sign-up-container">
-            <form id="signupForm" action="{% url 'signup' %}" method="POST">
-            {% csrf_token %}
+<section class="recently-added">
+    <div class="container">
+        <h2 class="section-title">Recently Added Thesis</h2>
 
-            <h2>Create Account</h2>
-
-            <label for="signup_username">Username</label>
-            <input type="text" id="signup_username" name="signup_username" placeholder="Username" required>
-
-            <label for="signup_email">Email</label>
-            <input type="email" id="signup_email" name="signup_email" placeholder="Email" required>
-
-            <label for="signup_password">Password</label>
-            <input type="password" id="signup_password" name="signup_password" placeholder="Password" required>
-
-            <select name="role" required>
-                <option value="student">Student</option>
-                <option value="admin">Admin</option>
-            </select>
-
-            <button type="submit">Sign Up</button>
-            <p id="signupMessage" class="error-msg"></p>
-        </form>
-
-        </div>
-        <div class="form-container sign-in-container">
-        <form id="loginForm" action="{% url 'login' %}" method="POST">
-            {% csrf_token %}
-
-            <h2>Login to Thesis Library</h2>
-
-            <label for="username">Username or Email</label>
-            <input type="text" id="username" name="username" placeholder="Username or Email" required>
-
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Password" required>
-
-            <button type="submit">Login</button>
-            <p id="loginMessage" class="error-msg"></p>
-        </form>
-        </div>
-        <div class="overlay-container">
-            <div class="overlay">
-                <div class="overlay-panel overlay-left">
-                    <h2>Welcome Back!</h2>
-                    <p>To keep connected, please login with your personal info</p>
-                    <button class="ghost" id="signIn">Sign In</button>
+        <div class="thesis-grid">
+            {% for thesis in recent_theses %}
+            <div class="thesis-card">
+                <div class="thesis-cover">
+                    <div class="thesis-cover-placeholder">Thesis Cover Picture</div>
+                </div> 
+                <div class="thesis-info">
+                    <h3 class="thesis-title">{{ thesis.title }}</h3>
+                    <p class="thesis-author">By {{ thesis.author }}</p>
+                    <p class="thesis-meta">{{ thesis.specialization }} | {{ thesis.year }}</p>
+                    <a href="{% url 'thesis_detail' thesis.id %}" class="view-button">View</a>
                 </div>
-                <div class="overlay-panel overlay-right">
-                    <h2>Hello, Scholar!</h2>
-                    <p>Enter your details and start your thesis journey</p>
-                    <button class="ghost" id="signUp">Sign Up</button>
+            </div>
+            {% empty %}
+            <p>No recent theses available.</p>
+            {% endfor %}
+        </div>
+
+        <div class="pagination">
+            <!-- Temporary hardcoded link -->
+            <a href="{% url 'categories' %}" class="pagination-button">View Thesis</a>
+        </div>
+    </div>
+</section> 
+
+<section class="categories">
+    <div class="container">
+        <h2 class="section-title">Browse by Category</h2>
+
+        <div class="category-grid">
+            {% for category in categories %}
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-book"></i>
                 </div>
+                <div class="category-description">{{ category.description }}</div>
+                <a href="#" class="browse-button">Browse</a>
+            </div>
+            {% empty %}
+            <p>No categories found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="resources">
+    <div class="container">
+        <h2 class="section-title">Resources for Researchers</h2>
+
+        <div class="resources-grid">
+            <div class="resource-card">
+                <h3>Submit Your Thesis</h3>
+                <p>Are you a student looking to publish your research? Learn about our submission process and guidelines.</p>
+                <a href="{% url 'student_dashboard' %}" class="resource-button">Submit now</a>
+            </div>
+
+            <div class="resource-card">
+                <h3>Research Assistance</h3>
+                <p>Need help with your research? Connect with faculty advisors and research specialists.</p>
+                <a href="#" class="resource-button">Get help</a>
             </div>
         </div>
     </div>
- </div>
-{% include 'includes/landing-footer.html' %}
+</section>
+
+{% endblock %}
