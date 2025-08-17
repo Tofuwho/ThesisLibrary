@@ -3,7 +3,7 @@ from django.db.models import Count, Q
 from library.models import Thesis, Category
 
 def landing_page(request):
-    return render(request, 'main/index.html')
+    return render(request, 'main/landing.html')
 
 def about_page(request):
     return render(request, 'main/about.html')
@@ -11,7 +11,7 @@ def about_page(request):
 def index_page(request):
     recent_theses = Thesis.objects.order_by('-created_at')[:6]
     categories = Category.objects.all()[:6]
-    return render(request, 'main/homePage.html', {
+    return render(request, 'main/index.html', {
         'recent_theses': recent_theses,
         'categories': categories,
     })
