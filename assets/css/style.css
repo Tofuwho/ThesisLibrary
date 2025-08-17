@@ -240,13 +240,14 @@ ul {
   margin-bottom: 30px;
 }
 
-.search-container {
+.search-container { 
   margin: 30px auto;
-  max-width: 600px;
+  max-width: 100%;
 }
 
 .search-form {
   display: flex;
+  width: 100%;
   box-shadow: var(--shadow);
   border-radius: 4px;
   overflow: hidden;
