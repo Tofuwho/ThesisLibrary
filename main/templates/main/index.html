@@ -76,7 +76,7 @@
 
         <div class="pagination">
             <!-- Temporary hardcoded link -->
-            <a href="#" class="pagination-button">View Thesis</a>
+            <a href="{% url 'categories' %}" class="pagination-button">View Thesis</a>
         </div>
     </div>
 </section> 
@@ -109,7 +109,7 @@
             <div class="resource-card">
                 <h3>Submit Your Thesis</h3>
                 <p>Are you a student looking to publish your research? Learn about our submission process and guidelines.</p>
-                <a href="{% url 'categories' %}"class="resource-button">Submit now</a>
+                <a href="{% url 'student_dashboard' %}"class="resource-button">Submit now</a>
             </div>
 
             <div class="resource-card">
