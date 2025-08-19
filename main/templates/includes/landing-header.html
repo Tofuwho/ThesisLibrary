@@ -19,7 +19,7 @@
                 {% if user.is_authenticated %}
                     <span class="user-welcome">Welcome, <span>{{ user.username }}</span>!</span>
                     {% if user.is_staff %}
-                        <a href="/admin/dashboard.php" class="dashboard-btn" role="button">Dashboard</a>
+                        <a href="{% url 'admin:index' %}" class="dashboard-btn" role="button">Admin Panel</a>
                     {% else %}
                         <a href="{% url 'student_dashboard' %}" class="dashboard-btn" role="button">Dashboard</a>
                     {% endif %}
