@@ -2,7 +2,9 @@ from django.shortcuts import render, get_object_or_404
 from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.http import FileResponse, Http404, JsonResponse
+from django.http import FileResponse, Http404, JsonResponse, HttpResponseRedirect
+from django.contrib import messages
+from django.urls import reverse
 from .models import Thesis, Category, Submission
 import os
 
@@ -119,17 +121,16 @@ def create_submission(request):
     category_name = request.POST.get('category')
     thesis_file = request.FILES.get('thesisFile')
 
-    if not title:
-        return JsonResponse({'ok': False, 'error': 'Title is required'}, status=400)
-    if not thesis_file:
-        return JsonResponse({'ok': False, 'error': 'Thesis PDF is required'}, status=400)
+    if not title or not thesis_file:
+        messages.error(request, 'Title and PDF file are required.')
+        return HttpResponseRedirect(reverse('student_dashboard'))
 
     category = None
     if category_name:
         category, _ = Category.objects.get_or_create(name=category_name.strip())
 
     try:
-        submission = Submission.objects.create(
+        Submission.objects.create(
             submitter=request.user,
             title=title.strip(),
             author=f"{request.POST.get('firstName', '').strip()} {request.POST.get('lastName', '').strip()}".strip(),
@@ -142,14 +143,11 @@ def create_submission(request):
             status=Submission.STATUS_SUBMITTED,
         )
     except Exception as e:
-        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+        messages.error(request, f'Failed to submit thesis: {e}')
+        return HttpResponseRedirect(reverse('student_dashboard'))
 
-    return JsonResponse({
-        'ok': True,
-        'id': submission.id,
-        'status': submission.status,
-        'created_at': submission.created_at,
-    })
+    messages.success(request, 'Thesis submitted successfully. Awaiting approval.')
+    return HttpResponseRedirect(reverse('my_submissions'))
 
 
 @login_required

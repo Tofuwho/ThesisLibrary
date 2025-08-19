@@ -314,34 +314,8 @@ function handleFormSubmission(e) {
     const form = document.getElementById('thesisForm');
     const formData = new FormData(form);
 
-    // Add CSRF token from cookie or hidden input
-    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
-    const csrfToken = csrfInput ? csrfInput.value : (document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '');
-
-    fetch('/student/submissions/create/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrfToken
-        },
-        body: formData
-    }).then(async (res) => {
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.ok) {
-            throw new Error(data.error || 'Failed to submit');
-        }
-        showAlert('Thesis submitted successfully! Awaiting approval.', 'success');
-        submitBtn.textContent = 'Submitted ✓';
-        submitBtn.style.background = 'var(--success-color, #22c55e)';
-        const statusBadge = document.querySelector('.status-badge');
-        if (statusBadge) {
-            statusBadge.textContent = 'Submitted';
-            statusBadge.className = 'status-badge status-submitted';
-        }
-    }).catch((err) => {
-        showAlert(err.message || 'Submission failed. Please try again.', 'error');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Thesis';
-    });
+    // Submit normally to server; server will redirect and show messages
+    form.submit();
 }
 
 // Utility functions
