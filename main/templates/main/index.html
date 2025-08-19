@@ -71,6 +71,9 @@
                     <p class="thesis-author">By {{ thesis.author }}</p>
                     <p class="thesis-meta">{{ thesis.specialization }} | {{ thesis.year }}</p>
                     <a href="{% url 'thesis_detail' thesis.id %}" class="view-button">View</a>
+                    {% if thesis.file %}
+                        <a href="{% url 'thesis_download_file' thesis.id %}" class="download-button">Download</a>
+                    {% endif %}
                 </div>
             </div>
             {% empty %}

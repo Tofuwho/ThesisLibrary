@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count, Q
-from library.models import Thesis, Category
+from .models import Thesis, Category
+from django.http import FileResponse, Http404
+import os
 
 def landing_page(request):
     return render(request, 'main/landing.html')
@@ -9,7 +11,7 @@ def about_page(request):
     return render(request, 'main/about.html')
 
 def index_page(request):
-    recent_theses = Thesis.objects.order_by('-created_at')[:6]
+    recent_theses = Thesis.objects.order_by('-id')[:6]
     categories = Category.objects.all()[:6]
     return render(request, 'main/index.html', {
         'recent_theses': recent_theses,
@@ -39,7 +41,7 @@ def categories_page(request):
             theses = theses.filter(year__in=numeric_years)
 
     if selected_descriptors:
-        theses = theses.filter(categories__name__in=selected_descriptors)
+        theses = theses.filter(category__name__in=selected_descriptors)
 
     if selected_authors:
         theses = theses.filter(author__in=selected_authors)
@@ -65,7 +67,7 @@ def categories_page(request):
         .annotate(count=Count('id'))
         .order_by('-year')
     )
-    categories = Category.objects.annotate(count=Count('theses')).order_by('name')
+    categories = Category.objects.annotate(count=Count('thesis')).order_by('name')
     authors = (
         Thesis.objects.values(name=Count('author'))
     )
@@ -107,3 +109,19 @@ def student_dashboard(request):
 def thesis_detail(request, pk: int):
     thesis = get_object_or_404(Thesis, pk=pk)
     return render(request, 'main/thesis_detail.html', {'thesis': thesis})
+
+def view_thesis_file(request, pk):
+    thesis = get_object_or_404(Thesis, pk=pk)
+    if not thesis.file:
+        raise Http404('File not found.')
+    response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
+    return response
+
+def download_thesis_file(request, pk):
+    thesis = get_object_or_404(Thesis, pk=pk)
+    if not thesis.file:
+        raise Http404('File not found.')
+    response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
+    return response
