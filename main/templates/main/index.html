@@ -15,7 +15,7 @@
         </p>
 
         <div class="search-container">
-            <form action="#" method="GET" class="search-form">
+            <form action="{% url 'categories' %}" method="GET" class="search-form">
                 <input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
                 <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
             </form>
@@ -70,9 +70,11 @@
                     <h3 class="thesis-title">{{ thesis.title }}</h3>
                     <p class="thesis-author">By {{ thesis.author }}</p>
                     <p class="thesis-meta">{{ thesis.specialization }} | {{ thesis.year }}</p>
-                    <a href="{% url 'thesis_detail' thesis.id %}" class="view-button">View</a>
                     {% if thesis.file %}
-                        <a href="{% url 'thesis_download_file' thesis.id %}" class="download-button">Download</a>
+                        <a href="{% url 'thesis_view_file' thesis.id %}" class="view-button" target="_blank">View</a>
+                        <a href="{% url 'thesis_download_file' thesis.id %}" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
+                    {% else %}
+                        <a href="{% url 'thesis_detail' thesis.id %}" class="view-button">View</a>
                     {% endif %}
                 </div>
             </div>
