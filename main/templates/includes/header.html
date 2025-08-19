@@ -20,7 +20,7 @@
         <div class="auth-buttons nav-right">
             {% if user.is_authenticated %}
                 {% if user.is_staff %}
-                    <a href="/admin/dashboard.php" class="dashboard-btn">Dashboard</a>
+                    <a href="{% url 'admin:index' %}" class="dashboard-btn">Admin Panel</a>
                 {% else %}
                     <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Dashboard</a>
                 {% endif %}
