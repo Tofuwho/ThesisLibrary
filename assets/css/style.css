@@ -418,6 +418,22 @@ ul {
   color: var(--white);
 }
 
+/* Status pills for submissions */
+.status-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  background: var(--light-gray);
+  color: var(--medium-gray);
+}
+.status-pill.status-draft { background: #fff8e1; color: #b36b00; }
+.status-pill.status-submitted { background: #e8f0ff; color: #2357d1; }
+.status-pill.status-approved { background: #e8f9ef; color: #1b7f3a; }
+.status-pill.status-rejected { background: #fde8e8; color: #b21c1c; }
+
 .pagination {
   display: flex;
   justify-content: center;

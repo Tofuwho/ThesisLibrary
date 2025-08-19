@@ -310,18 +310,38 @@ function handleFormSubmission(e) {
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
-    
-    // Simulate form submission (replace with actual submission logic)
-    setTimeout(() => {
-        showAlert('Thesis submitted successfully! You will receive a confirmation email shortly.', 'success');
+
+    const form = document.getElementById('thesisForm');
+    const formData = new FormData(form);
+
+    // Add CSRF token from cookie or hidden input
+    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    const csrfToken = csrfInput ? csrfInput.value : (document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '');
+
+    fetch('/student/submissions/create/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
+        body: formData
+    }).then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+            throw new Error(data.error || 'Failed to submit');
+        }
+        showAlert('Thesis submitted successfully! Awaiting approval.', 'success');
         submitBtn.textContent = 'Submitted ✓';
         submitBtn.style.background = 'var(--success-color, #22c55e)';
-        
-        // Update status badge
         const statusBadge = document.querySelector('.status-badge');
-        statusBadge.textContent = 'Submitted';
-        statusBadge.className = 'status-badge status-submitted';
-    }, 2000);
+        if (statusBadge) {
+            statusBadge.textContent = 'Submitted';
+            statusBadge.className = 'status-badge status-submitted';
+        }
+    }).catch((err) => {
+        showAlert(err.message || 'Submission failed. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Thesis';
+    });
 }
 
 // Utility functions
