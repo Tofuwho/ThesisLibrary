@@ -1,0 +1,43 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="padding-top: 100px; padding-bottom: 60px;">
+    <h2 class="section-title">My Submissions</h2>
+    <p class="section-subtitle">Track the progress of your thesis submissions</p>
+
+    {% if submissions %}
+    <div class="thesis-grid">
+        {% for s in submissions %}
+        <div class="thesis-card">
+            <div class="thesis-cover">
+                <div class="thesis-cover-placeholder">Submission</div>
+            </div>
+            <div class="thesis-info">
+                <div class="thesis-title">{{ s.title }}</div>
+                <div class="thesis-author">Submitted on {{ s.created_at|date:'M d, Y \a\t h:i A' }}</div>
+                <div class="thesis-meta">
+                    <span class="status-pill status-{{ s.status }}">{{ s.get_status_display }}</span>
+                    {% if s.category %} • {{ s.category.name }}{% endif %}
+                    {% if s.year %} • {{ s.year }}{% endif %}
+                </div>
+                {% if s.file %}
+                <a class="view-button" href="{{ s.file.url }}" target="_blank">View File</a>
+                {% else %}
+                <span class="thesis-meta">No file uploaded</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="resource-card" style="margin-top: 20px;">
+        <h3>No submissions yet</h3>
+        <p>Submit your thesis from your dashboard to see it listed here and track approval status.</p>
+        <a class="btn-outline" href="{% url 'student_dashboard' %}">Go to Dashboard</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

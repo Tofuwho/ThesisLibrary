@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count, Q
-from .models import Thesis, Category
-from django.http import FileResponse, Http404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.http import FileResponse, Http404, JsonResponse
+from .models import Thesis, Category, Submission
 import os
 
 def landing_page(request):
@@ -104,6 +106,56 @@ def categories_page(request):
 
 def student_dashboard(request):
     return render(request, 'main/student_dashboard.html')
+
+
+@login_required
+@require_POST
+def create_submission(request):
+    title = request.POST.get('thesisTitle') or request.POST.get('title')
+    abstract = request.POST.get('abstract', '')
+    thesis_type = request.POST.get('degreeLevel', '') or request.POST.get('thesis_type', '')
+    specialization = request.POST.get('specialization', '')
+    year = request.POST.get('year')
+    category_name = request.POST.get('category')
+    thesis_file = request.FILES.get('thesisFile')
+
+    if not title:
+        return JsonResponse({'ok': False, 'error': 'Title is required'}, status=400)
+    if not thesis_file:
+        return JsonResponse({'ok': False, 'error': 'Thesis PDF is required'}, status=400)
+
+    category = None
+    if category_name:
+        category, _ = Category.objects.get_or_create(name=category_name.strip())
+
+    try:
+        submission = Submission.objects.create(
+            submitter=request.user,
+            title=title.strip(),
+            author=f"{request.POST.get('firstName', '').strip()} {request.POST.get('lastName', '').strip()}".strip(),
+            year=int(year) if year and str(year).isdigit() else None,
+            abstract=abstract,
+            thesis_type=thesis_type,
+            specialization=specialization,
+            category=category,
+            file=thesis_file,
+            status=Submission.STATUS_SUBMITTED,
+        )
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+    return JsonResponse({
+        'ok': True,
+        'id': submission.id,
+        'status': submission.status,
+        'created_at': submission.created_at,
+    })
+
+
+@login_required
+def my_submissions(request):
+    submissions = Submission.objects.filter(submitter=request.user)
+    return render(request, 'main/my_submissions.html', {'submissions': submissions})
 
 
 def thesis_detail(request, pk: int):
