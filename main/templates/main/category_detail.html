@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Browse Categories - Thesis Library{% endblock %}
+{% block title %}{{ category.name }} - Thesis Library{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/categories.css' %}">
@@ -10,24 +10,29 @@
 {% block content %}
 <main class="categories-main">
     <div class="container">
-		<div class="categories-hero">
-			<div class="hero-content">
-				<h1>Browse Categories</h1>
-				<p>Explore our vast collection of academic theses by category and refine with powerful filters</p>
-				<div class="hero-meta">
-					<span class="hero-chip"><span class="dot info"></span>Results: {{ total_results }}</span>
-					{% if request.GET.search %}
-					<span class="hero-chip"><span class="dot status"></span>Search: “{{ request.GET.search }}”</span>
-					{% endif %}
-				</div>
-				<div class="hero-search">
-					<form class="search-form" method="get">
-						<input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
-						<button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
-					</form>
-				</div>
-			</div>
-		</div>
+        <div class="categories-hero">
+            <div class="hero-content">
+                <div class="breadcrumb">
+                    <a href="{% url 'categories' %}">Categories</a>
+                    <span class="separator">/</span>
+                    <span class="current">{{ category.name }}</span>
+                </div>
+                <h1>{{ category.name }}</h1>
+                <p>Browse theses in {{ category.name }} category</p>
+                <div class="hero-meta">
+                    <span class="hero-chip"><span class="dot info"></span>Results: {{ total_results }}</span>
+                    {% if request.GET.search %}
+                    <span class="hero-chip"><span class="dot status"></span>Search: "{{ request.GET.search }}"</span>
+                    {% endif %}
+                </div>
+                <div class="hero-search">
+                    <form class="search-form" method="get">
+                        <input type="text" name="search" class="search-input" placeholder="Search in {{ category.name }}..." value="{{ request.GET.search }}">
+                        <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <div class="categories-content">
             <aside class="filter-sidebar">
@@ -38,52 +43,13 @@
                             {% for year in years %}
                                 <li>
                                     <label>
-                                        <input type="checkbox" name="year" value="{{ year.year }}">
+                                        <input type="checkbox" name="year" value="{{ year.year }}" {% if year.year|stringformat:"s" in request.GET.getlist 'year' %}checked{% endif %}>
                                         <span>{{ year.year }}</span>
                                         <span class="count">({{ year.count }})</span>
                                     </label>
                                 </li>
                             {% endfor %}
                         </ul>
-                        <a href="#" class="show-more">Show more</a>
-                    </div>
-
-                    <div class="filter-section">
-                        <h3>Descriptor</h3>
-                        <ul class="filter-list" id="descriptor-list">
-                            {% for category in categories|slice:":5" %}
-                                <li class="descriptor-item">
-                                    <label>
-                                        <input type="checkbox" name="descriptor" value="{{ category.name }}">
-                                        <span>{{ category.name }}</span>
-                                        <span class="count">({{ category.count|default:0 }})</span>
-                                    </label>
-                                    <a href="{% url 'category_detail' category.name|slugify %}" class="category-link" title="Browse {{ category.name }}">
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                </li>
-                            {% endfor %}
-                            {% if categories|length > 5 %}
-                                {% for category in categories|slice:"5:" %}
-                                    <li class="descriptor-item hidden">
-                                        <label>
-                                            <input type="checkbox" name="descriptor" value="{{ category.name }}">
-                                            <span>{{ category.name }}</span>
-                                            <span class="count">({{ category.count|default:0 }})</span>
-                                        </label>
-                                        <a href="{% url 'category_detail' category.name|slugify %}" class="category-link" title="Browse {{ category.name }}">
-                                            <i class="fas fa-external-link-alt"></i>
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            {% endif %}
-                        </ul>
-                        {% if categories|length > 5 %}
-                            <a href="#" class="show-more" id="descriptor-show-more" onclick="toggleDescriptors(event)">
-                                <span class="show-text">Show more</span>
-                                <span class="hide-text" style="display: none;">Show less</span>
-                            </a>
-                        {% endif %}
                     </div>
 
                     <div class="filter-section">
@@ -92,14 +58,13 @@
                             {% for author in authors %}
                                 <li>
                                     <label>
-                                        <input type="checkbox" name="author" value="{{ author.name }}">
+                                        <input type="checkbox" name="author" value="{{ author.name }}" {% if author.name in request.GET.getlist 'author' %}checked{% endif %}>
                                         <span>{{ author.name }}</span>
-                                        <span class="count">({{ author.count|default:0 }})</span>
+                                        <span class="count">({{ author.count }})</span>
                                     </label>
                                 </li>
                             {% endfor %}
                         </ul>
-                        <a href="#" class="show-more">Show more</a>
                     </div>
 
                     <div class="filter-section">
@@ -108,9 +73,9 @@
                             {% for type in types %}
                                 <li>
                                     <label>
-                                        <input type="checkbox" name="type" value="{{ type.name }}">
+                                        <input type="checkbox" name="type" value="{{ type.name }}" {% if type.name in request.GET.getlist 'type' %}checked{% endif %}>
                                         <span>{{ type.name }}</span>
-                                        <span class="count">({{ type.count|default:0 }})</span>
+                                        <span class="count">({{ type.count }})</span>
                                     </label>
                                 </li>
                             {% endfor %}
@@ -118,13 +83,13 @@
                     </div>
 
                     <button type="submit" class="apply-filters-button"><i class="fas fa-filter"></i> Apply Filters</button>
-                    <a href="{% url 'categories' %}" class="clear-filters-button"><i class="fas fa-times"></i> Clear All</a>
+                    <a href="{% url 'category_detail' category.name|slugify %}" class="clear-filters-button"><i class="fas fa-times"></i> Clear All</a>
                 </form>
             </aside>
 
             <div class="cat-thesis-results">
                 <div class="cat-results-header">
-                    <h2>Results <span class="cat-results-count">({{ total_results }})</span></h2>
+                    <h2>{{ category.name }} Theses <span class="cat-results-count">({{ total_results }})</span></h2>
                     <div class="cat-sort-options">
                         <label for="sort">Sort by:</label>
                         <select name="sort" id="sort" class="cat-sort-select" onchange="updateSort(this.value)">
@@ -143,30 +108,6 @@
                     const url = new URL(window.location);
                     url.searchParams.set('sort', sortValue);
                     window.location.href = url.toString();
-                }
-
-                function toggleDescriptors(event) {
-                    event.preventDefault();
-                    const hiddenItems = document.querySelectorAll('#descriptor-list .descriptor-item.hidden');
-                    const showText = document.querySelector('#descriptor-show-more .show-text');
-                    const hideText = document.querySelector('#descriptor-show-more .hide-text');
-                    
-                    if (hiddenItems.length > 0) {
-                        // Show more
-                        hiddenItems.forEach(item => {
-                            item.classList.remove('hidden');
-                        });
-                        showText.style.display = 'none';
-                        hideText.style.display = 'inline';
-                    } else {
-                        // Show less
-                        const allItems = document.querySelectorAll('#descriptor-list .descriptor-item');
-                        Array.from(allItems).slice(5).forEach(item => {
-                            item.classList.add('hidden');
-                        });
-                        showText.style.display = 'inline';
-                        hideText.style.display = 'none';
-                    }
                 }
                 </script>
 
@@ -196,7 +137,11 @@
                             </div>
                         </div>
                     {% empty %}
-                        <p>No theses found.</p>
+                        <div class="no-results">
+                            <i class="fas fa-search"></i>
+                            <h3>No theses found</h3>
+                            <p>Try adjusting your search criteria or filters.</p>
+                        </div>
                     {% endfor %}
                 </div>
             </div>
