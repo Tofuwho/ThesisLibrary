@@ -17,6 +17,15 @@ def about_page(request):
 def index_page(request):
     recent_theses = Thesis.objects.order_by('-id')[:6]
     categories = Category.objects.all()[:6]
+    
+    # PRINT SQL QUERIES FOR INDEX PAGE
+    print("=== INDEX PAGE SQL QUERIES ===")
+    print("Recent theses query:")
+    print(recent_theses.query)
+    print("\nCategories query:")
+    print(categories.query)
+    print("=== END INDEX PAGE SQL ===")
+    
     return render(request, 'main/index.html', {
         'recent_theses': recent_theses,
         'categories': categories,
@@ -64,6 +73,11 @@ def categories_page(request):
         theses = theses.order_by('-year', 'title')
 
     theses = theses.distinct()
+
+    # PRINT THE ACTUAL SQL QUERY!
+    print("=== GENERATED SQL QUERY ===")
+    print(theses.query)
+    print("=== END SQL QUERY ===")
 
     # Sidebar data with counts
     years = (
@@ -153,6 +167,12 @@ def create_submission(request):
 @login_required
 def my_submissions(request):
     submissions = Submission.objects.filter(submitter=request.user)
+    
+    # PRINT SQL QUERY FOR SUBMISSIONS
+    print("=== MY SUBMISSIONS SQL QUERY ===")
+    print(submissions.query)
+    print("=== END SUBMISSIONS SQL ===")
+    
     return render(request, 'main/my_submissions.html', {'submissions': submissions})
 
 
