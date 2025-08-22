@@ -10,10 +10,12 @@
 <body>
     <header class="landing-header">
         <div class="landing-header-inner">
-            <div class="logo-container">
-                <div class="logo-square"></div>
-                <h1>Thesis Library</h1>
-            </div>
+            <a href="{% url 'landing' %}" class="logo-link">
+                <div class="logo-container">
+                    <div class="logo-square"></div>
+                    <h1>Thesis Library</h1>
+                </div>
+            </a>
             <div class="header-flex-center"><!-- intentionally empty: no nav links on landing --></div>
             <div class="nav-right">
                 {% if user.is_authenticated %}

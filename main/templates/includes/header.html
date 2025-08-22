@@ -1,10 +1,12 @@
 {% load static %}
 <header class="main-header">
     <div class="main-header-inner">
-        <div class="logo-container">
-            <div class="logo-square"></div>
-            <h1>Thesis Library</h1>
-        </div>
+            <a href="{% url 'landing' %}" class="logo-link">
+                <div class="logo-container">
+                    <div class="logo-square"></div>
+                    <h1>Thesis Library</h1>
+                </div>
+            </a>
         <div class="header-flex-center">
             {% if not hide_nav %}
             <nav class="main-nav">
