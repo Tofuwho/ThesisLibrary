@@ -222,46 +222,12 @@ function formatFileSize(bytes) {
 let keywords = [];
 
 function setupKeywordInput() {
-    const keywordInput = document.getElementById('keywordInput');
-    keywordInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addKeyword();
-        }
-    });
-}
-
-function addKeyword() {
-    const input = document.getElementById('keywordInput');
-    const keyword = input.value.trim();
-    
-    if (keyword && !keywords.includes(keyword)) {
-        keywords.push(keyword);
-        updateKeywordTags();
-        input.value = '';
-        document.getElementById('keywords').value = keywords.join(',');
+    const keywordInput = document.getElementById('keywords');
+    if (keywordInput) {
+        keywordInput.addEventListener('input', function() {
+            updateReviewSection();
+        });
     }
-}
-
-function removeKeyword(keyword) {
-    keywords = keywords.filter(k => k !== keyword);
-    updateKeywordTags();
-    document.getElementById('keywords').value = keywords.join(',');
-}
-
-function updateKeywordTags() {
-    const container = document.getElementById('keywordTags');
-    container.innerHTML = '';
-    
-    keywords.forEach(keyword => {
-        const tag = document.createElement('div');
-        tag.className = 'keyword-tag';
-        tag.innerHTML = `
-            ${keyword}
-            <span class="remove" onclick="removeKeyword('${keyword}')">×</span>
-        `;
-        container.appendChild(tag);
-    });
 }
 
 // Review section updates
@@ -281,9 +247,11 @@ function updateReviewSection() {
     document.getElementById('reviewAbstract').textContent = formData.get('abstract') || '-';
     document.getElementById('reviewKeywords').textContent = formData.get('keywords') || '-';
     document.getElementById('reviewSupervisor').textContent = formData.get('supervisorName') || '-';
+    document.getElementById('reviewCoSupervisor').textContent = formData.get('coSupervisorName') || '-';
+    document.getElementById('reviewExpectedCompletion').textContent = formData.get('expectedCompletion') || '-';
 
-    // Collect co-workers information
-    for (let i = 0; i < 3; i++) { // Assuming you have 3 co-workers
+    // Collect co-authors information
+    for (let i = 0; i < 3; i++) {
         const firstName = formData.get(`coworkers[${i}][first_name]`);
         const lastName = formData.get(`coworkers[${i}][last_name]`);
         const studentId = formData.get(`coworkers[${i}][student_id]`);

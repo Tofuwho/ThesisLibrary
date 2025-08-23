@@ -79,47 +79,92 @@
                         </div>
                     </div>
 
-                    <!-- Co-workers Section -->
-                    <h3>Co-Workers (Optional)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="department">Department *</label>
+                            <select id="department" name="department" required>
+                                <option value="">Select Department</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Information Systems">Information Systems</option>
+                                <option value="Networking">Networking</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="degreeLevel">Degree Level *</label>
+                            <select id="degreeLevel" name="degreeLevel" required>
+                                <option value="">Select Degree Level</option>
+                                <option value="Bachelor's">Bachelor's</option>
+                                <option value="Master's">Master's</option>
+                                <option value="PhD">PhD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Co-Authors Section -->
+                    <h3>Co-Authors (Optional)</h3>
                     <div id="coworkers">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="coworker1_first_name">Collaborator 1 First Name</label>
+                                <label for="coworker1_first_name">Co-Author 1 First Name</label>
                                 <input type="text" id="coworker1_first_name" name="coworkers[0][first_name]" placeholder="First Name">
                             </div>
                             <div class="form-group">
-                                <label for="coworker1_last_name">Collaborator 1 Last Name</label>
+                                <label for="coworker1_last_name">Co-Author 1 Last Name</label>
                                 <input type="text" id="coworker1_last_name" name="coworkers[0][last_name]" placeholder="Last Name">
                             </div>
                             <div class="form-group">
-                                <label for="coworker1_id">Collaborator 1 Student ID</label>
+                                <label for="coworker1_id">Co-Author 1 Student ID</label>
                                 <input type="text" id="coworker1_id" name="coworkers[0][student_id]" placeholder="Student ID">
                             </div>
                             <div class="form-group">
-                                <label for="coworker1_email">Collaborator 1 Email</label>
+                                <label for="coworker1_email">Co-Author 1 Email</label>
                                 <input type="email" id="coworker1_email" name="coworkers[0][email]" placeholder="Email">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="coworker2_first_name">Collaborator 2 First Name</label>
+                                <label for="coworker2_first_name">Co-Author 2 First Name</label>
                                 <input type="text" id="coworker2_first_name" name="coworkers[1][first_name]" placeholder="First Name">
                             </div>
                             <div class="form-group">
-                                <label for="coworker2_last_name">Collaborator 2 Last Name</label>
+                                <label for="coworker2_last_name">Co-Author 2 Last Name</label>
                                 <input type="text" id="coworker2_last_name" name="coworkers[1][last_name]" placeholder="Last Name">
                             </div>
                             <div class="form-group">
-                                <label for="coworker2_id">Collaborator 2 Student ID</label>
+                                <label for="coworker2_id">Co-Author 2 Student ID</label>
                                 <input type="text" id="coworker2_id" name="coworkers[1][student_id]" placeholder="Student ID">
                             </div>
                             <div class="form-group">
-                                <label for="coworker2_email">Collaborator 2 Email</label>
+                                <label for="coworker2_email">Co-Author 2 Email</label>
                                 <input type="email" id="coworker2_email" name="coworkers[1][email]" placeholder="Email">
                             </div>
                         </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="coworker3_first_name">Co-Author 3 First Name</label>
+                                <input type="text" id="coworker3_first_name" name="coworkers[2][first_name]" placeholder="First Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="coworker3_last_name">Co-Author 3 Last Name</label>
+                                <input type="text" id="coworker3_last_name" name="coworkers[2][last_name]" placeholder="Last Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="coworker3_id">Co-Author 3 Student ID</label>
+                                <input type="text" id="coworker3_id" name="coworkers[2][student_id]" placeholder="Student ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="coworker3_email">Co-Author 3 Email</label>
+                                <input type="email" id="coworker3_email" name="coworkers[2][email]" placeholder="Email">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn" onclick="nextSection('thesis-details')">Next</button>
                     </div>
                 </div>
+
                 <!-- Thesis Details Section -->
                 <div class="section" id="thesis-details">
                     <h2>Thesis Details</h2>
@@ -135,6 +180,11 @@
                     <div class="form-group">
                         <label for="abstract">Abstract *</label>
                         <textarea id="abstract" name="abstract" placeholder="Provide a brief summary of your thesis..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="keywords">Keywords *</label>
+                        <input type="text" id="keywords" name="keywords" placeholder="Enter keywords separated by commas" required>
                     </div>
 
                     <div class="form-row">
@@ -156,10 +206,11 @@
                     </div>
 
                     <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection('basic-info')">Previous</button>
                         <button type="button" class="btn" onclick="nextSection('upload')">Next</button>
-                        <button type="button" class="btn btn-secondary" onclick="prevSection('basic-info')">Back</button>
                     </div>
                 </div>
+
                 <!-- File Upload Section -->
                 <div class="section" id="upload">
                     <h2>File Upload</h2>
@@ -183,8 +234,8 @@
                         <div class="file-upload" onclick="document.getElementById('supportingFiles').click()">
                             <div class="upload-icon">📎</div>
                             <h4>Click to upload additional files</h4>
-                            <p>PDF, DOC, DOCX, PPT, PPTX (Max 10MB each)</p>
-                            <input type="file" id="supportingFiles" name="supportingFiles[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx">
+                            <p>PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, ZIP, RAR (Max 10MB each)</p>
+                            <input type="file" id="supportingFiles" name="supportingFiles[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar">
                         </div>
                         <div class="file-list" id="supportingFilesList"></div>
                     </div>
@@ -245,6 +296,7 @@
                         <button type="button" class="btn" onclick="nextSection('review')">Next</button>
                     </div>
                 </div>
+
                 <!-- Review & Submit Section -->
                 <div class="section" id="review">
                     <h2>Review & Submit</h2>
@@ -299,16 +351,24 @@
                             <span id="reviewSupervisor">-</span>
                         </div>
                         <div class="summary-item">
-                            <span><strong>Collaborator:</strong></span>
+                            <span><strong>Co-Supervisor:</strong></span>
+                            <span id="reviewCoSupervisor">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Co-Author 1:</strong></span>
                             <span id="reviewCoworker1">-</span>
                         </div>
                         <div class="summary-item">
-                            <span><strong>Collaborator:</strong></span>
+                            <span><strong>Co-Author 2:</strong></span>
                             <span id="reviewCoworker2">-</span>
                         </div>
                         <div class="summary-item">
-                            <span><strong>Collaborator:</strong></span>
+                            <span><strong>Co-Author 3:</strong></span>
                             <span id="reviewCoworker3">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Expected Completion:</strong></span>
+                            <span id="reviewExpectedCompletion">-</span>
                         </div>
                         <div class="summary-item">
                             <span><strong>Status:</strong></span>
@@ -328,7 +388,6 @@
                         <button type="submit" class="btn" id="submitBtn">Submit Thesis</button>
                     </div>
                 </div>
-                <!-- More sections will be added in the next steps -->
             </form>
         </div>
     </div>
