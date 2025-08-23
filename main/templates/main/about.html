@@ -1,5 +1,13 @@
+{% extends 'main/base.html' %}
 {% load static %}
-{% include 'includes/landing-header.html' %}
+
+{% block title %}About - Thesis Library{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/about.css' %}">
+{% endblock %}
+
+{% block content %}
 <main class="about-main">
     <!-- Hero Section -->
     <section class="about-hero">
@@ -62,4 +70,4 @@
         </div>
     </section>
 </main>
-{% include 'includes/landing-footer.html' %} 
+{% endblock %} 

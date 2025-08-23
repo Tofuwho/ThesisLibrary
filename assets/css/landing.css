@@ -1,3 +1,17 @@
+/* CSS Variables */
+:root {
+  --primary-color: rgb(126, 1, 255);
+  --primary-medium: rgb(104, 1, 209);
+  --primary-light: rgba(126, 1, 255, 0.1);
+  --white: #ffffff;
+  --light-gray: #f8f9fa;
+  --medium-gray: #6c757d;
+  --dark-gray: #343a40;
+  --transition: all 0.3s ease;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
 /* General Styles */
 * {
     margin: 0;
@@ -383,9 +397,9 @@
     transform: translateX(20%);
   }
   
-  input[type="text"],
-  input[type="email"],
-  input[type="password"] {
+  .auth-modal input[type="text"],
+  .auth-modal input[type="email"],
+  .auth-modal input[type="password"] {
     width: 100%;
     padding: 0.75em;
     border: 1px solid #ccc;
@@ -395,22 +409,22 @@
     margin-bottom: 1em;
   }
   
-  input[type="text"]:focus,
-  input[type="email"]:focus,
-  input[type="password"]:focus {
+  .auth-modal input[type="text"]:focus,
+  .auth-modal input[type="email"]:focus,
+  .auth-modal input[type="password"]:focus {
     border-color: #7e01ff;
     box-shadow: 0 0 5px rgba(126, 1, 255, 0.5);
   }
   
   /* Form labels */
-  form label {
+  .auth-modal form label {
     display: block;
     margin-bottom: 5px;
     font-weight: 500;
   }
   
-  /* Button styles */
-  button {
+  /* Button styles - Scoped to auth modal only */
+  .auth-modal button {
     position: relative;
     overflow: hidden;
     padding: 0.75em 1.5em;
@@ -426,12 +440,12 @@
     margin-top: 1em;
   }
   
-  button:hover {
+  .auth-modal button:hover {
     background-color: #6801d1;
     transform: translateY(-3px);
   }
   
-  button:active {
+  .auth-modal button:active {
     transform: translateY(1px);
   }
   
@@ -449,6 +463,16 @@
   .error {
     color: #e74c3c;
     margin-bottom: 15px;
+    font-size: 0.9rem;
+    background-color: rgba(231, 76, 60, 0.1);
+    padding: 8px;
+    border-radius: 5px;
+    border-left: 3px solid #e74c3c;
+  }
+  
+  .error-msg {
+    color: #e74c3c;
+    margin-top: 10px;
     font-size: 0.9rem;
     background-color: rgba(231, 76, 60, 0.1);
     padding: 8px;
@@ -532,5 +556,64 @@
   .logout-btn:hover,
   .login-btn:hover {
     background-color: rgba(126, 1, 255, 0.1);
+  }
+  
+  /* Override global button styles for search buttons */
+  .search-button {
+    width: auto !important;
+    margin-top: 0 !important;
+    padding: 0 25px !important;
+    background-color: var(--primary-color) !important;
+    color: var(--white) !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-weight: 500 !important;
+    transition: var(--transition) !important;
+  }
+  
+  .search-button:hover {
+    background-color: var(--primary-medium) !important;
+    transform: none !important;
+  }
+  
+  /* Override global button styles for filter buttons */
+  .apply-filters-button,
+  .clear-filters-button {
+    width: auto !important;
+    margin-top: 0 !important;
+    padding: 8px 20px !important;
+    background-color: var(--primary-color) !important;
+    color: var(--white) !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-weight: 500 !important;
+    transition: var(--transition) !important;
+  }
+  
+  .apply-filters-button:hover,
+  .clear-filters-button:hover {
+    background-color: var(--primary-medium) !important;
+    transform: none !important;
+  }
+  
+  /* Override global button styles for all other button types */
+  .view-button,
+  .cat-download-button,
+  .pagination-button,
+  .browse-button,
+  .resource-button,
+  .cta-button {
+    width: auto !important;
+    margin-top: 0 !important;
+    transform: none !important;
+  }
+  
+  .view-button:hover,
+  .cat-download-button:hover,
+  .pagination-button:hover,
+  .browse-button:hover,
+  .resource-button:hover,
+  .cta-button:hover {
+    transform: none !important;
   }
   

@@ -16,12 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginBtn = document.getElementById('loginButton'); // ID of button in header
   const loginModal = document.getElementById('authModal'); // Updated to match HTML
   const closeBtn = document.getElementById('closeModal'); // Updated to match HTML
+  const authContainer = document.getElementById('auth-container');
 
   if (loginBtn && loginModal) {
     loginBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      loginModal.classList.add('active'); // Use class for modal
+      loginModal.classList.add('active');
       document.body.style.overflow = 'hidden';
+      // Reset to login form when opening modal
+      if (authContainer) {
+        authContainer.classList.remove('right-panel-active');
+      }
     });
   }
 
@@ -29,6 +34,34 @@ document.addEventListener('DOMContentLoaded', () => {
     closeBtn.addEventListener('click', () => {
       loginModal.classList.remove('active');
       document.body.style.overflow = '';
+    });
+  }
+
+  // Close modal when clicking outside
+  if (loginModal) {
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) {
+        loginModal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+  }
+
+  // === OVERLAY PANEL SWITCHING ===
+  const signUpBtn = document.getElementById('signUp');
+  const signInBtn = document.getElementById('signIn');
+
+  if (signUpBtn && authContainer) {
+    signUpBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      authContainer.classList.add('right-panel-active');
+    });
+  }
+
+  if (signInBtn && authContainer) {
+    signInBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      authContainer.classList.remove('right-panel-active');
     });
   }
 
