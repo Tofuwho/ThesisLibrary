@@ -54,12 +54,16 @@ def categories_page(request):
     # Sorting
     if sort == 'date-asc':
         theses = theses.order_by('year', 'title')
+    elif sort == 'date-desc':
+        theses = theses.order_by('-year', 'title')
     elif sort == 'title-asc':
         theses = theses.order_by('title')
     elif sort == 'title-desc':
         theses = theses.order_by('-title')
-    else:  # date-desc
-        theses = theses.order_by('-year', 'title')
+    elif sort == 'author-asc':
+        theses = theses.order_by('author', 'title')
+    elif sort == 'author-desc':
+        theses = theses.order_by('-author', 'title')
 
     theses = theses.distinct()
 
@@ -71,19 +75,14 @@ def categories_page(request):
     )
     categories = Category.objects.annotate(count=Count('thesis')).order_by('name')
     authors = (
-        Thesis.objects.values(name=Count('author'))
-    )
-    # Proper authors aggregation (name + count)
-    authors = (
         Thesis.objects.values('author')
         .annotate(count=Count('id'))
         .order_by('author')
     )
     types = (
-        Thesis.objects.values(name_field=Count('thesis_type'))
-    )
-    types = (
-        Thesis.objects.values('thesis_type')
+        Thesis.objects.exclude(thesis_type__isnull=True)
+        .exclude(thesis_type__exact='')
+        .values('thesis_type')
         .annotate(count=Count('id'))
         .order_by('thesis_type')
     )
@@ -93,7 +92,9 @@ def categories_page(request):
     context = {
         'theses': theses,
         'categories': categories,
-        'years': [y['year'] for y in years],
+        'years': [
+            {'year': y['year'], 'count': y['count']} for y in years
+        ],
         'authors': [
             {'name': a['author'], 'count': a['count']} for a in authors
         ],
@@ -101,8 +102,109 @@ def categories_page(request):
             {'name': t['thesis_type'], 'count': t['count']} for t in types
         ],
         'total_results': total_results,
+        'current_sort': sort,
     }
     return render(request, 'main/categories.html', context)
+
+
+def category_detail(request, category_name):
+    """Browse theses by specific category like Computer Science, Information Systems"""
+    try:
+        category = Category.objects.get(name__iexact=category_name)
+    except Category.DoesNotExist:
+        # Handle case-insensitive search for common variations
+        category = Category.objects.filter(
+            name__icontains=category_name
+        ).first()
+        
+        if not category:
+            # Return 404 if no category found
+            from django.http import Http404
+            raise Http404(f"Category '{category_name}' not found")
+    
+    theses = Thesis.objects.filter(category=category)
+    
+    # Get search and filter parameters
+    search_query = request.GET.get('search') or ''
+    selected_years = request.GET.getlist('year')
+    selected_authors = request.GET.getlist('author')
+    selected_types = request.GET.getlist('type')
+    sort = request.GET.get('sort') or 'date-desc'
+    
+    if search_query:
+        theses = theses.filter(
+            Q(title__icontains=search_query)
+            | Q(author__icontains=search_query)
+            | Q(abstract__icontains=search_query)
+        )
+    
+    if selected_years:
+        numeric_years = [int(y) for y in selected_years if str(y).isdigit()]
+        if numeric_years:
+            theses = theses.filter(year__in=numeric_years)
+    
+    if selected_authors:
+        theses = theses.filter(author__in=selected_authors)
+    
+    if selected_types:
+        theses = theses.filter(thesis_type__in=selected_types)
+    
+    # Sorting
+    if sort == 'date-asc':
+        theses = theses.order_by('year', 'title')
+    elif sort == 'date-desc':
+        theses = theses.order_by('-year', 'title')
+    elif sort == 'title-asc':
+        theses = theses.order_by('title')
+    elif sort == 'title-desc':
+        theses = theses.order_by('-title')
+    elif sort == 'author-asc':
+        theses = theses.order_by('author', 'title')
+    elif sort == 'author-desc':
+        theses = theses.order_by('-author', 'title')
+    
+    theses = theses.distinct()
+    
+    # Get filter data for sidebar
+    years = (
+        Thesis.objects.filter(category=category)
+        .values('year')
+        .annotate(count=Count('id'))
+        .order_by('-year')
+    )
+    authors = (
+        Thesis.objects.filter(category=category)
+        .values('author')
+        .annotate(count=Count('id'))
+        .order_by('author')
+    )
+    types = (
+        Thesis.objects.filter(category=category)
+        .exclude(thesis_type__isnull=True)
+        .exclude(thesis_type__exact='')
+        .values('thesis_type')
+        .annotate(count=Count('id'))
+        .order_by('thesis_type')
+    )
+    
+    total_results = theses.count()
+    
+    context = {
+        'category': category,
+        'theses': theses,
+        'years': [
+            {'year': y['year'], 'count': y['count']} for y in years
+        ],
+        'authors': [
+            {'name': a['author'], 'count': a['count']} for a in authors
+        ],
+        'types': [
+            {'name': t['thesis_type'], 'count': t['count']} for t in types
+        ],
+        'total_results': total_results,
+        'current_sort': sort,
+    }
+    return render(request, 'main/category_detail.html', context)
 
 def student_dashboard(request):
     return render(request, 'main/student_dashboard.html')
