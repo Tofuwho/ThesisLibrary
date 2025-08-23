@@ -48,7 +48,7 @@
         </div>
 
         <div class="main-content">
-            <form id="thesisForm" method="POST" enctype="multipart/form-data">
+            <form id="thesisForm" action="{% url 'create_submission' %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <!-- Basic Information Section -->
                 <div class="section active" id="basic-info">
