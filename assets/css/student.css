@@ -35,7 +35,7 @@ body {
 /* Student dashboard hero header */
 .dashboard-header {
     position: relative;
-    margin-top: 90px; /* space below fixed site header */
+    margin-top: 30px; /* space below fixed site header */
     margin-bottom: 30px;
     background: linear-gradient(135deg, rgba(126,1,255,0.08), rgba(126,1,255,0.04));
     border: 1px solid rgba(126,1,255,0.15);
