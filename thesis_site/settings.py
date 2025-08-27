@@ -122,6 +122,15 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Expire session when browser closes (non-persistent cookies)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  
+
+# Optional: if you want a fallback age (default = 2 weeks)
+# e.g., if browser supports session restore, cookie may persist until max age
+SESSION_COOKIE_AGE = 1209600  # 2 weeks (default)
+
+# Don’t resave unless modified
+SESSION_SAVE_EVERY_REQUEST = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     setupFileUploads();
     setupKeywordInput();
+    setupAutoSave();
+    loadSavedData();
 });
 
 // Navigation between sections
@@ -107,6 +109,7 @@ function initializeEventListeners() {
 function setupFileUploads() {
     setupSingleFileUpload('thesisFile', 'thesisFileList', 50);
     setupMultipleFileUpload('supportingFiles', 'supportingFilesList', 10);
+    setupMultipleFileUpload('additionalFiles', 'additionalFilesList', 25);
     
     // Drag and drop functionality
     const fileUploads = document.querySelectorAll('.file-upload');
@@ -282,8 +285,106 @@ function handleFormSubmission(e) {
     const form = document.getElementById('thesisForm');
     const formData = new FormData(form);
 
+    // Clear saved data before submission
+    clearSavedData();
+    
     // Submit normally to server; server will redirect and show messages
     form.submit();
+}
+
+// Auto-save functionality
+function setupAutoSave() {
+    const form = document.getElementById('thesisForm');
+    const inputs = form.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            saveFormData();
+        });
+        
+        input.addEventListener('change', function() {
+            saveFormData();
+        });
+    });
+    
+    // Auto-save every 30 seconds
+    setInterval(saveFormData, 30000);
+}
+
+function saveFormData() {
+    const form = document.getElementById('thesisForm');
+    const formData = new FormData(form);
+    const data = {};
+    
+    // Convert FormData to object
+    for (let [key, value] of formData.entries()) {
+        if (data[key]) {
+            if (Array.isArray(data[key])) {
+                data[key].push(value);
+            } else {
+                data[key] = [data[key], value];
+            }
+        } else {
+            data[key] = value;
+        }
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('thesisFormData', JSON.stringify(data));
+    localStorage.setItem('thesisFormLastSaved', new Date().toISOString());
+    
+    // Update save indicator
+    updateSaveIndicator(true);
+}
+
+function loadSavedData() {
+    const savedData = localStorage.getItem('thesisFormData');
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            const form = document.getElementById('thesisForm');
+            
+            // Restore form data
+            Object.keys(data).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = data[key] === 'on' || data[key] === true;
+                    } else if (input.type === 'file') {
+                        // Skip file inputs as they can't be restored
+                    } else {
+                        input.value = data[key];
+                    }
+                }
+            });
+            
+            // Update review section
+            updateReviewSection();
+            
+            // Show restore notification
+            showAlert('Previous form data has been restored.', 'info');
+        } catch (error) {
+            console.error('Error loading saved data:', error);
+        }
+    }
+}
+
+function updateSaveIndicator(saved = false) {
+    const metaChip = document.querySelector('.meta-chip .dot.success');
+    if (metaChip) {
+        if (saved) {
+            metaChip.style.backgroundColor = '#28a745';
+            metaChip.title = 'Last saved: ' + new Date().toLocaleTimeString();
+        } else {
+            metaChip.style.backgroundColor = '#ffc107';
+            metaChip.title = 'Unsaved changes';
+        }
+    }
+}
+
+function clearSavedData() {
+    localStorage.removeItem('thesisFormData');
+    localStorage.removeItem('thesisFormLastSaved');
 }
 
 // Utility functions

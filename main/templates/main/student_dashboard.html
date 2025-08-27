@@ -240,6 +240,17 @@
                         <div class="file-list" id="supportingFilesList"></div>
                     </div>
 
+                    <div class="form-group">
+                        <label>Additional Documents (Non-PDF) *</label>
+                        <div class="file-upload" onclick="document.getElementById('additionalFiles').click()">
+                            <div class="upload-icon">📋</div>
+                            <h4>Click to upload or drag and drop</h4>
+                            <p>DOC, DOCX, PPT, PPTX, XLS, XLSX files only (Max 25MB each)</p>
+                            <input type="file" id="additionalFiles" name="additionalFiles[]" multiple accept=".doc,.docx,.ppt,.pptx,.xls,.xlsx" required>
+                        </div>
+                        <div class="file-list" id="additionalFilesList"></div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" onclick="previousSection('thesis-details')">Previous</button>
                         <button type="button" class="btn" onclick="nextSection('supervisor')">Next</button>

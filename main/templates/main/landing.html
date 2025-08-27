@@ -9,15 +9,47 @@
 
 {% block content %}
 {% now "Y" as current_year %}
-<p>&copy; {{ current_year }} Thesis Library. All rights reserved.</p>
 
 <section class="hero-section">
     <div class="hero-overlay">
         <div class="hero-content">
             <h1>Welcome to Thesis Library</h1>
             <p>Discover, explore, and contribute to our growing collection of academic research</p>
+            {% if user.is_authenticated %}
+                <div class="welcome-message">
+                    <h2>Welcome back, {{ user.first_name|default:user.username }}!</h2>
+                    <p>Ready to explore or submit your research?</p>
+                </div>
+            {% endif %}
+            <div class="hero-buttons">
                 <a href="{% url 'index' %}" class="cta-button">Explore Theses</a>
+            </div>
         </div>
     </div>
 </section>
+
+<footer class="landing-footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h3>Thesis Library</h3>
+            <p>Your gateway to academic research and knowledge sharing</p>
+        </div>
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="{% url 'index' %}">Browse Theses</a></li>
+                <li><a href="{% url 'categories' %}">Categories</a></li>
+                <li><a href="{% url 'about' %}">About Us</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Contact</h4>
+            <p>Email: library@university.edu</p>
+            <p>Phone: (555) 123-4567</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; {{ current_year }} Thesis Library. All rights reserved.</p>
+    </div>
+</footer>
 {% endblock %}

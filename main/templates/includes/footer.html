@@ -1,0 +1,62 @@
+{% load static %}
+<footer class="main-footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h3>Thesis Library</h3>
+            <p>Your gateway to academic research and knowledge sharing. Discover, explore, and contribute to our growing collection of academic research.</p>
+            <div class="social-links">
+                <a href="#" class="social-link">📧</a>
+                <a href="#" class="social-link">📱</a>
+                <a href="#" class="social-link">💼</a>
+            </div>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="{% url 'index' %}">Browse Theses</a></li>
+                <li><a href="{% url 'categories' %}">Categories</a></li>
+                <li><a href="{% url 'about' %}">About Us</a></li>
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                        <li><a href="{% url 'admin:index' %}">Admin Panel</a></li>
+                    {% else %}
+                        <li><a href="{% url 'student_dashboard' %}">Student Dashboard</a></li>
+                        <li><a href="{% url 'my_submissions' %}">My Submissions</a></li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Resources</h4>
+            <ul>
+                <li><a href="#">Submission Guidelines</a></li>
+                <li><a href="#">Research Policies</a></li>
+                <li><a href="#">Academic Standards</a></li>
+                <li><a href="#">Citation Guidelines</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Contact Information</h4>
+            <div class="contact-info">
+                <p><strong>📧 Email:</strong> library@university.edu</p>
+                <p><strong>📞 Phone:</strong> (555) 123-4567</p>
+                <p><strong>📍 Address:</strong> University Library, Main Campus</p>
+                <p><strong>🕒 Hours:</strong> Mon-Fri: 8AM-6PM</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <div class="footer-bottom-content">
+            <p>&copy; {% now "Y" %} Thesis Library. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Accessibility</a>
+            </div>
+        </div>
+    </div>
+</footer>
