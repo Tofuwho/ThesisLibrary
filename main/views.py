@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Count, Q
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.http import FileResponse, Http404, JsonResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
@@ -10,8 +10,11 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
 from .models import Thesis, Category, Submission
-import os
+import os, json
 
+# ----------------------
+# Pages / Landing
+# ----------------------
 def landing_page(request):
     return render(request, 'main/landing.html')
 
@@ -28,7 +31,6 @@ def index_page(request):
 
 def categories_page(request):
     theses = Thesis.objects.all()
-
     search_query = request.GET.get('search') or ''
     selected_years = request.GET.getlist('year')
     selected_descriptors = request.GET.getlist('descriptor')
@@ -36,11 +38,12 @@ def categories_page(request):
     selected_types = request.GET.getlist('type')
     sort = request.GET.get('sort') or 'date-desc'
 
+    # Filtering
     if search_query:
         theses = theses.filter(
-            Q(title__icontains=search_query)
-            | Q(author__icontains=search_query)
-            | Q(abstract__icontains=search_query)
+            Q(title__icontains=search_query) |
+            Q(author__icontains=search_query) |
+            Q(abstract__icontains=search_query)
         )
 
     if selected_years:
@@ -58,55 +61,30 @@ def categories_page(request):
         theses = theses.filter(thesis_type__in=selected_types)
 
     # Sorting
-    if sort == 'date-asc':
-        theses = theses.order_by('year', 'title')
-    elif sort == 'date-desc':
-        theses = theses.order_by('-year', 'title')
-    elif sort == 'title-asc':
-        theses = theses.order_by('title')
-    elif sort == 'title-desc':
-        theses = theses.order_by('-title')
-    elif sort == 'author-asc':
-        theses = theses.order_by('author', 'title')
-    elif sort == 'author-desc':
-        theses = theses.order_by('-author', 'title')
+    sort_options = {
+        'date-asc': ('year', 'title'),
+        'date-desc': ('-year', 'title'),
+        'title-asc': ('title',),
+        'title-desc': ('-title',),
+        'author-asc': ('author', 'title'),
+        'author-desc': ('-author', 'title')
+    }
+    theses = theses.order_by(*sort_options.get(sort, ('-year', 'title'))).distinct()
 
-    theses = theses.distinct()
-
-    # Sidebar data with counts
-    years = (
-        Thesis.objects.values('year')
-        .annotate(count=Count('id'))
-        .order_by('-year')
-    )
+    # Sidebar
+    years = Thesis.objects.values('year').annotate(count=Count('id')).order_by('-year')
     categories = Category.objects.annotate(count=Count('thesis')).order_by('name')
-    authors = (
-        Thesis.objects.values('author')
-        .annotate(count=Count('id'))
-        .order_by('author')
-    )
-    types = (
-        Thesis.objects.exclude(thesis_type__isnull=True)
-        .exclude(thesis_type__exact='')
-        .values('thesis_type')
-        .annotate(count=Count('id'))
-        .order_by('thesis_type')
-    )
+    authors = Thesis.objects.values('author').annotate(count=Count('id')).order_by('author')
+    types = Thesis.objects.exclude(thesis_type__isnull=True).exclude(thesis_type__exact='')\
+                          .values('thesis_type').annotate(count=Count('id')).order_by('thesis_type')
 
     total_results = theses.count()
-
     context = {
         'theses': theses,
         'categories': categories,
-        'years': [
-            {'year': y['year'], 'count': y['count']} for y in years
-        ],
-        'authors': [
-            {'name': a['author'], 'count': a['count']} for a in authors
-        ],
-        'types': [
-            {'name': t['thesis_type'], 'count': t['count']} for t in types
-        ],
+        'years': [{'year': y['year'], 'count': y['count']} for y in years],
+        'authors': [{'name': a['author'], 'count': a['count']} for a in authors],
+        'types': [{'name': t['thesis_type'], 'count': t['count']} for t in types],
         'total_results': total_results,
         'current_sort': sort,
     }
@@ -114,104 +92,73 @@ def categories_page(request):
 
 
 def category_detail(request, category_name):
-    """Browse theses by specific category like Computer Science, Information Systems"""
-    try:
-        category = Category.objects.get(name__iexact=category_name)
-    except Category.DoesNotExist:
-        # Handle case-insensitive search for common variations
-        category = Category.objects.filter(
-            name__icontains=category_name
-        ).first()
-        
-        if not category:
-            # Return 404 if no category found
-            from django.http import Http404
-            raise Http404(f"Category '{category_name}' not found")
-    
+    """Browse theses by specific category"""
+    category = Category.objects.filter(name__iexact=category_name).first()
+    if not category:
+        category = Category.objects.filter(name__icontains=category_name).first()
+    if not category:
+        raise Http404(f"Category '{category_name}' not found")
+
     theses = Thesis.objects.filter(category=category)
-    
-    # Get search and filter parameters
     search_query = request.GET.get('search') or ''
     selected_years = request.GET.getlist('year')
     selected_authors = request.GET.getlist('author')
     selected_types = request.GET.getlist('type')
     sort = request.GET.get('sort') or 'date-desc'
-    
+
     if search_query:
         theses = theses.filter(
-            Q(title__icontains=search_query)
-            | Q(author__icontains=search_query)
-            | Q(abstract__icontains=search_query)
+            Q(title__icontains=search_query) |
+            Q(author__icontains=search_query) |
+            Q(abstract__icontains=search_query)
         )
-    
+
     if selected_years:
         numeric_years = [int(y) for y in selected_years if str(y).isdigit()]
         if numeric_years:
             theses = theses.filter(year__in=numeric_years)
-    
+
     if selected_authors:
         theses = theses.filter(author__in=selected_authors)
-    
+
     if selected_types:
         theses = theses.filter(thesis_type__in=selected_types)
-    
+
     # Sorting
-    if sort == 'date-asc':
-        theses = theses.order_by('year', 'title')
-    elif sort == 'date-desc':
-        theses = theses.order_by('-year', 'title')
-    elif sort == 'title-asc':
-        theses = theses.order_by('title')
-    elif sort == 'title-desc':
-        theses = theses.order_by('-title')
-    elif sort == 'author-asc':
-        theses = theses.order_by('author', 'title')
-    elif sort == 'author-desc':
-        theses = theses.order_by('-author', 'title')
-    
-    theses = theses.distinct()
-    
-    # Get filter data for sidebar
-    years = (
-        Thesis.objects.filter(category=category)
-        .values('year')
-        .annotate(count=Count('id'))
-        .order_by('-year')
-    )
-    authors = (
-        Thesis.objects.filter(category=category)
-        .values('author')
-        .annotate(count=Count('id'))
-        .order_by('author')
-    )
-    types = (
-        Thesis.objects.filter(category=category)
-        .exclude(thesis_type__isnull=True)
-        .exclude(thesis_type__exact='')
-        .values('thesis_type')
-        .annotate(count=Count('id'))
-        .order_by('thesis_type')
-    )
-    
+    sort_options = {
+        'date-asc': ('year', 'title'),
+        'date-desc': ('-year', 'title'),
+        'title-asc': ('title',),
+        'title-desc': ('-title',),
+        'author-asc': ('author', 'title'),
+        'author-desc': ('-author', 'title')
+    }
+    theses = theses.order_by(*sort_options.get(sort, ('-year', 'title'))).distinct()
+
+    # Sidebar
+    years = Thesis.objects.filter(category=category).values('year').annotate(count=Count('id')).order_by('-year')
+    authors = Thesis.objects.filter(category=category).values('author').annotate(count=Count('id')).order_by('author')
+    types = Thesis.objects.filter(category=category).exclude(thesis_type__isnull=True)\
+                          .exclude(thesis_type__exact='').values('thesis_type')\
+                          .annotate(count=Count('id')).order_by('thesis_type')
+
     total_results = theses.count()
-    
     context = {
         'category': category,
         'theses': theses,
-        'years': [
-            {'year': y['year'], 'count': y['count']} for y in years
-        ],
-        'authors': [
-            {'name': a['author'], 'count': a['count']} for a in authors
-        ],
-        'types': [
-            {'name': t['thesis_type'], 'count': t['count']} for t in types
-        ],
+        'years': [{'year': y['year'], 'count': y['count']} for y in years],
+        'authors': [{'name': a['author'], 'count': a['count']} for a in authors],
+        'types': [{'name': t['thesis_type'], 'count': t['count']} for t in types],
         'total_results': total_results,
         'current_sort': sort,
     }
     return render(request, 'main/category_detail.html', context)
 
+
+# ----------------------
+# Student / Dashboard
+# ----------------------
+@login_required
 def student_dashboard(request):
     return render(request, 'main/student_dashboard.html')
 
@@ -270,6 +217,7 @@ def thesis_detail(request, pk: int):
     thesis = get_object_or_404(Thesis, pk=pk)
     return render(request, 'main/thesis_detail.html', {'thesis': thesis})
 
+
 def view_thesis_file(request, pk):
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file:
@@ -277,6 +225,7 @@ def view_thesis_file(request, pk):
     response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
     return response
+
 
 def download_thesis_file(request, pk):
     thesis = get_object_or_404(Thesis, pk=pk)
@@ -287,16 +236,18 @@ def download_thesis_file(request, pk):
     return response
 
 
-# Authentication Views
+# ----------------------
+# Authentication
+# ----------------------
 class CustomSignupForm(UserCreationForm):
     email = forms.EmailField(required=True)
     first_name = forms.CharField(max_length=30, required=False)
     last_name = forms.CharField(max_length=30, required=False)
-    
+
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
-    
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
@@ -309,93 +260,80 @@ class CustomSignupForm(UserCreationForm):
 
 @csrf_protect
 def login_view(request):
-    """Handle both AJAX and regular login requests"""
+    """Handle regular, AJAX, and JSON login"""
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        
-        if form.is_valid():
-            # Login successful
-            user = form.get_user()
-            login(request, user)
-            
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                # AJAX request - return JSON response
-                next_url = request.GET.get('next') or request.POST.get('next') or '/'
-                return JsonResponse({
-                    'success': True,
-                    'redirect_url': next_url
-                })
-            else:
-                # Regular request - redirect normally
-                return redirect(request.GET.get('next', '/'))
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                username = data.get('username')
+                password = data.get('password')
+                user = authenticate(request, username=username, password=password)
+                if user:
+                    login(request, user)
+                    return JsonResponse({'success': True})
+                else:
+                    return JsonResponse({'success': False, 'error': 'Invalid credentials'}, status=400)
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
         else:
-            # Login failed
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                # AJAX request - return JSON with errors
-                errors = {}
-                
-                # Handle form errors
-                for field, field_errors in form.errors.items():
-                    errors[field] = [str(error) for error in field_errors]
-                
-                # Handle non-field errors (like invalid credentials)
-                if form.non_field_errors():
-                    errors['__all__'] = [str(error) for error in form.non_field_errors()]
-                
-                return JsonResponse({
-                    'success': False,
-                    'errors': errors
-                })
-            else:
-                # Regular request - redirect back to home with error
-                messages.error(request, 'Invalid username or password.')
-                return redirect('/')
-    
-    else:
-        # GET request - redirect to home page
-        return redirect('/')
-
-
-@csrf_protect
-def signup_view(request):
-    """Handle both AJAX and regular signup requests"""
-    if request.method == 'POST':
-        form = CustomSignupForm(request.POST)
-        
-        if form.is_valid():
-            # Signup successful
-            user = form.save()
-            
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                # AJAX request - return JSON response
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Account created successfully! Please sign in.',
-                    'redirect_url': None  # Don't redirect, just switch to login panel
-                })
-            else:
-                # Regular request - login user and redirect
+            form = AuthenticationForm(request, data=request.POST)
+            if form.is_valid():
+                user = form.get_user()
                 login(request, user)
-                return redirect('/')
-        else:
-            # Signup failed
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                # AJAX request - return JSON with errors
-                errors = {}
-                
-                # Handle form errors
-                for field, field_errors in form.errors.items():
-                    errors[field] = [str(error) for error in field_errors]
-                
-                return JsonResponse({
-                    'success': False,
-                    'errors': errors
-                })
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': True, 'redirect_url': request.GET.get('next') or '/'})
+                else:
+                    return redirect(request.GET.get('next', '/'))
             else:
-                # Regular request - redirect back to home with error
-                messages.error(request, 'Please correct the errors below.')
-                return redirect('/')
-    
-    else:
-        # GET request - redirect to home page
-        return redirect('/')
+                errors = {field: [str(e) for e in errs] for field, errs in form.errors.items()}
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': errors})
+                else:
+                    messages.error(request, 'Invalid username or password.')
+                    return redirect('/')
+    return redirect('/')
+
+
+@csrf_exempt
+def signup_view(request):
+    """Handle form POST, AJAX POST, and raw JSON POST"""
+    if request.method == 'POST':
+        # JSON POST
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                username = data.get("username")
+                email = data.get("email")
+                password = data.get("password")
+                
+                if not username or not password or not email:
+                    return JsonResponse({"success": False, "error": "Username, email, and password are required"}, status=400)
+
+                if User.objects.filter(username=username).exists():
+                    return JsonResponse({"success": False, "error": "Username already taken"}, status=400)
+
+                user = User.objects.create_user(username=username, email=email, password=password)
+                user.save()
+                return JsonResponse({"success": True, "message": "Account created successfully!"})
+
+            except Exception as e:
+                return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+        # Form / AJAX POST
+        else:
+            form = CustomSignupForm(request.POST)
+            if form.is_valid():
+                user = form.save()
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': True, 'message': 'Account created successfully! Please sign in.', 'redirect_url': None})
+                else:
+                    login(request, user)
+                    return redirect('/')
+            else:
+                errors = {field: [str(e) for e in errs] for field, errs in form.errors.items()}
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': errors})
+                else:
+                    messages.error(request, 'Please correct the errors below.')
+                    return redirect('/')
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
