@@ -8,21 +8,22 @@
 
             <h2>Create Account</h2>
 
-            <label for="signup_username">Username</label>
-            <input type="text" id="signup_username" name="signup_username" placeholder="Username" required>
+            <form id="signupForm">
+                <input type="text" id="signup-username" placeholder="Username" required />
+                <input type="email" id="signup-email" placeholder="Email" required />
+                <input type="password" id="signup-password" placeholder="Password" required />
+                <button type="submit">Sign Up</button>
+              </form>              
 
-            <label for="signup_email">Email</label>
-            <input type="email" id="signup_email" name="signup_email" placeholder="Email" required>
+              <div>
+                <label for="role">Select Role</label>
+                <select id="role" name="role" required>
+                  <option value="student">Student</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              
 
-            <label for="signup_password">Password</label>
-            <input type="password" id="signup_password" name="signup_password" placeholder="Password" required>
-
-            <select name="role" required>
-                <option value="student">Student</option>
-                <option value="admin">Admin</option>
-            </select>
-
-            <button type="submit">Sign Up</button>
             <p id="signupMessage" class="error-msg"></p>
         </form>
 

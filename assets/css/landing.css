@@ -332,7 +332,26 @@
     transform: scale(1);
   }
 
-  /* Alternative approach if using Bootstrap modal */
+  #signupForm label[for="role"] {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+  }
+
+  #signupForm select#role {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    margin-top: 10px; /* space from previous input */
+    margin-bottom: 15px; /* space before next element */
+    background-color: #fff;
+  }
+
   .modal.fade .modal-dialog {
     transform: translate(0, -50px) !important;
     transition: transform 0.3s ease-out !important;
