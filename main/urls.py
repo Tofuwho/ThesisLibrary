@@ -15,6 +15,8 @@ urlpatterns = [
     path('thesis/<int:pk>/', views.thesis_detail, name='thesis_detail'),
     path('thesis/<int:pk>/view/', views.view_thesis_file, name='thesis_view_file'),
     path('thesis/<int:pk>/download/', views.download_thesis_file, name='thesis_download_file'),
+    path('login/', views.login_view, name='login'),
+    path('signup/', views.signup_view, name='signup'),
 ]
 
 if settings.DEBUG:
