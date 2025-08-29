@@ -1,8 +1,14 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
 from django.http import FileResponse, Http404, JsonResponse
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django import forms
 from .models import Thesis, Category, Submission
 import os
 
@@ -279,3 +285,117 @@ def download_thesis_file(request, pk):
     response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
     return response
+
+
+# Authentication Views
+class CustomSignupForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    first_name = forms.CharField(max_length=30, required=False)
+    last_name = forms.CharField(max_length=30, required=False)
+    
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        if commit:
+            user.save()
+        return user
+
+
+@csrf_protect
+def login_view(request):
+    """Handle both AJAX and regular login requests"""
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        
+        if form.is_valid():
+            # Login successful
+            user = form.get_user()
+            login(request, user)
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # AJAX request - return JSON response
+                next_url = request.GET.get('next') or request.POST.get('next') or '/'
+                return JsonResponse({
+                    'success': True,
+                    'redirect_url': next_url
+                })
+            else:
+                # Regular request - redirect normally
+                return redirect(request.GET.get('next', '/'))
+        else:
+            # Login failed
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # AJAX request - return JSON with errors
+                errors = {}
+                
+                # Handle form errors
+                for field, field_errors in form.errors.items():
+                    errors[field] = [str(error) for error in field_errors]
+                
+                # Handle non-field errors (like invalid credentials)
+                if form.non_field_errors():
+                    errors['__all__'] = [str(error) for error in form.non_field_errors()]
+                
+                return JsonResponse({
+                    'success': False,
+                    'errors': errors
+                })
+            else:
+                # Regular request - redirect back to home with error
+                messages.error(request, 'Invalid username or password.')
+                return redirect('/')
+    
+    else:
+        # GET request - redirect to home page
+        return redirect('/')
+
+
+@csrf_protect
+def signup_view(request):
+    """Handle both AJAX and regular signup requests"""
+    if request.method == 'POST':
+        form = CustomSignupForm(request.POST)
+        
+        if form.is_valid():
+            # Signup successful
+            user = form.save()
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # AJAX request - return JSON response
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Account created successfully! Please sign in.',
+                    'redirect_url': None  # Don't redirect, just switch to login panel
+                })
+            else:
+                # Regular request - login user and redirect
+                login(request, user)
+                return redirect('/')
+        else:
+            # Signup failed
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # AJAX request - return JSON with errors
+                errors = {}
+                
+                # Handle form errors
+                for field, field_errors in form.errors.items():
+                    errors[field] = [str(error) for error in field_errors]
+                
+                return JsonResponse({
+                    'success': False,
+                    'errors': errors
+                })
+            else:
+                # Regular request - redirect back to home with error
+                messages.error(request, 'Please correct the errors below.')
+                return redirect('/')
+    
+    else:
+        # GET request - redirect to home page
+        return redirect('/')

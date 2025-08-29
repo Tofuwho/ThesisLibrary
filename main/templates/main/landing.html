@@ -15,18 +15,26 @@
         <div class="hero-content">
             <h1>Welcome to Thesis Library</h1>
             <p>Discover, explore, and contribute to our growing collection of academic research</p>
+            
             {% if user.is_authenticated %}
                 <div class="welcome-message">
-                    <h2>Welcome back, {{ user.first_name|default:user.username }}!</h2>
-                    <p>Ready to explore or submit your research?</p>
+                    {% if user.is_staff %}
+                        <h2>Welcome back, Admin {{ user.first_name|default:user.username }}!</h2>
+                        <p>Manage submissions, approve research, and oversee the repository.</p>
+                    {% else %}
+                        <h2>Welcome back, {{ user.first_name|default:user.username }}!</h2>
+                        <p>Ready to explore or submit your research?</p>
+                    {% endif %}
                 </div>
             {% endif %}
+
             <div class="hero-buttons">
                 <a href="{% url 'index' %}" class="cta-button">Explore Theses</a>
             </div>
         </div>
     </div>
 </section>
+
 
 <footer class="landing-footer">
     <div class="footer-content">
@@ -52,4 +60,16 @@
         <p>&copy; {{ current_year }} Thesis Library. All rights reserved.</p>
     </div>
 </footer>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        {% if messages %}
+            const modal = document.getElementById("authModal");
+            if (modal) {
+                modal.classList.add("active");
+            }
+        {% endif %}
+    });
+    </script>
+    
 {% endblock %}
