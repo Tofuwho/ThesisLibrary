@@ -48,8 +48,20 @@
         </div>
 
         <div class="main-content">
+            <!-- Django Messages -->
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
             <form id="thesisForm" action="{% url 'create_submission' %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
+                
                 <!-- Basic Information Section -->
                 <div class="section active" id="basic-info">
                     <h2>Basic Information</h2>
@@ -79,25 +91,36 @@
                         </div>
                     </div>
 
+                    <!-- Academic Structure Section -->
+                    <h3>Academic Information</h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="department">Department *</label>
-                            <select id="department" name="department" required>
-                                <option value="">Select Department</option>
-                                <option value="Computer Science">Computer Science</option>
-                                <option value="Information Technology">Information Technology</option>
-                                <option value="Information Systems">Information Systems</option>
-                                <option value="Networking">Networking</option>
+                            <label for="academic_level">Academic Level *</label>
+                            <select id="academic_level" name="academic_level" required onchange="loadDepartments()">
+                                <option value="">Select Academic Level</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="degreeLevel">Degree Level *</label>
-                            <select id="degreeLevel" name="degreeLevel" required>
-                                <option value="">Select Degree Level</option>
-                                <option value="Bachelor's">Bachelor's</option>
-                                <option value="Master's">Master's</option>
-                                <option value="PhD">PhD</option>
+                            <label for="department">Department *</label>
+                            <select id="department" name="department" required onchange="loadCourses()" disabled>
+                                <option value="">Select Department</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="course">Course/Program *</label>
+                            <select id="course" name="course" required disabled>
+                                <option value="">Select Course</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">Year *</label>
+                            <input type="number" id="year" name="year" min="2000" max="2030" value="2025" required>
                         </div>
                     </div>
 
@@ -189,9 +212,9 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="category">Research Category *</label>
-                            <select id="category" name="category" required>
-                                <option value="">Select Category</option>
+                            <label for="research_category">Research Category *</label>
+                            <select id="research_category" name="research_category" required>
+                                <option value="">Select Research Category</option>
                                 <option value="theoretical">Theoretical Research</option>
                                 <option value="empirical">Empirical Research</option>
                                 <option value="experimental">Experimental Research</option>
@@ -230,6 +253,17 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Approval Sheet *</label>
+                        <div class="file-upload" onclick="document.getElementById('approvalSheet').click()">
+                            <div class="upload-icon">✅</div>
+                            <h4>Click to upload approval sheet</h4>
+                            <p>PDF, JPG, JPEG, PNG files only (Max 10MB)</p>
+                            <input type="file" id="approvalSheet" name="approval_sheet" accept=".pdf,.jpg,.jpeg,.png" required>
+                        </div>
+                        <div class="file-list" id="approvalSheetList"></div>
+                    </div>
+
+                    <div class="form-group">
                         <label>Supporting Documents (Optional)</label>
                         <div class="file-upload" onclick="document.getElementById('supportingFiles').click()">
                             <div class="upload-icon">📎</div>
@@ -238,17 +272,6 @@
                             <input type="file" id="supportingFiles" name="supportingFiles[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar">
                         </div>
                         <div class="file-list" id="supportingFilesList"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Additional Documents (Non-PDF) *</label>
-                        <div class="file-upload" onclick="document.getElementById('additionalFiles').click()">
-                            <div class="upload-icon">📋</div>
-                            <h4>Click to upload or drag and drop</h4>
-                            <p>DOC, DOCX, PPT, PPTX, XLS, XLSX files only (Max 25MB each)</p>
-                            <input type="file" id="additionalFiles" name="additionalFiles[]" multiple accept=".doc,.docx,.ppt,.pptx,.xls,.xlsx" required>
-                        </div>
-                        <div class="file-list" id="additionalFilesList"></div>
                     </div>
 
                     <div class="form-actions">
@@ -334,16 +357,24 @@
                             <span id="reviewSubmitterEmail">-</span>
                         </div>
                         <div class="summary-item">
+                            <span><strong>Academic Level:</strong></span>
+                            <span id="reviewAcademicLevel">-</span>
+                        </div>
+                        <div class="summary-item">
                             <span><strong>Department:</strong></span>
                             <span id="reviewDepartment">-</span>
                         </div>
                         <div class="summary-item">
-                            <span><strong>Degree Level:</strong></span>
-                            <span id="reviewDegreeLevel">-</span>
+                            <span><strong>Course/Program:</strong></span>
+                            <span id="reviewCourse">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span><strong>Year:</strong></span>
+                            <span id="reviewYear">-</span>
                         </div>
                         <div class="summary-item">
                             <span><strong>Research Category:</strong></span>
-                            <span id="reviewCategory">-</span>
+                            <span id="reviewResearchCategory">-</span>
                         </div>
                         <div class="summary-item">
                             <span><strong>Thesis Title:</strong></span>

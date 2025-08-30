@@ -160,7 +160,10 @@ def category_detail(request, category_name):
 # ----------------------
 @login_required
 def student_dashboard(request):
-    return render(request, 'main/student_dashboard.html')
+    categories = Category.objects.all().order_by('name')
+    return render(request, 'main/student_dashboard.html', {
+        'categories': categories
+    })
 
 
 @login_required
@@ -168,20 +171,50 @@ def student_dashboard(request):
 def create_submission(request):
     title = request.POST.get('thesisTitle') or request.POST.get('title')
     abstract = request.POST.get('abstract', '')
-    thesis_type = request.POST.get('degreeLevel', '') or request.POST.get('thesis_type', '')
     specialization = request.POST.get('specialization', '')
     year = request.POST.get('year')
-    category_name = request.POST.get('category')
+    academic_level_id = request.POST.get('academic_level')
+    department_id = request.POST.get('department')
+    course_id = request.POST.get('course')
     thesis_file = request.FILES.get('thesisFile')
+    approval_sheet = request.FILES.get('approval_sheet')
 
+    # Validation
+    errors = []
     if not title:
-        return JsonResponse({'ok': False, 'error': 'Title is required'}, status=400)
+        errors.append('Title is required')
     if not thesis_file:
-        return JsonResponse({'ok': False, 'error': 'Thesis PDF is required'}, status=400)
+        errors.append('Thesis PDF is required')
+    if not approval_sheet:
+        errors.append('Approval sheet is required')
+    if not academic_level_id:
+        errors.append('Academic Level is required')
+    if not department_id:
+        errors.append('Department is required')
+    if not course_id:
+        errors.append('Course/Program is required')
 
-    category = None
-    if category_name:
-        category, _ = Category.objects.get_or_create(name=category_name.strip())
+    if errors:
+        messages.error(request, 'Please correct the following errors: ' + ', '.join(errors))
+        return redirect('student_dashboard')
+
+    # Get the actual objects from IDs
+    academic_level = None
+    department = None
+    course = None
+    
+    try:
+        if academic_level_id:
+            academic_level = Category.objects.get(id=academic_level_id)
+        if department_id:
+            from .models import Department
+            department = Department.objects.get(id=department_id)
+        if course_id:
+            from .models import Course
+            course = Course.objects.get(id=course_id)
+    except (Category.DoesNotExist, Department.DoesNotExist, Course.DoesNotExist):
+        messages.error(request, 'Invalid academic structure selection')
+        return redirect('student_dashboard')
 
     try:
         submission = Submission.objects.create(
@@ -190,21 +223,21 @@ def create_submission(request):
             author=f"{request.POST.get('firstName', '').strip()} {request.POST.get('lastName', '').strip()}".strip(),
             year=int(year) if year and str(year).isdigit() else None,
             abstract=abstract,
-            thesis_type=thesis_type,
             specialization=specialization,
-            category=category,
+            category=academic_level,
+            department=department,
+            course=course,
             file=thesis_file,
+            approval_sheet=approval_sheet,
             status=Submission.STATUS_SUBMITTED,
         )
+        
+        messages.success(request, f'Thesis "{submission.title}" submitted successfully!')
+        return redirect('my_submissions')
+        
     except Exception as e:
-        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
-
-    return JsonResponse({
-        'ok': True,
-        'id': submission.id,
-        'status': submission.status,
-        'created_at': submission.created_at,
-    })
+        messages.error(request, f'Error submitting thesis: {str(e)}')
+        return redirect('student_dashboard')
 
 
 @login_required
@@ -337,3 +370,49 @@ def signup_view(request):
                     messages.error(request, 'Please correct the errors below.')
                     return redirect('/')
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+
+# ----------------------
+# API Endpoints for Academic Structure
+# ----------------------
+@require_GET
+def api_departments(request, category_id):
+    """Get departments for a specific category"""
+    try:
+        category = Category.objects.get(id=category_id)
+        departments = category.departments.all().order_by('name')
+        data = {
+            'departments': [
+                {
+                    'id': dept.id,
+                    'name': dept.name
+                } for dept in departments
+            ]
+        }
+        return JsonResponse(data)
+    except Category.DoesNotExist:
+        return JsonResponse({'error': 'Category not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@require_GET
+def api_courses(request, department_id):
+    """Get courses for a specific department"""
+    try:
+        from .models import Department
+        department = Department.objects.get(id=department_id)
+        courses = department.courses.all().order_by('name')
+        data = {
+            'courses': [
+                {
+                    'id': course.id,
+                    'name': course.name
+                } for course in courses
+            ]
+        }
+        return JsonResponse(data)
+    except Department.DoesNotExist:
+        return JsonResponse({'error': 'Department not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
