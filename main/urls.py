@@ -17,6 +17,8 @@ urlpatterns = [
     path('thesis/<int:pk>/download/', views.download_thesis_file, name='thesis_download_file'),
     path('login/', views.login_view, name='login'),
     path('signup/', views.signup_view, name='signup'),
+    path('api/departments/<int:category_id>/', views.api_departments, name='api_departments'),
+    path('api/courses/<int:department_id>/', views.api_courses, name='api_courses'),
 ]
 
 if settings.DEBUG:

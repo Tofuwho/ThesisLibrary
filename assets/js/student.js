@@ -1,10 +1,10 @@
-// script.js
+// Student Dashboard JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     setupFileUploads();
-    setupKeywordInput();
     setupAutoSave();
     loadSavedData();
+    setupAcademicStructure();
 });
 
 // Navigation between sections
@@ -59,7 +59,7 @@ function validateCurrentSection() {
     
     requiredFields.forEach(field => {
         if (!field.value.trim()) {
-            field.style.borderColor = 'var(--primary-color)';
+            field.style.borderColor = '#ff4444';
             field.focus();
             isValid = false;
             return false;
@@ -108,8 +108,8 @@ function initializeEventListeners() {
 // File upload functionality
 function setupFileUploads() {
     setupSingleFileUpload('thesisFile', 'thesisFileList', 50);
+    setupSingleFileUpload('approvalSheet', 'approvalSheetList', 10);
     setupMultipleFileUpload('supportingFiles', 'supportingFilesList', 10);
-    setupMultipleFileUpload('additionalFiles', 'additionalFilesList', 25);
     
     // Drag and drop functionality
     const fileUploads = document.querySelectorAll('.file-upload');
@@ -221,16 +221,182 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Keywords functionality
-let keywords = [];
+// Academic structure management
+function setupAcademicStructure() {
+    // Initialize the academic structure dropdowns
+    console.log('Setting up academic structure...');
+}
 
-function setupKeywordInput() {
-    const keywordInput = document.getElementById('keywords');
-    if (keywordInput) {
-        keywordInput.addEventListener('input', function() {
-            updateReviewSection();
-        });
+function loadDepartments() {
+    const academicLevelSelect = document.getElementById('academic_level');
+    const departmentSelect = document.getElementById('department');
+    const courseSelect = document.getElementById('course');
+    
+    if (!academicLevelSelect || !departmentSelect) return;
+    
+    const academicLevelId = academicLevelSelect.value;
+    
+    // Clear department and course dropdowns
+    departmentSelect.innerHTML = '<option value="">Select Department</option>';
+    courseSelect.innerHTML = '<option value="">Select Course</option>';
+    
+    if (!academicLevelId) {
+        departmentSelect.disabled = true;
+        courseSelect.disabled = true;
+        return;
     }
+    
+    // Enable department dropdown
+    departmentSelect.disabled = false;
+    courseSelect.disabled = true;
+    
+    // Fetch departments for the selected academic level
+    fetch(`/api/departments/${academicLevelId}/`)
+        .then(response => response.json())
+        .then(data => {
+            data.departments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept.id;
+                option.textContent = dept.name;
+                departmentSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading departments:', error);
+            // Fallback: populate with static data based on academic level
+            populateDepartmentsFallback(academicLevelId);
+        });
+}
+
+function loadCourses() {
+    const departmentSelect = document.getElementById('department');
+    const courseSelect = document.getElementById('course');
+    
+    if (!departmentSelect || !courseSelect) return;
+    
+    const departmentId = departmentSelect.value;
+    
+    // Clear course dropdown
+    courseSelect.innerHTML = '<option value="">Select Course</option>';
+    
+    if (!departmentId) {
+        courseSelect.disabled = true;
+        return;
+    }
+    
+    // Enable course dropdown
+    courseSelect.disabled = false;
+    
+    // Fetch courses for the selected department
+    fetch(`/api/courses/${departmentId}/`)
+        .then(response => response.json())
+        .then(data => {
+            data.courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.id;
+                option.textContent = course.name;
+                courseSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading courses:', error);
+            // Fallback: populate with static data based on department
+            populateCoursesFallback(departmentId);
+        });
+}
+
+function populateDepartmentsFallback(academicLevelId) {
+    const departmentSelect = document.getElementById('department');
+    const courseSelect = document.getElementById('course');
+    
+    // Clear existing options
+    departmentSelect.innerHTML = '<option value="">Select Department</option>';
+    courseSelect.innerHTML = '<option value="">Select Course</option>';
+    
+    // Static fallback data based on your academic structure
+    const departments = {
+        '1': [ // Undergraduate
+            { id: 1, name: 'CICT - College of Information and Communication Technology' },
+            { id: 2, name: 'CAS - College of Arts and Sciences' },
+            { id: 3, name: 'CBM - College of Business Management' },
+            { id: 4, name: 'CCJ - College of Criminal Justice' },
+            { id: 5, name: 'CE - College of Education' },
+            { id: 6, name: 'CHTM - College of Hospitality & Tourism Management' },
+            { id: 7, name: 'CET - College of Engineering and Technology' }
+        ],
+        '2': [ // Graduate School
+            { id: 8, name: 'Graduate School' }
+        ]
+    };
+    
+    const academicLevelDepartments = departments[academicLevelId] || [];
+    academicLevelDepartments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.id;
+        option.textContent = dept.name;
+        departmentSelect.appendChild(option);
+    });
+}
+
+function populateCoursesFallback(departmentId) {
+    const courseSelect = document.getElementById('course');
+    
+    // Clear existing options
+    courseSelect.innerHTML = '<option value="">Select Course</option>';
+    
+    // Static fallback data based on your academic structure
+    const courses = {
+        '1': [ // CICT
+            { id: 1, name: 'Bachelor of Science in Computer Science' },
+            { id: 2, name: 'Bachelor of Science in Information Systems' }
+        ],
+        '2': [ // CAS
+            { id: 3, name: 'Bachelor of Science in Psychology' },
+            { id: 4, name: 'Bachelor of Science in Public Administration' },
+            { id: 5, name: 'Bachelor of Science in Social Work' }
+        ],
+        '3': [ // CBM
+            { id: 6, name: 'Bachelor of Science in Business Administration' },
+            { id: 7, name: 'Major in Human Resource Management' },
+            { id: 8, name: 'Major in Marketing Management' },
+            { id: 9, name: 'Bachelor of Science in Entrepreneurship' },
+            { id: 10, name: 'Bachelor of Science in Office Administration' }
+        ],
+        '4': [ // CCJ
+            { id: 11, name: 'Bachelor of Science in Criminology' }
+        ],
+        '5': [ // CE
+            { id: 12, name: 'Bachelor in Elementary Education' },
+            { id: 13, name: 'Bachelor of Secondary Education' },
+            { id: 14, name: 'Major in English' },
+            { id: 15, name: 'Major in Mathematics' },
+            { id: 16, name: 'Major in Science' }
+        ],
+        '6': [ // CHTM
+            { id: 17, name: 'Bachelor of Science in Hospitality Management' },
+            { id: 18, name: 'Bachelor of Science in Tourism Management' }
+        ],
+        '7': [ // CET
+            { id: 19, name: 'Bachelor of Science in Civil Engineering' },
+            { id: 20, name: 'Bachelor of Science in Industrial Engineering' },
+            { id: 21, name: 'Bachelor of Science in Mechanical Engineering' },
+            { id: 22, name: 'Bachelor of Science in Industrial Technology' }
+        ],
+        '8': [ // Graduate School
+            { id: 23, name: 'Master of Arts in Education major in Educational Management' },
+            { id: 24, name: 'Master in Business Administration' },
+            { id: 25, name: 'Master in Public Administration' },
+            { id: 26, name: 'Master of Science in Criminal Justice' }
+        ]
+    };
+    
+    const departmentCourses = courses[departmentId] || [];
+    departmentCourses.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course.id;
+        option.textContent = course.name;
+        courseSelect.appendChild(option);
+    });
 }
 
 // Review section updates
@@ -243,9 +409,21 @@ function updateReviewSection() {
         `${formData.get('firstName') || ''} ${formData.get('lastName') || ''}`.trim() || '-';
     document.getElementById('reviewStudentId').textContent = formData.get('studentId') || '-';
     document.getElementById('reviewSubmitterEmail').textContent = formData.get('email') || '-';
-    document.getElementById('reviewDepartment').textContent = formData.get('department') || '-';
-    document.getElementById('reviewDegreeLevel').textContent = formData.get('degreeLevel') || '-';
-    document.getElementById('reviewCategory').textContent = formData.get('category') || '-';
+    
+    // Get display text for academic structure
+    const academicLevelSelect = document.getElementById('academic_level');
+    const departmentSelect = document.getElementById('department');
+    const courseSelect = document.getElementById('course');
+    
+    const academicLevelText = academicLevelSelect ? academicLevelSelect.options[academicLevelSelect.selectedIndex]?.text || '-' : '-';
+    const departmentText = departmentSelect ? departmentSelect.options[departmentSelect.selectedIndex]?.text || '-' : '-';
+    const courseText = courseSelect ? courseSelect.options[courseSelect.selectedIndex]?.text || '-' : '-';
+    
+    document.getElementById('reviewAcademicLevel').textContent = academicLevelText;
+    document.getElementById('reviewDepartment').textContent = departmentText;
+    document.getElementById('reviewCourse').textContent = courseText;
+    document.getElementById('reviewYear').textContent = formData.get('year') || '-';
+    document.getElementById('reviewResearchCategory').textContent = formData.get('research_category') || '-';
     document.getElementById('reviewThesisTitle').textContent = formData.get('thesisTitle') || '-';
     document.getElementById('reviewAbstract').textContent = formData.get('abstract') || '-';
     document.getElementById('reviewKeywords').textContent = formData.get('keywords') || '-';
@@ -283,13 +461,63 @@ function handleFormSubmission(e) {
     submitBtn.textContent = 'Submitting...';
 
     const form = document.getElementById('thesisForm');
-    const formData = new FormData(form);
+    
+    // Validate required fields before submission
+    if (!validateForm()) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Thesis';
+        return;
+    }
 
     // Clear saved data before submission
     clearSavedData();
     
-    // Submit normally to server; server will redirect and show messages
+    // Submit the form normally - this will include the CSRF token
     form.submit();
+}
+
+// Validate all required fields
+function validateForm() {
+    const form = document.getElementById('thesisForm');
+    const requiredFields = form.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.style.borderColor = '#ff4444';
+            field.focus();
+            isValid = false;
+            return false;
+        } else {
+            field.style.borderColor = 'var(--light-gray)';
+        }
+    });
+    
+    // Check if academic structure is selected
+    const academicLevel = document.getElementById('academic_level').value;
+    const department = document.getElementById('department').value;
+    const course = document.getElementById('course').value;
+    
+    if (!academicLevel || !department || !course) {
+        showAlert('Please select Academic Level, Department, and Course/Program.', 'error');
+        isValid = false;
+    }
+    
+    // Check if files are uploaded
+    const thesisFile = document.getElementById('thesisFile').files[0];
+    const approvalSheet = document.getElementById('approvalSheet').files[0];
+    
+    if (!thesisFile) {
+        showAlert('Please upload your thesis document.', 'error');
+        isValid = false;
+    }
+    
+    if (!approvalSheet) {
+        showAlert('Please upload your approval sheet.', 'error');
+        isValid = false;
+    }
+    
+    return isValid;
 }
 
 // Auto-save functionality
