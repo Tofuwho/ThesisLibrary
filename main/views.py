@@ -37,6 +37,8 @@ def categories_page(request):
     selected_authors = request.GET.getlist('author')
     selected_types = request.GET.getlist('type')
     sort = request.GET.get('sort') or 'date-desc'
+    selected_department = request.GET.get('department')
+    selected_courses = request.GET.getlist('course')
 
     # Filtering
     if search_query:
@@ -60,6 +62,23 @@ def categories_page(request):
     if selected_types:
         theses = theses.filter(thesis_type__in=selected_types)
 
+    # Department filter (by ID)
+    if selected_department and selected_department != 'all':
+        try:
+            dept_id = int(selected_department)
+            theses = theses.filter(department__id=dept_id)
+        except ValueError:
+            pass
+
+    # Course filter (by ID)
+    if selected_courses:
+        try:
+            course_ids = [int(cid) for cid in selected_courses if cid.isdigit()]
+            if course_ids:
+                theses = theses.filter(course__id__in=course_ids)
+        except ValueError:
+            pass
+
     # Sorting
     sort_options = {
         'date-asc': ('year', 'title'),
@@ -72,6 +91,18 @@ def categories_page(request):
     theses = theses.order_by(*sort_options.get(sort, ('-year', 'title'))).distinct()
 
     # Sidebar
+    from .models import Department, Course
+    departments = Department.objects.all().order_by('name')
+    # Only show courses for the selected department
+    if selected_department and selected_department != 'all':
+        try:
+            dept_id = int(selected_department)
+            courses = Course.objects.filter(department__id=dept_id).order_by('name')
+        except ValueError:
+            courses = Course.objects.none()
+    else:
+        courses = Course.objects.none()
+
     years = Thesis.objects.values('year').annotate(count=Count('id')).order_by('-year')
     categories = Category.objects.annotate(count=Count('thesis')).order_by('name')
     authors = Thesis.objects.values('author').annotate(count=Count('id')).order_by('author')
@@ -87,6 +118,10 @@ def categories_page(request):
         'types': [{'name': t['thesis_type'], 'count': t['count']} for t in types],
         'total_results': total_results,
         'current_sort': sort,
+        'selected_department': selected_department,
+        'selected_courses': selected_courses,
+        'departments': departments,
+        'courses': courses,
     }
     return render(request, 'main/categories.html', context)
 

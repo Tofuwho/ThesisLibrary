@@ -27,100 +27,172 @@
 					</form>
 				</div>
 			</div>
+            <div class="department-bookmarks">
+                <button class="dept-bookmark" data-dept="all" data-color="all">All</button>
+                {% for dept in departments %}
+                    {% if dept.name|lower == 'graduate' or dept.name|lower == 'graduate school' %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="graduate">Graduate</button>
+                    {% else %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="{{ dept.name|slice:":4"|lower }}">{{ dept.name|slice:":4" }}</button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+              
 		</div>
 
         <div class="categories-content">
             <aside class="filter-sidebar">
-                <form method="get">
-                    <div class="filter-section">
-                        <h3>Publication Date</h3>
-                        <ul class="filter-list">
-                            {% for year in years %}
-                                <li>
-                                    <label>
-                                        <input type="checkbox" name="year" value="{{ year.year }}">
-                                        <span>{{ year.year }}</span>
-                                        <span class="count">({{ year.count }})</span>
-                                    </label>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                        <a href="#" class="show-more">Show more</a>
-                    </div>
+                <form method="get" id="filter-form">
+                  <input type="hidden" name="department" id="department-input" value="{{ request.GET.department|default:'all' }}">
+              
+                  <!-- Always Visible Filters -->
+                  <div class="filter-section">
+                    <h3>Publication Date</h3>
+                    <ul class="filter-list">
+                      {% for year in years %}
+                      <li>
+                        <label>
+                          <input type="checkbox" name="year" value="{{ year.year }}">
+                          <span>{{ year.year }}</span>
+                          <span class="count">({{ year.count }})</span>
+                        </label>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
 
-                    <div class="filter-section">
-                        <h3>Descriptor</h3>
-                        <ul class="filter-list" id="descriptor-list">
-                            {% for category in categories|slice:":5" %}
-                                <li class="descriptor-item">
-                                    <label>
-                                        <input type="checkbox" name="descriptor" value="{{ category.name }}">
-                                        <span>{{ category.name }}</span>
-                                        <span class="count">({{ category.count|default:0 }})</span>
-                                    </label>
-                                    <a href="{% url 'category_detail' category.name|slugify %}" class="category-link" title="Browse {{ category.name }}">
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                </li>
-                            {% endfor %}
-                            {% if categories|length > 5 %}
-                                {% for category in categories|slice:"5:" %}
-                                    <li class="descriptor-item hidden">
-                                        <label>
-                                            <input type="checkbox" name="descriptor" value="{{ category.name }}">
-                                            <span>{{ category.name }}</span>
-                                            <span class="count">({{ category.count|default:0 }})</span>
-                                        </label>
-                                        <a href="{% url 'category_detail' category.name|slugify %}" class="category-link" title="Browse {{ category.name }}">
-                                            <i class="fas fa-external-link-alt"></i>
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            {% endif %}
-                        </ul>
-                        {% if categories|length > 5 %}
-                            <a href="#" class="show-more" id="descriptor-show-more" onclick="toggleDescriptors(event)">
-                                <span class="show-text">Show more</span>
-                                <span class="hide-text" style="display: none;">Show less</span>
-                            </a>
-                        {% endif %}
-                    </div>
+                  <div class="filter-section">
+                    <h3>Author</h3>
+                    <ul class="filter-list">
+                      {% for author in authors %}
+                      <li>
+                        <label>
+                          <input type="checkbox" name="author" value="{{ author.name }}">
+                          <span>{{ author.name }}</span>
+                          <span class="count">({{ author.count|default:0 }})</span>
+                        </label>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
 
+                  <!-- Department/Course Filters (Toggled) -->
+                  <div class="filter-group" data-dept="all">
                     <div class="filter-section">
-                        <h3>Author</h3>
-                        <ul class="filter-list">
-                            {% for author in authors %}
-                                <li>
-                                    <label>
-                                        <input type="checkbox" name="author" value="{{ author.name }}">
-                                        <span>{{ author.name }}</span>
-                                        <span class="count">({{ author.count|default:0 }})</span>
-                                    </label>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                        <a href="#" class="show-more">Show more</a>
+                      <h3>Descriptor</h3>
+                      <ul class="filter-list">
+                        {% for category in categories %}
+                        <li>
+                          <label>
+                            <input type="checkbox" name="descriptor" value="{{ category.name }}">
+                            <span>{{ category.name }}</span>
+                            <span class="count">({{ category.count|default:0 }})</span>
+                          </label>
+                        </li>
+                        {% endfor %}
+                      </ul>
                     </div>
-
                     <div class="filter-section">
-                        <h3>Publication Type</h3>
-                        <ul class="filter-list">
-                            {% for type in types %}
-                                <li>
-                                    <label>
-                                        <input type="checkbox" name="type" value="{{ type.name }}">
-                                        <span>{{ type.name }}</span>
-                                        <span class="count">({{ type.count|default:0 }})</span>
-                                    </label>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                      <h3>Publication Type</h3>
+                      <ul class="filter-list">
+                        {% for type in types %}
+                        <li>
+                          <label>
+                            <input type="checkbox" name="type" value="{{ type.name }}">
+                            <span>{{ type.name }}</span>
+                            <span class="count">({{ type.count|default:0 }})</span>
+                          </label>
+                        </li>
+                        {% endfor %}
+                      </ul>
                     </div>
-
-                    <button type="submit" class="apply-filters-button"><i class="fas fa-filter"></i> Apply Filters</button>
-                    <a href="{% url 'categories' %}" class="clear-filters-button"><i class="fas fa-times"></i> Clear All</a>
+                  </div>
+              
+                  <!-- CICT -->
+                  <div class="filter-group" data-dept="CICT" style="display:none;">
+                    <h3>CICT Courses</h3>
+                    <ul class="filter-list">
+                      <li><label><input type="checkbox" name="course" value="BSCS"> BS Computer Science</label></li>
+                      <li><label><input type="checkbox" name="course" value="BSIS"> BS Information Systems</label></li>
+                    </ul>
+                  </div>
+              
+                  <!-- CAS -->
+                  <div class="filter-group" data-dept="CAS" style="display:none">
+                    <h3>CAS</h3>
+                    <ul class="filter-list">
+                        <li><label><input type="checkbox" name="course" value="BS">BS</label></li>
+                        <li><label><input type="checkbox" name="course" value="BS">BS</label></li>
+                        <li><label><input type="checkbox" name="course" value="BS">BS</label></li>
+                    </ul>
+                  </div>
+                  <!-- CBM -->
+                  <div class="filter-group" data-dept="CBM" style="display:none;">
+                  <h3>CBM</h3>
+                    <ul class="filter-list">
+                        <li><label><input type="checkbox" name="course" value="CBM1">CBM1</label></li>
+                        <li><label><input type="checkbox" name="course" value="CBM2">CBM2</label></li>
+                        <li><label><input type="checkbox" name="course" value="CBM3">CBM3</label></li>
+                        <li><label><input type="checkbox" name="course" value="CBM4">CBM4</label></li>
+                        <li><label><input type="checkbox" name="course" value="CBM5">CBM5</label></li>
+                    </ul>
+                  </div>
+                  <!-- CCJ -->
+                  <div class="filter-group" data-dept="CCJ" style="display:none;">
+                    <h3>CCJ</h3>
+                    <ul class="filter-list">
+                        <li><label><input type="checkbox" name="course" value="CCJ1">CCJ1</label></li>
+                    </ul>
+                  </div>
+                  <!-- CE -->
+                  <div class="filter-group" data-dept="CE" style="display:none;">
+                    <h3>CE</h3>
+                    <ul class="filter-list">
+                        <li><label><input type="checkbox" name="course" value="CE1">CE1</label></li>
+                        <li><label><input type="checkbox" name="course" value="CE2">CE2</label></li>
+                        <li><label><input type="checkbox" name="course" value="CE3">CE3</label></li>
+                        <li><label><input type="checkbox" name="course" value="CE4">CE4</label></li>
+                        <li><label><input type="checkbox" name="course" value="CE5">CE5</label></li>
+                    </ul>
+                  </div>
+                  <!-- CHTM -->
+                  <div class="filter-group" data-dept="CHTM" style="display:none;">
+                    <h3>CHTM</h3>
+                    <ul class="filter-list">
+                        <li><label><input type="checkbox" name="course" value="CHTM1">CHTM1</label></li>
+                        <li><label><input type="checkbox" name="course" value="CHTM2">CHTM2</label></li>
+                    </ul>
+                  </div>
+                  <!-- CET -->
+                  <div class="filter-group" data-dept="CET" style="display:none;">
+                    <h3>CET</h3>
+                    <ul class="filter-list">
+                        <li><label><input type="checkbox" name="course" value="CET1">CET1</label></li>
+                        <li><label><input type="checkbox" name="course" value="CET2">CET2</label></li>
+                        <li><label><input type="checkbox" name="course" value="CET3">CET3</label></li>
+                        <li><label><input type="checkbox" name="course" value="CET4">CET4</label></li>
+                    </ul>
+                  </div>
+                  <!-- Graduate -->
+                  <div class="filter-group" data-dept="Graduate" style="display:none;">
+                    <h3>Graduate School</h3>
+                    <ul class="filter-list">
+                        <li><label><input type="checkbox" name="course" value="Graduate1">Graduate1</label></li>
+                        <li><label><input type="checkbox" name="course" value="Graduate2">Graduate2</label></li>
+                        <li><label><input type="checkbox" name="course" value="Graduate3">Graduate3</label></li>
+                        <li><label><input type="checkbox" name="course" value="Graduate4">Graduate4</label></li>
+                    </ul>
+                  </div>
+              
+                  <button type="submit" class="apply-filters-button">
+                    <i class="fas fa-filter"></i> Apply Filters
+                  </button>
+                  <a href="{% url 'categories' %}" class="clear-filters-button">
+                    <i class="fas fa-times"></i> Clear All
+                  </a>
                 </form>
-            </aside>
+              </aside>
+              
 
             <div class="cat-thesis-results">
                 <div class="cat-results-header">
