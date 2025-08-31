@@ -6,6 +6,48 @@
     min-height: 100vh;
 }
 
+/* === Department Color Schemes === */
+.categories-main.dept-cict {
+  --primary-color: #7e01ff;
+  --primary-medium: #a259ff;
+  --primary-light: #e5d6fa;
+}
+.categories-main.dept-cas {
+  --primary-color: #00796b;
+  --primary-medium: #26a69a;
+  --primary-light: #d0f5ef;
+}
+.categories-main.dept-cbm {
+  --primary-color: #ff9800;
+  --primary-medium: #ffc947;
+  --primary-light: #fff3e0;
+}
+.categories-main.dept-ccj {
+  --primary-color: #c62828;
+  --primary-medium: #ef5350;
+  --primary-light: #ffebee;
+}
+.categories-main.dept-ce {
+  --primary-color: #1565c0;
+  --primary-medium: #42a5f5;
+  --primary-light: #e3f2fd;
+}
+.categories-main.dept-chtm {
+  --primary-color: #6d4c41;
+  --primary-medium: #a1887f;
+  --primary-light: #efebe9;
+}
+.categories-main.dept-cet {
+  --primary-color: #388e3c;
+  --primary-medium: #81c784;
+  --primary-light: #e8f5e9;
+}
+.categories-main.dept-graduate {
+  --primary-color: #512da8;
+  --primary-medium: #9575cd;
+  --primary-light: #ede7f6;
+}
+
 /* Hero header for categories */
 .categories-hero {
     position: relative;
@@ -866,4 +908,110 @@
 /* Hidden Items */
 .descriptor-item.hidden {
     display: none;
+}
+
+/* === Department-Responsive Hero === */
+.categories-hero {
+    background: linear-gradient(135deg, var(--primary-light, #fafbfc) 0%, var(--primary-light, #f8f9fa) 100%);
+    border: 1px solid var(--primary-color, rgba(126,1,255,0.15));
+}
+.categories-hero::before {
+    background: radial-gradient(1200px 200px at -10% -40%, var(--primary-medium, rgba(126,1,255,0.15)) 0%, rgba(126,1,255,0) 60%),
+                radial-gradient(800px 200px at 110% 120%, var(--primary-medium, rgba(126,1,255,0.12)) 0%, rgba(126,1,255,0) 60%);
+}
+
+/* === Department-Responsive Card Buttons === */
+.cat-view-button {
+    background: var(--primary-color, #7e01ff);
+    color: white;
+}
+.cat-view-button:hover {
+    background: var(--primary-medium, #a259ff);
+    color: white;
+}
+.cat-download-button {
+    background: var(--primary-light, #e5d6fa);
+    color: var(--primary-color, #7e01ff);
+}
+.cat-download-button:hover {
+    background: var(--primary-medium, #a259ff);
+    color: white;
+}
+
+/* === Department-Responsive Sidebar Buttons === */
+.apply-filters-button {
+    background: linear-gradient(135deg, var(--primary-color, #7e01ff) 0%, var(--primary-medium, #a259ff) 100%);
+    color: white;
+    box-shadow: 0 4px 16px var(--primary-light, rgba(126, 1, 255, 0.2));
+}
+.apply-filters-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--primary-medium, rgba(126, 1, 255, 0.3));
+}
+.clear-filters-button {
+    background: var(--primary-light, rgba(0, 0, 0, 0.04));
+    color: var(--primary-color, #7e01ff);
+    border: 1px solid var(--primary-medium, rgba(0, 0, 0, 0.06));
+}
+.clear-filters-button:hover {
+    background: var(--primary-medium, rgba(0, 0, 0, 0.08));
+    color: var(--primary-color, #7e01ff);
+    transform: translateY(-1px);
+}
+
+/* Department Bookmark Buttons - Consistent Design */
+.department-bookmarks {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.dept-bookmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  min-width: 120px;
+  max-width: 220px;
+  border-radius: 999px;
+  border: 1.5px solid var(--primary-color, #7e01ff);
+  background: var(--primary-light, #f3eaff);
+  color: var(--primary-color, #7e01ff);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  outline: none;
+  box-shadow: 0 2px 8px rgba(126,1,255,0.04);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 600px) {
+  .dept-bookmark {
+    min-width: 90px;
+    max-width: 120px;
+    font-size: 0.95rem;
+    padding: 8px 10px;
+  }
+}
+.dept-bookmark:hover {
+  background: var(--primary-medium, #a259ff);
+  color: #fff;
+  border-color: var(--primary-medium, #a259ff);
+  transform: translateY(-2px) scale(1.04);
+}
+.dept-bookmark.active {
+  background: var(--primary-color, #7e01ff);
+  color: #fff;
+  border-color: var(--primary-color, #7e01ff);
+  box-shadow: 0 4px 16px var(--primary-light, #e5d6fa);
+  transform: scale(1.08);
+}
+
+/* Ensure color scheme still works for .categories-main with department color classes */
+.categories-main[class*="dept-"] {
+  /* color variables are set by JS, nothing to override here */
 }
