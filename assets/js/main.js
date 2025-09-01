@@ -266,78 +266,173 @@ document.addEventListener('DOMContentLoaded', function() {
         styleFloat.textContent = floatAnimation;
         document.head.appendChild(styleFloat);
     }
-});
 
-    // === Department Filter Sidebar Switcher ===
+    // === DEPARTMENT FILTER FUNCTIONALITY ===
     const deptButtons = document.querySelectorAll(".dept-bookmark");
     const filterGroups = document.querySelectorAll(".filter-group");
     const categoriesMain = document.querySelector('.categories-main');
     const deptClassPrefix = 'dept-';
     const departmentInput = document.getElementById('department-input');
 
+    // Debug logging
+    console.log('Department buttons found:', deptButtons.length);
+    console.log('Filter groups found:', filterGroups.length);
+    console.log('Categories main found:', !!categoriesMain);
+    console.log('Department input found:', !!departmentInput);
+    
+    // Log all department buttons and their data attributes
+    deptButtons.forEach((btn, index) => {
+        const rawColor = btn.getAttribute('data-color');
+        const cleanColor = rawColor ? rawColor.toLowerCase().replace(/[^a-z0-9-]/g, '').trim() : '';
+        console.log(`Button ${index}:`, {
+            text: btn.textContent,
+            dataDept: btn.dataset.dept,
+            dataColor: btn.dataset.color,
+            rawColor: rawColor,
+            cleanColor: cleanColor
+        });
+    });
+    
+    // Log all filter groups and their data attributes
+    filterGroups.forEach((group, index) => {
+        console.log(`Filter group ${index}:`, {
+            dataDept: group.dataset.dept,
+            display: group.style.display
+        });
+    });
+
     // Helper to activate department UI
     function activateDepartment(dept) {
-        dept = dept.trim().replace(/\s+/g, ""); // remove spaces
+        // Normalize the department value
+        dept = dept.toString().trim();
+        console.log('Activating department:', dept);
 
-        // Hide all filter groups
-        filterGroups.forEach(group => group.style.display = "none");
+        // Hide all filter groups first
+        filterGroups.forEach(group => {
+            group.style.display = "none";
+        });
 
         // Remove active class from all dept buttons
-        deptButtons.forEach(btn => btn.classList.remove("active"));
+        deptButtons.forEach(btn => {
+            btn.classList.remove("active");
+        });
 
         // Show the matching filter group
         const activeGroup = document.querySelector(`.filter-group[data-dept="${dept}"]`);
         if (activeGroup) {
             activeGroup.style.display = "block";
+            console.log('Found and showing filter group for dept:', dept);
+        } else {
+            console.log('No filter group found for dept:', dept);
         }
 
-        // Highlight the active dept button
+        // Highlight the active dept button and get color class
         const activeBtn = document.querySelector(`.dept-bookmark[data-dept="${dept}"]`);
         let colorClass = '';
+        
         if (activeBtn) {
             activeBtn.classList.add("active");
-
-            // Special case for CE: only 2 letters
-            if (dept === "CE") {
-                colorClass = "ce";
-            } else {
-                colorClass = (activeBtn.getAttribute('data-color') || '').trim().replace(/\s+/g, "");
-            }
+            colorClass = activeBtn.getAttribute('data-color') || '';
+            console.log('Found and activated button for dept:', dept, 'with color:', colorClass);
         } else if (dept === 'all') {
+            const allBtn = document.querySelector('.dept-bookmark[data-dept="all"]');
+            if (allBtn) {
+                allBtn.classList.add("active");
+                console.log('Activated "all" button');
+            }
             colorClass = 'all';
+        } else {
+            console.log('No button found for dept:', dept);
         }
 
-        // Remove previous department color classes
+        // Apply color class to main container
         if (categoriesMain) {
+            // Remove all existing department color classes
             categoriesMain.className = categoriesMain.className.replace(/\bdept-[^ ]+/g, '').trim();
+            
+            // Add new color class if not 'all'
             if (colorClass && colorClass !== 'all') {
-                categoriesMain.classList.add(deptClassPrefix + colorClass.toLowerCase());
+                // Clean the color class to ensure it's valid for CSS
+                // This handles cases where department names have spaces or special characters
+                // Example: "College of Engineering Technology" -> "cet " -> "cet"
+                const cleanColorClass = colorClass.toLowerCase().replace(/[^a-z0-9-]/g, '').trim();
+                if (cleanColorClass) {
+                    categoriesMain.classList.add(deptClassPrefix + cleanColorClass);
+                    console.log('Applied color class:', deptClassPrefix + cleanColorClass, 'from original:', colorClass);
+                    
+                    // Debug: Check if CSS variables are being applied
+                    const computedStyle = window.getComputedStyle(categoriesMain);
+                    const primaryColor = computedStyle.getPropertyValue('--primary-color');
+                    const primaryMedium = computedStyle.getPropertyValue('--primary-medium');
+                    const primaryLight = computedStyle.getPropertyValue('--primary-light');
+                    console.log('CSS variables:', {
+                        '--primary-color': primaryColor,
+                        '--primary-medium': primaryMedium,
+                        '--primary-light': primaryLight
+                    });
+                    
+                    // Check if elements are actually using the variables
+                    const heroElement = document.querySelector('.categories-hero');
+                    if (heroElement) {
+                        const heroStyle = window.getComputedStyle(heroElement);
+                        console.log('Hero background:', heroStyle.background);
+                        console.log('Hero border:', heroStyle.border);
+                    }
+                } else {
+                    console.warn('No valid color class generated from:', colorClass);
+                    // Fallback to default color
+                    categoriesMain.classList.add(deptClassPrefix + 'default');
+                }
             }
         }
 
         // Set hidden input value
         if (departmentInput) {
             departmentInput.value = dept;
+            console.log('Set department input value to:', dept);
         }
     }
 
     // On page load, set department from input or query string
-    let initialDept = (departmentInput && departmentInput.value) || 'all';
-    activateDepartment(initialDept);
+    let initialDept = 'all';
+    if (departmentInput && departmentInput.value) {
+        initialDept = departmentInput.value;
+    } else {
+        // Check URL parameters for department
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlDept = urlParams.get('department');
+        if (urlDept) {
+            initialDept = urlDept;
+        }
+    }
+    
+    console.log('Initial department set to:', initialDept);
+    
+    // Initialize the department UI with a small delay to ensure DOM is ready
+    setTimeout(() => {
+        activateDepartment(initialDept);
+    }, 100);
 
+    // Add click event listeners to department buttons
     deptButtons.forEach(button => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", (e) => {
+            e.preventDefault(); // Prevent any default button behavior
+            
             const selectedDept = button.dataset.dept;
+            console.log('Department clicked:', selectedDept); // Debug log
+            
+            if (!selectedDept) {
+                console.error('No department data found for button:', button);
+                return;
+            }
+            
+            // Update the UI immediately
             activateDepartment(selectedDept);
-            // Submit the filter form immediately
+            
+            // Submit the filter form
             if (departmentInput && departmentInput.form) {
                 departmentInput.form.submit();
             }
         });
     });
-
-    // Ensure color changes after form submission (when filters are applied)
-    document.addEventListener('DOMContentLoaded', function() {
-        let deptVal = (departmentInput && departmentInput.value) || 'all';
-        activateDepartment(deptVal);
-    });
+});
