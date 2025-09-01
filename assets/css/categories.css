@@ -2,50 +2,88 @@
 .categories-main {
     padding-top: 20px;
     padding-bottom: 80px;
-    background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+    background: linear-gradient(135deg, var(--primary-light, #fafbfc) 0%, var(--primary-light, #f8f9fa) 100%);
     min-height: 100vh;
 }
 
 /* === Department Color Schemes === */
 .categories-main.dept-cict {
+  --primary-color: #7e01ff !important;
+  --primary-medium: #a259ff !important;
+  --primary-light: #e5d6fa !important;
+}
+.categories-main.dept-cas {
+  --primary-color: #00796b !important;
+  --primary-medium: #26a69a !important;
+  --primary-light: #d0f5ef !important;
+}
+.categories-main.dept-cbm {
+  --primary-color: #ff9800 !important;
+  --primary-medium: #ffc947 !important;
+  --primary-light: #fff3e0 !important;
+}
+.categories-main.dept-ccj {
+  --primary-color: #c62828 !important;
+  --primary-medium: #ef5350 !important;
+  --primary-light: #ffebee !important;
+}
+.categories-main.dept-ce {
+  --primary-color: #1565c0 !important;
+  --primary-medium: #42a5f5 !important;
+  --primary-light: #e3f2fd !important;
+}
+.categories-main.dept-chtm {
+  --primary-color: #6d4c41 !important;
+  --primary-medium: #a1887f !important;
+  --primary-light: #efebe9 !important;
+}
+.categories-main.dept-cet {
+  --primary-color: #388e3c !important;
+  --primary-medium: #81c784 !important;
+  --primary-light: #e8f5e9 !important;
+}
+.categories-main.dept-graduate {
+  --primary-color: #512da8 !important;
+  --primary-medium: #9575cd !important;
+  --primary-light: #ede7f6 !important;
+}
+
+/* Additional department color classes for dynamically generated names */
+.categories-main.dept-coll {
+  --primary-color: #1976d2 !important;
+  --primary-medium: #42a5f5 !important;
+  --primary-light: #e3f2fd !important;
+}
+
+.categories-main.dept-cols {
+  --primary-color: #388e3c !important;
+  --primary-medium: #66bb6a !important;
+  --primary-light: #e8f5e9 !important;
+}
+
+.categories-main.dept-colb {
+  --primary-color: #f57c00 !important;
+  --primary-medium: #ff9800 !important;
+  --primary-light: #fff3e0 !important;
+}
+
+/* Fallback for any department without specific styling */
+.categories-main[class*="dept-"] {
   --primary-color: #7e01ff;
   --primary-medium: #a259ff;
   --primary-light: #e5d6fa;
 }
-.categories-main.dept-cas {
-  --primary-color: #00796b;
-  --primary-medium: #26a69a;
-  --primary-light: #d0f5ef;
+
+/* Default department styling */
+.categories-main.dept-default {
+  --primary-color: #7e01ff;
+  --primary-medium: #a259ff;
+  --primary-light: #e5d6fa;
 }
-.categories-main.dept-cbm {
-  --primary-color: #ff9800;
-  --primary-medium: #ffc947;
-  --primary-light: #fff3e0;
-}
-.categories-main.dept-ccj {
-  --primary-color: #c62828;
-  --primary-medium: #ef5350;
-  --primary-light: #ffebee;
-}
-.categories-main.dept-ce {
-  --primary-color: #1565c0;
-  --primary-medium: #42a5f5;
-  --primary-light: #e3f2fd;
-}
-.categories-main.dept-chtm {
-  --primary-color: #6d4c41;
-  --primary-medium: #a1887f;
-  --primary-light: #efebe9;
-}
-.categories-main.dept-cet {
-  --primary-color: #388e3c;
-  --primary-medium: #81c784;
-  --primary-light: #e8f5e9;
-}
-.categories-main.dept-graduate {
-  --primary-color: #512da8;
-  --primary-medium: #9575cd;
-  --primary-light: #ede7f6;
+
+/* Ensure CSS variables are applied to all child elements */
+.categories-main[class*="dept-"] * {
+  /* This ensures CSS variables are inherited by all child elements */
 }
 
 /* Hero header for categories */
@@ -53,18 +91,25 @@
     position: relative;
     margin-top: 30px; /* below fixed header */
     margin-bottom: 32px;
-    background: linear-gradient(135deg, rgba(126,1,255,0.08), rgba(126,1,255,0.04));
-    border: 1px solid rgba(126,1,255,0.15);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-medium) 50%, var(--primary-color) 100%);
+    border: 2px solid var(--primary-color);
     border-radius: 16px;
     overflow: hidden;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+        0 0 20px rgba(0, 0, 0, 0.1);
 }
 
 .categories-hero::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(1200px 200px at -10% -40%, rgba(126,1,255,0.15) 0%, rgba(126,1,255,0) 60%),
-                radial-gradient(800px 200px at 110% 120%, rgba(126,1,255,0.12) 0%, rgba(126,1,255,0) 60%);
+    background: 
+        radial-gradient(1200px 200px at -10% -40%, rgba(0, 0, 0, 0.25) 0%, transparent 60%),
+        radial-gradient(800px 200px at 110% 120%, rgba(0, 0, 0, 0.2) 0%, transparent 60%),
+        linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.15) 100%),
+        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.03) 10px, rgba(255, 255, 255, 0.03) 20px);
     pointer-events: none;
 }
 
@@ -78,12 +123,13 @@
     font-size: 2rem;
     font-weight: 800;
     letter-spacing: 0.3px;
-    color: var(--dark-gray);
+    color: black;
     margin-bottom: 6px;
+    text-shadow: 0 2px 8px rgba(255, 255, 255, 0.3), 0 4px 16px rgba(255, 255, 255, 0.2);
 }
 
 .categories-hero p {
-    color: var(--medium-gray);
+    color: rgba(0, 0, 0, 0.8);
     font-size: 1.05rem;
 }
 
@@ -100,10 +146,11 @@
     gap: 8px;
     padding: 6px 12px;
     border-radius: 999px;
-    background: var(--white);
-    border: 1px solid var(--light-gray);
-    color: var(--medium-gray);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--dark-gray);
     font-size: 0.95rem;
+    backdrop-filter: blur(10px);
 }
 
 .hero-chip .dot {
@@ -131,9 +178,10 @@
     overflow: hidden;
 }
 
-.hero-search .search-input { background-color: 
-    var(--light-gray); 
-    color: var(--primary-color);
+.hero-search .search-input { 
+    background-color: rgba(255, 255, 255, 0.95); 
+    color: var(--dark-gray);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .categories-content {
@@ -483,26 +531,64 @@
     transform: translateX(2px);
 }
 
-.cat-thesis-item-author {
+.cat-thesis-item-authors {
+    margin-bottom: 16px;
+}
+
+.cat-thesis-item-author,
+.cat-thesis-item-coauthor {
     font-size: 0.95rem;
     color: var(--medium-gray);
-    margin-bottom: 16px;
+    margin-bottom: 6px;
     font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cat-thesis-item-author i,
+.cat-thesis-item-coauthor i {
+    color: var(--primary-color);
+    width: 16px;
+    opacity: 0.8;
+}
+
+.cat-thesis-item-author strong,
+.cat-thesis-item-coauthor strong {
+    color: var(--dark-gray);
+    font-weight: 600;
 }
 
 .cat-thesis-item-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 16px;
     font-size: 0.85rem;
     color: var(--medium-gray);
     margin-bottom: 16px;
+    line-height: 1.4;
 }
 
 .cat-thesis-item-meta span {
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .cat-thesis-item-meta {
+        gap: 12px;
+    }
+    
+    .cat-thesis-item-meta span {
+        font-size: 0.8rem;
+    }
+    
+    .cat-thesis-item-author,
+    .cat-thesis-item-coauthor {
+        font-size: 0.9rem;
+    }
 }
 
 .cat-thesis-item-meta i {
@@ -544,7 +630,7 @@
 }
 
 .cat-view-button {
-    background: #7e01ff;
+    background: var(--primary-color);
     color: white;
 }
 
@@ -912,50 +998,50 @@
 
 /* === Department-Responsive Hero === */
 .categories-hero {
-    background: linear-gradient(135deg, var(--primary-light, #fafbfc) 0%, var(--primary-light, #f8f9fa) 100%);
-    border: 1px solid var(--primary-color, rgba(126,1,255,0.15));
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-light) 100%);
+    border: 1px solid var(--primary-color);
 }
 .categories-hero::before {
-    background: radial-gradient(1200px 200px at -10% -40%, var(--primary-medium, rgba(126,1,255,0.15)) 0%, rgba(126,1,255,0) 60%),
-                radial-gradient(800px 200px at 110% 120%, var(--primary-medium, rgba(126,1,255,0.12)) 0%, rgba(126,1,255,0) 60%);
+    background: radial-gradient(1200px 200px at -10% -40%, var(--primary-medium) 0%, transparent 60%),
+                radial-gradient(800px 200px at 110% 120%, var(--primary-medium) 0%, transparent 60%);
 }
 
 /* === Department-Responsive Card Buttons === */
 .cat-view-button {
-    background: var(--primary-color, #7e01ff);
+    background: var(--primary-color);
     color: white;
 }
 .cat-view-button:hover {
-    background: var(--primary-medium, #a259ff);
+    background: var(--primary-medium);
     color: white;
 }
 .cat-download-button {
-    background: var(--primary-light, #e5d6fa);
-    color: var(--primary-color, #7e01ff);
+    background: var(--primary-light);
+    color: var(--primary-color);
 }
 .cat-download-button:hover {
-    background: var(--primary-medium, #a259ff);
+    background: var(--primary-medium);
     color: white;
 }
 
 /* === Department-Responsive Sidebar Buttons === */
 .apply-filters-button {
-    background: linear-gradient(135deg, var(--primary-color, #7e01ff) 0%, var(--primary-medium, #a259ff) 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-medium) 100%);
     color: white;
-    box-shadow: 0 4px 16px var(--primary-light, rgba(126, 1, 255, 0.2));
+    box-shadow: 0 4px 16px var(--primary-light);
 }
 .apply-filters-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px var(--primary-medium, rgba(126, 1, 255, 0.3));
 }
 .clear-filters-button {
-    background: var(--primary-light, rgba(0, 0, 0, 0.04));
-    color: var(--primary-color, #7e01ff);
-    border: 1px solid var(--primary-medium, rgba(0, 0, 0, 0.06));
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-medium);
 }
 .clear-filters-button:hover {
-    background: var(--primary-medium, rgba(0, 0, 0, 0.08));
-    color: var(--primary-color, #7e01ff);
+    background: var(--primary-medium);
+    color: var(--primary-color);
     transform: translateY(-1px);
 }
 
@@ -968,6 +1054,7 @@
   flex-wrap: wrap;
 }
 .dept-bookmark {
+  margin-left: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -975,15 +1062,15 @@
   min-width: 120px;
   max-width: 220px;
   border-radius: 999px;
-  border: 1.5px solid var(--primary-color, #7e01ff);
-  background: var(--primary-light, #f3eaff);
-  color: var(--primary-color, #7e01ff);
+  border: 1.5px solid var(--primary-color);
+  background: var(--primary-light);
+  color: var(--primary-color);
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
   outline: none;
-  box-shadow: 0 2px 8px rgba(126,1,255,0.04);
+  box-shadow: 0 2px 8px var(--primary-light);
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
@@ -998,16 +1085,16 @@
   }
 }
 .dept-bookmark:hover {
-  background: var(--primary-medium, #a259ff);
+  background: var(--primary-medium);
   color: #fff;
-  border-color: var(--primary-medium, #a259ff);
+  border-color: var(--primary-medium);
   transform: translateY(-2px) scale(1.04);
 }
 .dept-bookmark.active {
-  background: var(--primary-color, #7e01ff);
+  background: var(--primary-color);
   color: #fff;
-  border-color: var(--primary-color, #7e01ff);
-  box-shadow: 0 4px 16px var(--primary-light, #e5d6fa);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 16px var(--primary-light);
   transform: scale(1.08);
 }
 
@@ -1015,3 +1102,4 @@
 .categories-main[class*="dept-"] {
   /* color variables are set by JS, nothing to override here */
 }
+

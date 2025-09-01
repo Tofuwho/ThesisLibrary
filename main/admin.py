@@ -5,7 +5,10 @@ from .models import Thesis, Submission, Category, Department, Course
 
 @admin.register(Thesis)
 class ThesisAdmin(admin.ModelAdmin):
-    list_display = ("title", "author", "year", "thesis_type", "specialization")
+    list_display = ("title", "author", "co_author", "year", "department", "course", "thesis_type")
+    list_filter = ("department", "course", "year", "thesis_type")
+    search_fields = ("title", "author", "co_author", "abstract")
+    ordering = ("-year", "title")
 
 
 # --- Admin Actions ---

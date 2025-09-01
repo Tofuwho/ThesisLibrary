@@ -39,6 +39,7 @@ class Course(models.Model):
 class Thesis(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
+    co_author = models.CharField(max_length=255, blank=True, null=True)
     year = models.IntegerField()
     abstract = models.TextField()
     thesis_type = models.CharField(max_length=100, blank=True)
