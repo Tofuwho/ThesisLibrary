@@ -1,3 +1,5 @@
 Django>=4.2.0
 mysqlclient>=2.2.0
 mysql-connector-python>=8.0.0
+PyPDF2>=3.0.0
+reportlab>=4.0.0

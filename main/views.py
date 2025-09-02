@@ -3,14 +3,15 @@ from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
-from django.http import FileResponse, Http404, JsonResponse
+from django.http import FileResponse, Http404, JsonResponse, HttpResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
 from .models import Thesis, Category, Submission
-import os, json
+import os, json, io
+from PyPDF2 import PdfReader, PdfWriter
 
 # ----------------------
 # Pages / Landing
@@ -23,10 +24,11 @@ def about_page(request):
 
 def index_page(request):
     recent_theses = Thesis.objects.order_by('-id')[:6]
-    categories = Category.objects.all()[:6]
+    from .models import Department
+    departments = Department.objects.all().order_by('name')[:8]
     return render(request, 'main/index.html', {
         'recent_theses': recent_theses,
-        'categories': categories,
+        'departments': departments,
     })
 
 def categories_page(request):
@@ -283,25 +285,93 @@ def my_submissions(request):
 
 def thesis_detail(request, pk: int):
     thesis = get_object_or_404(Thesis, pk=pk)
-    return render(request, 'main/thesis_detail.html', {'thesis': thesis})
+    is_authenticated = request.user.is_authenticated
+    return render(request, 'main/thesis_detail.html', {
+        'thesis': thesis,
+        'is_authenticated': is_authenticated
+    })
 
 
 def view_thesis_file(request, pk):
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file:
         raise Http404('File not found.')
+    
+    # For non-authenticated users, we'll serve a restricted version
+    # This will be handled by a separate view that creates a limited PDF
+    if not request.user.is_authenticated:
+        return restricted_view_thesis_file(request, pk)
+    
     response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
     return response
 
 
 def download_thesis_file(request, pk):
+    # Require authentication for downloads
+    if not request.user.is_authenticated:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': 'Please log in to download thesis files.', 'require_login': True})
+        else:
+            messages.error(request, 'Please log in to download thesis files.')
+            return redirect('/')
+    
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file:
         raise Http404('File not found.')
     response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
     return response
+
+
+def restricted_view_thesis_file(request, pk):
+    """View function that serves only the first 3 pages of a PDF for non-authenticated users"""
+    thesis = get_object_or_404(Thesis, pk=pk)
+    if not thesis.file:
+        raise Http404('File not found.')
+    
+    try:
+        # Read the original PDF
+        pdf_reader = PdfReader(thesis.file.open('rb'))
+        pdf_writer = PdfWriter()
+        
+        # Add only the first 3 pages (or fewer if the PDF has less than 3 pages)
+        max_pages = min(3, len(pdf_reader.pages))
+        for page_num in range(max_pages):
+            pdf_writer.add_page(pdf_reader.pages[page_num])
+        
+        # Create a watermark page for the restriction notice
+        if max_pages < 3:
+            # If PDF has less than 3 pages, add a restriction notice page
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            
+            buffer = io.BytesIO()
+            p = canvas.Canvas(buffer, pagesize=letter)
+            p.drawString(100, 750, "Thesis Library - Preview Mode")
+            p.drawString(100, 700, f"Title: {thesis.title}")
+            p.drawString(100, 650, f"Author: {thesis.author}")
+            p.drawString(100, 600, "This is a preview of the first few pages.")
+            p.drawString(100, 550, "Please log in to view the complete thesis and download the full document.")
+            p.showPage()
+            p.save()
+            
+            # Add the watermark page to the PDF
+            watermark_reader = PdfReader(buffer)
+            pdf_writer.add_page(watermark_reader.pages[0])
+        
+        # Create the response
+        output_buffer = io.BytesIO()
+        pdf_writer.write(output_buffer)
+        output_buffer.seek(0)
+        
+        response = HttpResponse(output_buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="preview_{os.path.basename(thesis.file.name)}"'
+        return response
+        
+    except Exception as e:
+        # If PDF processing fails, return a simple error message
+        return HttpResponse(f"Error processing PDF: {str(e)}", status=500)
 
 
 # ----------------------
