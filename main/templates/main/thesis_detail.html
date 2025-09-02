@@ -20,8 +20,37 @@
       <div class="thesis-info">
         <p class="thesis-meta">{{ thesis.specialization }}</p>
         <p>{{ thesis.abstract }}</p>
-        {% if thesis.file_url %}
-          <a href="{{ thesis.file_url }}" class="view-button">Download</a>
+        
+        {% if thesis.file %}
+          <div class="thesis-actions">
+            {% if is_authenticated %}
+              <!-- Authenticated users see full access -->
+              <a href="{% url 'thesis_view_file' thesis.id %}" class="view-button" target="_blank">
+                <i class="fas fa-eye"></i> View Full PDF
+              </a>
+              <a href="{% url 'thesis_download_file' thesis.id %}" class="download-button">
+                <i class="fas fa-download"></i> Download
+              </a>
+            {% else %}
+              <!-- Non-authenticated users see restricted access -->
+              <div class="restricted-access">
+                <a href="{% url 'thesis_view_file' thesis.id %}" class="preview-button" target="_blank">
+                  <i class="fas fa-eye"></i> Preview (First 3 Pages)
+                </a>
+                <button class="download-button" onclick="handleDownloadClick({{ thesis.id }})">
+                  <i class="fas fa-download"></i> Download
+                </button>
+                <div class="login-required">
+                  <p class="restriction-notice">
+                    <i class="fas fa-lock"></i> 
+                    Please <a href="#" class="login-link" onclick="showLoginModal()">log in</a> to view the complete thesis and download the full document.
+                  </p>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% else %}
+          <p class="no-file">No file available for this thesis.</p>
         {% endif %}
       </div>
     </div>
@@ -29,4 +58,57 @@
 </section>
 {% endblock %}
 
+{% block extra_scripts %}
+<script>
+function showLoginModal() {
+    const loginModal = document.getElementById('authModal');
+    const authContainer = document.getElementById('auth-container');
+    
+    if (loginModal) {
+        loginModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        if (authContainer) authContainer.classList.remove('right-panel-active');
+    }
+}
 
+function handleDownloadClick(thesisId) {
+    // Try to download the file
+    fetch(`/thesis/${thesisId}/download/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCSRFToken()
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // If successful, trigger download
+            window.location.href = `/thesis/${thesisId}/download/`;
+        } else {
+            // If not authenticated, show login modal
+            return response.json();
+        }
+    })
+    .then(data => {
+        if (data && data.require_login) {
+            showLoginModal();
+        }
+    })
+    .catch(error => {
+        console.error('Download error:', error);
+        showLoginModal();
+    });
+}
+
+function getCSRFToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            return value;
+        }
+    }
+    return '';
+}
+</script>
+{% endblock %}

@@ -2,11 +2,12 @@
 .categories-main {
     padding-top: 20px;
     padding-bottom: 80px;
-    background: linear-gradient(135deg, var(--primary-light, #fafbfc) 0%, var(--primary-light, #f8f9fa) 100%);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
     min-height: 100vh;
+    transition: background 0.3s ease;
 }
 
-/* === Department Color Schemes === */
+/* === Department Color Schemes - Light Theme === */
 .categories-main.dept-cict {
   --primary-color: #7e01ff !important;
   --primary-medium: #a259ff !important;
@@ -48,6 +49,48 @@
   --primary-light: #ede7f6 !important;
 }
 
+/* === Department Color Schemes - Dark Theme === */
+[data-theme="dark"] .categories-main.dept-cict {
+  --primary-color: #9d4edd !important;
+  --primary-medium: #c77dff !important;
+  --primary-light: rgba(157, 78, 221, 0.2) !important;
+}
+[data-theme="dark"] .categories-main.dept-cas {
+  --primary-color: #26a69a !important;
+  --primary-medium: #4db6ac !important;
+  --primary-light: rgba(38, 166, 154, 0.2) !important;
+}
+[data-theme="dark"] .categories-main.dept-cbm {
+  --primary-color: #ffb74d !important;
+  --primary-medium: #ffcc80 !important;
+  --primary-light: rgba(255, 183, 77, 0.2) !important;
+}
+[data-theme="dark"] .categories-main.dept-ccj {
+  --primary-color: #ef5350 !important;
+  --primary-medium: #ff7043 !important;
+  --primary-light: rgba(239, 83, 80, 0.2) !important;
+}
+[data-theme="dark"] .categories-main.dept-ce {
+  --primary-color: #42a5f5 !important;
+  --primary-medium: #64b5f6 !important;
+  --primary-light: rgba(66, 165, 245, 0.2) !important;
+}
+[data-theme="dark"] .categories-main.dept-chtm {
+  --primary-color: #a1887f !important;
+  --primary-medium: #bcaaa4 !important;
+  --primary-light: rgba(161, 136, 127, 0.2) !important;
+}
+[data-theme="dark"] .categories-main.dept-cet {
+  --primary-color: #81c784 !important;
+  --primary-medium: #a5d6a7 !important;
+  --primary-light: rgba(129, 199, 132, 0.2) !important;
+}
+[data-theme="dark"] .categories-main.dept-graduate {
+  --primary-color: #9575cd !important;
+  --primary-medium: #b39ddb !important;
+  --primary-light: rgba(149, 117, 205, 0.2) !important;
+}
+
 /* Additional department color classes for dynamically generated names */
 .categories-main.dept-coll {
   --primary-color: #1976d2 !important;
@@ -83,53 +126,54 @@
 
 /* Ensure CSS variables are applied to all child elements */
 .categories-main[class*="dept-"] * {
-  /* This ensures CSS variables are inherited by all child elements */
+      /* CSS variables are inherited by all child elements */
+  color: inherit;
 }
 
 /* Hero header for categories */
 .categories-hero {
-    position: relative;
-    margin-top: 30px; /* below fixed header */
-    margin-bottom: 32px;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-medium) 50%, var(--primary-color) 100%);
-    border: 2px solid var(--primary-color);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.15),
-        0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-        0 0 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  margin-top: 30px; /* below fixed header */
+  margin-bottom: 32px;
+  background-color: var(--primary-color, #7e01ff);
+  border: 2px solid var(--primary-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 0 20px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.8s cubic-bezier(0.4,0,0.2,1),
+              border-color 0.8s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.8s cubic-bezier(0.4,0,0.2,1),
+              color 0.8s cubic-bezier(0.4,0,0.2,1);
 }
-
 .categories-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: 
-        radial-gradient(1200px 200px at -10% -40%, rgba(0, 0, 0, 0.25) 0%, transparent 60%),
-        radial-gradient(800px 200px at 110% 120%, rgba(0, 0, 0, 0.2) 0%, transparent 60%),
-        linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.15) 100%),
-        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.03) 10px, rgba(255, 255, 255, 0.03) 20px);
-    pointer-events: none;
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(135deg, var(--primary-color, #7e01ff) 0%, var(--primary-medium, #a259ff) 50%, var(--primary-color, #7e01ff) 100%);
+  opacity: 0.35;
+  transition: background 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.8s cubic-bezier(0.4,0,0.2,1);
 }
-
 .categories-hero .hero-content {
-    position: relative;
-    padding: 28px;
-    text-align: left;
+  position: relative;
+  z-index: 1;
 }
 
 .categories-hero h1 {
     font-size: 2rem;
     font-weight: 800;
     letter-spacing: 0.3px;
-    color: black;
+    color: var(--text-primary);
     margin-bottom: 6px;
     text-shadow: 0 2px 8px rgba(255, 255, 255, 0.3), 0 4px 16px rgba(255, 255, 255, 0.2);
 }
 
 .categories-hero p {
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--text-secondary);
     font-size: 1.05rem;
 }
 
@@ -146,9 +190,9 @@
     gap: 8px;
     padding: 6px 12px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: var(--dark-gray);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
     font-size: 0.95rem;
     backdrop-filter: blur(10px);
 }
@@ -179,9 +223,9 @@
 }
 
 .hero-search .search-input { 
-    background-color: rgba(255, 255, 255, 0.95); 
-    color: var(--dark-gray);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-color: var(--input-bg); 
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 
 .categories-content {
@@ -194,9 +238,9 @@
 .filter-sidebar {
     width: 300px;
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--card-bg);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 32px;
     position: sticky;
@@ -204,7 +248,7 @@
     max-height: calc(100vh - 120px);
     overflow-y: auto;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow);
 }
 
 .filter-sidebar:hover {
@@ -398,17 +442,18 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 32px;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--card-bg);
     backdrop-filter: blur(10px);
     padding: 24px 32px;
     border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .cat-results-header h2 {
     font-size: 1.5rem;
     font-weight: 300;
-    color: var(--dark-gray);
+    color: var(--text-primary);
     letter-spacing: -0.01em;
 }
 
@@ -429,16 +474,16 @@
 
 .cat-sort-options label {
     font-size: 0.9rem;
-    color: var(--medium-gray);
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
 .cat-sort-select {
     padding: 10px 16px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    background: white;
-    color: var(--dark-gray);
+    background: var(--input-bg);
+    color: var(--text-primary);
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -460,13 +505,13 @@
 
 .cat-thesis-item {
     display: flex;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--card-bg);
     backdrop-filter: blur(10px);
     border-radius: 16px;
     overflow: hidden;
     transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
     opacity: 0;
     transform: translateY(20px);
     animation: slideInUp 0.6s ease forwards;
@@ -520,7 +565,7 @@
 .cat-thesis-item-title {
     font-size: 1.2rem;
     font-weight: 600;
-    color: var(--dark-gray);
+    color: var(--text-primary);
     margin-bottom: 8px;
     line-height: 1.4;
     transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
@@ -538,7 +583,7 @@
 .cat-thesis-item-author,
 .cat-thesis-item-coauthor {
     font-size: 0.95rem;
-    color: var(--medium-gray);
+    color: var(--text-secondary);
     margin-bottom: 6px;
     font-weight: 400;
     display: flex;
@@ -555,7 +600,7 @@
 
 .cat-thesis-item-author strong,
 .cat-thesis-item-coauthor strong {
-    color: var(--dark-gray);
+    color: var(--text-primary);
     font-weight: 600;
 }
 
@@ -564,7 +609,7 @@
     flex-wrap: wrap;
     gap: 16px;
     font-size: 0.85rem;
-    color: var(--medium-gray);
+    color: var(--text-secondary);
     margin-bottom: 16px;
     line-height: 1.4;
 }
@@ -599,7 +644,7 @@
 .cat-thesis-item-abstract {
     font-size: 0.9rem;
     line-height: 1.6;
-    color: var(--medium-gray);
+    color: var(--text-secondary);
     margin-bottom: 20px;
     display: -webkit-box;
     line-clamp: 3;
@@ -1101,5 +1146,54 @@
 /* Ensure color scheme still works for .categories-main with department color classes */
 .categories-main[class*="dept-"] {
   /* color variables are set by JS, nothing to override here */
+  transition: background 0.8s cubic-bezier(0.4,0,0.2,1),
+              color 0.8s cubic-bezier(0.4,0,0.2,1),
+              border-color 0.8s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.categories-hero,
+.filter-sidebar,
+.cat-results-header,
+.cat-thesis-item {
+  transition: background 0.8s cubic-bezier(0.4,0,0.2,1),
+              color 0.8s cubic-bezier(0.4,0,0.2,1),
+              border-color 0.8s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.dept-bookmark {
+  transition: background 0.8s cubic-bezier(0.4,0,0.2,1),
+              color 0.8s cubic-bezier(0.4,0,0.2,1),
+              border-color 0.8s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* --- DARK MODE PATCH: Force backgrounds to theme variables regardless of department --- */
+[data-theme="dark"] .categories-hero,
+[data-theme="dark"] .filter-sidebar,
+[data-theme="dark"] .cat-results-header,
+[data-theme="dark"] .cat-thesis-item {
+  background: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+[data-theme="dark"] .categories-hero .hero-content,
+[data-theme="dark"] .cat-thesis-item-content {
+  color: var(--text-primary) !important;
+}
+[data-theme="dark"] .filter-section h3,
+[data-theme="dark"] .cat-thesis-item-title,
+[data-theme="dark"] .cat-thesis-item-meta,
+[data-theme="dark"] .cat-thesis-item-abstract,
+[data-theme="dark"] .cat-thesis-item-author,
+[data-theme="dark"] .cat-thesis-item-coauthor {
+  color: var(--text-primary) !important;
+}
+[data-theme="dark"] .cat-thesis-item-meta span {
+  color: var(--text-secondary) !important;
+}
+[data-theme="dark"] .cat-thesis-cover-placeholder {
+  color: var(--medium-gray) !important;
 }
 

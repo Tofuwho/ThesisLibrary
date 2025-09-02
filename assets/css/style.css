@@ -1,4 +1,4 @@
-/* Global Variables */
+/* Global Variables - Light Theme (Default) */
 :root {
   --primary-color: rgb(126, 1, 255);
   --primary-light: rgba(126, 1, 255, 0.1);
@@ -8,9 +8,55 @@
   --light-gray: #e0e0e0;
   --lighter-gray: #f5f5f5;
   --white: #fff;
+  --black: #000;
   --transition: all 0.3s ease;
   --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 5px 15px rgba(0, 0, 0, 0.2);
+  
+  /* Theme-specific variables */
+  --bg-primary: #fff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e0e0e0;
+  --text-primary: #333;
+  --text-secondary: #666;
+  --text-muted: #999;
+  --border-color: #e0e0e0;
+  --card-bg: #fff;
+  --input-bg: #fff;
+  --header-bg: #fff;
+  --footer-bg: #2c3e50;
+  --footer-text: #bdc3c7;
+}
+
+/* Dark Theme Variables */
+[data-theme="dark"] {
+  --primary-color: rgb(138, 43, 226);
+  --primary-light: rgba(138, 43, 226, 0.2);
+  --primary-medium: rgba(138, 43, 226, 0.6);
+  --dark-gray: #e0e0e0;
+  --medium-gray: #b0b0b0;
+  --light-gray: #404040;
+  --lighter-gray: #2a2a2a;
+  --white: #1a1a1a;
+  --black: #fff;
+  
+  /* Theme-specific variables */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2a2a2a;
+  --bg-tertiary: #404040;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #888;
+  --border-color: #404040;
+  --card-bg: #2a2a2a;
+  --input-bg: #404040;
+  --header-bg: #2a2a2a;
+  --footer-bg: #1a1a1a;
+  --footer-text: #888;
+  
+  /* Dark theme shadows */
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 5px 15px rgba(0, 0, 0, 0.4);
 }
 
 /* Reset and Base Styles */
@@ -24,13 +70,16 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background-color: var(--lighter-gray); /* keep background consistent */
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 header {
   margin: 0;
   padding: 0;
-  background-color: var(--white); /* or your chosen header bg */
+  background-color: var(--header-bg);
+  transition: background-color 0.3s ease;
 }
 
 .container {
@@ -216,14 +265,15 @@ ul {
 
 /* Header Styles */
 .main-header, .redesigned-header {
-  background: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  background: var(--header-bg);
+  box-shadow: var(--shadow);
   position: fixed;
   width: 100%;
   top: 0;
   left: 0;
   z-index: 1000;
   padding: 0;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .header-inner, .main-header .container {
@@ -253,7 +303,7 @@ ul {
 .logo-container h1 {
   font-size: 1.7rem;
   font-weight: 700;
-  color: #7e01ff;
+  color: var(--primary-color);
   letter-spacing: 1px;
 }
 
@@ -274,7 +324,7 @@ ul {
 }
 
 .nav-link {
-  color: #333;
+  color: var(--text-primary);
   font-weight: 500;
   font-size: 1.05rem;
   padding: 6px 0;
@@ -283,7 +333,7 @@ ul {
 }
 
 .nav-link:hover, .nav-link.active {
-  color: #7e01ff;
+  color: var(--primary-color);
   border-bottom: 2px solid #7e01ff;
 }
 
@@ -306,7 +356,7 @@ ul {
   border-radius: 5px;
   border: 1.5px solid #7e01ff;
   background: transparent;
-  color: #7e01ff;
+  color: var(--primary-color);
   font-weight: 600;
   transition: background 0.2s, color 0.2s;
   margin-left: 10px;
@@ -357,7 +407,7 @@ ul {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 15px;
-  color: var(--dark-gray);
+  color: var(--text-primary);
   position: relative;
   display: inline-block;
 }
@@ -383,7 +433,7 @@ ul {
 
 .section-subtitle {
   font-size: 1.1rem;
-  color: var(--medium-gray);
+  color: var(--text-secondary);
   margin-bottom: 30px;
 }
 
@@ -403,10 +453,11 @@ ul {
 .search-input {
   flex: 1;
   padding: 12px 20px;
-  border: none;
+  border: 1px solid var(--border-color);
   font-size: 1rem;
-  background-color: var(--light-gray);
-  color: var(--primary-color);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .search-input:focus {
@@ -483,7 +534,7 @@ ul {
 }
 
 .thesis-card {
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow);
@@ -534,18 +585,18 @@ ul {
 .thesis-title {
   font-size: 1.2rem;
   margin-bottom: 8px;
-  color: var(--dark-gray);
+  color: var(--text-primary);
 }
 
 .thesis-author {
   font-size: 0.9rem;
-  color: var(--medium-gray);
+  color: var(--text-secondary);
   margin-bottom: 5px;
 }
 
 .thesis-meta {
   font-size: 0.8rem;
-  color: var(--medium-gray);
+  color: var(--text-secondary);
   margin-bottom: 15px;
 }
 
@@ -604,7 +655,105 @@ ul {
   box-shadow: var(--shadow-hover);
 }
 
-/* Categories Section */
+/* Departments Section */
+.departments {
+  padding: 60px 0;
+  background-color: var(--white);
+}
+
+.department-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.department-card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 30px 25px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 2px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.department-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-medium));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.department-card:hover::before {
+  transform: scaleX(1);
+}
+
+.department-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-light);
+}
+
+.department-icon {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  transition: var(--transition);
+}
+
+.department-card:hover .department-icon {
+  transform: scale(1.1);
+  color: var(--primary-medium);
+}
+
+.department-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 15px;
+  line-height: 1.3;
+}
+
+.department-description {
+  margin-bottom: 25px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.browse-button {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-radius: 8px;
+  font-weight: 600;
+  transition: var(--transition);
+  text-decoration: none;
+  font-size: 0.95rem;
+  border: 2px solid var(--primary-color);
+}
+
+.browse-button:hover {
+  background-color: var(--white);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(126, 1, 255, 0.3);
+}
+
+/* Legacy category styles for backward compatibility */
 .categories {
   padding: 60px 0;
   background-color: var(--white);
@@ -642,21 +791,6 @@ ul {
   color: var(--medium-gray);
 }
 
-.browse-button {
-  display: inline-block;
-  padding: 8px 20px;
-  background-color: var(--primary-light);
-  color: var(--primary-color);
-  border-radius: 4px;
-  font-weight: 500;
-  transition: var(--transition);
-}
-
-.browse-button:hover {
-  background-color: var(--primary-color);
-  color: var(--white);
-}
-
 /* Resources Section */
 .resources {
   padding: 60px 0;
@@ -671,11 +805,12 @@ ul {
 }
 
 .resource-card {
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: 8px;
   padding: 30px;
   box-shadow: var(--shadow);
   transition: var(--transition);
+  border: 1px solid var(--border-color);
 }
 
 .resource-card:hover {
@@ -686,12 +821,12 @@ ul {
 .resource-card h3 {
   font-size: 1.4rem;
   margin-bottom: 15px;
-  color: var(--dark-gray);
+  color: var(--text-primary);
 }
 
 .resource-card p {
   margin-bottom: 20px;
-  color: var(--medium-gray);
+  color: var(--text-secondary);
 }
 
 .resource-button {
@@ -711,9 +846,10 @@ ul {
 
 /* Footer Styles */
 .main-footer {
-  background-color: var(--dark-gray);
-  color: var(--white);
+  background-color: var(--footer-bg);
+  color: var(--footer-text);
   padding: 60px 0 20px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .footer-grid {
@@ -988,7 +1124,7 @@ ul {
 .logo-container h1 {
   font-size: 1.7rem;
   font-weight: 700;
-  color: #7e01ff;
+  color: var(--primary-color);
   letter-spacing: 1px;
 }
 
@@ -1009,7 +1145,7 @@ ul {
 }
 
 .nav-link {
-  color: #333;
+  color: var(--text-primary);
   font-weight: 500;
   font-size: 1.05rem;
   padding: 6px 0;
@@ -1018,7 +1154,7 @@ ul {
 }
 
 .nav-link:hover, .nav-link.active {
-  color: #7e01ff;
+  color: var(--primary-color);
   border-bottom: 2px solid #7e01ff;
 }
 
@@ -1041,7 +1177,7 @@ ul {
   border-radius: 5px;
   border: 1.5px solid #7e01ff;
   background: transparent;
-  color: #7e01ff;
+  color: var(--primary-color);
   font-weight: 600;
   transition: background 0.2s, color 0.2s;
   margin-left: 10px;
@@ -1108,7 +1244,7 @@ ul {
 .main-header .logo-container h1 {
   font-size: 1.7rem;
   font-weight: 700;
-  color: #7e01ff;
+  color: var(--primary-color);
   letter-spacing: 1px;
 }
 .main-header .header-flex-center {
@@ -1126,7 +1262,7 @@ ul {
   padding: 0;
 }
 .main-header .nav-link {
-  color: #333;
+  color: var(--text-primary);
   font-weight: 500;
   font-size: 1.05rem;
   padding: 6px 0;
@@ -1134,7 +1270,7 @@ ul {
   transition: color 0.2s, border-color 0.2s;
 }
 .main-header .nav-link:hover, .main-header .nav-link.active {
-  color: #7e01ff;
+  color: var(--primary-color);
   border-bottom: 2px solid #7e01ff;
 }
 .main-header .nav-right, .main-header .auth-buttons, .main-header .header-buttons {
@@ -1155,7 +1291,7 @@ ul {
   border-radius: 5px;
   border: 1.5px solid #7e01ff;
   background: transparent;
-  color: #7e01ff;
+  color: var(--primary-color);
   font-weight: 600;
   transition: background 0.2s, color 0.2s;
   margin-left: 10px;
@@ -1183,4 +1319,189 @@ ul {
   .main-header .main-nav ul, .main-header .nav-center { gap: 10px; font-size: 0.98rem; }
   .main-header .nav-right, .main-header .auth-buttons, .main-header .header-buttons { gap: 6px; }
 }
+/* Theme Toggle Button */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--primary-color);
+  background: transparent;
+  color: var(--primary-color);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+  margin-left: 10px;
+}
+
+.theme-toggle:hover {
+  background: var(--primary-color);
+  color: var(--white);
+  transform: scale(1.1);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Theme transition for smooth switching */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
 /* End Main Header Styles */
+
+/* Thesis Card Button Styles - Consistent with Category Pages */
+.thesis-view-button, .thesis-download-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.thesis-view-button {
+    background: var(--primary-color);
+    color: white;
+}
+
+.thesis-view-button:hover {
+    background: var(--primary-medium);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.thesis-download-button {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.thesis-download-button:hover {
+    background: var(--primary-medium);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Thesis Detail Page Styles */
+.thesis-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.view-button, .download-button, .preview-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-align: center;
+  justify-content: center;
+}
+
+.view-button, .download-button {
+  background: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
+.view-button:hover, .download-button:hover {
+  background: var(--white);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.preview-button {
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.preview-button:hover {
+  background: var(--primary-color);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.restricted-access {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+  background: var(--lighter-gray);
+  border-radius: 12px;
+  border: 2px solid var(--light-gray);
+}
+
+.login-required {
+  text-align: center;
+}
+
+.restriction-notice {
+  color: var(--medium-gray);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.restriction-notice i {
+  color: var(--primary-color);
+  margin-right: 8px;
+}
+
+.login-link {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: underline;
+  transition: var(--transition);
+}
+
+.login-link:hover {
+  color: var(--dark-gray);
+  text-decoration: none;
+}
+
+.no-file {
+  color: var(--medium-gray);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  background: var(--lighter-gray);
+  border-radius: 8px;
+  border: 1px dashed var(--light-gray);
+}
+
+@media (max-width: 768px) {
+  .thesis-actions {
+    gap: 12px;
+  }
+  
+  .view-button, .download-button, .preview-button {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+  
+  .restricted-access {
+    padding: 15px;
+  }
+  
+  .restriction-notice {
+    font-size: 0.9rem;
+  }
+}
