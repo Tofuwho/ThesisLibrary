@@ -1,7 +1,24 @@
+/**
+ * Authentication Module
+ * Handles user authentication, login/logout, and form submissions
+ * 
+ * This module provides:
+ * - CSRF token management
+ * - Modal event handling
+ * - AJAX form submissions for login/signup
+ * - Error handling and user feedback
+ */
+
+/**
+ * Retrieves CSRF token from cookies for Django CSRF protection
+ * Required for all POST requests to Django backend
+ * 
+ * @returns {string} CSRF token value or empty string if not found
+ */
 function getCSRFToken() {
-  // Try to get the CSRF token from the cookie (Django default)
   const name = 'csrftoken';
   const cookies = document.cookie.split(';');
+  
   for (let i = 0; i < cookies.length; i++) {
     let cookie = cookies[i].trim();
     if (cookie.startsWith(name + '=')) {
@@ -11,17 +28,24 @@ function getCSRFToken() {
   return '';
 }
 
+/**
+ * Initialize authentication module when DOM is loaded
+ * Sets up event listeners for modal interactions and form submissions
+ */
 document.addEventListener('DOMContentLoaded', () => {
+  // Get DOM elements for modal functionality
   const loginBtn = document.getElementById('loginButton');
   const loginModal = document.getElementById('authModal');
   const closeBtn = document.getElementById('closeModal');
   const authContainer = document.getElementById('auth-container');
 
+  // Initialize modal state - ensure it's hidden on page load
   if (loginModal) {
     loginModal.classList.remove('active');
     document.body.style.overflow = '';
   }
 
+  // Handle login button clicks (opens modal)
   if (loginBtn && loginModal) {
     loginBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -31,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Handle close button clicks (closes modal)
   if (closeBtn && loginModal) {
     closeBtn.addEventListener('click', () => {
       loginModal.classList.remove('active');
@@ -38,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Handle clicks outside modal content (closes modal)
   if (loginModal) {
     loginModal.addEventListener('click', (e) => {
       if (e.target === loginModal) {
@@ -47,9 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Handle modal panel switching between login and signup forms
   const signUpBtn = document.getElementById('signUp');
   const signInBtn = document.getElementById('signIn');
 
+  // Switch to signup form when signup button is clicked
   if (signUpBtn && authContainer) {
     signUpBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -57,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Switch to login form when signin button is clicked
   if (signInBtn && authContainer) {
     signInBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -64,14 +93,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === AJAX LOGIN ===
+  // === AJAX LOGIN FORM HANDLING ===
+  /**
+   * Handles login form submission via AJAX
+   * Prevents page reload and provides user feedback during authentication
+   */
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+      e.preventDefault(); // Prevent default form submission
+      
+      // Prepare form data and UI feedback
       const formData = new FormData(loginForm);
       const submitButton = loginForm.querySelector('button[type="submit"]');
       const originalText = submitButton?.textContent;
+      
+      // Disable button and show loading state
       if (submitButton) {
         submitButton.disabled = true;
         submitButton.textContent = 'Signing In...';

@@ -18,10 +18,16 @@
     <!-- Auth Modal for all pages -->
     {% include 'includes/auth-modal.html' %}
     
-    <!-- Universal JavaScript -->
+    <!-- Core JavaScript Modules -->
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/theme.js' %}"></script>
+    
+    <!-- Utility and Feature-specific JavaScript Modules -->
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/modal-handler.js' %}"></script>
+    <script src="{% static 'js/download-handler.js' %}"></script>
+    
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
