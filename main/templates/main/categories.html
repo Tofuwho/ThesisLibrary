@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="{% static 'css/categories.css' %}">
 {% endblock %}
 
+{% block extra_scripts %}
+<script src="{% static 'js/categories.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <main class="categories-main">
     <div class="container">
@@ -144,7 +148,7 @@
                   <button type="submit" class="apply-filters-button">
                     <i class="fas fa-filter"></i> Apply Filters
                   </button>
-                  <a href="{% url 'categories' %}" class="clear-filters-button">
+                  <a href="#" onclick="clearAllFilters(); return false;" class="clear-filters-button">
                     <i class="fas fa-times"></i> Clear All
                   </a>
                 </form>
@@ -167,37 +171,6 @@
                     </div>
                 </div>
 
-                <script>
-                function updateSort(sortValue) {
-                    const url = new URL(window.location);
-                    url.searchParams.set('sort', sortValue);
-                    window.location.href = url.toString();
-                }
-
-                function toggleDescriptors(event) {
-                    event.preventDefault();
-                    const hiddenItems = document.querySelectorAll('#descriptor-list .descriptor-item.hidden');
-                    const showText = document.querySelector('#descriptor-show-more .show-text');
-                    const hideText = document.querySelector('#descriptor-show-more .hide-text');
-                    
-                    if (hiddenItems.length > 0) {
-                        // Show more
-                        hiddenItems.forEach(item => {
-                            item.classList.remove('hidden');
-                        });
-                        showText.style.display = 'none';
-                        hideText.style.display = 'inline';
-                    } else {
-                        // Show less
-                        const allItems = document.querySelectorAll('#descriptor-list .descriptor-item');
-                        Array.from(allItems).slice(5).forEach(item => {
-                            item.classList.add('hidden');
-                        });
-                        showText.style.display = 'inline';
-                        hideText.style.display = 'none';
-                    }
-                }
-                </script>
 
                 <div class="cat-thesis-list">
                     {% for thesis in theses %}
@@ -230,7 +203,11 @@
                                 <div class="cat-thesis-item-actions">
                                     {% if thesis.file %}
                                         <a href="{% url 'thesis_view_file' thesis.id %}" class="cat-view-button" target="_blank"><i class="fas fa-eye"></i> View</a>
-                                        <a href="{% url 'thesis_download_file' thesis.id %}" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
+                                        {% if user.is_authenticated %}
+                                            <a href="{% url 'thesis_download_file' thesis.id %}" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
+                                        {% else %}
+                                            <button class="cat-download-button" onclick="handleDownloadClick({{ thesis.id }})"><i class="fas fa-download"></i> Download</button>
+                                        {% endif %}
                                     {% else %}
                                         <span class="no-file">No file available</span>
                                     {% endif %}

@@ -1,4 +1,20 @@
-// Student Dashboard JavaScript
+/**
+ * Student Dashboard JavaScript Module
+ * Handles thesis submission form functionality and user interactions
+ * 
+ * This module provides:
+ * - Multi-step form navigation
+ * - File upload management with drag & drop
+ * - Auto-save functionality
+ * - Form validation
+ * - Academic structure management
+ * - Real-time form preview
+ */
+
+/**
+ * Initialize student dashboard functionality when DOM is loaded
+ * Sets up all form interactions, file uploads, and auto-save features
+ */
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     setupFileUploads();
@@ -7,7 +23,17 @@ document.addEventListener('DOMContentLoaded', function() {
     setupAcademicStructure();
 });
 
-// Navigation between sections
+/**
+ * Form Navigation System
+ * Handles multi-step form navigation and progress tracking
+ */
+
+/**
+ * Navigate to the next section in the form
+ * Validates current section before proceeding
+ * 
+ * @param {string} sectionId - The ID of the section to navigate to
+ */
 function nextSection(sectionId) {
     if (validateCurrentSection()) {
         showSection(sectionId);
@@ -15,10 +41,22 @@ function nextSection(sectionId) {
     }
 }
 
+/**
+ * Navigate to the previous section in the form
+ * No validation required for going back
+ * 
+ * @param {string} sectionId - The ID of the section to navigate to
+ */
 function previousSection(sectionId) {
     showSection(sectionId);
 }
 
+/**
+ * Show the specified section and update navigation state
+ * Handles section visibility, navigation highlighting, and progress tracking
+ * 
+ * @param {string} sectionId - The ID of the section to show
+ */
 function showSection(sectionId) {
     // Hide all sections
     const sections = document.querySelectorAll('.section');
@@ -27,15 +65,21 @@ function showSection(sectionId) {
     // Show target section
     document.getElementById(sectionId).classList.add('active');
     
-    // Update navigation
+    // Update navigation highlighting
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => item.classList.remove('active'));
     document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
     
-    // Update progress bar
+    // Update progress bar to reflect current position
     updateProgressBar(sectionId);
 }
 
+/**
+ * Update the progress bar to reflect current form completion
+ * Maps section IDs to percentage values for visual progress indication
+ * 
+ * @param {string} sectionId - The current section ID
+ */
 function updateProgressBar(sectionId) {
     const progressMap = {
         'basic-info': 20,
@@ -52,6 +96,12 @@ function updateProgressBar(sectionId) {
     }
 }
 
+/**
+ * Validate the current section's required fields
+ * Provides visual feedback for validation errors
+ * 
+ * @returns {boolean} True if all required fields are valid
+ */
 function validateCurrentSection() {
     const activeSection = document.querySelector('.section.active');
     const requiredFields = activeSection.querySelectorAll('[required]');
@@ -59,11 +109,13 @@ function validateCurrentSection() {
     
     requiredFields.forEach(field => {
         if (!field.value.trim()) {
+            // Highlight invalid fields with red border
             field.style.borderColor = '#ff4444';
             field.focus();
             isValid = false;
             return false;
         } else {
+            // Reset border color for valid fields
             field.style.borderColor = 'var(--light-gray)';
         }
     });
@@ -71,9 +123,17 @@ function validateCurrentSection() {
     return isValid;
 }
 
-// Initialize event listeners
+/**
+ * Event Listener Management
+ * Sets up all interactive event handlers for the form
+ */
+
+/**
+ * Initialize all event listeners for form interactions
+ * Handles navigation, form submission, and real-time validation
+ */
 function initializeEventListeners() {
-    // Navigation click handlers
+    // Navigation click handlers for section switching
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', function() {
@@ -82,12 +142,13 @@ function initializeEventListeners() {
         });
     });
     
-    // Form submission handler
+    // Form submission handler with validation
     document.getElementById('thesisForm').addEventListener('submit', handleFormSubmission);
     
-    // Real-time validation
+    // Real-time validation for all form inputs
     const inputs = document.querySelectorAll('input, textarea, select');
     inputs.forEach(input => {
+        // Validate on blur (when user leaves field)
         input.addEventListener('blur', function() {
             if (this.hasAttribute('required') && !this.value.trim()) {
                 this.style.borderColor = '#ff4444';
@@ -96,34 +157,48 @@ function initializeEventListeners() {
             }
         });
         
+        // Clear error styling when user starts typing
         input.addEventListener('input', function() {
             if (this.style.borderColor === 'rgb(255, 68, 68)' && this.value.trim()) {
                 this.style.borderColor = 'var(--light-gray)';
             }
+            // Update review section in real-time
             updateReviewSection();
         });
     });
 }
 
-// File upload functionality
+/**
+ * File Upload Management System
+ * Handles file uploads with drag & drop, validation, and preview functionality
+ */
+
+/**
+ * Setup all file upload functionality
+ * Configures single file uploads, multiple file uploads, and drag & drop
+ */
 function setupFileUploads() {
-    setupSingleFileUpload('thesisFile', 'thesisFileList', 50);
-    setupSingleFileUpload('approvalSheet', 'approvalSheetList', 10);
-    setupMultipleFileUpload('supportingFiles', 'supportingFilesList', 10);
+    // Setup individual file upload types with size limits
+    setupSingleFileUpload('thesisFile', 'thesisFileList', 50);        // 50MB limit
+    setupSingleFileUpload('approvalSheet', 'approvalSheetList', 10);   // 10MB limit
+    setupMultipleFileUpload('supportingFiles', 'supportingFilesList', 10); // 10MB per file
     
-    // Drag and drop functionality
+    // Setup drag and drop functionality for all file upload areas
     const fileUploads = document.querySelectorAll('.file-upload');
     fileUploads.forEach(upload => {
+        // Handle drag over events - show visual feedback
         upload.addEventListener('dragover', function(e) {
             e.preventDefault();
             this.classList.add('dragover');
         });
         
+        // Handle drag leave events - remove visual feedback
         upload.addEventListener('dragleave', function(e) {
             e.preventDefault();
             this.classList.remove('dragover');
         });
         
+        // Handle file drop events - process dropped files
         upload.addEventListener('drop', function(e) {
             e.preventDefault();
             this.classList.remove('dragover');
@@ -134,6 +209,13 @@ function setupFileUploads() {
     });
 }
 
+/**
+ * Setup single file upload with size validation
+ * 
+ * @param {string} inputId - ID of the file input element
+ * @param {string} listId - ID of the file list container
+ * @param {number} maxSizeMB - Maximum file size in megabytes
+ */
 function setupSingleFileUpload(inputId, listId, maxSizeMB) {
     const input = document.getElementById(inputId);
     const list = document.getElementById(listId);
@@ -143,6 +225,13 @@ function setupSingleFileUpload(inputId, listId, maxSizeMB) {
     });
 }
 
+/**
+ * Setup multiple file upload with size validation
+ * 
+ * @param {string} inputId - ID of the file input element
+ * @param {string} listId - ID of the file list container
+ * @param {number} maxSizeMB - Maximum file size per file in megabytes
+ */
 function setupMultipleFileUpload(inputId, listId, maxSizeMB) {
     const input = document.getElementById(inputId);
     const list = document.getElementById(listId);

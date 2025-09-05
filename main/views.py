@@ -308,34 +308,73 @@ def view_thesis_file(request, pk):
 
 
 def download_thesis_file(request, pk):
-    # Require authentication for downloads
+    """
+    Handles thesis file downloads with authentication checks
+    
+    This view provides different responses based on request type:
+    - AJAX requests: Returns JSON with authentication status
+    - Regular requests: Redirects to login page or serves file
+    
+    Args:
+        request: Django request object
+        pk: Primary key of the thesis to download
+        
+    Returns:
+        JsonResponse: For AJAX requests requiring authentication
+        HttpResponse: File download response for authenticated users
+        RedirectResponse: For non-AJAX unauthenticated requests
+    """
+    # Check if user is authenticated
     if not request.user.is_authenticated:
+        # Handle AJAX requests differently from regular requests
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'success': False, 'error': 'Please log in to download thesis files.', 'require_login': True})
+            # Return JSON response for JavaScript handling
+            return JsonResponse({
+                'success': False, 
+                'error': 'Please log in to download thesis files.', 
+                'require_login': True
+            }, status=401)
         else:
+            # Regular request - redirect to login page
             messages.error(request, 'Please log in to download thesis files.')
             return redirect('/')
     
+    # User is authenticated - proceed with file download
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file:
         raise Http404('File not found.')
+    
+    # Create file response with proper headers for download
     response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
     return response
 
 
 def restricted_view_thesis_file(request, pk):
-    """View function that serves only the first 3 pages of a PDF for non-authenticated users"""
+    """
+    Serves a preview version of thesis files for non-authenticated users
+    
+    This function creates a restricted PDF containing only the first 3 pages
+    of the original thesis, allowing users to preview content before logging in.
+    
+    Args:
+        request: Django request object
+        pk: Primary key of the thesis to preview
+        
+    Returns:
+        HttpResponse: PDF response with limited pages
+        Http404: If thesis or file not found
+    """
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file:
         raise Http404('File not found.')
     
     try:
-        # Read the original PDF
+        # Initialize PDF processing components
         pdf_reader = PdfReader(thesis.file.open('rb'))
         pdf_writer = PdfWriter()
         
-        # Add only the first 3 pages (or fewer if the PDF has less than 3 pages)
+        # Determine how many pages to include (max 3 for preview)
         max_pages = min(3, len(pdf_reader.pages))
         for page_num in range(max_pages):
             pdf_writer.add_page(pdf_reader.pages[page_num])
@@ -419,9 +458,11 @@ def login_view(request):
                 user = form.get_user()
                 login(request, user)
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return JsonResponse({'success': True, 'redirect_url': request.GET.get('next') or '/'})
+                    next_url = request.POST.get('next') or request.GET.get('next') or '/'
+                    return JsonResponse({'success': True, 'redirect_url': next_url})
                 else:
-                    return redirect(request.GET.get('next', '/'))
+                    next_url = request.POST.get('next') or request.GET.get('next') or '/'
+                    return redirect(next_url)
             else:
                 errors = {field: [str(e) for e in errs] for field, errs in form.errors.items()}
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
