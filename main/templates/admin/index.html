@@ -1,0 +1,189 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static department_filters %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.recent-actions-enhanced {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.recent-actions-enhanced h3 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.action-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.action-item:last-child {
+    border-bottom: none;
+}
+
+.action-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+}
+
+.action-icon.add {
+    background-color: #28a745;
+}
+
+.action-icon.change {
+    background-color: #ffc107;
+}
+
+.action-icon.delete {
+    background-color: #dc3545;
+}
+
+.action-icon.approved {
+    background-color: #28a745;
+}
+
+.action-icon.rejected {
+    background-color: #dc3545;
+}
+
+.action-icon.edited {
+    background-color: #17a2b8;
+}
+
+.action-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-right: 8px;
+    color: white;
+}
+
+.action-badge.approved {
+    background-color: #28a745;
+}
+
+.action-badge.rejected {
+    background-color: #dc3545;
+}
+
+.action-badge.edited {
+    background-color: #17a2b8;
+}
+
+.action-badge.added {
+    background-color: #6f42c1;
+}
+
+.action-badge.deleted {
+    background-color: #6c757d;
+}
+
+.action-content {
+    flex: 1;
+}
+
+.action-title {
+    font-weight: 500;
+    color: #212529;
+    margin-bottom: 2px;
+}
+
+.action-message {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.action-time {
+    font-size: 11px;
+    color: #adb5bd;
+    margin-left: 10px;
+}
+
+.no-actions {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block h1 %}{% endblock %}
+
+{% block content %}
+
+<!-- Recent Actions Section -->
+<div class="recent-actions-enhanced">
+    <h3>{% trans 'Recent actions' %}</h3>
+    {% if recent_actions %}
+        {% regroup recent_actions by object_repr as grouped_actions %}
+        <ul>
+            {% for group in grouped_actions %}
+                {% with entry=group.list.0 %}
+                <li class="action-item">
+                    {% if '[APPROVED]' in entry.change_message %}
+                        <span class="action-icon approved">✓</span>
+                        <span class="action-badge approved">APPROVED</span>
+                    {% elif '[REJECTED]' in entry.change_message %}
+                        <span class="action-icon rejected">✗</span>
+                        <span class="action-badge rejected">REJECTED</span>
+                    {% elif entry.is_addition %}
+                        <span class="action-icon add">+</span>
+                        <span class="action-badge added">ADDED</span>
+                    {% elif entry.is_change %}
+                        <span class="action-icon change">E</span>
+                        <span class="action-badge edited">EDITED</span>
+                    {% elif entry.is_deletion %}
+                        <span class="action-icon delete">×</span>
+                        <span class="action-badge deleted">DELETED</span>
+                    {% endif %}
+                    <div class="action-content">
+                        <div class="action-title">
+                            {% if entry.is_deletion %}
+                                {{ entry.object_repr }}
+                            {% else %}
+                                <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                            {% endif %}
+                        </div>
+                        <div class="action-message">
+                            {% if entry.is_change and entry.change_message %}
+                                {{ entry.change_message|admin_changed_fields }}
+                            {% else %}
+                                {{ entry.change_message }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="action-time">{{ entry.action_time|timesince }} ago</div>
+                </li>
+                {% endwith %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-actions">{% trans 'None available' %}</p>
+    {% endif %}
+</div>
+
+{% endblock %}
