@@ -47,7 +47,9 @@ def categories_page(request):
         theses = theses.filter(
             Q(title__icontains=search_query) |
             Q(author__icontains=search_query) |
-            Q(abstract__icontains=search_query)
+            Q(abstract__icontains=search_query) |
+            Q(keywords__icontains=search_query) |
+            Q(research_category__icontains=search_query)
         )
 
     if selected_years:
@@ -147,7 +149,9 @@ def category_detail(request, category_name):
         theses = theses.filter(
             Q(title__icontains=search_query) |
             Q(author__icontains=search_query) |
-            Q(abstract__icontains=search_query)
+            Q(abstract__icontains=search_query) |
+            Q(keywords__icontains=search_query) |
+            Q(research_category__icontains=search_query)
         )
 
     if selected_years:
@@ -208,6 +212,9 @@ def student_dashboard(request):
 def create_submission(request):
     title = request.POST.get('thesisTitle') or request.POST.get('title')
     abstract = request.POST.get('abstract', '')
+    keywords = request.POST.get('keywords', '')
+    research_category = request.POST.get('research_category', '')
+    expected_completion = request.POST.get('expectedCompletion') or None
     specialization = request.POST.get('specialization', '')
     year = request.POST.get('year')
     academic_level_id = request.POST.get('academic_level')
@@ -254,19 +261,52 @@ def create_submission(request):
         return redirect('student_dashboard')
 
     try:
+        # Parse structured co-authors from form naming convention coworkers[i][..]
+        co_authors = []
+        for i in range(3):
+            first = request.POST.get(f'coworkers[{i}][first_name]', '').strip()
+            last = request.POST.get(f'coworkers[{i}][last_name]', '').strip()
+            sid = request.POST.get(f'coworkers[{i}][student_id]', '').strip()
+            email = request.POST.get(f'coworkers[{i}][email]', '').strip()
+            if any([first, last, sid, email]):
+                co_authors.append({
+                    'first_name': first,
+                    'last_name': last,
+                    'student_id': sid,
+                    'email': email,
+                })
+
+        # Supervisor details
+        supervisor_name = request.POST.get('supervisorName', '').strip()
+        supervisor_email = request.POST.get('supervisorEmail', '').strip()
+        supervisor_department = request.POST.get('supervisorDepartment', '').strip()
+        supervisor_title = request.POST.get('supervisorTitle', '').strip()
+        co_supervisor_name = request.POST.get('coSupervisorName', '').strip()
+        co_supervisor_email = request.POST.get('coSupervisorEmail', '').strip()
+
         submission = Submission.objects.create(
             submitter=request.user,
             title=title.strip(),
             author=f"{request.POST.get('firstName', '').strip()} {request.POST.get('lastName', '').strip()}".strip(),
             year=int(year) if year and str(year).isdigit() else None,
             abstract=abstract,
+            keywords=keywords,
+            research_category=research_category,
+            expected_completion=expected_completion or None,
             specialization=specialization,
             category=academic_level,
             department=department,
             course=course,
             file=thesis_file,
             approval_sheet=approval_sheet,
-            status=Submission.STATUS_SUBMITTED,
+            supervisor_name=supervisor_name,
+            supervisor_email=supervisor_email,
+            supervisor_department=supervisor_department,
+            supervisor_title=supervisor_title,
+            co_supervisor_name=co_supervisor_name,
+            co_supervisor_email=co_supervisor_email,
+            co_authors=co_authors,
+            status=Submission.STATUS_PENDING,
         )
         
         messages.success(request, f'Thesis "{submission.title}" submitted successfully!')

@@ -1,5 +1,5 @@
 {% extends 'main/base.html' %}
-{% load static %}
+{% load static department_filters %}
 
 {% block title %}Browse Categories - Thesis Library{% endblock %}
 
@@ -26,6 +26,7 @@
 				</div>
 				<div class="hero-search">
 					<form class="search-form" method="get">
+						<input type="hidden" name="department" value="{{ request.GET.department|default:'all' }}">
 						<input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
 						<button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
 					</form>
@@ -182,7 +183,9 @@
                                 <h3 class="cat-thesis-item-title">{{ thesis.title }}</h3>
                                 <div class="cat-thesis-item-authors">
                                     <p class="cat-thesis-item-author"><i class="fas fa-user"></i> <strong>Author:</strong> {{ thesis.author }}</p>
-                                    {% if thesis.co_author %}
+                                    {% if thesis.co_authors %}
+                                        <p class="cat-thesis-item-coauthor"><i class="fas fa-users"></i> <strong>Co-Authors:</strong> {{ thesis.co_authors|format_coauthors }}</p>
+                                    {% elif thesis.co_author %}
                                         <p class="cat-thesis-item-coauthor"><i class="fas fa-users"></i> <strong>Co-Author:</strong> {{ thesis.co_author }}</p>
                                     {% endif %}
                                 </div>
