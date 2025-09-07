@@ -209,7 +209,7 @@
                                         {% if user.is_authenticated %}
                                             <a href="{% url 'thesis_download_file' thesis.id %}" class="cat-download-button"><i class="fas fa-download"></i> Download</a>
                                         {% else %}
-                                            <button class="cat-download-button" onclick="handleDownloadClick({{ thesis.id }})"><i class="fas fa-download"></i> Download</button>
+                                            <button class="cat-download-button" data-id="{{ thesis.id }}" onclick="handleDownloadClick(this.dataset.id)"><i class="fas fa-download"></i> Download</button>
                                         {% endif %}
                                     {% else %}
                                         <span class="no-file">No file available</span>

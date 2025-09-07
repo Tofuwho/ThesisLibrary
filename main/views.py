@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Count, Q
+from django.db.models import Value, IntegerField, Case, When, F, ExpressionWrapper, CharField
+from django.db.models.functions import Cast
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
@@ -12,6 +14,7 @@ from django import forms
 from .models import Thesis, Category, Submission
 import os, json, io
 from PyPDF2 import PdfReader, PdfWriter
+import re
 
 # ----------------------
 # Pages / Landing
@@ -44,13 +47,30 @@ def categories_page(request):
 
     # Filtering
     if search_query:
-        theses = theses.filter(
-            Q(title__icontains=search_query) |
-            Q(author__icontains=search_query) |
-            Q(abstract__icontains=search_query) |
-            Q(keywords__icontains=search_query) |
-            Q(research_category__icontains=search_query)
-        )
+        tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
+        theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
+        score_expr = Value(0, output_field=IntegerField())
+        for token in tokens:
+            token_score = (
+                Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
+                Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(co_author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(coauthor_json_text__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(research_category__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(category__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(department__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(course__name__icontains=token, then=Value(1)), default=Value(0), output_field=IntegerField())
+            )
+            # Include year matches if token is numeric
+            try:
+                year_int = int(token)
+                token_score = token_score + Case(When(year=year_int, then=Value(2)), default=Value(0), output_field=IntegerField())
+            except Exception:
+                pass
+            score_expr = score_expr + token_score
+        theses = theses.annotate(score=ExpressionWrapper(score_expr, output_field=IntegerField())).filter(score__gt=0)
 
     if selected_years:
         numeric_years = [int(y) for y in selected_years if str(y).isdigit()]
@@ -92,7 +112,13 @@ def categories_page(request):
         'author-asc': ('author', 'title'),
         'author-desc': ('-author', 'title')
     }
-    theses = theses.order_by(*sort_options.get(sort, ('-year', 'title'))).distinct()
+    # Order by relevance score first if searching, then chosen sort
+    base_order = sort_options.get(sort, ('-year', 'title'))
+    if search_query:
+        theses = theses.order_by('-score', *base_order)
+    else:
+        theses = theses.order_by(*base_order)
+    theses = theses.distinct()
 
     # Sidebar
     from .models import Department, Course
@@ -146,13 +172,29 @@ def category_detail(request, category_name):
     sort = request.GET.get('sort') or 'date-desc'
 
     if search_query:
-        theses = theses.filter(
-            Q(title__icontains=search_query) |
-            Q(author__icontains=search_query) |
-            Q(abstract__icontains=search_query) |
-            Q(keywords__icontains=search_query) |
-            Q(research_category__icontains=search_query)
-        )
+        tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
+        theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
+        score_expr = Value(0, output_field=IntegerField())
+        for token in tokens:
+            token_score = (
+                Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
+                Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(co_author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(coauthor_json_text__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(research_category__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(category__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(department__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(course__name__icontains=token, then=Value(1)), default=Value(0), output_field=IntegerField())
+            )
+            try:
+                year_int = int(token)
+                token_score = token_score + Case(When(year=year_int, then=Value(2)), default=Value(0), output_field=IntegerField())
+            except Exception:
+                pass
+            score_expr = score_expr + token_score
+        theses = theses.annotate(score=ExpressionWrapper(score_expr, output_field=IntegerField())).filter(score__gt=0)
 
     if selected_years:
         numeric_years = [int(y) for y in selected_years if str(y).isdigit()]
@@ -174,7 +216,12 @@ def category_detail(request, category_name):
         'author-asc': ('author', 'title'),
         'author-desc': ('-author', 'title')
     }
-    theses = theses.order_by(*sort_options.get(sort, ('-year', 'title'))).distinct()
+    base_order = sort_options.get(sort, ('-year', 'title'))
+    if search_query:
+        theses = theses.order_by('-score', *base_order)
+    else:
+        theses = theses.order_by(*base_order)
+    theses = theses.distinct()
 
     # Sidebar
     years = Thesis.objects.filter(category=category).values('year').annotate(count=Count('id')).order_by('-year')
