@@ -3,7 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.validators import FileExtensionValidator
 from django import forms
-
+from django.contrib.auth.models import User
 
 class Category(models.Model):
     """Top-level grouping: Undergraduate or Graduate."""
@@ -70,6 +70,17 @@ class Thesis(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.year})"
+
+
+class DownloadLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    thesis = models.ForeignKey(Thesis, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} downloaded {self.thesis.title} at {self.timestamp}"
 
 
 class RejectedThesis(models.Model):
