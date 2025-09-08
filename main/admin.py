@@ -1,14 +1,16 @@
 from django.contrib import admin
+from django.contrib.admin import AdminSite
 from django import forms
 from django.utils.html import format_html
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import path
 from django.http import HttpResponseRedirect
 from django.contrib.admin.models import LogEntry, CHANGE, DELETION, ADDITION
 from django.contrib.contenttypes.models import ContentType
-from .models import Thesis, Submission, Category, Department, Course, RejectedThesis
-from django.contrib.admin.models import LogEntry
+from .models import Thesis, Submission, Category, Department, Course, RejectedThesis, DownloadLog
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
 
 
 def log_admin_action(user, obj, action_flag, message):
@@ -24,7 +26,6 @@ def log_admin_action(user, obj, action_flag, message):
             change_message=message,
         )
     except Exception as e:
-        # If logging fails, don't break the main action
         pass
 
 
@@ -607,9 +608,83 @@ class CourseAdmin(admin.ModelAdmin):
         return "-"
     full_path.short_description = "Academic Path"
 
-@admin.register(LogEntry)
+@admin.register(DownloadLog)
+class DownloadLogAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'user', 'thesis_title_short', 'ip_address')
+    list_filter = ('timestamp', 'user')
+    search_fields = ('user__username', 'thesis__title', 'ip_address')
+    ordering = ('-timestamp',)
+    date_hierarchy = 'timestamp'
+    
+    readonly_fields = ('user', 'thesis', 'timestamp', 'ip_address', 'user_agent')
+    
+    def thesis_title_short(self, obj):
+        title = obj.thesis.title
+        return title[:50] + '...' if len(title) > 50 else title
+    thesis_title_short.short_description = 'Thesis Title'
+    thesis_title_short.admin_order_field = 'thesis__title'
+    
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+
 class LogEntryAdmin(admin.ModelAdmin):
     list_display = ('action_time', 'user', 'content_type', 'object_repr', 'action_flag', 'change_message')
     list_filter = ('user', 'content_type', 'action_flag')
     search_fields = ('object_repr', 'change_message')
     date_hierarchy = 'action_time'
+
+# Custom admin site with system logs functionality
+class CustomAdminSite(AdminSite):
+    site_title = "Thesis Library Administration"
+    site_header = "Thesis Library Administration"
+    index_title = "Administration"
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('system-logs/', self.admin_view(system_logs_view), name='system_logs'),
+        ]
+        return custom_urls + urls
+
+def system_logs_view(request):
+    logs = LogEntry.objects.select_related('content_type', 'user').order_by('-action_time')[:200]
+    
+    log_data = []
+    for log in logs:
+        action_name = {1: 'Added', 2: 'Changed', 3: 'Deleted'}.get(log.action_flag, 'Unknown')
+        log_data.append({
+            'time': log.action_time,
+            'user': log.user.username if log.user else 'System',
+            'action': action_name,
+            'object': log.object_repr,
+            'message': log.change_message,
+        })
+    
+    context = {
+        'title': 'System Activity Logs',
+        'log_data': log_data,
+    }
+    
+    return render(request, 'admin/system_logs.html', context)
+
+# Create the custom admin site
+custom_admin_site = CustomAdminSite(name='custom_admin')
+
+# Register all your models with the custom admin site
+custom_admin_site.register(Thesis, ThesisAdmin)
+custom_admin_site.register(Submission, SubmissionAdmin)
+custom_admin_site.register(RejectedThesis, RejectedThesisAdmin)
+custom_admin_site.register(Category, CategoryAdmin)
+custom_admin_site.register(Department, DepartmentAdmin)
+custom_admin_site.register(Course, CourseAdmin)
+custom_admin_site.register(LogEntry, LogEntryAdmin)
+custom_admin_site.register(DownloadLog, DownloadLogAdmin)
+custom_admin_site.register(User, UserAdmin)
+custom_admin_site.register(Group, GroupAdmin)

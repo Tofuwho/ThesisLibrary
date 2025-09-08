@@ -11,7 +11,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
-from .models import Thesis, Category, Submission
+from .models import Thesis, Category, Submission, DownloadLog
 import os, json, io
 from PyPDF2 import PdfReader, PdfWriter
 import re
@@ -394,47 +394,58 @@ def view_thesis_file(request, pk):
     return response
 
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0]
+    return request.META.get('REMOTE_ADDR')
+
 def download_thesis_file(request, pk):
     """
     Handles thesis file downloads with authentication checks
-    
-    This view provides different responses based on request type:
-    - AJAX requests: Returns JSON with authentication status
-    - Regular requests: Redirects to login page or serves file
-    
-    Args:
-        request: Django request object
-        pk: Primary key of the thesis to download
-        
-    Returns:
-        JsonResponse: For AJAX requests requiring authentication
-        HttpResponse: File download response for authenticated users
-        RedirectResponse: For non-AJAX unauthenticated requests
+    Logs the download event for auditing.
     """
     # Check if user is authenticated
     if not request.user.is_authenticated:
-        # Handle AJAX requests differently from regular requests
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            # Return JSON response for JavaScript handling
             return JsonResponse({
                 'success': False, 
                 'error': 'Please log in to download thesis files.', 
                 'require_login': True
             }, status=401)
         else:
-            # Regular request - redirect to login page
             messages.error(request, 'Please log in to download thesis files.')
             return redirect('/')
-    
+
     # User is authenticated - proceed with file download
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file:
         raise Http404('File not found.')
-    
-    # Create file response with proper headers for download
-    response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
-    return response
+
+    try:
+        # Log the download - make sure this happens
+        DownloadLog.objects.create(
+            user=request.user,
+            thesis=thesis,
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')[:500]  # Truncate long user agents
+        )
+        
+        # Create file response with proper headers for download
+        response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
+        return response
+        
+    except Exception as e:
+        # If logging fails, still allow download but log the error
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Download logging failed for thesis {pk}: {str(e)}")
+        
+        # Still provide the file download
+        response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
+        return response
 
 
 def restricted_view_thesis_file(request, pk):

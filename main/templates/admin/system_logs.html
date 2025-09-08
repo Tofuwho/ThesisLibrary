@@ -1,0 +1,31 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f8f9fa;">
+                <th style="border: 1px solid #dee2e6; padding: 8px;">Time</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px;">User</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px;">Action</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px;">Object</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px;">Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in log_data %}
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 8px;">{{ log.time|date:"M d, Y H:i" }}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px;">{{ log.user }}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px;">{{ log.action }}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px;">{{ log.object }}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px;">{{ log.message }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
