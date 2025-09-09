@@ -107,11 +107,11 @@ function validateCurrentSection() {
     const requiredFields = activeSection.querySelectorAll('[required]');
     let isValid = true;
 
+    // Validate required fields
     requiredFields.forEach(field => {
-        const errorId = field.name + "-error"; // unique ID for error message
+        const errorId = field.id + "-error";
         let errorElement = document.getElementById(errorId);
 
-        // If no error element yet, create one
         if (!errorElement) {
             errorElement = document.createElement("div");
             errorElement.id = errorId;
@@ -132,12 +132,74 @@ function validateCurrentSection() {
             isValid = false;
         } else {
             field.style.borderColor = "var(--light-gray)";
-            errorElement.textContent = ""; // clear message
+            errorElement.textContent = "";
+        }
+    });
+
+
+    const coworkers = activeSection.querySelectorAll('#coworkers .form-row');
+    coworkers.forEach((row, index) => {
+        const firstName = row.querySelector(`input[name="coworkers[${index}][first_name]"]`);
+        const lastName  = row.querySelector(`input[name="coworkers[${index}][last_name]"]`);
+        const studentId = row.querySelector(`input[name="coworkers[${index}][student_id]"]`);
+        const email     = row.querySelector(`input[name="coworkers[${index}][email]"]`);
+
+        const values = {
+            firstName: firstName?.value.trim() || "",
+            lastName: lastName?.value.trim() || "",
+            studentId: studentId?.value.trim() || "",
+            email: email?.value.trim() || ""
+        };
+
+        const anyFilled = values.firstName || values.lastName || values.studentId || values.email;
+
+        if (anyFilled) {
+            // Require all fields
+            if (!values.firstName || !values.lastName || !values.studentId || !values.email) {
+                [firstName, lastName, studentId, email].forEach(field => {
+                    if (field && !field.value.trim()) {
+                        const errorId = field.id + "-error";
+                        let errorElement = document.getElementById(errorId);
+                        if (!errorElement) {
+                            errorElement = document.createElement("div");
+                            errorElement.id = errorId;
+                            errorElement.className = "error-message";
+                            errorElement.style.color = "#ff4444";
+                            errorElement.style.fontSize = "0.9em";
+                            errorElement.style.marginTop = "4px";
+                            field.insertAdjacentElement("afterend", errorElement);
+                        }
+                        field.style.borderColor = "#ff4444";
+                        errorElement.textContent = "All co-author fields are required if any are filled.";
+                        isValid = false;
+                    }
+                });
+            }
+
+            // Email format check
+            if (values.email && !/^[\w.%+-]+@gmail\.com$/i.test(values.email)) {
+                const errorId = email.id + "-error";
+                let errorElement = document.getElementById(errorId);
+                if (!errorElement) {
+                    errorElement = document.createElement("div");
+                    errorElement.id = errorId;
+                    errorElement.className = "error-message";
+                    errorElement.style.color = "#ff4444";
+                    errorElement.style.fontSize = "0.9em";
+                    errorElement.style.marginTop = "4px";
+                    email.insertAdjacentElement("afterend", errorElement);
+                }
+                email.style.borderColor = "#ff4444";
+                errorElement.textContent = "Please enter a valid Gmail address for co-author.";
+                isValid = false;
+            }
         }
     });
 
     return isValid;
 }
+
+
 
 
 /**
@@ -150,22 +212,34 @@ function validateCurrentSection() {
  * Handles navigation, form submission, and real-time validation
  */
 function initializeEventListeners() {
-    // Navigation click handlers for section switching
     const navItems = document.querySelectorAll('.nav-item');
+    const sectionOrder = ["basic-info", "thesis-details", "upload", "supervisor", "review"];
+
     navItems.forEach(item => {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
             const sectionId = this.getAttribute('data-section');
+            const currentSection = document.querySelector('.section.active');
+
+            const currentIndex = sectionOrder.indexOf(currentSection.id);
+            const targetIndex = sectionOrder.indexOf(sectionId);
+
+            // Block moving forward if validation fails
+            if (targetIndex > currentIndex && !validateCurrentSection()) {
+                e.preventDefault();
+                showAlert("Please fix the errors before proceeding.", "error");
+                return;
+            }
+
             showSection(sectionId);
         });
     });
-    
-    // Form submission handler with validation
+
+    // Form submission handler
     document.getElementById('thesisForm').addEventListener('submit', handleFormSubmission);
-    
-    // Real-time validation for all form inputs
+
+    // Real-time validation...
     const inputs = document.querySelectorAll('input, textarea, select');
     inputs.forEach(input => {
-        // Validate on blur (when user leaves field)
         input.addEventListener('blur', function() {
             if (this.hasAttribute('required') && !this.value.trim()) {
                 this.style.borderColor = '#ff4444';
@@ -173,13 +247,11 @@ function initializeEventListeners() {
                 this.style.borderColor = 'var(--light-gray)';
             }
         });
-        
-        // Clear error styling when user starts typing
+
         input.addEventListener('input', function() {
             if (this.style.borderColor === 'rgb(255, 68, 68)' && this.value.trim()) {
                 this.style.borderColor = 'var(--light-gray)';
             }
-            // Update review section in real-time
             updateReviewSection();
         });
     });
