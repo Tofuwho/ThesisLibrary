@@ -21,7 +21,6 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, var(--lighter-gray) 0%, var(--white) 100%);
     min-height: 100vh;
     color: var(--dark-gray);
 }
@@ -32,6 +31,30 @@ body {
     padding: 20px;
 }
 
+/* Dashboard hero same style as categories hero */
+.dashboard-header.hero-box {
+    background: rgba(126, 1, 255, 0.1); /* same soft purple tint */
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 6px 20px rgba(126, 1, 255, 0.2); /* purple-tinted shadow */
+    color: #1a1a1a;
+  }
+  
+  /* Make text adapt */
+  .dashboard-header.hero-box h1,
+  .dashboard-header.hero-box p,
+  .dashboard-header.hero-box {
+    color: inherit;
+  }
+  
+  /* Dark theme override */
+  [data-theme="dark"] .dashboard-header.hero-box {
+    background: rgba(126, 1, 255, 0.15); /* slightly brighter tint for dark mode */
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  }
+  
+  
 /* Django Messages */
 .messages-container {
     margin-bottom: 20px;

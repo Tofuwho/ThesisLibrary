@@ -12,8 +12,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
 from .models import Thesis, Category, Submission, DownloadLog
-import os, json, io
 from PyPDF2 import PdfReader, PdfWriter
+import os, json, io
 import re
 
 # ----------------------
@@ -660,3 +660,6 @@ def api_courses(request, department_id):
         return JsonResponse({'error': 'Department not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+def csrf_failure(request, reason=""):
+    return render(request, "errors/csrf_failure.html", status=403)
