@@ -1,0 +1,117 @@
+{% extends "admin/delete_confirmation.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="delete-confirmation">
+    <div class="alert alert-warning">
+        <h3>⚠️ Warning: Permanent Deletion</h3>
+        <p><strong>You are about to permanently delete the following thesis:</strong></p>
+        <ul>
+            {% for thesis in object_list %}
+            <li>
+                <strong>{{ thesis.title }}</strong> 
+                by {{ thesis.author }}
+                {% if thesis.co_author %} and {{ thesis.co_author }}{% endif %}
+                ({{ thesis.year }})
+                <br>
+                <small class="text-muted">
+                    Department: {{ thesis.department|default:"N/A" }} | 
+                    Course: {{ thesis.course|default:"N/A" }}
+                </small>
+            </li>
+            {% endfor %}
+        </ul>
+        
+        <div class="alert alert-danger">
+            <strong>⚠️ This action cannot be undone!</strong><br>
+            This will permanently remove the thesis from the database, including:
+            <ul>
+                <li>Thesis metadata (title, author, abstract, etc.)</li>
+                <li>Associated files (PDF, approval sheets)</li>
+                <li>All related database records</li>
+            </ul>
+        </div>
+        
+        <p><strong>Are you absolutely sure you want to delete this thesis?</strong></p>
+    </div>
+    
+    <div class="confirmation-buttons">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <input type="submit" value="Yes, I'm sure" class="btn btn-danger">
+                <a href="{% url 'admin:main_thesis_changelist' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.delete-confirmation {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.confirmation-buttons {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+</style>
+{% endblock %}

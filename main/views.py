@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Count, Q
+from django.db.models import Value, IntegerField, Case, When, F, ExpressionWrapper, CharField
+from django.db.models.functions import Cast
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
@@ -9,9 +11,10 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
-from .models import Thesis, Category, Submission
+from .models import Thesis, Category, Submission, DownloadLog
 import os, json, io
 from PyPDF2 import PdfReader, PdfWriter
+import re
 
 # ----------------------
 # Pages / Landing
@@ -44,11 +47,30 @@ def categories_page(request):
 
     # Filtering
     if search_query:
-        theses = theses.filter(
-            Q(title__icontains=search_query) |
-            Q(author__icontains=search_query) |
-            Q(abstract__icontains=search_query)
-        )
+        tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
+        theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
+        score_expr = Value(0, output_field=IntegerField())
+        for token in tokens:
+            token_score = (
+                Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
+                Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(co_author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(coauthor_json_text__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(research_category__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(category__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(department__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(course__name__icontains=token, then=Value(1)), default=Value(0), output_field=IntegerField())
+            )
+            # Include year matches if token is numeric
+            try:
+                year_int = int(token)
+                token_score = token_score + Case(When(year=year_int, then=Value(2)), default=Value(0), output_field=IntegerField())
+            except Exception:
+                pass
+            score_expr = score_expr + token_score
+        theses = theses.annotate(score=ExpressionWrapper(score_expr, output_field=IntegerField())).filter(score__gt=0)
 
     if selected_years:
         numeric_years = [int(y) for y in selected_years if str(y).isdigit()]
@@ -90,7 +112,13 @@ def categories_page(request):
         'author-asc': ('author', 'title'),
         'author-desc': ('-author', 'title')
     }
-    theses = theses.order_by(*sort_options.get(sort, ('-year', 'title'))).distinct()
+    # Order by relevance score first if searching, then chosen sort
+    base_order = sort_options.get(sort, ('-year', 'title'))
+    if search_query:
+        theses = theses.order_by('-score', *base_order)
+    else:
+        theses = theses.order_by(*base_order)
+    theses = theses.distinct()
 
     # Sidebar
     from .models import Department, Course
@@ -144,11 +172,29 @@ def category_detail(request, category_name):
     sort = request.GET.get('sort') or 'date-desc'
 
     if search_query:
-        theses = theses.filter(
-            Q(title__icontains=search_query) |
-            Q(author__icontains=search_query) |
-            Q(abstract__icontains=search_query)
-        )
+        tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
+        theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
+        score_expr = Value(0, output_field=IntegerField())
+        for token in tokens:
+            token_score = (
+                Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
+                Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(co_author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(coauthor_json_text__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(research_category__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(category__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(department__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(course__name__icontains=token, then=Value(1)), default=Value(0), output_field=IntegerField())
+            )
+            try:
+                year_int = int(token)
+                token_score = token_score + Case(When(year=year_int, then=Value(2)), default=Value(0), output_field=IntegerField())
+            except Exception:
+                pass
+            score_expr = score_expr + token_score
+        theses = theses.annotate(score=ExpressionWrapper(score_expr, output_field=IntegerField())).filter(score__gt=0)
 
     if selected_years:
         numeric_years = [int(y) for y in selected_years if str(y).isdigit()]
@@ -170,7 +216,12 @@ def category_detail(request, category_name):
         'author-asc': ('author', 'title'),
         'author-desc': ('-author', 'title')
     }
-    theses = theses.order_by(*sort_options.get(sort, ('-year', 'title'))).distinct()
+    base_order = sort_options.get(sort, ('-year', 'title'))
+    if search_query:
+        theses = theses.order_by('-score', *base_order)
+    else:
+        theses = theses.order_by(*base_order)
+    theses = theses.distinct()
 
     # Sidebar
     years = Thesis.objects.filter(category=category).values('year').annotate(count=Count('id')).order_by('-year')
@@ -208,6 +259,9 @@ def student_dashboard(request):
 def create_submission(request):
     title = request.POST.get('thesisTitle') or request.POST.get('title')
     abstract = request.POST.get('abstract', '')
+    keywords = request.POST.get('keywords', '')
+    research_category = request.POST.get('research_category', '')
+    expected_completion = request.POST.get('expectedCompletion') or None
     specialization = request.POST.get('specialization', '')
     year = request.POST.get('year')
     academic_level_id = request.POST.get('academic_level')
@@ -254,19 +308,52 @@ def create_submission(request):
         return redirect('student_dashboard')
 
     try:
+        # Parse structured co-authors from form naming convention coworkers[i][..]
+        co_authors = []
+        for i in range(3):
+            first = request.POST.get(f'coworkers[{i}][first_name]', '').strip()
+            last = request.POST.get(f'coworkers[{i}][last_name]', '').strip()
+            sid = request.POST.get(f'coworkers[{i}][student_id]', '').strip()
+            email = request.POST.get(f'coworkers[{i}][email]', '').strip()
+            if any([first, last, sid, email]):
+                co_authors.append({
+                    'first_name': first,
+                    'last_name': last,
+                    'student_id': sid,
+                    'email': email,
+                })
+
+        # Supervisor details
+        supervisor_name = request.POST.get('supervisorName', '').strip()
+        supervisor_email = request.POST.get('supervisorEmail', '').strip()
+        supervisor_department = request.POST.get('supervisorDepartment', '').strip()
+        supervisor_title = request.POST.get('supervisorTitle', '').strip()
+        co_supervisor_name = request.POST.get('coSupervisorName', '').strip()
+        co_supervisor_email = request.POST.get('coSupervisorEmail', '').strip()
+
         submission = Submission.objects.create(
             submitter=request.user,
             title=title.strip(),
             author=f"{request.POST.get('firstName', '').strip()} {request.POST.get('lastName', '').strip()}".strip(),
             year=int(year) if year and str(year).isdigit() else None,
             abstract=abstract,
+            keywords=keywords,
+            research_category=research_category,
+            expected_completion=expected_completion or None,
             specialization=specialization,
             category=academic_level,
             department=department,
             course=course,
             file=thesis_file,
             approval_sheet=approval_sheet,
-            status=Submission.STATUS_SUBMITTED,
+            supervisor_name=supervisor_name,
+            supervisor_email=supervisor_email,
+            supervisor_department=supervisor_department,
+            supervisor_title=supervisor_title,
+            co_supervisor_name=co_supervisor_name,
+            co_supervisor_email=co_supervisor_email,
+            co_authors=co_authors,
+            status=Submission.STATUS_PENDING,
         )
         
         messages.success(request, f'Thesis "{submission.title}" submitted successfully!')
@@ -307,35 +394,85 @@ def view_thesis_file(request, pk):
     return response
 
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0]
+    return request.META.get('REMOTE_ADDR')
+
 def download_thesis_file(request, pk):
-    # Require authentication for downloads
+    """
+    Handles thesis file downloads with authentication checks
+    Logs the download event for auditing.
+    """
+    # Check if user is authenticated
     if not request.user.is_authenticated:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'success': False, 'error': 'Please log in to download thesis files.', 'require_login': True})
+            return JsonResponse({
+                'success': False, 
+                'error': 'Please log in to download thesis files.', 
+                'require_login': True
+            }, status=401)
         else:
             messages.error(request, 'Please log in to download thesis files.')
             return redirect('/')
-    
+
+    # User is authenticated - proceed with file download
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file:
         raise Http404('File not found.')
-    response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
-    return response
+
+    try:
+        # Log the download - make sure this happens
+        DownloadLog.objects.create(
+            user=request.user,
+            thesis=thesis,
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')[:500]  # Truncate long user agents
+        )
+        
+        # Create file response with proper headers for download
+        response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
+        return response
+        
+    except Exception as e:
+        # If logging fails, still allow download but log the error
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Download logging failed for thesis {pk}: {str(e)}")
+        
+        # Still provide the file download
+        response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
+        return response
 
 
 def restricted_view_thesis_file(request, pk):
-    """View function that serves only the first 3 pages of a PDF for non-authenticated users"""
+    """
+    Serves a preview version of thesis files for non-authenticated users
+    
+    This function creates a restricted PDF containing only the first 3 pages
+    of the original thesis, allowing users to preview content before logging in.
+    
+    Args:
+        request: Django request object
+        pk: Primary key of the thesis to preview
+        
+    Returns:
+        HttpResponse: PDF response with limited pages
+        Http404: If thesis or file not found
+    """
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file:
         raise Http404('File not found.')
     
     try:
-        # Read the original PDF
+        # Initialize PDF processing components
         pdf_reader = PdfReader(thesis.file.open('rb'))
         pdf_writer = PdfWriter()
         
-        # Add only the first 3 pages (or fewer if the PDF has less than 3 pages)
+        # Determine how many pages to include (max 3 for preview)
         max_pages = min(3, len(pdf_reader.pages))
         for page_num in range(max_pages):
             pdf_writer.add_page(pdf_reader.pages[page_num])
@@ -419,9 +556,11 @@ def login_view(request):
                 user = form.get_user()
                 login(request, user)
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return JsonResponse({'success': True, 'redirect_url': request.GET.get('next') or '/'})
+                    next_url = request.POST.get('next') or request.GET.get('next') or '/'
+                    return JsonResponse({'success': True, 'redirect_url': next_url})
                 else:
-                    return redirect(request.GET.get('next', '/'))
+                    next_url = request.POST.get('next') or request.GET.get('next') or '/'
+                    return redirect(next_url)
             else:
                 errors = {field: [str(e) for e in errs] for field, errs in form.errors.items()}
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':

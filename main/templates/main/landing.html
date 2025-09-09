@@ -35,15 +35,15 @@
     </div>
 </section>
 
+{% if messages %}
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        {% if messages %}
-            const modal = document.getElementById("authModal");
-            if (modal) {
-                modal.classList.add("active");
-            }
-        {% endif %}
-    });
-    </script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("authModal");
+    if (modal) {
+        modal.classList.add("active");
+    }
+});
+</script>
+{% endif %}
     
 {% endblock %}
