@@ -2,7 +2,7 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-{% load static %}
+{% load static department_filters %}
 
 <section class="hero">
     <div class="container">
@@ -36,11 +36,15 @@
                 </div> 
                 <div class="thesis-info">
                     <h3 class="thesis-title">{{ thesis.title }}</h3>
-                    <p class="thesis-author">By {{ thesis.author }}</p>
+                    <p class="thesis-author">By {{ thesis.author }}{% if thesis.co_authors %} with {{ thesis.co_authors|format_coauthors }}{% endif %}</p>
                     <p class="thesis-meta">{{ thesis.specialization }} | {{ thesis.year }}</p>
                     {% if thesis.file %}
                         <a href="{% url 'thesis_view_file' thesis.id %}" class="thesis-view-button" target="_blank"><i class="fas fa-eye"></i> View</a>
-                        <a href="{% url 'thesis_download_file' thesis.id %}" class="thesis-download-button"><i class="fas fa-download"></i> Download</a>
+                        {% if user.is_authenticated %}
+                            <button class="thesis-download-button" onclick="showDpaModal('{{ thesis.id }}')"><i class="fas fa-download"></i> Download</button>
+                        {% else %}
+                            <button class="thesis-download-button" onclick="handleDownloadClick('{{ thesis.id }}')"><i class="fas fa-download"></i> Download</button>
+                        {% endif %}
                     {% else %}
                         <a href="{% url 'thesis_detail' thesis.id %}" class="thesis-view-button"><i class="fas fa-eye"></i> View</a>
                     {% endif %}
@@ -108,6 +112,7 @@
             </div>
             {% empty %}
             <p>No departments found.</p>
+            <p>No departments found.</p>
             {% endfor %}
         </div>
     </div>
@@ -121,7 +126,7 @@
             <div class="resource-card">
                 <h3>Submit Your Thesis</h3>
                 <p>Are you a student looking to publish your research? Learn about our submission process and guidelines.</p>
-                <a href="{% url 'student_dashboard' %}" class="resource-button">Submit now</a>
+                <a href="#" class="resource-button">Submit now</a>
             </div>
 
             <div class="resource-card">

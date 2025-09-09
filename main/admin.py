@@ -1,31 +1,358 @@
 from django.contrib import admin
+from django.contrib.admin import AdminSite
+from django import forms
 from django.utils.html import format_html
-from .models import Thesis, Submission, Category, Department, Course
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.urls import path
+from django.http import HttpResponseRedirect
+from django.contrib.admin.models import LogEntry, CHANGE, DELETION, ADDITION
+from django.contrib.contenttypes.models import ContentType
+from .models import Thesis, Submission, Category, Department, Course, RejectedThesis, DownloadLog
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
+
+
+def log_admin_action(user, obj, action_flag, message):
+    """Helper function to log admin actions to Recent Actions."""
+    try:
+        content_type = ContentType.objects.get_for_model(obj)
+        LogEntry.objects.log_action(
+            user_id=user.pk,
+            content_type_id=content_type.pk,
+            object_id=obj.pk,
+            object_repr=str(obj),
+            action_flag=action_flag,
+            change_message=message,
+        )
+    except Exception as e:
+        pass
+
+
+class ThesisAdminForm(forms.ModelForm):
+    # Separate inputs for up to 3 co-authors
+    co_author1_name = forms.CharField(required=False, label="Co-Author 1 Name")
+    co_author1_id = forms.CharField(required=False, label="Co-Author 1 Student ID")
+    co_author1_email = forms.EmailField(required=False, label="Co-Author 1 Email")
+    co_author2_name = forms.CharField(required=False, label="Co-Author 2 Name")
+    co_author2_id = forms.CharField(required=False, label="Co-Author 2 Student ID")
+    co_author2_email = forms.EmailField(required=False, label="Co-Author 2 Email")
+    co_author3_name = forms.CharField(required=False, label="Co-Author 3 Name")
+    co_author3_id = forms.CharField(required=False, label="Co-Author 3 Student ID")
+    co_author3_email = forms.EmailField(required=False, label="Co-Author 3 Email")
+
+    class Meta:
+        from .models import Thesis
+        model = Thesis
+        fields = "__all__"
+        widgets = {
+            'co_authors': forms.HiddenInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get('instance')
+        super().__init__(*args, **kwargs)
+        if instance and isinstance(instance.co_authors, list):
+            try:
+                for idx, item in enumerate(instance.co_authors[:3], start=1):
+                    if isinstance(item, dict):
+                        first = (item.get('first_name') or '').strip()
+                        last = (item.get('last_name') or '').strip()
+                        full = (first + ' ' + last).strip() or (item.get('name') or '').strip()
+                        sid = (item.get('student_id') or '').strip()
+                        email = (item.get('email') or '').strip()
+                        self.initial[f'co_author{idx}_name'] = full
+                        self.initial[f'co_author{idx}_id'] = sid
+                        self.initial[f'co_author{idx}_email'] = email
+                    elif isinstance(item, str) and item.strip():
+                        self.initial[f'co_author{idx}_name'] = item.strip()
+            except Exception:
+                pass
+
+    def clean(self):
+        cleaned = super().clean()
+        coauthors = []
+        for idx in range(1, 4):
+            name = (cleaned.get(f'co_author{idx}_name') or '').strip()
+            sid = (cleaned.get(f'co_author{idx}_id') or '').strip()
+            email = (cleaned.get(f'co_author{idx}_email') or '').strip()
+            if any([name, sid, email]):
+                # Try to split name into first/last for consistency
+                first, last = None, None
+                if name:
+                    parts = name.split()
+                    if len(parts) == 1:
+                        first = parts[0]
+                    else:
+                        first = ' '.join(parts[:-1])
+                        last = parts[-1]
+                entry = {
+                    'first_name': first or '',
+                    'last_name': last or '',
+                    'student_id': sid,
+                    'email': email,
+                }
+                coauthors.append(entry)
+        cleaned['co_authors'] = coauthors
+        return cleaned
 
 
 @admin.register(Thesis)
 class ThesisAdmin(admin.ModelAdmin):
-    list_display = ("title", "author", "co_author", "year", "department", "course", "thesis_type")
+    form = ThesisAdminForm
+    list_display = ("title", "author", "year", "department", "course", "thesis_type")
     list_filter = ("department", "course", "year", "thesis_type")
     search_fields = ("title", "author", "co_author", "abstract")
     ordering = ("-year", "title")
+    autocomplete_fields = ("category", "department", "course")
+
+    fieldsets = (
+        ("Thesis Information", {
+            "fields": ("title", "author", "year", "abstract"),
+        }),
+        ("Extended Metadata", {
+            "fields": ("keywords", "research_category", "expected_completion"),
+        }),
+        ("Classification", {
+            "fields": ("category", "department", "course"),
+        }),
+        ("Additional Details", {
+            "fields": ("thesis_type", "specialization"),
+        }),
+        ("Supervisor Information", {
+            "fields": (
+                "supervisor_name", "supervisor_email", "supervisor_department", "supervisor_title",
+                "co_supervisor_name", "co_supervisor_email",
+            ),
+        }),
+        ("Co-Authors", {
+            "fields": (
+                "co_authors_display",
+                "co_author1_name", "co_author1_id", "co_author1_email",
+                "co_author2_name", "co_author2_id", "co_author2_email",
+                "co_author3_name", "co_author3_id", "co_author3_email",
+                "co_authors",
+            ),
+        }),
+        ("Files", {
+            "fields": ("file",),
+        }),
+    )
+
+    readonly_fields = ("co_authors_display",)
+
+    def co_authors_display(self, obj):
+        if not obj or not obj.co_authors:
+            return "-"
+        items = []
+        for item in obj.co_authors:
+            if isinstance(item, dict):
+                parts = []
+                first = (item.get('first_name') or '').strip()
+                last = (item.get('last_name') or '').strip()
+                full = (first + ' ' + last).strip()
+                if full:
+                    parts.append(full)
+                sid = (item.get('student_id') or '').strip()
+                email = (item.get('email') or '').strip()
+                meta = ", ".join([v for v in [sid if sid else None, email if email else None] if v])
+                if meta:
+                    parts.append(f"({meta})")
+                label = " ".join(parts) if parts else None
+                if label:
+                    items.append(label)
+            elif isinstance(item, str) and item.strip():
+                items.append(item.strip())
+        return "; ".join(items) if items else "-"
+    co_authors_display.short_description = "Current Co-Authors"
+    
+    def save_model(self, request, obj, form, change):
+        """Override save to log actions."""
+        super().save_model(request, obj, form, change)
+    
+    def delete_model(self, request, obj):
+        """Custom delete method with confirmation."""
+        messages.warning(request, f'You are about to permanently delete the thesis: "{obj.title}". This action cannot be undone.')
+        
+        return super().delete_model(request, obj)
+    
+    def delete_queryset(self, request, queryset):
+        """Custom bulk delete method with confirmation."""
+        thesis_titles = [f'"{thesis.title}"' for thesis in queryset]
+        messages.warning(request, f'You are about to permanently delete {len(queryset)} thesis(es): {", ".join(thesis_titles)}. This action cannot be undone.')
+        
+        return super().delete_queryset(request, queryset)
 
 
 # --- Admin Actions ---
-@admin.action(description="Approve selected submissions")
+@admin.action(description="Approve selected pending submissions")
 def approve_submissions(modeladmin, request, queryset):
-    for submission in queryset.filter(status=Submission.STATUS_SUBMITTED):
-        submission.approve()
+    from django.contrib.admin.models import LogEntry
+    from django.contrib.contenttypes.models import ContentType
+    
+    pending_submissions = queryset.filter(status=Submission.STATUS_PENDING)
+    approved_count = 0
+    
+    for submission in pending_submissions:
+        try:
+            # Store submission title before approval
+            submission_title = submission.title
+            
+            # Approve the submission
+            thesis = submission.approve(approved_by=request.user)
+            approved_count += 1
+            
+            # Remove the automatic Thesis creation log entry
+            thesis_ct = ContentType.objects.get_for_model(thesis)
+            LogEntry.objects.filter(
+                user=request.user,
+                content_type=thesis_ct,
+                object_id=thesis.id,
+                action_flag=ADDITION
+            ).delete()
+            # Remove all automatic logs for the Submission (EDITED, DELETED)
+            submission_ct = ContentType.objects.get_for_model(submission)
+            LogEntry.objects.filter(
+                user=request.user,
+                content_type=submission_ct,
+                object_id=submission.id,
+                action_flag__in=[CHANGE, DELETION]
+            ).delete()
+            
+            # Log only our custom approval action
+            log_admin_action(
+                request.user, 
+                thesis, 
+                ADDITION, 
+                f"[APPROVED] Submission '{submission_title}' and moved to Thesis table"
+            )
+            
+        except ValueError as e:
+            messages.error(request, f"Could not approve '{submission.title}': {str(e)}")
+    
+    if approved_count > 0:
+        messages.success(request, f"Successfully approved {approved_count} submission(s). They have been moved to the Thesis table.")
 
 
-@admin.action(description="Reject selected submissions")
+@admin.action(description="Reject selected pending submissions")
 def reject_submissions(modeladmin, request, queryset):
-    for submission in queryset.filter(status=Submission.STATUS_SUBMITTED):
-        submission.reject()
+    from django.contrib.admin.models import LogEntry
+    from django.contrib.contenttypes.models import ContentType
+    
+    pending_submissions = queryset.filter(status=Submission.STATUS_PENDING)
+    rejected_count = 0
+    
+    for submission in pending_submissions:
+        try:
+            # Store submission title before rejection
+            submission_title = submission.title
+            
+            # Reject the submission
+            rejected_thesis = submission.reject(rejection_reason="Rejected via admin action", rejected_by=request.user)
+            rejected_count += 1
+            
+            # Remove the automatic RejectedThesis creation log entry
+            rejected_ct = ContentType.objects.get_for_model(rejected_thesis)
+            LogEntry.objects.filter(
+                user=request.user,
+                content_type=rejected_ct,
+                object_id=rejected_thesis.id,
+                action_flag=ADDITION
+            ).delete()
+            # Remove all automatic logs for the Submission (EDITED, DELETED)
+            submission_ct = ContentType.objects.get_for_model(submission)
+            LogEntry.objects.filter(
+                user=request.user,
+                content_type=submission_ct,
+                object_id=submission.id,
+                action_flag__in=[CHANGE, DELETION]
+            ).delete()
+            
+            # Log only our custom rejection action
+            log_admin_action(
+                request.user, 
+                rejected_thesis, 
+                ADDITION, 
+                f"[REJECTED] Submission '{submission_title}' and moved to Rejected Thesis archive"
+            )
+            
+        except ValueError as e:
+            messages.error(request, f"Could not reject '{submission.title}': {str(e)}")
+    
+    if rejected_count > 0:
+        messages.success(request, f"Successfully rejected {rejected_count} submission(s). They have been moved to the Rejected Thesis archive.")
+
+
+class SubmissionAdminForm(forms.ModelForm):
+    # Separate inputs for up to 3 co-authors
+    co_author1_name = forms.CharField(required=False, label="Co-Author 1 Name")
+    co_author1_id = forms.CharField(required=False, label="Co-Author 1 Student ID")
+    co_author1_email = forms.EmailField(required=False, label="Co-Author 1 Email")
+    co_author2_name = forms.CharField(required=False, label="Co-Author 2 Name")
+    co_author2_id = forms.CharField(required=False, label="Co-Author 2 Student ID")
+    co_author2_email = forms.EmailField(required=False, label="Co-Author 2 Email")
+    co_author3_name = forms.CharField(required=False, label="Co-Author 3 Name")
+    co_author3_id = forms.CharField(required=False, label="Co-Author 3 Student ID")
+    co_author3_email = forms.EmailField(required=False, label="Co-Author 3 Email")
+
+    class Meta:
+        from .models import Submission
+        model = Submission
+        fields = "__all__"
+        widgets = {
+            'co_authors': forms.HiddenInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get('instance')
+        super().__init__(*args, **kwargs)
+        if instance and isinstance(instance.co_authors, list):
+            try:
+                for idx, item in enumerate(instance.co_authors[:3], start=1):
+                    if isinstance(item, dict):
+                        first = (item.get('first_name') or '').strip()
+                        last = (item.get('last_name') or '').strip()
+                        full = (first + ' ' + last).strip() or (item.get('name') or '').strip()
+                        sid = (item.get('student_id') or '').strip()
+                        email = (item.get('email') or '').strip()
+                        self.initial[f'co_author{idx}_name'] = full
+                        self.initial[f'co_author{idx}_id'] = sid
+                        self.initial[f'co_author{idx}_email'] = email
+                    elif isinstance(item, str) and item.strip():
+                        self.initial[f'co_author{idx}_name'] = item.strip()
+            except Exception:
+                pass
+
+    def clean(self):
+        cleaned = super().clean()
+        coauthors = []
+        for idx in range(1, 4):
+            name = (cleaned.get(f'co_author{idx}_name') or '').strip()
+            sid = (cleaned.get(f'co_author{idx}_id') or '').strip()
+            email = (cleaned.get(f'co_author{idx}_email') or '').strip()
+            if any([name, sid, email]):
+                first, last = None, None
+                if name:
+                    parts = name.split()
+                    if len(parts) == 1:
+                        first = parts[0]
+                    else:
+                        first = ' '.join(parts[:-1])
+                        last = parts[-1]
+                entry = {
+                    'first_name': first or '',
+                    'last_name': last or '',
+                    'student_id': sid,
+                    'email': email,
+                }
+                coauthors.append(entry)
+        cleaned['co_authors'] = coauthors
+        return cleaned
 
 
 @admin.register(Submission)
 class SubmissionAdmin(admin.ModelAdmin):
+    form = SubmissionAdminForm
     list_display = (
         "title",
         "submitter",
@@ -34,7 +361,6 @@ class SubmissionAdmin(admin.ModelAdmin):
         "course",
         "status",
         "created_at",
-        "approved_at",
         "file_link",
         "approval_sheet_preview",
     )
@@ -52,6 +378,53 @@ class SubmissionAdmin(admin.ModelAdmin):
         "submitter__last_name",
     )
     actions = [approve_submissions, reject_submissions]
+    readonly_fields = ("created_at", "updated_at", "status", "file_link", "approval_sheet_preview", "co_authors_display", "submitter_username", "submitter_email")
+    autocomplete_fields = ("category", "department", "course")
+
+    fieldsets = (
+        ("Submission Information", {
+            "fields": ("title", "author", "year", "abstract", "keywords", "research_category", "expected_completion"),
+        }),
+        ("Classification", {
+            "fields": ("category", "department", "course"),
+        }),
+        ("Additional Details", {
+            "fields": ("thesis_type", "specialization"),
+        }),
+        ("Supervisor Information", {
+            "fields": (
+                "supervisor_name", "supervisor_email", "supervisor_department", "supervisor_title",
+                "co_supervisor_name", "co_supervisor_email",
+            ),
+        }),
+        ("Co-Authors", {
+            "fields": (
+                "co_authors_display",
+                "co_author1_name", "co_author1_id", "co_author1_email",
+                "co_author2_name", "co_author2_id", "co_author2_email",
+                "co_author3_name", "co_author3_id", "co_author3_email",
+                "co_authors",
+            ),
+        }),
+        ("Files", {
+            "fields": ("file", "approval_sheet", "file_link", "approval_sheet_preview"),
+        }),
+        ("Review & Timestamps", {
+            "fields": ("review_state", "decision_note", "status", "created_at", "updated_at"),
+            "description": "Set review intent. Actual approval/rejection happens via the actions above.",
+        }),
+        ("Submitter", {
+            "fields": ("submitter", "submitter_username", "submitter_email"),
+        }),
+    )
+    
+    def get_queryset(self, request):
+        """Only show pending submissions in the admin."""
+        return super().get_queryset(request).filter(status=Submission.STATUS_PENDING)
+    
+    def save_model(self, request, obj, form, change):
+        """Override save to log actions."""
+        super().save_model(request, obj, form, change)
 
     # --- File link display ---
     def file_link(self, obj):
@@ -70,11 +443,115 @@ class SubmissionAdmin(admin.ModelAdmin):
         return "-"
     approval_sheet_preview.short_description = "Approval Sheet"
 
+    def co_authors_display(self, obj):
+        if not obj or not obj.co_authors:
+            return "-"
+        items = []
+        for item in obj.co_authors:
+            if isinstance(item, dict):
+                parts = []
+                first = (item.get('first_name') or '').strip()
+                last = (item.get('last_name') or '').strip()
+                full = (first + ' ' + last).strip()
+                if full:
+                    parts.append(full)
+                sid = (item.get('student_id') or '').strip()
+                email = (item.get('email') or '').strip()
+                meta = ", ".join([v for v in [sid if sid else None, email if email else None] if v])
+                if meta:
+                    parts.append(f"({meta})")
+                label = " ".join(parts) if parts else None
+                if label:
+                    items.append(label)
+            elif isinstance(item, str) and item.strip():
+                items.append(item.strip())
+        return "; ".join(items) if items else "-"
+    co_authors_display.short_description = "Current Co-Authors"
+
+    def submitter_username(self, obj):
+        return obj.submitter.username if obj and obj.submitter else "-"
+    submitter_username.short_description = "Submitter Username"
+
+    def submitter_email(self, obj):
+        return obj.submitter.email if obj and obj.submitter else "-"
+    submitter_email.short_description = "Submitter Email"
+
+
+@admin.register(RejectedThesis)
+class RejectedThesisAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "author",
+        "original_submitter",
+        "category",
+        "department",
+        "course",
+        "rejected_at",
+        "rejected_by",
+        "rejection_reason_preview",
+        "file_link",
+    )
+    list_filter = (
+        "category",
+        "department",
+        "course",
+        "rejected_at",
+        "rejected_by",
+    )
+    search_fields = (
+        "title",
+        "author",
+        "original_submitter__username",
+        "original_submitter__first_name",
+        "original_submitter__last_name",
+        "rejection_reason",
+    )
+    readonly_fields = ("rejected_at", "original_submission_id")
+    ordering = ("-rejected_at",)
+    
+    def save_model(self, request, obj, form, change):
+        """Override save to log actions."""
+        super().save_model(request, obj, form, change)
+    
+    def rejection_reason_preview(self, obj):
+        """Show truncated rejection reason."""
+        if obj.rejection_reason:
+            return obj.rejection_reason[:50] + "..." if len(obj.rejection_reason) > 50 else obj.rejection_reason
+        return "-"
+    rejection_reason_preview.short_description = "Rejection Reason"
+    
+    def file_link(self, obj):
+        if obj.file:
+            return format_html('<a href="{}" target="_blank">View</a>', obj.file.url)
+        return "-"
+    file_link.short_description = "File"
+    
+    def delete_model(self, request, obj):
+        """Custom delete method with confirmation."""
+        messages.warning(request, f'You are about to permanently delete the rejected thesis: "{obj.title}". This action cannot be undone.')
+        
+        return super().delete_model(request, obj)
+    
+    def delete_queryset(self, request, queryset):
+        """Custom bulk delete method with confirmation."""
+        thesis_titles = [f'"{thesis.title}"' for thesis in queryset]
+        messages.warning(request, f'You are about to permanently delete {len(queryset)} rejected thesis(es): {", ".join(thesis_titles)}. This action cannot be undone.')
+        
+        return super().delete_queryset(request, queryset)
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("name", "department_count", "course_count")
     search_fields = ("name",)
+    
+    def save_model(self, request, obj, form, change):
+        """Override save to log actions."""
+        super().save_model(request, obj, form, change)
+    
+    def delete_model(self, request, obj):
+        """Override delete to log actions."""
+        return super().delete_model(request, obj)
     
     def department_count(self, obj):
         return obj.departments.count()
@@ -93,6 +570,14 @@ class DepartmentAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     ordering = ("category__name", "name")
     
+    def save_model(self, request, obj, form, change):
+        """Override save to log actions."""
+        super().save_model(request, obj, form, change)
+    
+    def delete_model(self, request, obj):
+        """Override delete to log actions."""
+        return super().delete_model(request, obj)
+    
     def course_count(self, obj):
         return obj.courses.count()
     course_count.short_description = "Courses"
@@ -105,6 +590,14 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ("name", "department__name")
     ordering = ("department__category__name", "department__name", "name")
     
+    def save_model(self, request, obj, form, change):
+        """Override save to log actions."""
+        super().save_model(request, obj, form, change)
+    
+    def delete_model(self, request, obj):
+        """Override delete to log actions."""
+        return super().delete_model(request, obj)
+    
     def category(self, obj):
         return obj.department.category.name if obj.department else "-"
     category.short_description = "Category"
@@ -114,3 +607,84 @@ class CourseAdmin(admin.ModelAdmin):
             return f"{obj.department.category.name} → {obj.department.name}"
         return "-"
     full_path.short_description = "Academic Path"
+
+@admin.register(DownloadLog)
+class DownloadLogAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'user', 'thesis_title_short', 'ip_address')
+    list_filter = ('timestamp', 'user')
+    search_fields = ('user__username', 'thesis__title', 'ip_address')
+    ordering = ('-timestamp',)
+    date_hierarchy = 'timestamp'
+    
+    readonly_fields = ('user', 'thesis', 'timestamp', 'ip_address', 'user_agent')
+    
+    def thesis_title_short(self, obj):
+        title = obj.thesis.title
+        return title[:50] + '...' if len(title) > 50 else title
+    thesis_title_short.short_description = 'Thesis Title'
+    thesis_title_short.admin_order_field = 'thesis__title'
+    
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+
+class LogEntryAdmin(admin.ModelAdmin):
+    list_display = ('action_time', 'user', 'content_type', 'object_repr', 'action_flag', 'change_message')
+    list_filter = ('user', 'content_type', 'action_flag')
+    search_fields = ('object_repr', 'change_message')
+    date_hierarchy = 'action_time'
+
+# Custom admin site with system logs functionality
+class CustomAdminSite(AdminSite):
+    site_title = "Thesis Library Administration"
+    site_header = "Thesis Library Administration"
+    index_title = "Administration"
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('system-logs/', self.admin_view(system_logs_view), name='system_logs'),
+        ]
+        return custom_urls + urls
+
+def system_logs_view(request):
+    logs = LogEntry.objects.select_related('content_type', 'user').order_by('-action_time')[:200]
+    
+    log_data = []
+    for log in logs:
+        action_name = {1: 'Added', 2: 'Changed', 3: 'Deleted'}.get(log.action_flag, 'Unknown')
+        log_data.append({
+            'time': log.action_time,
+            'user': log.user.username if log.user else 'System',
+            'action': action_name,
+            'object': log.object_repr,
+            'message': log.change_message,
+        })
+    
+    context = {
+        'title': 'System Activity Logs',
+        'log_data': log_data,
+    }
+    
+    return render(request, 'admin/system_logs.html', context)
+
+# Create the custom admin site
+custom_admin_site = CustomAdminSite(name='custom_admin')
+
+# Register all your models with the custom admin site
+custom_admin_site.register(Thesis, ThesisAdmin)
+custom_admin_site.register(Submission, SubmissionAdmin)
+custom_admin_site.register(RejectedThesis, RejectedThesisAdmin)
+custom_admin_site.register(Category, CategoryAdmin)
+custom_admin_site.register(Department, DepartmentAdmin)
+custom_admin_site.register(Course, CourseAdmin)
+custom_admin_site.register(LogEntry, LogEntryAdmin)
+custom_admin_site.register(DownloadLog, DownloadLogAdmin)
+custom_admin_site.register(User, UserAdmin)
+custom_admin_site.register(Group, GroupAdmin)

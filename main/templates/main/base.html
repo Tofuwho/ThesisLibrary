@@ -18,10 +18,57 @@
     <!-- Auth Modal for all pages -->
     {% include 'includes/auth-modal.html' %}
     
-    <!-- Universal JavaScript -->
+    <!-- DPA Confirmation Modal for thesis downloads -->
+    <div id="dpaModal" class="dpa-modal hidden">
+        <div class="dpa-modal-overlay" onclick="hideDpaModal()"></div>
+        <div class="dpa-modal-content">
+            <div class="dpa-modal-header">
+                <h2 class="dpa-modal-title">Data Privacy Confirmation</h2>
+                <button class="dpa-modal-close" onclick="hideDpaModal()" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="dpa-modal-body">
+                <div class="dpa-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <p class="dpa-text">
+                    When you download this thesis, you acknowledge that it may contain personal data.  
+                    Under the Data Privacy Act of 2012 (RA 10173), you agree to handle any personal  
+                    information responsibly and not misuse it.
+                </p>
+                <div class="dpa-legal-notice">
+                    <p><strong>Legal Notice:</strong> By proceeding with the download, you confirm that you will:</p>
+                    <ul>
+                        <li>Use the information only for legitimate academic or research purposes</li>
+                        <li>Not distribute or share personal information contained in the thesis</li>
+                        <li>Respect the privacy rights of individuals mentioned in the document</li>
+                        <li>Comply with all applicable data protection laws and regulations</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="dpa-modal-footer">
+                <button onclick="hideDpaModal()" class="dpa-btn dpa-btn-cancel">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button onclick="proceedWithDownload()" class="dpa-btn dpa-btn-confirm">
+                    <i class="fas fa-download"></i> I Agree & Download
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Core JavaScript Modules -->
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/theme.js' %}"></script>
+    
+    <!-- Utility and Feature-specific JavaScript Modules -->
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/modal-handler.js' %}"></script>
+    <script src="{% static 'js/download-handler.js' %}"></script>
+    <script src="{% static 'js/dpa-modal.js' %}"></script>
+    
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
