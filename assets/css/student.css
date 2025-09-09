@@ -618,6 +618,12 @@ textarea {
     color: rgb(153, 27, 27);
 }
 
+.error-message {
+    color: #ff4444;
+    font-size: 0.85em;
+    margin-left: 2px;
+}
+
 .alert-info {
     background: var(--primary-light);
     border-color: var(--primary-color);
