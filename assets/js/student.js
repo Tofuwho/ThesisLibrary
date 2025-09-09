@@ -106,22 +106,39 @@ function validateCurrentSection() {
     const activeSection = document.querySelector('.section.active');
     const requiredFields = activeSection.querySelectorAll('[required]');
     let isValid = true;
-    
+
     requiredFields.forEach(field => {
+        const errorId = field.name + "-error"; // unique ID for error message
+        let errorElement = document.getElementById(errorId);
+
+        // If no error element yet, create one
+        if (!errorElement) {
+            errorElement = document.createElement("div");
+            errorElement.id = errorId;
+            errorElement.className = "error-message";
+            errorElement.style.color = "#ff4444";
+            errorElement.style.fontSize = "0.9em";
+            errorElement.style.marginTop = "4px";
+            field.insertAdjacentElement("afterend", errorElement);
+        }
+
         if (!field.value.trim()) {
-            // Highlight invalid fields with red border
-            field.style.borderColor = '#ff4444';
-            field.focus();
+            field.style.borderColor = "#ff4444";
+            errorElement.textContent = "This field is required.";
             isValid = false;
-            return false;
+        } else if (field.type === "email" && !/^[\w.%+-]+@gmail\.com$/i.test(field.value.trim())) {
+            field.style.borderColor = "#ff4444";
+            errorElement.textContent = "Please enter a valid Gmail address.";
+            isValid = false;
         } else {
-            // Reset border color for valid fields
-            field.style.borderColor = 'var(--light-gray)';
+            field.style.borderColor = "var(--light-gray)";
+            errorElement.textContent = ""; // clear message
         }
     });
-    
+
     return isValid;
 }
+
 
 /**
  * Event Listener Management
