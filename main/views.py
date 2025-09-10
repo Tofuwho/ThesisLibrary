@@ -54,7 +54,6 @@ def categories_page(request):
             token_score = (
                 Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
                 Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                Case(When(co_author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
                 Case(When(coauthor_json_text__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
                 Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
                 Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
@@ -120,6 +119,11 @@ def categories_page(request):
         theses = theses.order_by(*base_order)
     theses = theses.distinct()
 
+    # --- Add this block to prepare keywords and research categories lists ---
+    for thesis in theses:
+        thesis.keywords_list = [k.strip() for k in (thesis.keywords or "").split(',') if k.strip()]
+        thesis.research_categories_list = [c.strip() for c in (thesis.research_category or "").split(',') if c.strip()]
+
     # Sidebar
     from .models import Department, Course
     departments = Department.objects.all().order_by('name')
@@ -179,7 +183,6 @@ def category_detail(request, category_name):
             token_score = (
                 Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
                 Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                Case(When(co_author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
                 Case(When(coauthor_json_text__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
                 Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
                 Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
@@ -241,7 +244,6 @@ def category_detail(request, category_name):
         'current_sort': sort,
     }
     return render(request, 'main/category_detail.html', context)
-
 
 # ----------------------
 # Student / Dashboard
@@ -308,20 +310,23 @@ def create_submission(request):
         return redirect('student_dashboard')
 
     try:
-        # Parse structured co-authors from form naming convention coworkers[i][..]
+        # Parse structured co-authors from form naming convention coauthors[i][..]
         co_authors = []
-        for i in range(3):
-            first = request.POST.get(f'coworkers[{i}][first_name]', '').strip()
-            last = request.POST.get(f'coworkers[{i}][last_name]', '').strip()
-            sid = request.POST.get(f'coworkers[{i}][student_id]', '').strip()
-            email = request.POST.get(f'coworkers[{i}][email]', '').strip()
-            if any([first, last, sid, email]):
-                co_authors.append({
-                    'first_name': first,
-                    'last_name': last,
-                    'student_id': sid,
-                    'email': email,
-                })
+        i = 0
+        while True:
+            first = request.POST.get(f'coauthors[{i}][first_name]', '').strip()
+            last = request.POST.get(f'coauthors[{i}][last_name]', '').strip()
+            sid = request.POST.get(f'coauthors[{i}][student_id]', '').strip()
+            email = request.POST.get(f'coauthors[{i}][email]', '').strip()
+            if not any([first, last, sid, email]):
+                break  # stop if no further entries
+            co_authors.append({
+                'first_name': first,
+                'last_name': last,
+                'student_id': sid,
+                'email': email,
+            })
+            i += 1
 
         # Supervisor details
         supervisor_name = request.POST.get('supervisorName', '').strip()

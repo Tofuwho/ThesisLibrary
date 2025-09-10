@@ -71,6 +71,15 @@ class Thesis(models.Model):
     def __str__(self):
         return f"{self.title} ({self.year})"
 
+    def get_coauthor_names(self):
+        if not self.co_authors:
+            return []
+        names = []
+        for c in self.co_authors:
+            name = c.get("name") or f"{c.get('first_name', '')} {c.get('last_name', '')}".strip()
+            if name:
+                names.append(name)
+        return names
 
 class DownloadLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

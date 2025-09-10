@@ -221,3 +221,42 @@ function updateSort(sortValue) {
 // Make functions globally available for inline onclick handlers
 window.updateSort = updateSort;
 window.clearAllFilters = clearAllFilters;
+
+/**
+ * Co-Author List Expand/Collapse
+ * Handles showing all co-authors when "+N more" is clicked
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const moreLinks = document.querySelectorAll('.more-coauthors');
+
+    moreLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const coauthorList = this.previousElementSibling; // assumes <ul> is before link
+            coauthorList.querySelectorAll('li.hidden').forEach(li => {
+                li.classList.remove('hidden');
+            });
+            this.remove(); // remove "+N more" link after expanding
+        });
+    });
+});
+
+/**
+ * Enhanced clearAllFilters
+ * Clears checkboxes and resets department to "all"
+ */
+function clearAllFilters() {
+    const form = document.getElementById('filter-form');
+    if (form) {
+        form.reset();
+
+        // Reset department explicitly
+        const deptInput = document.getElementById('department-input');
+        if (deptInput) deptInput.value = 'all';
+    }
+
+    // Reload without query params
+    const url = new URL(window.location);
+    url.search = '';
+    window.location.href = url.toString();
+}
