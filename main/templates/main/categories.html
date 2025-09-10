@@ -181,17 +181,31 @@
                             </div>
                             <div class="cat-thesis-item-content">
                                 <h3 class="cat-thesis-item-title">{{ thesis.title }}</h3>
+                                
+                                <!-- Authors -->
                                 <div class="cat-thesis-item-authors">
-                                    <p class="cat-thesis-item-author"><i class="fas fa-user"></i> <strong>Author:</strong> {{ thesis.author }}</p>
-                                    {% if thesis.co_authors %}
-                                        <p class="cat-thesis-item-coauthor"><i class="fas fa-users"></i> <strong>Co-Authors:</strong> {{ thesis.co_authors|format_coauthors }}</p>
-                                    {% elif thesis.co_author %}
-                                        <p class="cat-thesis-item-coauthor"><i class="fas fa-users"></i> <strong>Co-Author:</strong> {{ thesis.co_author }}</p>
+                                    <span class="author-label">Author:</span>
+                                    <ul class="coauthor-list">
+                                        <li class="main-author">{{ thesis.author }}</li>
+                                    </ul>
+                                
+                                    {% if thesis.get_coauthor_names %}
+                                        <span class="author-label">Co-Authors:</span>
+                                        <ul class="coauthor-list">
+                                            {% for coauthor in thesis.get_coauthor_names %}
+                                                <li class="coauthor {% if forloop.counter > 3 %}hidden{% endif %}">{{ coauthor }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                
+                                        {% if thesis.get_coauthor_names|length > 3 %}
+                                            <a href="#" class="more-coauthors">+{{ thesis.get_coauthor_names|length|add:"-3" }} more</a>
+                                        {% endif %}
                                     {% endif %}
-                                </div>
+                                </div>                                
+                
+                                <!-- Meta Info -->
                                 <div class="cat-thesis-item-meta">
                                     <span><i class="far fa-calendar-alt"></i> {{ thesis.year }}</span>
-                                    <span><i class="fas fa-graduation-cap"></i> {{ thesis.thesis_type }}</span>
                                     {% if thesis.department %}
                                         <span><i class="fas fa-building"></i> {{ thesis.department.name }}</span>
                                     {% endif %}
@@ -202,14 +216,38 @@
                                         <span><i class="fas fa-tag"></i> {{ thesis.specialization }}</span>
                                     {% endif %}
                                 </div>
-                                <p class="cat-thesis-item-abstract">{{ thesis.abstract|truncatewords:30 }}</p>
+                
+                                <!-- Abstract -->
+                                <div class="cat-thesis-item-abstract-container">
+                                    <p class="cat-thesis-item-abstract">{{ thesis.abstract|truncatewords:30 }}</p>
+                                </div>
+
+                                <!-- Keywords and Research Categories Chips -->
+                                {% if thesis.keywords_list or thesis.research_categories_list %}
+                                <div class="cat-thesis-item-tags">
+                                    {% for keyword in thesis.keywords_list %}
+                                        <span class="chip keyword-chip">{{ keyword }}</span>
+                                    {% endfor %}
+                                    {% for category in thesis.research_categories_list %}
+                                        <span class="chip category-chip">{{ category }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
+                                <!-- Actions -->
                                 <div class="cat-thesis-item-actions">
                                     {% if thesis.file %}
-                                        <a href="{% url 'thesis_view_file' thesis.id %}" class="cat-view-button" target="_blank"><i class="fas fa-eye"></i> View</a>
+                                        <a href="{% url 'thesis_view_file' thesis.id %}" class="cat-view-button" target="_blank">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
                                         {% if user.is_authenticated %}
-                                            <button class="cat-download-button" onclick="showDpaModal('{{ thesis.id }}')"><i class="fas fa-download"></i> Download</button>
+                                            <button class="cat-download-button" onclick="showDpaModal('{{ thesis.id }}')">
+                                                <i class="fas fa-download"></i> Download
+                                            </button>
                                         {% else %}
-                                            <button class="cat-download-button" data-id="{{ thesis.id }}" onclick="handleDownloadClick('{{ thesis.id }}')"><i class="fas fa-download"></i> Download</button>
+                                            <button class="cat-download-button" data-id="{{ thesis.id }}" onclick="handleDownloadClick('{{ thesis.id }}')">
+                                                <i class="fas fa-download"></i> Download
+                                            </button>
                                         {% endif %}
                                     {% else %}
                                         <span class="no-file">No file available</span>
@@ -221,6 +259,7 @@
                         <p>No theses found.</p>
                     {% endfor %}
                 </div>
+                
             </div>
         </div>
     </div>
