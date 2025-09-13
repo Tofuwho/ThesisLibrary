@@ -1,0 +1,288 @@
+﻿[
+{
+  "model": "main.department",
+  "pk": 1,
+  "fields": {
+    "name": "CAS - College of Arts and Sciences",
+    "category": 2
+  }
+},
+{
+  "model": "main.department",
+  "pk": 2,
+  "fields": {
+    "name": "CBM - College of Business Management",
+    "category": 2
+  }
+},
+{
+  "model": "main.department",
+  "pk": 3,
+  "fields": {
+    "name": "CCJ - College of Criminal Justice",
+    "category": 2
+  }
+},
+{
+  "model": "main.department",
+  "pk": 4,
+  "fields": {
+    "name": "CE - College of Education",
+    "category": 2
+  }
+},
+{
+  "model": "main.department",
+  "pk": 5,
+  "fields": {
+    "name": "CET - College of Engineering and Technology",
+    "category": 2
+  }
+},
+{
+  "model": "main.department",
+  "pk": 6,
+  "fields": {
+    "name": "CHTM - College of Hospitality & Tourism Management",
+    "category": 2
+  }
+},
+{
+  "model": "main.department",
+  "pk": 7,
+  "fields": {
+    "name": "CICT - College of Information and Communication Technology",
+    "category": 2
+  }
+},
+{
+  "model": "main.department",
+  "pk": 8,
+  "fields": {
+    "name": "Graduate School",
+    "category": 1
+  }
+},
+{
+  "model": "main.course",
+  "pk": 1,
+  "fields": {
+    "name": "Master of Arts in Education major in Educational Management",
+    "department": 8
+  }
+},
+{
+  "model": "main.course",
+  "pk": 2,
+  "fields": {
+    "name": "Master in Business Administration",
+    "department": 8
+  }
+},
+{
+  "model": "main.course",
+  "pk": 3,
+  "fields": {
+    "name": "Master in Public Administration",
+    "department": 8
+  }
+},
+{
+  "model": "main.course",
+  "pk": 4,
+  "fields": {
+    "name": "Master of Science in Criminal Justice",
+    "department": 8
+  }
+},
+{
+  "model": "main.course",
+  "pk": 5,
+  "fields": {
+    "name": "Bachelor of Science in Psychology",
+    "department": 1
+  }
+},
+{
+  "model": "main.course",
+  "pk": 6,
+  "fields": {
+    "name": "Bachelor of Science in Public Administration",
+    "department": 1
+  }
+},
+{
+  "model": "main.course",
+  "pk": 7,
+  "fields": {
+    "name": "Bachelor of Science in Social Work",
+    "department": 1
+  }
+},
+{
+  "model": "main.course",
+  "pk": 8,
+  "fields": {
+    "name": "Bachelor of Science in Business Administration",
+    "department": 2
+  }
+},
+{
+  "model": "main.course",
+  "pk": 9,
+  "fields": {
+    "name": "Major in Human Resource Management",
+    "department": 2
+  }
+},
+{
+  "model": "main.course",
+  "pk": 10,
+  "fields": {
+    "name": "Major in Marketing Management",
+    "department": 2
+  }
+},
+{
+  "model": "main.course",
+  "pk": 11,
+  "fields": {
+    "name": "Bachelor of Science in Entrepreneurship",
+    "department": 2
+  }
+},
+{
+  "model": "main.course",
+  "pk": 12,
+  "fields": {
+    "name": "Bachelor of Science in Office Administration",
+    "department": 2
+  }
+},
+{
+  "model": "main.course",
+  "pk": 13,
+  "fields": {
+    "name": "Bachelor of Science in Criminology",
+    "department": 3
+  }
+},
+{
+  "model": "main.course",
+  "pk": 14,
+  "fields": {
+    "name": "Bachelor in Elementary Education",
+    "department": 4
+  }
+},
+{
+  "model": "main.course",
+  "pk": 15,
+  "fields": {
+    "name": "Bachelor of Secondary Education",
+    "department": 4
+  }
+},
+{
+  "model": "main.course",
+  "pk": 16,
+  "fields": {
+    "name": "Major in English",
+    "department": 4
+  }
+},
+{
+  "model": "main.course",
+  "pk": 17,
+  "fields": {
+    "name": "Major in Mathematics",
+    "department": 4
+  }
+},
+{
+  "model": "main.course",
+  "pk": 18,
+  "fields": {
+    "name": "Major in Science",
+    "department": 4
+  }
+},
+{
+  "model": "main.course",
+  "pk": 19,
+  "fields": {
+    "name": "Bachelor of Science in Civil Engineering",
+    "department": 5
+  }
+},
+{
+  "model": "main.course",
+  "pk": 20,
+  "fields": {
+    "name": "Bachelor of Science in Industrial Engineering",
+    "department": 5
+  }
+},
+{
+  "model": "main.course",
+  "pk": 21,
+  "fields": {
+    "name": "Bachelor of Science in Mechanical Engineering",
+    "department": 5
+  }
+},
+{
+  "model": "main.course",
+  "pk": 22,
+  "fields": {
+    "name": "Bachelor of Science in Industrial Technology",
+    "department": 5
+  }
+},
+{
+  "model": "main.course",
+  "pk": 23,
+  "fields": {
+    "name": "Bachelor of Science in Hospitality Management",
+    "department": 6
+  }
+},
+{
+  "model": "main.course",
+  "pk": 24,
+  "fields": {
+    "name": "Bachelor of Science in Tourism Management",
+    "department": 6
+  }
+},
+{
+  "model": "main.course",
+  "pk": 25,
+  "fields": {
+    "name": "Bachelor of Science in Computer Science",
+    "department": 7
+  }
+},
+{
+  "model": "main.course",
+  "pk": 26,
+  "fields": {
+    "name": "Bachelor of Science in Information Systems",
+    "department": 7
+  }
+},
+{
+  "model": "main.category",
+  "pk": 1,
+  "fields": {
+    "name": "Graduate School"
+  }
+},
+{
+  "model": "main.category",
+  "pk": 2,
+  "fields": {
+    "name": "Undergraduate"
+  }
+}
+]
