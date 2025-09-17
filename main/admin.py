@@ -5,12 +5,26 @@ from django.utils.html import format_html
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import path
+from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect
 from django.contrib.admin.models import LogEntry, CHANGE, DELETION, ADDITION
 from django.contrib.contenttypes.models import ContentType
-from .models import Thesis, Submission, Category, Department, Course, RejectedThesis, DownloadLog
+from .models import Thesis, SubmissionCoAuthor, CoAuthor, Submission, Category, Department, Course, RejectedThesis, DownloadLog
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
+
+class CoAuthorInline(admin.TabularInline):
+    model = CoAuthor
+    extra = 1
+    fields = ('first_name', 'last_name', 'student_id', 'email')
+    ordering = ('first_name', 'last_name')
+
+
+class SubmissionCoAuthorInline(admin.TabularInline):
+    model = SubmissionCoAuthor
+    extra = 1
+    fields = ('first_name', 'last_name', 'student_id', 'email')
+    ordering = ('first_name', 'last_name')
 
 
 def log_admin_action(user, obj, action_flag, message):
@@ -29,80 +43,13 @@ def log_admin_action(user, obj, action_flag, message):
         pass
 
 
-class ThesisAdminForm(forms.ModelForm):
-    # Separate inputs for up to 3 co-authors
-    co_author1_name = forms.CharField(required=False, label="Co-Author 1 Name")
-    co_author1_id = forms.CharField(required=False, label="Co-Author 1 Student ID")
-    co_author1_email = forms.EmailField(required=False, label="Co-Author 1 Email")
-    co_author2_name = forms.CharField(required=False, label="Co-Author 2 Name")
-    co_author2_id = forms.CharField(required=False, label="Co-Author 2 Student ID")
-    co_author2_email = forms.EmailField(required=False, label="Co-Author 2 Email")
-    co_author3_name = forms.CharField(required=False, label="Co-Author 3 Name")
-    co_author3_id = forms.CharField(required=False, label="Co-Author 3 Student ID")
-    co_author3_email = forms.EmailField(required=False, label="Co-Author 3 Email")
-
-    class Meta:
-        from .models import Thesis
-        model = Thesis
-        fields = "__all__"
-        widgets = {
-            'co_authors': forms.HiddenInput(),
-        }
-
-    def __init__(self, *args, **kwargs):
-        instance = kwargs.get('instance')
-        super().__init__(*args, **kwargs)
-        if instance and isinstance(instance.co_authors, list):
-            try:
-                for idx, item in enumerate(instance.co_authors[:3], start=1):
-                    if isinstance(item, dict):
-                        first = (item.get('first_name') or '').strip()
-                        last = (item.get('last_name') or '').strip()
-                        full = (first + ' ' + last).strip() or (item.get('name') or '').strip()
-                        sid = (item.get('student_id') or '').strip()
-                        email = (item.get('email') or '').strip()
-                        self.initial[f'co_author{idx}_name'] = full
-                        self.initial[f'co_author{idx}_id'] = sid
-                        self.initial[f'co_author{idx}_email'] = email
-                    elif isinstance(item, str) and item.strip():
-                        self.initial[f'co_author{idx}_name'] = item.strip()
-            except Exception:
-                pass
-
-    def clean(self):
-        cleaned = super().clean()
-        coauthors = []
-        for idx in range(1, 4):
-            name = (cleaned.get(f'co_author{idx}_name') or '').strip()
-            sid = (cleaned.get(f'co_author{idx}_id') or '').strip()
-            email = (cleaned.get(f'co_author{idx}_email') or '').strip()
-            if any([name, sid, email]):
-                # Try to split name into first/last for consistency
-                first, last = None, None
-                if name:
-                    parts = name.split()
-                    if len(parts) == 1:
-                        first = parts[0]
-                    else:
-                        first = ' '.join(parts[:-1])
-                        last = parts[-1]
-                entry = {
-                    'first_name': first or '',
-                    'last_name': last or '',
-                    'student_id': sid,
-                    'email': email,
-                }
-                coauthors.append(entry)
-        cleaned['co_authors'] = coauthors
-        return cleaned
-
 
 @admin.register(Thesis)
 class ThesisAdmin(admin.ModelAdmin):
-    form = ThesisAdminForm
-    list_display = ("title", "author", "year", "department", "course", "thesis_type")
+    list_display = ("title", "author", "year", "department", "course", "thesis_type", "co_authors_count")
+    inlines = [CoAuthorInline]
     list_filter = ("department", "course", "year", "thesis_type")
-    search_fields = ("title", "author", "co_author", "abstract")
+    search_fields = ("title", "author", "abstract")
     ordering = ("-year", "title")
     autocomplete_fields = ("category", "department", "course")
 
@@ -125,46 +72,18 @@ class ThesisAdmin(admin.ModelAdmin):
                 "co_supervisor_name", "co_supervisor_email",
             ),
         }),
-        ("Co-Authors", {
-            "fields": (
-                "co_authors_display",
-                "co_author1_name", "co_author1_id", "co_author1_email",
-                "co_author2_name", "co_author2_id", "co_author2_email",
-                "co_author3_name", "co_author3_id", "co_author3_email",
-                "co_authors",
-            ),
-        }),
         ("Files", {
             "fields": ("file",),
         }),
     )
 
-    readonly_fields = ("co_authors_display",)
-
-    def co_authors_display(self, obj):
-        if not obj or not obj.co_authors:
-            return "-"
-        items = []
-        for item in obj.co_authors:
-            if isinstance(item, dict):
-                parts = []
-                first = (item.get('first_name') or '').strip()
-                last = (item.get('last_name') or '').strip()
-                full = (first + ' ' + last).strip()
-                if full:
-                    parts.append(full)
-                sid = (item.get('student_id') or '').strip()
-                email = (item.get('email') or '').strip()
-                meta = ", ".join([v for v in [sid if sid else None, email if email else None] if v])
-                if meta:
-                    parts.append(f"({meta})")
-                label = " ".join(parts) if parts else None
-                if label:
-                    items.append(label)
-            elif isinstance(item, str) and item.strip():
-                items.append(item.strip())
-        return "; ".join(items) if items else "-"
-    co_authors_display.short_description = "Current Co-Authors"
+    def co_authors_count(self, obj):
+        """Display the number of co-authors for this thesis."""
+        if obj:
+            count = obj.co_authors.count()
+            return f"{count} co-author{'s' if count != 1 else ''}"
+        return "0 co-authors"
+    co_authors_count.short_description = "Co-Authors"
     
     def save_model(self, request, obj, form, change):
         """Override save to log actions."""
@@ -283,102 +202,20 @@ def reject_submissions(modeladmin, request, queryset):
         messages.success(request, f"Successfully rejected {rejected_count} submission(s). They have been moved to the Rejected Thesis archive.")
 
 
-class SubmissionAdminForm(forms.ModelForm):
-    # Separate inputs for up to 3 co-authors
-    co_author1_name = forms.CharField(required=False, label="Co-Author 1 Name")
-    co_author1_id = forms.CharField(required=False, label="Co-Author 1 Student ID")
-    co_author1_email = forms.EmailField(required=False, label="Co-Author 1 Email")
-    co_author2_name = forms.CharField(required=False, label="Co-Author 2 Name")
-    co_author2_id = forms.CharField(required=False, label="Co-Author 2 Student ID")
-    co_author2_email = forms.EmailField(required=False, label="Co-Author 2 Email")
-    co_author3_name = forms.CharField(required=False, label="Co-Author 3 Name")
-    co_author3_id = forms.CharField(required=False, label="Co-Author 3 Student ID")
-    co_author3_email = forms.EmailField(required=False, label="Co-Author 3 Email")
-
-    class Meta:
-        from .models import Submission
-        model = Submission
-        fields = "__all__"
-        widgets = {
-            'co_authors': forms.HiddenInput(),
-        }
-
-    def __init__(self, *args, **kwargs):
-        instance = kwargs.get('instance')
-        super().__init__(*args, **kwargs)
-        if instance and isinstance(instance.co_authors, list):
-            try:
-                for idx, item in enumerate(instance.co_authors[:3], start=1):
-                    if isinstance(item, dict):
-                        first = (item.get('first_name') or '').strip()
-                        last = (item.get('last_name') or '').strip()
-                        full = (first + ' ' + last).strip() or (item.get('name') or '').strip()
-                        sid = (item.get('student_id') or '').strip()
-                        email = (item.get('email') or '').strip()
-                        self.initial[f'co_author{idx}_name'] = full
-                        self.initial[f'co_author{idx}_id'] = sid
-                        self.initial[f'co_author{idx}_email'] = email
-                    elif isinstance(item, str) and item.strip():
-                        self.initial[f'co_author{idx}_name'] = item.strip()
-            except Exception:
-                pass
-
-    def clean(self):
-        cleaned = super().clean()
-        coauthors = []
-        for idx in range(1, 4):
-            name = (cleaned.get(f'co_author{idx}_name') or '').strip()
-            sid = (cleaned.get(f'co_author{idx}_id') or '').strip()
-            email = (cleaned.get(f'co_author{idx}_email') or '').strip()
-            if any([name, sid, email]):
-                first, last = None, None
-                if name:
-                    parts = name.split()
-                    if len(parts) == 1:
-                        first = parts[0]
-                    else:
-                        first = ' '.join(parts[:-1])
-                        last = parts[-1]
-                entry = {
-                    'first_name': first or '',
-                    'last_name': last or '',
-                    'student_id': sid,
-                    'email': email,
-                }
-                coauthors.append(entry)
-        cleaned['co_authors'] = coauthors
-        return cleaned
-
 
 @admin.register(Submission)
 class SubmissionAdmin(admin.ModelAdmin):
-    form = SubmissionAdminForm
-    list_display = (
-        "title",
-        "submitter",
-        "category",
-        "department",
-        "course",
-        "status",
-        "created_at",
-        "file_link",
-        "approval_sheet_preview",
-    )
-    list_filter = (
-        "status",
-        "category",
-        "department",
-        "course",
-        "created_at",
-    )
-    search_fields = (
-        "title",
-        "submitter__username",
-        "submitter__first_name",
-        "submitter__last_name",
-    )
+    """
+    Admin for managing Submissions with relational CoAuthors.
+    """
+    list_display = ("title", "submitter", "category", "department", "course", "status", "created_at", "co_authors_count")
+    search_fields = ("title", "submitter__username", "submitter__first_name", "submitter__last_name")
+    list_filter = ("status", "category", "department", "course", "created_at")
     actions = [approve_submissions, reject_submissions]
-    readonly_fields = ("created_at", "updated_at", "status", "file_link", "approval_sheet_preview", "co_authors_display", "submitter_username", "submitter_email")
+
+    inlines = [SubmissionCoAuthorInline]
+
+    readonly_fields = ("created_at", "updated_at", "status", "file_link", "approval_sheet_preview", "submitter_username", "submitter_email")
     autocomplete_fields = ("category", "department", "course")
 
     fieldsets = (
@@ -397,43 +234,23 @@ class SubmissionAdmin(admin.ModelAdmin):
                 "co_supervisor_name", "co_supervisor_email",
             ),
         }),
-        ("Co-Authors", {
-            "fields": (
-                "co_authors_display",
-                "co_author1_name", "co_author1_id", "co_author1_email",
-                "co_author2_name", "co_author2_id", "co_author2_email",
-                "co_author3_name", "co_author3_id", "co_author3_email",
-                "co_authors",
-            ),
-        }),
         ("Files", {
             "fields": ("file", "approval_sheet", "file_link", "approval_sheet_preview"),
         }),
         ("Review & Timestamps", {
             "fields": ("review_state", "decision_note", "status", "created_at", "updated_at"),
-            "description": "Set review intent. Actual approval/rejection happens via the actions above.",
         }),
         ("Submitter", {
             "fields": ("submitter", "submitter_username", "submitter_email"),
         }),
     )
-    
-    def get_queryset(self, request):
-        """Only show pending submissions in the admin."""
-        return super().get_queryset(request).filter(status=Submission.STATUS_PENDING)
-    
-    def save_model(self, request, obj, form, change):
-        """Override save to log actions."""
-        super().save_model(request, obj, form, change)
 
-    # --- File link display ---
     def file_link(self, obj):
         if obj.file:
             return format_html('<a href="{}" target="_blank">View</a>', obj.file.url)
         return "-"
     file_link.short_description = "File"
 
-    # --- Approval sheet image preview ---
     def approval_sheet_preview(self, obj):
         if obj.approval_sheet:
             return format_html(
@@ -443,31 +260,6 @@ class SubmissionAdmin(admin.ModelAdmin):
         return "-"
     approval_sheet_preview.short_description = "Approval Sheet"
 
-    def co_authors_display(self, obj):
-        if not obj or not obj.co_authors:
-            return "-"
-        items = []
-        for item in obj.co_authors:
-            if isinstance(item, dict):
-                parts = []
-                first = (item.get('first_name') or '').strip()
-                last = (item.get('last_name') or '').strip()
-                full = (first + ' ' + last).strip()
-                if full:
-                    parts.append(full)
-                sid = (item.get('student_id') or '').strip()
-                email = (item.get('email') or '').strip()
-                meta = ", ".join([v for v in [sid if sid else None, email if email else None] if v])
-                if meta:
-                    parts.append(f"({meta})")
-                label = " ".join(parts) if parts else None
-                if label:
-                    items.append(label)
-            elif isinstance(item, str) and item.strip():
-                items.append(item.strip())
-        return "; ".join(items) if items else "-"
-    co_authors_display.short_description = "Current Co-Authors"
-
     def submitter_username(self, obj):
         return obj.submitter.username if obj and obj.submitter else "-"
     submitter_username.short_description = "Submitter Username"
@@ -475,6 +267,14 @@ class SubmissionAdmin(admin.ModelAdmin):
     def submitter_email(self, obj):
         return obj.submitter.email if obj and obj.submitter else "-"
     submitter_email.short_description = "Submitter Email"
+    
+    def co_authors_count(self, obj):
+        """Display the number of co-authors for this submission."""
+        if obj:
+            count = obj.co_authors.count()
+            return f"{count} co-author{'s' if count != 1 else ''}"
+        return "0 co-authors"
+    co_authors_count.short_description = "Co-Authors"
 
 
 @admin.register(RejectedThesis)
@@ -542,21 +342,22 @@ class RejectedThesisAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
+    """Admin for research categories with department and course counts."""
     list_display = ("name", "department_count", "course_count")
     search_fields = ("name",)
-    
+
     def save_model(self, request, obj, form, change):
         """Override save to log actions."""
         super().save_model(request, obj, form, change)
-    
+
     def delete_model(self, request, obj):
         """Override delete to log actions."""
         return super().delete_model(request, obj)
-    
+
     def department_count(self, obj):
         return obj.departments.count()
     department_count.short_description = "Departments"
-    
+
     def course_count(self, obj):
         total = sum(dept.courses.count() for dept in obj.departments.all())
         return total
@@ -565,19 +366,20 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
+    """Admin for academic departments with course counts."""
     list_display = ("name", "category", "course_count")
     list_filter = ("category",)
     search_fields = ("name",)
     ordering = ("category__name", "name")
-    
+
     def save_model(self, request, obj, form, change):
         """Override save to log actions."""
         super().save_model(request, obj, form, change)
-    
+
     def delete_model(self, request, obj):
         """Override delete to log actions."""
         return super().delete_model(request, obj)
-    
+
     def course_count(self, obj):
         return obj.courses.count()
     course_count.short_description = "Courses"
@@ -585,23 +387,24 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
+    """Admin for academic courses showing full path (Category → Department)."""
     list_display = ("name", "department", "category", "full_path")
     list_filter = ("department__category", "department")
     search_fields = ("name", "department__name")
     ordering = ("department__category__name", "department__name", "name")
-    
+
     def save_model(self, request, obj, form, change):
         """Override save to log actions."""
         super().save_model(request, obj, form, change)
-    
+
     def delete_model(self, request, obj):
         """Override delete to log actions."""
         return super().delete_model(request, obj)
-    
+
     def category(self, obj):
         return obj.department.category.name if obj.department else "-"
     category.short_description = "Category"
-    
+
     def full_path(self, obj):
         if obj.department and obj.department.category:
             return f"{obj.department.category.name} → {obj.department.name}"
@@ -641,38 +444,36 @@ class LogEntryAdmin(admin.ModelAdmin):
     date_hierarchy = 'action_time'
 
 # Custom admin site with system logs functionality
-class CustomAdminSite(AdminSite):
-    site_title = "Thesis Library Administration"
-    site_header = "Thesis Library Administration"
-    index_title = "Administration"
-    
+class CustomAdminSite(admin.AdminSite):
+    """
+    Custom admin site configuration:
+    - Custom header and title
+    - Adds a 'System Logs' page to view recent activity
+    """
+    site_header = "Thesis Library Admin"
+    site_title = "Thesis Library Admin Portal"
+    index_title = "Welcome to the Thesis Library Administration"
+
     def get_urls(self):
+        """Add custom URLs on top of default admin URLs."""
         urls = super().get_urls()
         custom_urls = [
-            path('system-logs/', self.admin_view(system_logs_view), name='system_logs'),
+            path("system-logs/", self.admin_view(self.system_logs_view), name="system_logs"),
         ]
         return custom_urls + urls
 
-def system_logs_view(request):
-    logs = LogEntry.objects.select_related('content_type', 'user').order_by('-action_time')[:200]
-    
-    log_data = []
-    for log in logs:
-        action_name = {1: 'Added', 2: 'Changed', 3: 'Deleted'}.get(log.action_flag, 'Unknown')
-        log_data.append({
-            'time': log.action_time,
-            'user': log.user.username if log.user else 'System',
-            'action': action_name,
-            'object': log.object_repr,
-            'message': log.change_message,
-        })
-    
-    context = {
-        'title': 'System Activity Logs',
-        'log_data': log_data,
-    }
-    
-    return render(request, 'admin/system_logs.html', context)
+    def system_logs_view(self, request):
+        """
+        Custom view for displaying the 50 most recent system logs.
+        Uses Django's LogEntry model.
+        """
+        logs = LogEntry.objects.select_related("content_type", "user").order_by("-action_time")[:50]
+        context = dict(
+            self.each_context(request),
+            title="System Logs",
+            logs=logs,
+        )
+        return TemplateResponse(request, "admin/system_logs.html", context)
 
 # Create the custom admin site
 custom_admin_site = CustomAdminSite(name='custom_admin')

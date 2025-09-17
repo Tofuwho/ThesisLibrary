@@ -40,7 +40,6 @@ class Course(models.Model):
 class Thesis(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
-    co_author = models.CharField(max_length=255, blank=True, null=True)
     year = models.IntegerField()
     abstract = models.TextField()
     thesis_type = models.CharField(max_length=100, blank=True)
@@ -59,27 +58,71 @@ class Thesis(models.Model):
     co_supervisor_name = models.CharField(max_length=150, blank=True)
     co_supervisor_email = models.EmailField(blank=True)
 
-    # Structured co-authors (optional detailed list)
-    co_authors = models.JSONField(default=list, blank=True)
-
+    # Foreign keys
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
 
-    file = models.FileField(upload_to="thesis_files/", blank=True, null=True)  # optional download
+    # File upload
+    file = models.FileField(upload_to="thesis_files/", blank=True, null=True)
 
     def __str__(self):
         return f"{self.title} ({self.year})"
-
+    
     def get_coauthor_names(self):
-        if not self.co_authors:
-            return []
-        names = []
-        for c in self.co_authors:
-            name = c.get("name") or f"{c.get('first_name', '')} {c.get('last_name', '')}".strip()
-            if name:
-                names.append(name)
-        return names
+        """Return a list of formatted co-author names for display."""
+        coauthors = []
+        for coauthor in self.co_authors.all():
+            name_parts = []
+            if coauthor.first_name:
+                name_parts.append(coauthor.first_name)
+            if coauthor.last_name:
+                name_parts.append(coauthor.last_name)
+            
+            if name_parts:
+                coauthors.append(' '.join(name_parts))
+            elif coauthor.student_id:
+                coauthors.append(f"Student ID: {coauthor.student_id}")
+            else:
+                coauthors.append("Unnamed Co-Author")
+        return coauthors
+    
+    def get_coauthor_details(self):
+        """Return detailed co-author information for admin display."""
+        coauthors = []
+        for coauthor in self.co_authors.all():
+            details = {
+                'id': coauthor.id,
+                'first_name': coauthor.first_name,
+                'last_name': coauthor.last_name,
+                'student_id': coauthor.student_id,
+                'email': coauthor.email,
+                'full_name': f"{coauthor.first_name} {coauthor.last_name}".strip() or "Unnamed Co-Author"
+            }
+            coauthors.append(details)
+        return coauthors
+
+class CoAuthor(models.Model):
+    """Relational co-authors linked to an approved Thesis."""
+    thesis = models.ForeignKey(Thesis, related_name="co_authors", on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    student_id = models.CharField(max_length=50, blank=True)
+    email = models.EmailField(blank=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}".strip() or "Unnamed Co-Author"
+        
+class SubmissionCoAuthor(models.Model):
+    """Relational co-authors linked to a Submission (before approval)."""
+    submission = models.ForeignKey("Submission", related_name="co_authors", on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    student_id = models.CharField(max_length=50, blank=True)
+    email = models.EmailField(blank=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}".strip() or "Unnamed Submission Co-Author"
 
 class DownloadLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -197,9 +240,6 @@ class Submission(models.Model):
     co_supervisor_name = models.CharField(max_length=150, blank=True)
     co_supervisor_email = models.EmailField(blank=True)
 
-    # Structured co-authors list
-    co_authors = models.JSONField(default=list, blank=True)
-
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
@@ -231,7 +271,7 @@ class Submission(models.Model):
         """Approve submission: move data to Thesis table and delete from pending submissions."""
         if self.status != self.STATUS_PENDING:
             raise ValueError("Only pending submissions can be approved")
-        
+
         # Create Thesis record
         thesis = Thesis.objects.create(
             title=self.title,
@@ -249,14 +289,23 @@ class Submission(models.Model):
             supervisor_title=self.supervisor_title,
             co_supervisor_name=self.co_supervisor_name,
             co_supervisor_email=self.co_supervisor_email,
-            co_authors=self.co_authors,
             category=self.category,
             department=self.department,
             course=self.course,
             file=self.file,
         )
-        
-        # Delete the submission from pending (it's now in Thesis table)
+
+        # Copy relational co-authors into Thesis
+        for ca in self.co_authors.all():
+            CoAuthor.objects.create(
+                thesis=thesis,
+                first_name=ca.first_name,
+                last_name=ca.last_name,
+                student_id=ca.student_id,
+                email=ca.email,
+            )
+
+        # Delete submission after moving
         self.delete()
         return thesis
 
@@ -287,6 +336,39 @@ class Submission(models.Model):
         # Delete the submission from pending (it's now in RejectedThesis table)
         self.delete()
         return rejected_thesis
+
+    def get_coauthor_names(self):
+        """Return a list of formatted co-author names for display."""
+        coauthors = []
+        for coauthor in self.co_authors.all():
+            name_parts = []
+            if coauthor.first_name:
+                name_parts.append(coauthor.first_name)
+            if coauthor.last_name:
+                name_parts.append(coauthor.last_name)
+            
+            if name_parts:
+                coauthors.append(' '.join(name_parts))
+            elif coauthor.student_id:
+                coauthors.append(f"Student ID: {coauthor.student_id}")
+            else:
+                coauthors.append("Unnamed Co-Author")
+        return coauthors
+    
+    def get_coauthor_details(self):
+        """Return detailed co-author information for admin display."""
+        coauthors = []
+        for coauthor in self.co_authors.all():
+            details = {
+                'id': coauthor.id,
+                'first_name': coauthor.first_name,
+                'last_name': coauthor.last_name,
+                'student_id': coauthor.student_id,
+                'email': coauthor.email,
+                'full_name': f"{coauthor.first_name} {coauthor.last_name}".strip() or "Unnamed Co-Author"
+            }
+            coauthors.append(details)
+        return coauthors
 
     def __str__(self):
         return f"Submission: {self.title} by {self.submitter} [{self.status}]"
