@@ -19,6 +19,24 @@
       </div>
       <div class="thesis-info">
         <p class="thesis-meta">{{ thesis.specialization }}</p>
+        
+        <!-- Authors and Co-Authors Section -->
+        <div class="thesis-authors">
+          <div class="main-author">
+            <strong>Author:</strong> {{ thesis.author }}
+          </div>
+          {% if thesis.get_coauthor_names %}
+            <div class="co-authors">
+              <strong>Co-Authors:</strong>
+              <ul class="coauthor-list">
+                {% for coauthor in thesis.get_coauthor_names %}
+                  <li>{{ coauthor }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+        
         <p>{{ thesis.abstract }}</p>
         
         {% if thesis.file %}

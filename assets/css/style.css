@@ -1822,3 +1822,106 @@ ul {
     padding: 12px 16px 16px 16px;
   }
 }
+
+/* Co-Authors Styling */
+.thesis-authors {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.thesis-authors .main-author {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.thesis-authors .co-authors {
+  margin-top: 0.5rem;
+}
+
+.thesis-authors .co-authors strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.coauthor-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.coauthor-list li {
+  padding: 0.25rem 0;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.coauthor-list li:last-child {
+  border-bottom: none;
+}
+
+.coauthor-list li:before {
+  content: "•";
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+/* Categories page co-author styling */
+.cat-thesis-item-authors {
+  margin: 0.5rem 0;
+}
+
+.cat-thesis-item-authors .author-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-right: 0.5rem;
+}
+
+.cat-thesis-item-authors .coauthor-list {
+  display: inline;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cat-thesis-item-authors .coauthor-list li {
+  display: inline;
+  margin-right: 0.5rem;
+  padding: 0;
+  border: none;
+}
+
+.cat-thesis-item-authors .coauthor-list li:before {
+  content: "";
+}
+
+.cat-thesis-item-authors .coauthor-list li:after {
+  content: ", ";
+}
+
+.cat-thesis-item-authors .coauthor-list li:last-child:after {
+  content: "";
+}
+
+.cat-thesis-item-authors .more-coauthors {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.cat-thesis-item-authors .more-coauthors:hover {
+  text-decoration: underline;
+}
+
+/* Responsive co-author styling */
+@media (max-width: 768px) {
+  .thesis-authors {
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+  }
+}

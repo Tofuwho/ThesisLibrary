@@ -311,7 +311,7 @@ def create_submission(request):
 
     try:
         # Parse structured co-authors from form naming convention coauthors[i][..]
-        co_authors = []
+        co_authors_data = []
         i = 0
         while True:
             first = request.POST.get(f'coauthors[{i}][first_name]', '').strip()
@@ -320,7 +320,7 @@ def create_submission(request):
             email = request.POST.get(f'coauthors[{i}][email]', '').strip()
             if not any([first, last, sid, email]):
                 break  # stop if no further entries
-            co_authors.append({
+            co_authors_data.append({
                 'first_name': first,
                 'last_name': last,
                 'student_id': sid,
@@ -357,9 +357,19 @@ def create_submission(request):
             supervisor_title=supervisor_title,
             co_supervisor_name=co_supervisor_name,
             co_supervisor_email=co_supervisor_email,
-            co_authors=co_authors,
             status=Submission.STATUS_PENDING,
         )
+        
+        # Create co-authors using the relational approach
+        for coauthor_data in co_authors_data:
+            from .models import SubmissionCoAuthor
+            SubmissionCoAuthor.objects.create(
+                submission=submission,
+                first_name=coauthor_data['first_name'],
+                last_name=coauthor_data['last_name'],
+                student_id=coauthor_data['student_id'],
+                email=coauthor_data['email'],
+            )
         
         messages.success(request, f'Thesis "{submission.title}" submitted successfully!')
         return redirect('my_submissions')
