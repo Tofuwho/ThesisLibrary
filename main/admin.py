@@ -245,6 +245,15 @@ class SubmissionAdmin(admin.ModelAdmin):
         }),
     )
 
+    def get_queryset(self, request):
+        """Show only pending submissions in this admin list.
+
+        Approved or rejected submissions remain in the database for
+        student history, but they won't appear in the pending list.
+        """
+        queryset = super().get_queryset(request)
+        return queryset.filter(status=Submission.STATUS_PENDING)
+
     def file_link(self, obj):
         if obj.file:
             return format_html('<a href="{}" target="_blank">View</a>', obj.file.url)
