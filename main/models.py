@@ -305,8 +305,10 @@ class Submission(models.Model):
                 email=ca.email,
             )
 
-        # Delete submission after moving
-        self.delete()
+        # Keep submission record for student history
+        self.status = self.STATUS_APPROVED
+        self.approved_at = timezone.now()
+        self.save(update_fields=["status", "approved_at"])
         return thesis
 
     def reject(self, rejection_reason: str = "", rejected_by=None):
@@ -333,8 +335,10 @@ class Submission(models.Model):
             original_submitter=self.submitter,
         )
         
-        # Delete the submission from pending (it's now in RejectedThesis table)
-        self.delete()
+        # Keep submission record and mark as rejected
+        self.status = self.STATUS_REJECTED
+        self.decision_note = rejection_reason or self.decision_note
+        self.save(update_fields=["status", "decision_note"])
         return rejected_thesis
 
     def get_coauthor_names(self):

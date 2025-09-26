@@ -25,10 +25,23 @@
 					{% endif %}
 				</div>
 				<div class="hero-search">
-					<form class="search-form" method="get">
+					<form class="search-form" method="get" id="search-form">
 						<input type="hidden" name="department" value="{{ request.GET.department|default:'all' }}">
-						<input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
-						<button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+						<div class="search-input-group">
+							<input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
+							<button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+							<div class="search-mode-toggle">
+                            <label class="search-mode-label">
+                                <input type="radio" name="search_mode" value="normal" {% if not request.GET.search_mode or request.GET.search_mode == 'normal' %}checked{% endif %}>
+                                <span class="search-mode-text">Normal Search</span>
+                            </label>
+                            <label class="search-mode-label">
+                                <input type="radio" name="search_mode" value="deep" {% if request.GET.search_mode == 'deep' %}checked{% endif %}>
+                                <span class="search-mode-text">Deep Search</span>
+                            </label>
+							</div>
+						</div>
+
 					</form>
 				</div>
 			</div>
@@ -220,6 +233,32 @@
                                 <!-- Abstract -->
                                 <div class="cat-thesis-item-abstract-container">
                                     <p class="cat-thesis-item-abstract">{{ thesis.abstract|truncatewords:30 }}</p>
+                                    
+                                    <!-- Deep Search Results -->
+                                    {% if thesis.deep_search_results %}
+                                        <div class="deep-search-results">
+                                            <div class="deep-search-header">
+                                                <i class="fas fa-file-pdf"></i>
+                                                <span class="deep-search-title">Found in PDF:</span>
+                                                <span class="deep-search-count">{{ thesis.deep_search_results.total_matches }} match{{ thesis.deep_search_results.total_matches|pluralize }}</span>
+                                            </div>
+                                            
+                                            {% if thesis.deep_search_results.matches %}
+                                                <ul class="deep-search-snippets">
+                                                    {% for m in thesis.deep_search_results.matches|slice:":3" %}
+                                                        <li>
+                                                            <span class="deep-search-page">Page {{ m.page }}</span>
+                                                            <span class="deep-search-snippet">{{ m.context|safe }}</span>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <div class="deep-search-context">
+                                                    {{ thesis.deep_search_results.context|safe }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
                                 </div>
 
                                 <!-- Keywords and Research Categories Chips -->

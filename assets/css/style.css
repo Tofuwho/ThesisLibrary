@@ -1925,3 +1925,202 @@ ul {
     padding: 0.75rem;
   }
 }
+
+/* Deep Search Styling */
+.search-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.search-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+/* Make the categories search input a bit smaller */
+.search-form .search-input {
+  height: 40px;
+  font-size: 0.95rem;
+  padding: 0 12px;
+}
+
+.search-form .search-button {
+  height: 40px;
+  padding: 0 14px;
+  font-size: 0.95rem;
+}
+
+.search-mode-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* hide native radios; style the pill text instead */
+.search-mode-label input[type="radio"] {
+  display: none;
+}
+
+/* base pill look */
+.search-mode-text {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  transition: var(--transition);
+}
+
+/* hover */
+.search-mode-label:hover .search-mode-text {
+  border-color: var(--primary-medium);
+}
+
+/* checked state */
+.search-mode-label input[type="radio"]:checked + .search-mode-text {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(126, 1, 255, 0.25);
+}
+
+.deep-search-info {
+  display: inline-flex; /* prevent stretching the whole search container */
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem; /* smaller chip-like hint */
+  background: var(--primary-light);
+  border-radius: 6px;
+  border-left: 4px solid var(--primary-color);
+  font-size: 0.85rem; /* smaller text */
+  color: var(--text-primary);
+  max-width: 100%;
+  white-space: nowrap; /* keep to one line */
+  overflow: hidden; /* truncate long text */
+  text-overflow: ellipsis;
+}
+
+.deep-search-info i {
+  color: var(--primary-color);
+}
+
+/* Deep Search Results */
+.deep-search-results {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.deep-search-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.deep-search-header i {
+  color: var(--primary-color);
+}
+
+.deep-search-title {
+  font-size: 0.9rem;
+}
+
+.deep-search-count {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.deep-search-context {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.deep-search-context mark {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* Page-aware snippet list */
+.deep-search-snippets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deep-search-snippets li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.deep-search-page {
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  border-radius: 12px;
+  padding: 2px 8px;
+  height: fit-content;
+}
+
+.deep-search-snippet {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--text-secondary);
+}
+
+/* Responsive deep search styling */
+@media (max-width: 768px) {
+  .search-input-group {
+    flex-direction: column;
+  }
+  
+  .search-mode-toggle {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .search-mode-label {
+    padding: 0.75rem;
+  }
+  
+  .deep-search-results {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+  }
+  
+  .deep-search-context {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+}

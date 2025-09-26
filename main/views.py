@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
 from .models import Thesis, Category, Submission, DownloadLog
+from .utils import search_in_thesis_pdf
 from PyPDF2 import PdfReader, PdfWriter
 import os, json, io
 import re
@@ -37,6 +38,7 @@ def index_page(request):
 def categories_page(request):
     theses = Thesis.objects.all()
     search_query = request.GET.get('search') or ''
+    search_mode = request.GET.get('search_mode', 'normal')
     selected_years = request.GET.getlist('year')
     selected_descriptors = request.GET.getlist('descriptor')
     selected_authors = request.GET.getlist('author')
@@ -46,15 +48,13 @@ def categories_page(request):
     selected_courses = request.GET.getlist('course')
 
     # Filtering
-    if search_query:
+    if search_query and search_mode != 'deep':
         tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
-        theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
         score_expr = Value(0, output_field=IntegerField())
         for token in tokens:
             token_score = (
                 Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
                 Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                Case(When(coauthor_json_text__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
                 Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
                 Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
                 Case(When(research_category__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
@@ -113,16 +113,33 @@ def categories_page(request):
     }
     # Order by relevance score first if searching, then chosen sort
     base_order = sort_options.get(sort, ('-year', 'title'))
-    if search_query:
+    if search_query and search_mode != 'deep':
         theses = theses.order_by('-score', *base_order)
     else:
         theses = theses.order_by(*base_order)
     theses = theses.distinct()
 
-    # --- Add this block to prepare keywords and research categories lists ---
+    # If deep search is enabled, scan PDFs and keep only matches
+    matched_theses = None
+    if search_query and search_mode == 'deep':
+        matched_theses_list = []
+        for thesis in theses:
+            # Skip if there is no file
+            if not thesis.file:
+                continue
+            deep_search_results = search_in_thesis_pdf(thesis, search_query)
+            if deep_search_results.get('found'):
+                thesis.deep_search_results = deep_search_results
+                matched_theses_list.append(thesis)
+        theses = matched_theses_list
+
+    # --- Prepare keywords and research categories lists ---
     for thesis in theses:
         thesis.keywords_list = [k.strip() for k in (thesis.keywords or "").split(',') if k.strip()]
         thesis.research_categories_list = [c.strip() for c in (thesis.research_category or "").split(',') if c.strip()]
+        # Ensure attribute exists in normal mode
+        if not getattr(thesis, 'deep_search_results', None):
+            thesis.deep_search_results = None
 
     # Sidebar
     from .models import Department, Course
@@ -143,7 +160,8 @@ def categories_page(request):
     types = Thesis.objects.exclude(thesis_type__isnull=True).exclude(thesis_type__exact='')\
                           .values('thesis_type').annotate(count=Count('id')).order_by('thesis_type')
 
-    total_results = theses.count()
+    # Compute total after deep filtering (list vs QuerySet)
+    total_results = len(theses) if isinstance(theses, list) else theses.count()
     context = {
         'theses': theses,
         'categories': categories,
@@ -156,6 +174,7 @@ def categories_page(request):
         'selected_courses': selected_courses,
         'departments': departments,
         'courses': courses,
+        'search_mode': search_mode,
     }
     return render(request, 'main/categories.html', context)
 
