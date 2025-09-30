@@ -79,16 +79,17 @@ WSGI_APPLICATION = 'thesis_site.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'thesis_library',     # same DB as your PHP app
-        'USER': 'root',
-        'PASSWORD': '',               # set your MySQL password if any
-        'HOST': 'localhost',
-        'PORT': '3306',               # default MySQL port
+        'NAME': os.getenv('MYSQL_DATABASE', 'thesis_library'),
+        'USER': os.getenv('MYSQL_USER', 'root'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', ''),
+        'HOST': os.getenv('MYSQL_HOST', '127.0.0.1'),  # must NOT be "localhost"
+        'PORT': os.getenv('MYSQL_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
         }
     }
 }
+
 
 
 # Password validation
