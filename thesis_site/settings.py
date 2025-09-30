@@ -77,16 +77,37 @@ WSGI_APPLICATION = 'thesis_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'thesis_library'),
-        'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),  # empty by default for XAMPP
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', '3306'),
+if os.getenv("GITHUB_ACTIONS") == "true":
+    # 🔹 Running in GitHub Actions → MySQL 8.0 (from workflow)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('MYSQL_DATABASE', 'thesis_library'),
+            'USER': os.getenv('MYSQL_USER', 'root'),
+            'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
+            'HOST': os.getenv('MYSQL_HOST', '127.0.0.1'),
+            'PORT': os.getenv('MYSQL_PORT', '3306'),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
     }
-}
+else:
+    # 🔹 Running locally → MariaDB (XAMPP)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'thesis_library',     # your local DB name
+            'USER': 'root',               # default XAMPP user
+            'PASSWORD': '',               # root has no password by default in XAMPP
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
+    }
+
 
 
 
