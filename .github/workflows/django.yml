@@ -44,7 +44,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
+
+      - name: Ensure database exists
+        run: |
+          mysql -hmariadb -uroot -proot -e "CREATE DATABASE IF NOT EXISTS thesis_library;"
+           
+      - name: Run migrations
+        run: python manage.py migrate
+                                   
       - name: Wait for DB
         run: |
           sudo apt-get update
@@ -53,9 +60,5 @@ jobs:
             echo "Waiting for MariaDB..."
             sleep 3
           done
-
-      - name: Run migrations
-        run: python manage.py migrate
-
       - name: Run tests
         run: python manage.py test
