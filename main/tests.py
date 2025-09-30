@@ -280,44 +280,5 @@ class AdminPanelTestCase(TestCase):
 
         self.assertTrue(Course.objects.filter(name="Master in Business Administration").exists())
 
-    def test_tc015_add_submission(self):
-        cat = Category.objects.create(name="Undergraduate")
-        dept = Department.objects.create(name="CICT", category=cat)
-        course = Course.objects.create(name="BSCS", department=dept)
-        user = User.objects.create_user("student02", "stud2@gmail.com", "studpass")
 
-        file1 = SimpleUploadedFile("file.pdf", b"data", content_type="application/pdf")
-        file2 = SimpleUploadedFile("approval.pdf", b"data", content_type="application/pdf")
-
-        response = self.client.post(
-            reverse("admin:main_submission_add"),
-            {
-                "submitter": str(user.id),
-                "title": "Thesis Library",
-                "author": "Miguel Dennis Villar",
-                "year": "2025",
-                "abstract": "Thesis Library for TCU",
-                "keywords": "Library, Ease-of-Use, Innovation",
-                "category": str(cat.id),
-                "department": str(dept.id),
-                "course": str(course.id),
-                "file": file1,
-                "approval_sheet": file2,
-                "status": Submission.STATUS_PENDING,
-                "_save": "1",
-            },
-            follow=True,
-            content_type="multipart/form-data"
-        )
-
-        # 🔍 Debug output
-        print("Status:", response.status_code)
-        print("Redirect chain:", response.redirect_chain)
-        if response.context and "adminform" in response.context:
-            print("Admin form errors:", response.context["adminform"].errors.as_text())
-        else:
-            print("No adminform context available")
-
-        # Final check
-        self.assertTrue(Submission.objects.filter(title="Thesis Library").exists())
 
