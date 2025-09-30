@@ -81,8 +81,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'thesis_library',
         'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'mysql',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
         'PORT': '3306',
     }
 }
