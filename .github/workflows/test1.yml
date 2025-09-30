@@ -1,0 +1,52 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ "testing" ]
+  pull_request:
+    branches: [ "testing" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:   # or postgres, depending on your DB
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: thesis_library
+          MYSQL_USER: django
+          MYSQL_PASSWORD: django
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root --password=root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13" # match your local version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: mysql://django:django@127.0.0.1:3306/thesis_library
+        run: |
+          python manage.py migrate --noinput
+
+      - name: Run tests
+        env:
+          DATABASE_URL: mysql://django:django@127.0.0.1:3306/thesis_library
+        run: |
+          python manage.py test --verbosity=2
