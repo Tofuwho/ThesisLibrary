@@ -46,17 +46,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
+
+      - name: Ensure database exists
+        run: |
+          mysql -hmariadb -uroot -proot -e "CREATE DATABASE IF NOT EXISTS thesis_library;"
+
       - name: Wait for DB
         run: |
           until mysqladmin ping -hmariadb -uroot -proot --silent; do
             echo "Waiting for database..."
             sleep 3
           done
-
-      - name: Ensure database exists
-        run: |
-          mysql -hmariadb -uroot -proot -e "CREATE DATABASE IF NOT EXISTS thesis_library;"
-
+          
       - name: Run migrations
         run: python manage.py migrate
 
