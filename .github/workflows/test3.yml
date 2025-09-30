@@ -2,9 +2,9 @@ name: Django Test Suite
 
 on:
   push:
-    branches: [ main ]
+    branches: [ testing ]
   pull_request:
-    branches: [ main ]
+    branches: [ testing ]
 
 jobs:
   test:
@@ -23,7 +23,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
-
+    
     env:
       MYSQL_HOST: mysql
       MYSQL_USER: root
