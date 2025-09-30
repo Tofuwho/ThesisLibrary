@@ -11,25 +11,25 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
-        image: postgres:13
+      mariadb:
+        image: mariadb:10.11  # Match your XAMPP/MariaDB version if possible
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: thesis_library
         ports:
-          - 5432:5432
+          - 3306:3306
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd="mysqladmin ping -hmariadb -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
     env:
-      DJANGO_SETTINGS_MODULE: myproject.settings  # 🔁 Change this to your settings path
-      POSTGRES_DB: test_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      MYSQL_HOST: mariadb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: thesis_library
+      MYSQL_PORT: 3306
 
     steps:
       - name: Checkout code
@@ -38,7 +38,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # Adjust version as needed
+          python-version: '3.11'
+
+      - name: Wait for DB
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mariadb-client
+          until mysqladmin ping -hmariadb -uroot -proot --silent; do
+            echo "Waiting for MariaDB..."
+            sleep 3
+          done
 
       - name: Install dependencies
         run: |
@@ -46,9 +55,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run migrations
-        run: |
-          python manage.py migrate
+        run: python manage.py migrate
 
       - name: Run tests
-        run: |
-          python manage.py test
+        run: python manage.py test
