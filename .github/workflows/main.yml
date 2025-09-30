@@ -45,14 +45,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Wait for DB
+      - name: Wait for MariaDB
         run: |
-          sudo apt-get update
-          sudo apt-get install -y mariadb-client
-          until mysqladmin ping -hmariadb -uroot -proot --silent; do
-            echo "Waiting for MariaDB..."
-            sleep 3
-          done
+          echo "Waiting for MariaDB to be ready..."
+          sleep 15
 
       - name: Run migrations
         run: python manage.py migrate
