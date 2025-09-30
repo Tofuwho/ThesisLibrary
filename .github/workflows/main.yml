@@ -26,7 +26,7 @@ jobs:
           --health-retries 5
 
     env:
-      DJANGO_SETTINGS_MODULE: thesislibrary.settings  # 🔁 Change this to your settings path
+      DJANGO_SETTINGS_MODULE: thesis_site.settings  # 🔁 Change this to your settings path
       POSTGRES_DB: test_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
