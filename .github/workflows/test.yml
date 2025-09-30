@@ -9,9 +9,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     services:
       mariadb:
-        image: mariadb:10.11
+        image: mariadb:10.5
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: thesis_library
@@ -21,39 +22,38 @@ jobs:
           --health-cmd="mysqladmin ping -h localhost -uroot -proot"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=10
+
+    env:
+      DB_NAME: thesis_library
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_HOST: mariadb
+      DB_PORT: 3306
 
     steps:
-      # Checkout your code
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # Setup Python (for Django)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
-      # Install dependencies
+      - name: Wait for MariaDB
+        run: |
+          until mysqladmin ping -hmariadb -uroot -proot --silent; do
+            echo "Waiting for MariaDB..."
+            sleep 5
+          done
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Wait for MariaDB to be ready
-      - name: Wait for MariaDB
-        run: |
-          until mysqladmin ping -hmariadb -uroot -proot --silent; do
-            echo "Waiting for MariaDB..."
-            sleep 3
-          done
-
-      # Run migrations
       - name: Run migrations
-        run: |
-          python manage.py migrate
+        run: python manage.py migrate
 
-      # Run tests
       - name: Run tests
-        run: |
-          python manage.py test
+        run: python manage.py test
