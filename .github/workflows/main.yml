@@ -12,27 +12,24 @@ jobs:
 
     services:
       mysql:
-        image: mysql:8.0   # or 5.7 if you need older version
+        image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: test_db
-          MYSQL_USER: django
-          MYSQL_PASSWORD: django
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
+          --health-cmd "mysqladmin ping -h localhost -uroot -proot"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     env:
-      DJANGO_SETTINGS_MODULE: thesis_site.settings
       MYSQL_HOST: 127.0.0.1
-      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
       MYSQL_DATABASE: test_db
-      MYSQL_USER: django
-      MYSQL_PASSWORD: django
+
 
     steps:
       - name: Checkout code
