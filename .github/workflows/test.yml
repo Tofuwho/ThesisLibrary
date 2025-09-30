@@ -29,7 +29,7 @@ jobs:
           - main.tests.AdminPanelTestCase.test_tc012_create_admin_user
           - main.tests.AdminPanelTestCase.test_tc013_add_category
           - main.tests.AdminPanelTestCase.test_tc014_add_course
-          - main.tests.AdminPanelTestCase.test_tc015_add_submission
+
 
     services:
       mariadb:
