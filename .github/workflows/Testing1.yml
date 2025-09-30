@@ -1,0 +1,57 @@
+name: Django Test Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mysql:8.0  # Match your XAMPP/MariaDB version if possible
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: thesis_library
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -hmariadb -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    env:
+      DJANGO_SETTINGS_MODULE: thesislibrary.settings
+      MYSQL_HOST: mariadb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: thesis_library
+      MYSQL_PORT: 3306
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Wait for DB
+        run: |
+          until mysqladmin ping -h127.0.0.1 -udjango -pdjango --silent; do
+            echo "Waiting for database..."
+            sleep 3
+          done
+
+      - name: Run tests
+        run: python manage.py test
