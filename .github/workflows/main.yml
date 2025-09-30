@@ -2,9 +2,9 @@ name: Django Test Suite
 
 on:
   push:
-    branches: [ main ]
+    branches: [ testing ]
   pull_request:
-    branches: [ main ]
+    branches: [ testing ]
 
 jobs:
   test:
@@ -38,7 +38,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # Adjust version as needed
+          python-version: '3.13.5'  # Adjust version as needed
 
       - name: Install dependencies
         run: |
