@@ -274,6 +274,19 @@ def student_dashboard(request):
         'categories': categories
     })
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)  # Only allow admin/staff users
+def admin_dashboard(request):
+    """Admin dashboard overview"""
+    context = {
+        'total_theses': Thesis.objects.count(),
+        'total_users': User.objects.count(),
+        'pending_submissions': Submission.objects.filter(status='Pending').count(),
+        'approved_theses': Submission.objects.filter(status='Approved').count(),
+        'download_logs': DownloadLog.objects.count(),
+    }
+    return render(request, 'main/admin_dashboard.html', context)
+
 
 @login_required
 @require_POST
