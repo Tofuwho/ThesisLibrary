@@ -1,0 +1,12 @@
+{
+  "title_weight": 10.0,
+  "author_weight": 7.62259811251904,
+  "abstract_weight": 6.0,
+  "keywords_weight": 5.174442468101502,
+  "category_weight": 4.2887738113701595,
+  "department_weight": 2.4043659991801385,
+  "course_weight": 2.191304381356523,
+  "fuzzy_threshold": 0.8313962408902449,
+  "context_window": 30,
+  "phrase_boost": 3.0
+}
