@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Count, Q
-from django.db.models import Value, IntegerField, Case, When, F, ExpressionWrapper, CharField
-from django.db.models.functions import Cast
+from django.db.models import Count, Q, OuterRef, Subquery
+from django.db.models import Value, IntegerField, Case, When, F, ExpressionWrapper, CharField, DateTimeField
+from django.db.models.functions import Cast, TruncMonth
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
@@ -11,8 +11,9 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
-from .models import Thesis, Category, Submission, DownloadLog
+from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course
 from .utils import search_in_thesis_pdf
+from django.utils import timezone
 from PyPDF2 import PdfReader, PdfWriter
 import os, json, io
 import re
@@ -277,14 +278,97 @@ def student_dashboard(request):
 @login_required
 @user_passes_test(lambda u: u.is_staff)  # Only allow admin/staff users
 def admin_dashboard(request):
-    """Admin dashboard overview"""
+    total_theses = Thesis.objects.count()
+    total_users = User.objects.count()
+    pending_submissions = Submission.objects.filter(status='pending').count()
+    approved_theses = Submission.objects.filter(status='approved').count()
+    download_logs = DownloadLog.objects.count()
+
+    monthly_trends = (
+        Submission.objects
+        .annotate(month=TruncMonth('created_at'))
+        .values('month', 'status')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+
+    # Group data into a structure suitable for Chart.js
+    months = []
+    approved_data, pending_data, rejected_data = [], [], []
+
+    from django.utils.dateformat import DateFormat
+    from django.utils.formats import get_format
+
+    # Get unique months in order
+    for entry in sorted({item['month'] for item in monthly_trends if item['month']}):
+        months.append(DateFormat(entry).format('M'))  # e.g., Jan, Feb, Mar
+        month_entries = [e for e in monthly_trends if e['month'] == entry]
+
+        approved_data.append(next((e['count'] for e in month_entries if e['status'] == 'approved'), 0))
+        pending_data.append(next((e['count'] for e in month_entries if e['status'] == 'pending'), 0))
+        rejected_data.append(next((e['count'] for e in month_entries if e['status'] == 'rejected'), 0))
+
+    theses_by_course = list(
+        Submission.objects
+        .filter(status='approved', approved_at__isnull=False, course__isnull=False)
+        .values(course_name=F('course__name'))  # ← This works using the FK relationship
+        .annotate(count=Count('id'))
+        .order_by('-count')[:6]
+    )
+
+    for item in theses_by_course:
+        name = item['course_name']
+
+        # Shorten overly long course names
+        item['course_name'] = " ".join(name.split()[4:]) if len(name.split()) > 4 else name
+
+    # Analytics: Theses per department
+    theses_by_department = list(
+        Submission.objects
+        .filter(status='approved', approved_at__isnull=False)
+        .values('department__name')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:16]
+    )
+
+    for item in theses_by_department:
+        name = item['department__name']
+        if " - " in name:
+            item['department__name'] = name.split(" - ")[0]
+
+    # ✅ Recent Activity - ordered by approval date (most recent first)
+    recent_theses = (
+        Submission.objects
+        .annotate(
+            rejected_date=Subquery(
+                RejectedThesis.objects.filter(original_submission_id=OuterRef('id')).values('rejected_at')[:1]
+            ),
+            activity_date=Case(
+                When(status='approved', then='approved_at'),
+                When(status='rejected', then='rejected_date'),
+                default='created_at',
+                output_field=DateTimeField(),
+            )
+        )
+        .select_related('submitter', 'department', 'category', 'course')
+        .order_by('-activity_date')[:16]
+    )
+
     context = {
-        'total_theses': Thesis.objects.count(),
-        'total_users': User.objects.count(),
-        'pending_submissions': Submission.objects.filter(status='Pending').count(),
-        'approved_theses': Submission.objects.filter(status='Approved').count(),
-        'download_logs': DownloadLog.objects.count(),
+        'total_theses': total_theses,
+        'total_users': total_users,
+        'pending_submissions': pending_submissions,
+        'approved_theses': approved_theses,
+        'download_logs': download_logs,
+        'theses_by_department': theses_by_department,
+        'recent_theses': recent_theses,
+        'theses_by_course': theses_by_course,
+        'months': months,
+        'approved_data': approved_data,
+        'pending_data': pending_data,
+        'rejected_data': rejected_data,
     }
+
     return render(request, 'main/admin_dashboard.html', context)
 
 
