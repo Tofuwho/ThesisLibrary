@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/departments/<int:category_id>/', views.api_departments, name='api_departments'),
     path('api/courses/<int:department_id>/', views.api_courses, name='api_courses'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+
 ]
 
 if settings.DEBUG:
