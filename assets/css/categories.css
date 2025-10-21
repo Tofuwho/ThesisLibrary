@@ -213,13 +213,30 @@
 }
 
 .hero-search { 
-    margin-top: 16px; max-width: 640px; 
+    margin-top: 16px; 
+    max-width: 640px; 
 }
 
 .hero-search .search-form { 
     box-shadow: var(--shadow); 
-    border-radius: 10px; 
+    border-radius: 10px;
+    width: 900px;
     overflow: hidden;
+    padding: 8px 10px;
+}
+
+/* Ensure inputs and mode toggles wrap neatly with spacing */
+.hero-search .search-input-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Dedicated space for suggestion chip below the form */
+.hero-search .search-suggestion {
+    margin-top: 1px;
+    margin-left: 10px;
 }
 
 .hero-search .search-input { 
@@ -689,10 +706,8 @@
     cursor: pointer;
 }
 
-.cat-view-button {
-    background: var(--primary-color);
-    color: white;
-}
+
+.cat-view-button { background: var(--primary-color); color: #fff; }
 
 .cat-view-button:hover {
     background: var(--primary-color);
@@ -700,21 +715,30 @@
     transform: translateY(-1px);
 }
 
-.cat-download-button {
-    background: rgba(0, 0, 0, 0.04);
-    color: var(--medium-gray);
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-    text-decoration: none;
-}
+.cat-download-button { background: rgba(0, 0, 0, 0.04); color: var(--medium-gray); border: none; cursor: pointer; font-family: inherit; font-size: inherit; text-decoration: none; }
 
 .cat-download-button:hover {
     background: rgba(0, 0, 0, 0.08);
     color: var(--dark-gray);
     transform: translateY(-1px);
 }
+
+/* Dark theme contrast fixes */
+[data-theme="dark"] .categories-hero::before { opacity: 0.25; }
+[data-theme="dark"] .hero-chip { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); color: var(--text-primary); }
+[data-theme="dark"] .cat-thesis-item { background: #1f2937; border-color: #374151; }
+[data-theme="dark"] .cat-thesis-item-meta span { background: rgba(255,255,255,0.06); color: #e5e7eb; }
+[data-theme="dark"] .cat-thesis-item-meta span i { color: var(--primary-medium); }
+[data-theme="dark"] .cat-thesis-item-abstract-container { background: rgba(255,255,255,0.06); color: #d1d5db; border-left-color: var(--primary-medium); }
+[data-theme="dark"] .cat-view-button { color: #fff; }
+[data-theme="dark"] .cat-download-button { background: rgba(255,255,255,0.06); color: #d1d5db; }
+[data-theme="dark"] .cat-download-button:hover { background: rgba(255,255,255,0.12); color: #f3f4f6; }
+[data-theme="dark"] .filter-sidebar { background: #111827; border-color: #374151; }
+[data-theme="dark"] .cat-results-header { background: #111827; border-color: #374151; }
+[data-theme="dark"] .cat-sort-select { background: #111827; border-color: #374151; color: #e5e7eb; }
+[data-theme="dark"] .filter-list li input[type="checkbox"] { border-color: #4b5563; background: transparent; }
+[data-theme="dark"] .filter-list li label { color: #d1d5db; }
+[data-theme="dark"] .filter-list li label:hover { color: var(--primary-medium); }
 
 /* Pagination - Refined */
 .cat-results-pagination {
@@ -1168,6 +1192,24 @@
   transform: scale(1.08);
 }
 
+/* Dark mode: improve All-state readability for department buttons */
+[data-theme="dark"] .dept-bookmark {
+  background: #0f172a; /* slate-900 */
+  color: #e5e7eb;      /* gray-200 */
+  border-color: #334155; /* slate-600 */
+  box-shadow: none;
+}
+[data-theme="dark"] .dept-bookmark:hover {
+  background: #111827; /* gray-900 */
+  color: #f3f4f6;      /* gray-100 */
+  border-color: #475569;
+}
+[data-theme="dark"] .dept-bookmark.active {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
 /* Ensure color scheme still works for .categories-main with department color classes */
 .categories-main[class*="dept-"] {
   /* color variables are set by JS, nothing to override here */
@@ -1240,6 +1282,17 @@
     font-weight: 500;
     white-space: nowrap;
     transition: all 0.2s ease;
+}
+
+/* Dark mode: improve co-author chip contrast */
+[data-theme="dark"] .coauthor-list li {
+    background: rgba(255,255,255,0.08);
+    color: #e5e7eb;
+    border: 1px solid #374151;
+}
+[data-theme="dark"] .coauthor-list li.main-author {
+    background: var(--primary-color);
+    color: #fff;
 }
 
 .coauthor-list li.main-author {
