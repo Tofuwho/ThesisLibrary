@@ -1,15 +1,26 @@
 /* CSS Variables */
 :root {
-  --primary-color: rgb(126, 1, 255);
-  --primary-medium: rgb(104, 1, 209);
-  --primary-light: rgba(126, 1, 255, 0.1);
+  --primary-color: #8B0000; /* Deep Maroon */
+  --primary-medium: #5C0000; /* Darker maroon */
+  --primary-light: rgba(139, 0, 0, 0.1);
+  --primary-dark: #4A0000; /* Even darker maroon */
+  --accent-color: #B22222; /* Fire Brick for accents */
+  --accent-light: rgba(178, 34, 34, 0.1);
+  --luxury-gold: #D4AF37; /* Luxury Gold */
+  --luxury-gold-light: rgba(212, 175, 55, 0.1);
+  --luxury-gold-medium: rgba(212, 175, 55, 0.3);
+  --luxury-gold-dark: #B8860B; /* Dark Goldenrod */
+  --premium-yellow: #FFD700; /* Premium Gold */
+  --premium-yellow-light: rgba(255, 215, 0, 0.1);
   --white: #ffffff;
   --light-gray: #f8f9fa;
   --medium-gray: #6c757d;
-  --dark-gray: #343a40;
+  --dark-gray: #2C2C2C;
   --transition: all 0.3s ease;
-  --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+  --shadow-accent: 0 4px 15px rgba(139, 0, 0, 0.2);
+  --shadow-luxury: 0 4px 20px rgba(212, 175, 55, 0.3);
 }
 
 /* General Styles */
@@ -34,7 +45,7 @@
   
   a {
     text-decoration: none;
-    color: #7e01ff;
+    color: var(--primary-color);
   }
   
   ul {
@@ -70,13 +81,14 @@
 .landing-header .logo-square {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #7e01ff, #6801d1);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
 }
 .landing-header .logo-container h1 {
   font-size: 1.7rem;
   font-weight: 700;
-  color: #7e01ff;
+  color: var(--primary-color);
   letter-spacing: 1px;
 }
 .landing-header .header-flex-center {
@@ -110,9 +122,9 @@
   height: 40px;
   min-width: 120px;
   border-radius: 5px;
-  border: 1.5px solid #7e01ff;
+  border: 1.5px solid var(--primary-color);
   background: transparent;
-  color: #7e01ff;
+  color: var(--primary-color);
   font-weight: 600;
   margin-left: 10px;
   cursor: pointer;
@@ -122,8 +134,8 @@
 .landing-header .dashboard-btn:hover,
 .landing-header .logout-btn:hover,
 .landing-header .login-btn:hover {
-  background: rgba(126, 1, 255, 0.08);
-  color: #6801d1;
+  background: var(--primary-light);
+  color: var(--primary-dark);
 }
 .landing-header .user-welcome {
   font-size: 1rem;
@@ -131,7 +143,7 @@
   color: #333;
 }
 .landing-header .user-welcome span {
-  color: #7e01ff;
+  color: var(--primary-color);
   font-weight: 600;
   margin-left: 5px;
 }
@@ -154,13 +166,17 @@
   
   /* Hero Section */
   .hero-section {
-    height: 80vh;
-    min-height: 500px;
-    background-image: url('../images/hero-bg.jpg');
+    height: 85vh;
+    min-height: 600px;
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.8) 0%, rgba(178, 34, 34, 0.7) 100%), url('../images/hero-bg.jpg');
     background-size: cover;
     background-position: center;
+    background-attachment: fixed;
     position: relative;
     margin-top: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .hero-overlay {
@@ -169,7 +185,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -183,9 +199,11 @@
   }
   
   .hero-content h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-    font-weight: 700;
+    font-size: 3.5rem;
+    margin-bottom: 25px;
+    font-weight: 800;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    letter-spacing: 1px;
   }
   
   .hero-content p {
@@ -222,19 +240,41 @@
   
   .cta-button {
     display: inline-block;
-    padding: 12px 30px;
-    background-color: #7e01ff;
+    padding: 15px 35px;
+    background: linear-gradient(135deg, var(--primary-color), var(--luxury-gold));
     color: #fff;
-    border-radius: 5px;
-    font-weight: 600;
+    border-radius: 8px;
+    font-weight: 700;
     transition: all 0.3s ease;
-    border: 2px solid transparent;
+    border: 2px solid var(--luxury-gold);
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .cta-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--luxury-gold-light), transparent);
+    transition: left 0.5s ease;
+  }
+  
+  .cta-button:hover::before {
+    left: 100%;
   }
   
   .cta-button:hover {
-    background-color: #6801d1;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(126, 1, 255, 0.3);
+    background: linear-gradient(135deg, var(--luxury-gold), var(--primary-color));
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4), 0 0 25px var(--luxury-gold-light);
+    border-color: var(--luxury-gold);
   }
   
   .cta-button.secondary {
@@ -270,9 +310,10 @@
   }
   
   .footer-section h3 {
-    border-bottom: 2px solid #7e01ff;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
+    border-bottom: 3px solid var(--primary-color);
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+    font-weight: 700;
   }
   
   .footer-section ul li {
@@ -285,7 +326,7 @@
   }
   
   .footer-section ul li a:hover {
-    color: #7e01ff;
+    color: var(--primary-color);
   }
   
   .footer-bottom {
@@ -505,8 +546,8 @@
   }
   
   .overlay {
-    background: rgb(126, 1, 255);
-    background: linear-gradient(to right, rgb(126, 1, 255), rgb(80, 0, 160));
+    background: var(--primary-color);
+    background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
     background-repeat: no-repeat;
     background-size: cover;
     color: #fff;
@@ -570,8 +611,8 @@
   .auth-modal input[type="text"]:focus,
   .auth-modal input[type="email"]:focus,
   .auth-modal input[type="password"]:focus {
-    border-color: #7e01ff;
-    box-shadow: 0 0 5px rgba(126, 1, 255, 0.5);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px rgba(139, 0, 0, 0.5);
   }
   
   /* Form labels */
@@ -586,7 +627,7 @@
     position: relative;
     overflow: hidden;
     padding: 0.75em 1.5em;
-    background-color: #7e01ff;
+    background-color: var(--primary-color);
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -596,10 +637,11 @@
     z-index: 1;
     width: 100%;
     margin-top: 1em;
+    font-weight: 600;
   }
   
   .auth-modal button:hover {
-    background-color: #6801d1;
+    background-color: var(--primary-dark);
     transform: translateY(-3px);
   }
   
@@ -699,9 +741,9 @@
     min-width: 150px;
     box-sizing: border-box;
     border-radius: 5px;
-    border: 1px solid #7e01ff;
+    border: 1px solid var(--primary-color);
     background: transparent;
-    color: #7e01ff;
+    color: var(--primary-color);
     font-weight: 600;
     transition: background-color 0.3s;
     margin-left: 10px;
@@ -710,7 +752,7 @@
   .dashboard-btn:hover,
   .logout-btn:hover,
   .login-btn:hover {
-    background-color: rgba(126, 1, 255, 0.1);
+    background-color: var(--primary-light);
   }
   
   /* Override global button styles for search buttons */

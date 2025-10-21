@@ -6,18 +6,13 @@
 
 <section class="hero">
     <div class="container">
-        <h2 class="section-title">CICT Thesis Repository</h2>
+        <h2 class="section-title">The Thesis Repository</h2>
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <p class="section-subtitle">
-            Discover outstanding research from the College of Information and Communications Technology
+            Discover outstanding research from our College.<br>
+            Explore cutting-edge studies, innovative solutions, and academic excellence in the field of technology.
         </p>
 
-        <div class="search-container">
-            <form action="{% url 'categories' %}" method="GET" class="search-form">
-                <input type="text" name="search" class="search-input" placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
-                <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
-            </form>
-        </div>
 
         
         </div>
@@ -26,13 +21,17 @@
 
 <section class="recently-added">
     <div class="container">
-        <h2 class="section-title">Recently Added Thesis</h2>
+        <h2 class="section-title">Latest Research Publications</h2>
+        <p class="section-subtitle">Explore the most recent academic contributions from our talented students and researchers</p>
 
         <div class="thesis-grid">
             {% for thesis in recent_theses %}
             <div class="thesis-card">
                 <div class="thesis-cover">
-                    <div class="thesis-cover-placeholder">Thesis Cover Picture</div>
+                    <div class="thesis-cover-placeholder">
+                        <i class="fas fa-graduation-cap" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 10px;"></i><br>
+                        Academic Research
+                    </div>
                 </div> 
                 <div class="thesis-info">
                     <h3 class="thesis-title">{{ thesis.title }}</h3>
@@ -56,15 +55,17 @@
         </div>
 
         <div class="pagination">
-            <!-- Temporary hardcoded link -->
-            <a href="{% url 'categories' %}" class="pagination-button">View Thesis</a>
+            <a href="{% url 'categories' %}" class="pagination-button">
+                <i class="fas fa-book-open"></i> Browse All Research
+            </a>
         </div>
     </div>
 </section> 
 
 <section class="departments">
     <div class="container">
-        <h2 class="section-title">Browse by Department</h2>
+        <h2 class="section-title">Academic Departments</h2>
+        <p class="section-subtitle">Explore research across different academic disciplines and specializations</p>
 
         <div class="department-grid">
             {% for department in departments %}
@@ -108,7 +109,9 @@
                         Academic excellence and research
                     {% endif %}
                 </div>
-                <a href="{% url 'categories' %}?department={{ department.id }}" class="browse-button">Browse Theses</a>
+                <a href="{% url 'categories' %}?department={{ department.id }}" class="browse-button">
+                    <i class="fas fa-arrow-right"></i> Explore Research
+                </a>
             </div>
             {% empty %}
             <p>No departments found.</p>
@@ -120,19 +123,41 @@
 
 <section class="resources">
     <div class="container">
-        <h2 class="section-title">Resources for Researchers</h2>
+        <h2 class="section-title">Academic Resources</h2>
+        <p class="section-subtitle">Supporting your research journey with comprehensive tools and guidance</p>
 
         <div class="resources-grid">
             <div class="resource-card">
-                <h3>Submit Your Thesis</h3>
-                <p>Are you a student looking to publish your research? Learn about our submission process and guidelines.</p>
-                <a href="#" class="resource-button">Submit now</a>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <i class="fas fa-file-upload" style="font-size: 3rem; color: var(--primary-color);"></i>
+                </div>
+                <h3>Submit Your Research</h3>
+                <p>Ready to share your academic work? Our streamlined submission process makes it easy to publish your thesis and contribute to the academic community.</p>
+                <a href="#" class="resource-button">
+                    <i class="fas fa-upload"></i> Start Submission
+                </a>
             </div>
 
             <div class="resource-card">
-                <h3>Research Assistance</h3>
-                <p>Need help with your research? Connect with faculty advisors and research specialists.</p>
-                <a href="#" class="resource-button">Get help</a>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <i class="fas fa-users" style="font-size: 3rem; color: var(--accent-color);"></i>
+                </div>
+                <h3>Research Support</h3>
+                <p>Get expert guidance from our faculty advisors and research specialists. We're here to help you succeed in your academic endeavors.</p>
+                <a href="#" class="resource-button">
+                    <i class="fas fa-handshake"></i> Get Support
+                </a>
+            </div>
+
+            <div class="resource-card">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <i class="fas fa-chart-line" style="font-size: 3rem; color: var(--primary-color);"></i>
+                </div>
+                <h3>Research Analytics</h3>
+                <p>Track the impact of your research with our comprehensive analytics dashboard. Monitor downloads, citations, and engagement metrics.</p>
+                <a href="#" class="resource-button">
+                    <i class="fas fa-chart-bar"></i> View Analytics
+                </a>
             </div>
         </div>
     </div>
