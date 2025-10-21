@@ -42,21 +42,40 @@
 							</div>
 						</div>
 
+						{% if did_you_mean %}
+						<div class="deep-search-info search-suggestion">
+							<i class="fas fa-magic"></i>
+							<span>Did you mean</span>
+							<a href="?search={{ did_you_mean|urlencode }}&search_mode={{ request.GET.search_mode|default:'normal' }}" style="font-weight:600;">“{{ did_you_mean }}”</a>
+						</div>
+						{% endif %}
 					</form>
 				</div>
 			</div>
           <div class="department-bookmarks">
             <button class="dept-bookmark" data-dept="all" data-color="all">All</button>
             {% for dept in departments %}
-                {% if dept.name|lower == 'graduate' or dept.name|lower == 'graduate school' %}
-                    <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="graduate">Graduate</button>
-                {% elif 'education' in dept.name|lower %}
-                    <!-- Special handling for College of Education -->
-                    <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="ce">CE</button>
-                {% else %}
-                    <!-- For other departments, use first 4 letters and make them uppercase for display -->
-                    <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="{{ dept.name|slice:':4'|lower }}">{{ dept.name|slice:':4'|upper }}</button>
-                {% endif %}
+                {% with dl=dept.name|lower %}
+                    {% if dl == 'graduate' or dl == 'graduate school' %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="graduate">Graduate</button>
+                    {% elif 'education' in dl %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="ce">CE</button>
+                    {% elif 'information' in dl or 'ict' in dl or 'computer' in dl %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cict">CICT</button>
+                    {% elif 'arts' in dl or 'sciences' in dl or 'science' in dl %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cas">CAS</button>
+                    {% elif 'business' in dl or 'management' in dl or 'account' in dl %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cbm">CBM</button>
+                    {% elif 'criminal' in dl or 'justice' in dl %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="ccj">CCJ</button>
+                    {% elif 'hospitality' in dl or 'tourism' in dl or 'hotel' in dl %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="chtm">CHTM</button>
+                    {% elif 'engineering' in dl or 'technology' in dl or 'industrial' in dl %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cet">CET</button>
+                    {% else %}
+                        <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="coll">{{ dept.name|slice:':4'|upper }}</button>
+                    {% endif %}
+                {% endwith %}
             {% endfor %}
           </div>
 		</div>
@@ -276,9 +295,15 @@
                                 <!-- Actions -->
                                 <div class="cat-thesis-item-actions">
                                     {% if thesis.file %}
+                                        {% if request.GET.search %}
+                                        <a href="{% url 'thesis_view_file_highlight' thesis.id %}?q={{ thesis.deep_search_query|default:effective_query|default:request.GET.search|urlencode }}" class="cat-view-button" target="_blank">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        {% else %}
                                         <a href="{% url 'thesis_view_file' thesis.id %}" class="cat-view-button" target="_blank">
                                             <i class="fas fa-eye"></i> View
                                         </a>
+                                        {% endif %}
                                         {% if user.is_authenticated %}
                                             <button class="cat-download-button" onclick="showDpaModal('{{ thesis.id }}')">
                                                 <i class="fas fa-download"></i> Download
