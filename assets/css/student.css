@@ -1,16 +1,27 @@
 /* styles.css */
 :root {
-    --primary-color: rgb(126, 1, 255);
-    --primary-light: rgba(126, 1, 255, 0.1);
-    --primary-medium: rgba(126, 1, 255, 0.5);
-    --dark-gray: #333;
+    --primary-color: #8B0000; /* Deep Maroon */
+    --primary-light: rgba(139, 0, 0, 0.1);
+    --primary-medium: rgba(139, 0, 0, 0.5);
+    --primary-dark: #5C0000; /* Darker maroon for hover states */
+    --accent-color: #B22222; /* Fire Brick for accents */
+    --accent-light: rgba(178, 34, 34, 0.1);
+    --luxury-gold: #D4AF37; /* Luxury Gold */
+    --luxury-gold-light: rgba(212, 175, 55, 0.1);
+    --luxury-gold-medium: rgba(212, 175, 55, 0.3);
+    --luxury-gold-dark: #B8860B; /* Dark Goldenrod */
+    --premium-yellow: #FFD700; /* Premium Gold */
+    --premium-yellow-light: rgba(255, 215, 0, 0.1);
+    --dark-gray: #2C2C2C;
     --medium-gray: #666;
-    --light-gray: #e0e0e0;
-    --lighter-gray: #f5f5f5;
+    --light-gray: #E8E8E8;
+    --lighter-gray: #F8F8F8;
     --white: #fff;
     --transition: all 0.3s ease;
-    --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    --shadow-hover: 0 5px 15px rgba(0, 0, 0, 0.2);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+    --shadow-accent: 0 4px 15px rgba(139, 0, 0, 0.2);
+    --shadow-luxury: 0 4px 20px rgba(212, 175, 55, 0.3);
 }
 
 * {
@@ -33,11 +44,14 @@ body {
 
 /* Dashboard hero same style as categories hero */
 .dashboard-header.hero-box {
-    background: rgba(126, 1, 255, 0.1); /* same soft purple tint */
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 6px 20px rgba(126, 1, 255, 0.2); /* purple-tinted shadow */
-    color: #1a1a1a;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%);
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-accent);
+    color: var(--dark-gray);
+    border: 2px solid var(--primary-color);
+    position: relative;
+    overflow: hidden;
   }
   
   /* Make text adapt */
@@ -49,9 +63,10 @@ body {
   
   /* Dark theme override */
   [data-theme="dark"] .dashboard-header.hero-box {
-    background: rgba(126, 1, 255, 0.15); /* slightly brighter tint for dark mode */
+    background: linear-gradient(135deg, rgba(165, 42, 42, 0.15) 0%, rgba(205, 92, 92, 0.1) 100%);
     color: #fff;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+    border-color: #A52A2A;
   }
   
   
@@ -97,37 +112,41 @@ body {
     position: relative;
     margin-top: 30px; /* space below fixed site header */
     margin-bottom: 30px;
-    background: linear-gradient(135deg, rgba(126,1,255,0.08), rgba(126,1,255,0.04));
-    border: 1px solid rgba(126,1,255,0.15);
-    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+    border: 2px solid var(--primary-color);
+    border-radius: 20px;
     overflow: hidden;
+    box-shadow: var(--shadow-accent);
 }
 
 .dashboard-header::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(1200px 200px at -10% -40%, rgba(126,1,255,0.15) 0%, rgba(126,1,255,0) 60%),
-                radial-gradient(800px 200px at 110% 120%, rgba(126,1,255,0.12) 0%, rgba(126,1,255,0) 60%);
+    background: radial-gradient(1200px 200px at -10% -40%, var(--accent-light) 0%, transparent 60%),
+                radial-gradient(800px 200px at 110% 120%, var(--primary-light) 0%, transparent 60%);
     pointer-events: none;
 }
 
 .dashboard-header .header-content {
     position: relative;
-    padding: 28px 28px;
+    padding: 35px 35px;
 }
 
 .dashboard-header h1 {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 800;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
     color: var(--dark-gray);
-    margin-bottom: 6px;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-header p {
     color: var(--medium-gray);
-    font-size: 1.05rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1.5;
 }
 
 .header-meta {
@@ -141,24 +160,35 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px;
+    padding: 8px 16px;
     border-radius: 999px;
     background: var(--white);
-    border: 1px solid var(--light-gray);
-    color: var(--medium-gray);
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
     font-size: 0.95rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(139, 0, 0, 0.1);
+    transition: var(--transition);
+}
+
+.meta-chip:hover {
+    background: var(--primary-color);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
 }
 
 .meta-chip .dot {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: var(--light-gray);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .meta-chip .dot.status { background: var(--primary-color); }
 .meta-chip .dot.success { background: #22c55e; }
-.meta-chip .dot.info { background: #3b82f6; }
+.meta-chip .dot.info { background: var(--accent-color); }
 
 a {
   text-decoration: none;
@@ -170,11 +200,7 @@ ul {
   list-style: none;
 }
 
-/* Button Styles */
-.btn {
-    /* Remove any conflicting button styles */
-    /* You can keep this if you want to add specific styles for student buttons */
-}
+/* Button Styles - Base styles defined later in the file */
 
 .btn-outline {
   border: 2px solid var(--primary-color);
@@ -219,14 +245,14 @@ ul {
 .logo-square {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #7e01ff, #6801d1);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   border-radius: 8px;
 }
 
 .logo-container h1 {
   font-size: 1.7rem;
   font-weight: 700;
-  color: #7e01ff;
+  color: var(--primary-color);
   letter-spacing: 1px;
 }
 
@@ -249,8 +275,8 @@ ul {
 }
 
 .nav-link:hover, .nav-link.active {
-  color: #7e01ff;
-  border-bottom: 2px solid #7e01ff;
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
 }
 
 .nav-right, .auth-buttons, .header-buttons {
@@ -268,7 +294,7 @@ ul {
   align-items: center;
 }
 .user-welcome span {
-  color: #7e01ff;
+  color: var(--primary-color);
   font-weight: 600;
   margin-left: 5px;
 }
@@ -283,17 +309,17 @@ ul {
   min-width: 120px;
   box-sizing: border-box;
   border-radius: 5px;
-  border: 1.5px solid #7e01ff;
+  border: 1.5px solid var(--primary-color);
   background: transparent;
-  color: #7e01ff;
+  color: var(--primary-color);
   font-weight: 600;
   transition: background 0.2s, color 0.2s;
   margin-left: 10px;
   cursor: pointer;
 }
 .dashboard-btn:hover, .logout-btn:hover, .login-btn:hover, .btn-outline:hover {
-  background: rgba(126, 1, 255, 0.08);
-  color: #6801d1;
+  background: var(--primary-light);
+  color: var(--primary-dark);
 }
 
 /* --- HEADER LAYOUT FIX --- */
@@ -365,55 +391,97 @@ ul {
 
 .sidebar {
     background: var(--white);
-    border-radius: 15px;
+    border-radius: 20px;
     box-shadow: var(--shadow);
-    padding: 25px;
+    padding: 30px;
     height: fit-content;
+    border: 2px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--primary-color), var(--accent-color));
+    border-radius: 20px 0 0 20px;
 }
 
 .main-content {
     background: var(--white);
-    border-radius: 15px;
+    border-radius: 20px;
     box-shadow: var(--shadow);
-    padding: 30px;
+    padding: 35px;
+    border: 2px solid var(--border-color);
+    position: relative;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 15px 20px;
-    margin-bottom: 10px;
-    border-radius: 10px;
+    padding: 18px 25px;
+    margin-bottom: 12px;
+    border-radius: 15px;
     cursor: pointer;
     transition: var(--transition);
     border: 2px solid transparent;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    transition: width 0.3s ease;
+    z-index: 0;
+}
+
+.nav-item:hover::before {
+    width: 100%;
 }
 
 .nav-item:hover {
     background: var(--primary-light);
     border-color: var(--primary-color);
-    transform: translateX(5px);
+    transform: translateX(8px);
+    color: var(--primary-color);
+    font-weight: 600;
 }
 
 .nav-item.active {
     background: var(--primary-light);
     border-color: var(--primary-color);
     color: var(--primary-color);
-    font-weight: 600;
+    font-weight: 700;
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
 }
 
 .nav-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 15px;
+    width: 25px;
+    height: 25px;
+    margin-right: 18px;
     border-radius: 50%;
-    background: var(--primary-medium);
+    background: linear-gradient(135deg, var(--primary-color), var(--luxury-gold));
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--white);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: bold;
+    box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3), 0 0 0 1px var(--luxury-gold-light);
+    position: relative;
+    z-index: 1;
 }
 
 .section {
@@ -422,7 +490,38 @@ ul {
 
 .section.active {
     display: block;
-    animation: fadeIn 0.5s ease;
+    animation: fadeIn 0.6s ease;
+}
+
+.section h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dark-gray);
+    margin-bottom: 25px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--luxury-gold), var(--accent-color));
+    border-radius: 2px;
+    box-shadow: 0 2px 8px var(--luxury-gold-light);
+}
+
+.section h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 30px 0 20px 0;
+    padding-left: 15px;
+    border-left: 4px solid var(--primary-color);
 }
 
 @keyframes fadeIn {
@@ -437,7 +536,7 @@ ul {
 }
 
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .form-row {
@@ -448,25 +547,28 @@ ul {
 
 label {
     display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
+    margin-bottom: 10px;
+    font-weight: 700;
     color: var(--dark-gray);
+    font-size: 1.05rem;
 }
 
 input, textarea, select {
     width: 100%;
-    padding: 15px;
+    padding: 18px;
     border: 2px solid var(--light-gray);
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 16px;
     transition: var(--transition);
     background: var(--white);
+    font-weight: 500;
 }
 
 input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-light);
+    box-shadow: 0 0 0 4px var(--primary-light);
+    transform: translateY(-2px);
 }
 
 textarea {
@@ -517,40 +619,76 @@ textarea {
     font-size: 24px;
 }
 
+.btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--luxury-gold));
+    color: var(--white);
+    border: none;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--luxury-gold-light), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
 .btn:hover {
-    background: var(--primary-medium);
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, var(--luxury-gold), var(--primary-color));
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4), 0 0 25px var(--luxury-gold-light);
+    transform: translateY(-3px);
 }
 
 .btn:active {
-    transform: translateY(0);
+    transform: translateY(-1px);
 }
 
 .btn-secondary {
     background: var(--light-gray);
     color: var(--dark-gray);
+    border: 2px solid var(--light-gray);
 }
 
 .btn-secondary:hover {
     background: var(--medium-gray);
     color: var(--white);
+    border-color: var(--medium-gray);
 }
 
 .progress-bar {
     background: var(--light-gray);
-    border-radius: 10px;
-    height: 8px;
+    border-radius: 15px;
+    height: 12px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
-    background: linear-gradient(90deg, var(--primary-color), var(--primary-medium));
+    background: linear-gradient(90deg, var(--primary-color), var(--luxury-gold), var(--accent-color));
     height: 100%;
-    border-radius: 10px;
-    transition: width 0.5s ease;
+    border-radius: 15px;
+    transition: width 0.8s ease;
     width: 0%;
+    box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3), 0 0 10px var(--luxury-gold-light);
 }
 
 .summary-card {
