@@ -413,6 +413,7 @@ def edit_user(request, user_id):
             new_password = request.POST.get('new_password')
             confirm_password = request.POST.get('confirm_password')
 
+
             if new_password != confirm_password:
                 messages.error(request, "New passwords do not match.")
                 return redirect('edit_user', user_id=user.id)
