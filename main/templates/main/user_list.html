@@ -1,0 +1,179 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+.btn-edit, .btn-delete {
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background: #1976d2;
+  color: #fff;
+  margin-right: 8px;
+}
+
+.btn-edit:hover {
+  background: #2196f3;
+  box-shadow: 0 0 10px #2196f3aa;
+}
+
+.btn-delete {
+  background: #d32f2f;
+  color: #fff;
+}
+
+.btn-delete:hover {
+  background: #f44336;
+  box-shadow: 0 0 10px #f44336aa;
+}
+
+#userTable tbody tr:hover {
+  background-color: #2a2a2a;
+  transition: background 0.2s;
+}
+
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+th.sortable::after {
+  content: '⇅';
+  font-size: 0.8rem;
+  color: #aaa;
+  position: absolute;
+  right: 8px;
+}
+
+th.sorted-asc::after {
+  content: '▲';
+  color: #4caf50;
+}
+
+th.sorted-desc::after {
+  content: '▼';
+  color: #f44336;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  {% include 'main/admin_sidebar.html' %}
+
+  <main class="admin-main">
+    <div class="dashboard-header">
+      <h1>👥 User Management</h1>
+      <p>Manage registered users in the system.</p>
+    </div>
+
+    <div class="dashboard-section" style="margin-top: 2rem;">
+      <input type="text" id="userSearch" placeholder="Search users..." style="margin-bottom:1rem; padding:0.5rem; width:100%; border-radius:8px; border:none; outline:none; background:#2a2a2a; color:#fff;">
+
+      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+        <table id="userTable" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background-color:#2a2a2a;">
+              <th class="sortable" style="text-align:left; padding:0.8rem;">Username</th>
+              <th class="sortable" style="text-align:left; padding:0.8rem;">Email</th>
+              <th class="sortable" style="text-align:left; padding:0.8rem;">Last Login</th>
+              <th class="sortable" style="text-align:left; padding:0.8rem;">Date Joined</th>
+              <th class="sortable" style="text-align:left; padding:0.8rem;">Staff Status</th>
+              <th style="text-align:left; padding:0.8rem;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr style="border-bottom:1px solid #333;">
+              <td style="padding:0.8rem;">{{ user.username }}</td>
+              <td style="padding:0.8rem;">{{ user.email }}</td>
+              <td style="padding:0.8rem;">{{ user.last_login|date:"Y-m-d H:i:s" }}</td>
+              <td style="padding:0.8rem;">{{ user.date_joined|date:"Y-m-d H:i:s" }}</td>
+              <td style="padding:0.8rem;">
+                {% if user.is_staff %}
+                  <span style="color:#4caf50;">✔️</span>
+                {% else %}
+                  <span style="color:#e53935;">❌</span>
+                {% endif %}
+              </td>
+              <td style="padding:0.8rem;">
+                <a href="{% url 'edit_user' user.id %}" class="btn-edit">Edit</a>
+                <a href="{% url 'delete_user' user.id %}" class="btn-delete" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" style="text-align:center; padding:1rem;">No users found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// 🔍 Live Search with Highlight
+const searchInput = document.getElementById('userSearch');
+const rows = document.querySelectorAll('#userTable tbody tr');
+
+searchInput.addEventListener('input', function() {
+  const query = this.value.toLowerCase();
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    let match = false;
+    cells.forEach(cell => {
+      if (cell.querySelector('a')) return;
+      const originalHTML = cell.getAttribute('data-original') || cell.innerHTML;
+      cell.setAttribute('data-original', originalHTML);
+      cell.innerHTML = originalHTML;
+      if (query !== '' && cell.textContent.toLowerCase().includes(query)) {
+        match = true;
+        const regex = new RegExp(`(${query})`, 'gi');
+        cell.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
+      } else if (cell.textContent.toLowerCase().includes(query)) {
+        match = true;
+      }
+    });
+    row.style.display = match || query === '' ? '' : 'none';
+  });
+});
+
+// 📊 Sortable Columns
+document.querySelectorAll('th.sortable').forEach((header, index) => {
+  header.addEventListener('click', () => {
+    const table = header.closest('table');
+    const tbody = table.querySelector('tbody');
+    const rowsArray = Array.from(tbody.querySelectorAll('tr'));
+    const isAsc = !header.classList.contains('sorted-asc');
+
+    // Remove sorting indicators
+    table.querySelectorAll('th.sortable').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
+    header.classList.add(isAsc ? 'sorted-asc' : 'sorted-desc');
+
+    // Sort rows
+    rowsArray.sort((a, b) => {
+      const aText = a.children[index].innerText.trim().toLowerCase();
+      const bText = b.children[index].innerText.trim().toLowerCase();
+
+      if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
+        return isAsc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
+      }
+
+      return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+
+    rowsArray.forEach(row => tbody.appendChild(row));
+  });
+});
+</script>
+{% endblock %}

@@ -20,7 +20,15 @@ urlpatterns = [
     path('api/departments/<int:category_id>/', views.api_departments, name='api_departments'),
     path('api/courses/<int:department_id>/', views.api_courses, name='api_courses'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
-
+    path('admin-logs', views.admin_log_entries, name='admin_log_entries'),
+    path('users/', views.user_list, name='user_list'),
+    path('users/delete/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('users/edit/<int:user_id>/', views.edit_user, name='edit_user'),
+    path('users/change-password/<int:user_id>/', views.change_password, name='change_password'),
+    path('pending-submissions/', views.pending_submissions, name='pending_submissions'),
+    path('approve-thesis/<int:thesis_id>/', views.approve_thesis, name='approve_thesis'),
+    path('view-thesis/<int:thesis_id>/', views.view_thesis, name='view_thesis'),
+    path('reject-thesis/<int:thesis_id>/', views.reject_thesis, name='reject_thesis'),
 ]
 
 if settings.DEBUG:

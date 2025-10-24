@@ -1,0 +1,176 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+  /* Search styling */
+  .search-bar {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .search-input {
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    width: 250px;
+    transition: 0.2s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #90caf9;
+    box-shadow: 0 0 5px #90caf9;
+  }
+
+  /* Highlighted search results */
+  mark {
+    background-color: #ffb300;
+    color: #000;
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+
+  th {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  th.sort-asc::after {
+    content: " ▲";
+    color: #90caf9;
+  }
+
+  th.sort-desc::after {
+    content: " ▼";
+    color: #90caf9;
+  }
+
+  th:hover {
+    color: #90caf9;
+  }
+  #logTable tbody tr:hover {
+  background-color: #2a2a2a;
+  transition: background 0.2s;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  {% include 'main/admin_sidebar.html' %}
+
+  <main class="admin-main">
+    <div class="dashboard-header">
+      <h1>📜 Admin Log Entries</h1>
+      <p>All actions performed by administrators in the system.</p>
+    </div>
+
+    <div class="dashboard-section" style="margin-top: 2rem;">
+      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+
+        <!-- 🔍 Search Bar -->
+        <div class="search-bar">
+          <input type="text" id="logSearch" class="search-input" placeholder="Search logs...">
+        </div>
+
+        <!-- 🧾 Sortable & Searchable Table -->
+        <table id="logTable" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background-color:#2a2a2a;">
+              <th style="text-align:left; padding:0.8rem;">Action Time</th>
+              <th style="text-align:left; padding:0.8rem;">User</th>
+              <th style="text-align:left; padding:0.8rem;">Content Type</th>
+              <th style="text-align:left; padding:0.8rem;">Object</th>
+              <th style="text-align:left; padding:0.8rem;">Action</th>
+              <th style="text-align:left; padding:0.8rem;">Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in logs %}
+            <tr style="border-bottom:1px solid #333;">
+              <td style="padding:0.8rem; color:#90caf9;">{{ entry.action_time|date:"M d, Y h:i a" }}</td>
+              <td style="padding:0.8rem;">{{ entry.user }}</td>
+              <td style="padding:0.8rem;">{{ entry.content_type }}</td>
+              <td style="padding:0.8rem;">{{ entry.object_repr }}</td>
+              <td style="padding:0.8rem;">
+                {% if entry.action_flag == 1 %}
+                  <span style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Addition</span>
+                {% elif entry.action_flag == 2 %}
+                  <span style="background:#ffb300; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Change</span>
+                {% elif entry.action_flag == 3 %}
+                  <span style="background:#e53935; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Deletion</span>
+                {% else %}
+                  <span style="background:#777; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Other</span>
+                {% endif %}
+              </td>
+              <td style="padding:0.8rem; color:#a5d6a7; font-style:italic;">{{ entry.change_message }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" style="text-align:center; padding:1rem; color:#777;">No log entries found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+
+<script>
+  // ===== TABLE SORTING =====
+  document.querySelectorAll("#logTable th").forEach((th, index) => {
+    th.addEventListener("click", () => {
+      const table = th.closest("table");
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const asc = !th.classList.contains("sort-asc");
+
+      // Reset all headers
+      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
+      th.classList.toggle("sort-asc", asc);
+      th.classList.toggle("sort-desc", !asc);
+
+      rows.sort((a, b) => {
+        const cellA = a.children[index].innerText.trim().toLowerCase();
+        const cellB = b.children[index].innerText.trim().toLowerCase();
+        return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+      });
+
+      rows.forEach(row => tbody.appendChild(row));
+    });
+  });
+
+  // ===== TABLE SEARCH + HIGHLIGHT =====
+  const searchInput = document.getElementById("logSearch");
+  searchInput.addEventListener("input", () => {
+    const filter = searchInput.value.toLowerCase();
+    const rows = document.querySelectorAll("#logTable tbody tr");
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(filter) ? "" : "none";
+
+      // Remove previous highlights
+      row.querySelectorAll("td").forEach(td => {
+        td.innerHTML = td.innerText;
+      });
+
+      // Highlight matching text
+      if (filter) {
+        row.querySelectorAll("td").forEach(td => {
+          const inner = td.innerText;
+          const regex = new RegExp(`(${filter})`, "gi");
+          td.innerHTML = inner.replace(regex, "<mark>$1</mark>");
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}
