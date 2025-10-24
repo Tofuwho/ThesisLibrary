@@ -20,8 +20,8 @@ document.addEventListener("DOMContentLoaded", function () {
         {
           label: 'Approved',
           data: approvedData,
-          borderColor: '#4caf50',
-          backgroundColor: 'rgba(76, 175, 80, 0.2)',
+          borderColor: '#1A43BF',
+          backgroundColor: 'rgba(42, 97, 161, 0.2)',
           tension: 0.3,
           fill: true,
         },
@@ -36,8 +36,8 @@ document.addEventListener("DOMContentLoaded", function () {
         {
           label: 'Rejected',
           data: rejectedData,
-          borderColor: '#f44336',
-          backgroundColor: 'rgba(244, 67, 54, 0.2)',
+          borderColor: '#FF0000',
+          backgroundColor: 'rgba(255, 0, 0, 0.2)',
           tension: 0.3,
           fill: true,
         },

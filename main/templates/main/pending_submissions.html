@@ -1,0 +1,229 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+  /* Search styling */
+  .search-bar {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .search-input {
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    width: 250px;
+    transition: 0.2s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #90caf9;
+    box-shadow: 0 0 5px #90caf9;
+  }
+
+  mark {
+    background-color: #ffb300;
+    color: #000;
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+
+  th {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  th.sort-asc::after {
+    content: " ▲";
+    color: #90caf9;
+  }
+
+  th.sort-desc::after {
+    content: " ▼";
+    color: #90caf9;
+  }
+
+  th:hover {
+    color: #90caf9;
+  }
+
+  #thesisTable tbody tr:hover {
+    background-color: #2a2a2a;
+    transition: background 0.2s;
+  }
+
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-approve, .btn-view, .btn-reject {
+    display: inline-block;
+    width: 90px;
+    text-align: center;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: none;
+  }
+
+  .btn-approve {
+    background: #4caf50;
+    color: white;
+  }
+
+  .btn-approve:hover {
+    background: #66bb6a;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(102, 187, 106, 0.4);
+  }
+
+  .btn-view {
+    background: #1976d2;
+    color: white;
+  }
+
+  .btn-view:hover {
+    background: #2196f3;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+  }
+
+  .btn-reject {
+    background: #d32f2f;
+    color: white;
+  }
+
+  .btn-reject:hover {
+    background: #f44336;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  {% include 'main/admin_sidebar.html' %}
+
+  <main class="admin-main">
+    <div class="dashboard-header">
+      <h1>📚 Pending Submissions</h1>
+      <p>Review and manage thesis submissions awaiting approval.</p>
+    </div>
+
+    <div class="dashboard-section" style="margin-top: 2rem;">
+      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+
+        <!-- 🔍 Search Bar -->
+        <div class="search-bar">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search submissions...">
+        </div>
+
+        <!-- 📋 Sortable + Searchable Table -->
+        <table id="thesisTable" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background-color:#2a2a2a;">
+              <th style="padding:0.8rem;">Title</th>
+              <th style="padding:0.8rem;">Author</th>
+              <th style="padding:0.8rem;">Year</th>
+              <th style="padding:0.8rem;">Status</th>
+              <th style="padding:0.8rem;">Department</th>
+              <th style="padding:0.8rem;">Supervisor</th>
+              <th style="padding:0.8rem;">Course</th>
+              <th style="padding:0.8rem;">Date Submitted</th>
+              <th style="padding:0.8rem;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for thesis in theses %}
+            <tr style="border-bottom:1px solid #333;">
+              <td style="padding:0.8rem;">{{ thesis.title }}</td>
+              <td style="padding:0.8rem;">{{ thesis.author }}</td>
+              <td style="padding:0.8rem;">{{ thesis.year }}</td>
+              <td style="padding:0.8rem;">{{ thesis.status }}</td>
+              <td style="padding:0.8rem;">{{ thesis.department }}</td>
+              <td style="padding:0.8rem;">{{ thesis.supervisor_name }}</td>
+              <td style="padding:0.8rem;">{{ thesis.course }}</td>
+              <td style="padding:0.8rem;">{{ thesis.created_at|date:"Y-m-d" }}</td>
+              <td style="padding:0.8rem;">
+                <div class="action-buttons">
+                  <a href="{% url 'approve_thesis' thesis.id %}" class="btn-approve">Approve</a>
+                  <a href="{% url 'reject_thesis' thesis.id %}" class="btn-reject">Reject</a>
+                  <a href="{% url 'view_thesis' thesis.id %}" class="btn-view">View</a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="9" style="text-align:center; padding:1rem; color:#777;">No pending submissions found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ===== SORTABLE TABLE =====
+  document.querySelectorAll("#thesisTable th").forEach((th, index) => {
+    th.addEventListener("click", () => {
+      const table = th.closest("table");
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const asc = !th.classList.contains("sort-asc");
+
+      // Reset all sort icons
+      table.querySelectorAll("th").forEach(header => header.classList.remove("sort-asc", "sort-desc"));
+      th.classList.toggle("sort-asc", asc);
+      th.classList.toggle("sort-desc", !asc);
+
+      rows.sort((a, b) => {
+        const A = a.children[index].innerText.trim().toLowerCase();
+        const B = b.children[index].innerText.trim().toLowerCase();
+        return asc ? A.localeCompare(B) : B.localeCompare(A);
+      });
+
+      rows.forEach(row => tbody.appendChild(row));
+    });
+  });
+
+  // ===== SEARCH + HIGHLIGHT =====
+  const searchInput = document.getElementById("searchInput");
+  searchInput.addEventListener("input", () => {
+    const filter = searchInput.value.toLowerCase();
+    const rows = document.querySelectorAll("#thesisTable tbody tr");
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(filter) ? "" : "none";
+
+      // Remove previous highlights
+      row.querySelectorAll("td").forEach(td => {
+        td.innerHTML = td.innerText;
+      });
+
+      // Highlight matches
+      if (filter) {
+        row.querySelectorAll("td").forEach(td => {
+          const inner = td.innerText;
+          const regex = new RegExp(`(${filter})`, "gi");
+          td.innerHTML = inner.replace(regex, "<mark>$1</mark>");
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}

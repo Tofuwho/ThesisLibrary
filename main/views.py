@@ -1,11 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Count, Q, OuterRef, Subquery
 from django.db.models import Value, IntegerField, Case, When, F, ExpressionWrapper, CharField, DateTimeField
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.db.models.functions import Cast, TruncMonth
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
-from django.http import FileResponse, Http404, JsonResponse, HttpResponse
+from django.http import FileResponse, Http404, JsonResponse, HttpResponse, HttpResponseForbidden
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
@@ -275,6 +277,20 @@ def student_dashboard(request):
         'categories': categories
     })
 
+def log_admin_action(user, obj, action_flag, message):
+    """Helper to log custom admin actions."""
+    from django.contrib.admin.models import LogEntry
+    from django.contrib.contenttypes.models import ContentType
+
+    LogEntry.objects.log_action(
+        user_id=user.id,
+        content_type_id=ContentType.objects.get_for_model(obj).pk,
+        object_id=obj.pk,
+        object_repr=str(obj),
+        action_flag=action_flag,
+        change_message=message,
+    )
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)  # Only allow admin/staff users
 def admin_dashboard(request):
@@ -313,7 +329,7 @@ def admin_dashboard(request):
         .filter(status='approved', approved_at__isnull=False, course__isnull=False)
         .values(course_name=F('course__name'))  # ← This works using the FK relationship
         .annotate(count=Count('id'))
-        .order_by('-count')[:6]
+        .order_by('-count')[:16]
     )
 
     for item in theses_by_course:
@@ -371,6 +387,231 @@ def admin_dashboard(request):
 
     return render(request, 'main/admin_dashboard.html', context)
 
+@login_required
+def admin_log_entries(request):
+    logs = LogEntry.objects.all().select_related('user', 'content_type').order_by('-action_time')
+    return render(request, 'main/admin_log_entries.html', {'logs': logs})
+
+@login_required
+def user_list(request):
+    users = User.objects.all().order_by('-date_joined')
+    return render(request, 'main/user_list.html', {'users': users})
+
+@login_required
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.delete()
+    return redirect('user_list')
+
+@login_required
+def edit_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        # Handle password change form
+        if 'change_password' in request.POST:
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+
+            if new_password != confirm_password:
+                messages.error(request, "New passwords do not match.")
+                return redirect('edit_user', user_id=user.id)
+
+            user.set_password(new_password)
+            user.save()
+            messages.success(request, "Password updated successfully.")
+            return redirect('user_list')  # ✅ redirect to user list after success
+
+        # Handle user detail updates
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+
+        user.username = username
+        user.email = email
+        user.save()
+
+        messages.success(request, "User details updated successfully.")
+        return redirect('user_list')  # ✅ redirect here instead of reloading edit page
+
+    return render(request, 'main/edit_user.html', {'user': user})
+
+@csrf_exempt
+def change_password(request, user_id):
+    if request.method == "POST":
+        old_password = request.POST.get("old_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({"success": False, "message": "User not found."})
+
+        # ✅ For admins: no need to check old password
+        if request.user.is_staff:
+            if new_password != confirm_password:
+                return JsonResponse({"success": False, "message": "Passwords do not match."})
+            user.set_password(new_password)
+            user.save()
+            return JsonResponse({"success": True, "message": "Password changed successfully (admin override)."})
+
+        # ✅ For normal users
+        if not user.check_password(old_password):
+            return JsonResponse({"success": False, "message": "Old password is incorrect."})
+
+        if new_password != confirm_password:
+            return JsonResponse({"success": False, "message": "Passwords do not match."})
+
+        user.set_password(new_password)
+        user.save()
+        return JsonResponse({"success": True, "message": "Password changed successfully."})
+
+    return JsonResponse({"success": False, "message": "Invalid request."})
+
+def pending_submissions(request):
+    theses = Submission.objects.filter(status='Pending').order_by('-created_at')
+    return render(request, 'main/pending_submissions.html', {'theses': theses})
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def approve_thesis(request, thesis_id):
+    """Approve a pending submission and move it to the Thesis table, similar to admin bulk approval."""
+    submission = get_object_or_404(Submission, id=thesis_id)
+
+    STATUS_PENDING = getattr(Submission, 'STATUS_PENDING', 'pending')
+    STATUS_APPROVED = getattr(Submission, 'STATUS_APPROVED', 'approved')
+
+    # If it's already approved, just notify
+    if str(submission.status).lower() == STATUS_APPROVED.lower():
+        messages.info(request, f"Submission '{submission.title}' is already approved.")
+        return redirect('pending_submissions')
+
+    try:
+        submission_title = submission.title
+
+        # Approve via model method (this should create a Thesis record)
+        thesis = submission.approve(approved_by=request.user)
+
+        # Remove Django’s automatic log entries
+        thesis_ct = ContentType.objects.get_for_model(thesis)
+        submission_ct = ContentType.objects.get_for_model(submission)
+
+        LogEntry.objects.filter(
+            user=request.user,
+            content_type=thesis_ct,
+            object_id=thesis.id,
+            action_flag=ADDITION
+        ).delete()
+
+        LogEntry.objects.filter(
+            user=request.user,
+            content_type=submission_ct,
+            object_id=submission.id,
+            action_flag__in=[CHANGE, DELETION]
+        ).delete()
+
+        # Log our own admin-style custom action
+        log_admin_action(
+            request.user,
+            thesis,
+            ADDITION,
+            f"[APPROVED] Submission '{submission_title}' and moved to Thesis table"
+        )
+
+        messages.success(
+            request,
+            f"Submission '{submission_title}' approved successfully and moved to Thesis table."
+        )
+
+    except ValueError as e:
+        messages.error(request, f"Could not approve '{submission.title}': {str(e)}")
+
+    return redirect('pending_submissions')
+
+def reject_thesis(request, thesis_id):
+    # Only staff/admin users can reject theses
+    if not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to perform this action.")
+
+    submission = get_object_or_404(Submission, id=thesis_id, status=Submission.STATUS_PENDING)
+
+    try:
+        # Store submission title before rejection
+        submission_title = submission.title
+
+        # Perform rejection
+        rejected_thesis = submission.reject(
+            rejection_reason="Rejected via admin action",
+            rejected_by=request.user
+        )
+
+        # --- Clean up automatic logs ---
+        rejected_ct = ContentType.objects.get_for_model(rejected_thesis)
+        LogEntry.objects.filter(
+            user=request.user,
+            content_type=rejected_ct,
+            object_id=rejected_thesis.id,
+            action_flag=ADDITION
+        ).delete()
+
+        submission_ct = ContentType.objects.get_for_model(submission)
+        LogEntry.objects.filter(
+            user=request.user,
+            content_type=submission_ct,
+            object_id=submission.id,
+            action_flag__in=[CHANGE, DELETION]
+        ).delete()
+
+        # --- Custom log entry for rejection ---
+        log_admin_action(
+            request.user,
+            rejected_thesis,
+            ADDITION,
+            f"[REJECTED] Submission '{submission_title}' and moved to Rejected Thesis archive"
+        )
+
+        # Success feedback
+        messages.success(request, f"Successfully rejected '{submission_title}'. It has been moved to the Rejected Thesis archive.")
+
+    except ValueError as e:
+        messages.error(request, f"Could not reject '{submission.title}': {str(e)}")
+
+    return redirect('pending_submissions.html')  # Change this redirect to wherever your admin dashboard lives
+
+def view_thesis(request, thesis_id):
+    """
+    Displays or streams the thesis PDF file.
+    Works for both Thesis and Submission models.
+    Falls back to restricted version if not logged in.
+    """
+    # Try to find the thesis in the Thesis table first
+    try:
+        thesis = Thesis.objects.get(pk=thesis_id)
+    except Thesis.DoesNotExist:
+        # Fallback: maybe it's still a pending submission
+        thesis = get_object_or_404(Submission, pk=thesis_id)
+
+    # If it has no file attached
+    if not getattr(thesis, 'file', None):
+        raise Http404("File not found for this thesis.")
+
+    # If file field exists but is empty or missing in storage
+    if not thesis.file.name or not thesis.file.storage.exists(thesis.file.name):
+        raise Http404("Thesis file is missing or unavailable.")
+
+    # If the user isn't authenticated → use restricted view
+    if not request.user.is_authenticated:
+        # Optional: redirect to a limited PDF generator view
+        # or just render a restricted notice
+        return restricted_view_thesis_file(request, thesis_id)
+
+    # Serve the file as inline PDF (opens in browser)
+    response = FileResponse(
+        thesis.file.open('rb'),
+        content_type='application/pdf'
+    )
+    response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
+    return response
 
 @login_required
 @require_POST
@@ -514,12 +755,12 @@ def view_thesis_file(request, pk):
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file:
         raise Http404('File not found.')
-    
+
     # For non-authenticated users, we'll serve a restricted version
     # This will be handled by a separate view that creates a limited PDF
     if not request.user.is_authenticated:
         return restricted_view_thesis_file(request, pk)
-    
+
     response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
     return response
