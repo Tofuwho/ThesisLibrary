@@ -13,7 +13,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
-from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course
+from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department
 from .utils import search_in_thesis_pdf
 from django.utils import timezone
 from PyPDF2 import PdfReader, PdfWriter
@@ -613,6 +613,47 @@ def view_thesis(request, thesis_id):
     )
     response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
     return response
+
+def rejected_thesis_list(request):
+    rejected_theses = RejectedThesis.objects.all()
+
+    # Trim course name safely
+    for thesis in rejected_theses:
+        course_obj = thesis.course  # this is a Course instance, not a string
+        if course_obj:
+            # Convert to string (in case Course.__str__() returns full name)
+            course_name = str(course_obj)
+            if '-' in course_name:
+                course_name = course_name.split('-')[0].strip()
+            thesis.course_display = course_name
+        else:
+            thesis.course_display = "N/A"
+
+    return render(request, 'main/rejected_thesis.html', {'rejected_theses': rejected_theses})
+
+def theses_list(request):
+    theses = Thesis.objects.all()
+
+    # Clean course names before the dash
+    for thesis in theses:
+        course_obj = thesis.course
+        if course_obj:
+            course_name = str(course_obj)
+            if '-' in course_name:
+                course_name = course_name.split('-')[0].strip()
+            thesis.course_display = course_name
+        else:
+            thesis.course_display = "N/A"
+
+    return render(request, 'main/theses.html', {'theses': theses})
+
+def departments_list(request):
+    departments = Department.objects.annotate(courses_count=Count('courses'))
+    return render(request, 'main/departments.html', {'departments': departments})
+
+def courses_list(request):
+    courses = Course.objects.select_related('department').all()
+    return render(request, 'main/courses.html', {'courses': courses})
 
 @login_required
 @require_POST
