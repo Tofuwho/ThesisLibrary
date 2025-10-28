@@ -29,6 +29,10 @@ urlpatterns = [
     path('approve-thesis/<int:thesis_id>/', views.approve_thesis, name='approve_thesis'),
     path('view-thesis/<int:thesis_id>/', views.view_thesis, name='view_thesis'),
     path('reject-thesis/<int:thesis_id>/', views.reject_thesis, name='reject_thesis'),
+    path('rejected-thesis/', views.rejected_thesis_list, name='rejected_thesis_list'),
+    path('theses/', views.theses_list, name='theses_list'),
+    path('departments/', views.departments_list, name='departments_list'),
+    path('courses/', views.courses_list, name='courses_list'),
 ]
 
 if settings.DEBUG:
