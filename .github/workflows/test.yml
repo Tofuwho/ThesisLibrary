@@ -1,35 +1,64 @@
-name: CI with MariaDB
+name: Django Test Suite
 
 on:
   push:
-    branches: [ "test" ]
+    branches: [ test ]
   pull_request:
-    branches: [ "test" ]
+    branches: [ test ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-
     strategy:
       fail-fast: false
       matrix:
         testcase:
+          # ======================================================
+          # TC001 – TC004 (User Access & Search)
+          # ======================================================
           - main.tests.AuthTestCase.test_tc001_login_valid
           - main.tests.AuthTestCase.test_tc002_signup_valid
           - main.tests.SearchFilterTestCase.test_tc003_search_title_author_keyword
           - main.tests.SearchFilterTestCase.test_tc004_filter_by_category_year_author
+
+          # ======================================================
+          # TC005 – TC009 (Submission Stages)
+          # ======================================================
           - main.tests.SubmissionStagesTestCase.test_tc005_basic_info_stage
           - main.tests.SubmissionStagesTestCase.test_tc006_thesis_details_stage
           - main.tests.SubmissionStagesTestCase.test_tc007_file_upload_stage
           - main.tests.SubmissionStagesTestCase.test_tc008_supervisor_info_stage
           - main.tests.SubmissionStagesTestCase.test_tc009_review_and_submit_stage
+
+          # ======================================================
+          # TC010 – TC017 (Admin Panel)
+          # ======================================================
           - main.tests.AdminPanelTestCase.test_tc010_audit_logs
-          - main.tests.AdminPanelTestCase.test_tc011_groups_and_permissions
+          - main.tests.AdminPanelTestCase.test_tc011_groups_permissions
           - main.tests.AdminPanelTestCase.test_tc012_create_admin_user
           - main.tests.AdminPanelTestCase.test_tc013_add_category
           - main.tests.AdminPanelTestCase.test_tc014_add_course
+          - main.tests.AdminPanelTestCase.test_tc016_add_rejected_thesis
 
+          # ======================================================
+          # TC019 – TC033 (Extended Tests)
+          # ======================================================
+          - main.tests.Updated_Test.test_tc019_deep_search_mode
+          - main.tests.Updated_Test.test_tc020_restricted_view_guest
+          - main.tests.Updated_Test.test_tc021_view_full_thesis_authenticated
+          - main.tests.Updated_Test.test_tc022_download_logging
+          - main.tests.Updated_Test.test_tc023_invalid_thesis_download
+          - main.tests.Updated_Test.test_tc024_ajax_unauthorized_download
+          - main.tests.Updated_Test.test_tc025_api_departments_valid
+          - main.tests.Updated_Test.test_tc026_api_departments_invalid
+          - main.tests.Updated_Test.test_tc027_api_courses_valid
+          - main.tests.Updated_Test.test_tc028_csrf_failure_page
+          - main.tests.Updated_Test.test_tc029_signup_json
+          - main.tests.Updated_Test.test_tc030_signup_duplicate_username
+          - main.tests.Updated_Test.test_tc031_login_json_success
+          - main.tests.Updated_Test.test_tc032_login_json_invalid
+          - main.tests.Updated_Test.test_tc033_my_submissions_page
 
     services:
       mariadb:
@@ -44,6 +73,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
+
     env:
       DJANGO_SETTINGS_MODULE: thesis_site.settings
       MYSQL_HOST: 127.0.0.1
@@ -82,4 +112,3 @@ jobs:
 
       - name: Run tests
         run: python manage.py test ${{ matrix.testcase }}
-
