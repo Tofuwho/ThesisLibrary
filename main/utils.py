@@ -3,6 +3,12 @@ import os
 import re
 from django.conf import settings
 from typing import List, Dict, Tuple, Optional
+try:
+    # RapidFuzz provides much stronger fuzzy matching than difflib
+    from rapidfuzz import fuzz, process
+except Exception:  # Optional dependency; views should still work without it
+    fuzz = None
+    process = None
 
 class PDFSearchEngine:
     """Deep search engine for PDF files using PyMuPDF."""
@@ -221,3 +227,126 @@ def get_thesis_preview(thesis, max_pages: int = 3) -> str:
     except Exception:
         pdf_path = os.path.join(settings.MEDIA_ROOT, thesis.file.name)
     return pdf_search_engine.get_pdf_preview(pdf_path, max_pages)
+
+
+def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optional[str], float]:
+    """Return a robust fuzzy suggestion for a possibly misspelled query.
+
+    Uses RapidFuzz token-based scores to better handle missing letters and jumbled words.
+
+    Args:
+        query: Raw user-entered search text
+        candidates: List of candidate strings to match against
+
+    Returns:
+        (suggestion, confidence) where suggestion may be None if no good match
+    """
+    if not query or not candidates:
+        return (None, 0.0)
+
+    # Filter out empty/None candidates and keep insertion order
+    seen = set()
+    corpus_unique: List[str] = []
+    for c in candidates:
+        if not c:
+            continue
+        if c not in seen:
+            seen.add(c)
+            corpus_unique.append(c)
+
+    # If RapidFuzz is not available, fall back to a simple heuristic
+    if process is None or fuzz is None:
+        try:
+            import difflib
+            match = difflib.get_close_matches(query, corpus_unique, n=1, cutoff=0.8)
+            if match:
+                return (match[0], 0.8)
+            # Token-wise fallback
+            tokens = [t for t in re.findall(r"\w+", query) if t.strip()]
+            suggested_tokens: List[str] = []
+            for tkn in tokens:
+                m = difflib.get_close_matches(tkn, corpus_unique, n=1, cutoff=0.75)
+                suggested_tokens.append(m[0] if m else tkn)
+            suggestion_joined = " ".join(suggested_tokens).strip()
+            if suggestion_joined and suggestion_joined.lower() != query.strip().lower():
+                return (suggestion_joined, 0.75)
+            return (None, 0.0)
+        except Exception:
+            return (None, 0.0)
+
+    # Use a weighted strategy that is resilient to missing/jumbled letters and token order
+    # 1) Whole-phrase best match using token_set_ratio (handles rearranged/missing tokens)
+    best_phrase = process.extractOne(
+        query,
+        corpus_unique,
+        scorer=fuzz.token_set_ratio,
+        score_cutoff=70,  # tolerate errors; tuneable
+    )
+
+    # 2) Token-wise correction then join, using partial_ratio to survive missing letters
+    tokens = [t for t in re.findall(r"\w+", query) if t.strip()]
+    suggested_tokens: List[str] = []
+    token_scores: List[float] = []
+    for tkn in tokens:
+        tok_match = process.extractOne(
+            tkn,
+            corpus_unique,
+            scorer=fuzz.partial_ratio,
+            score_cutoff=65,
+        )
+        if tok_match:
+            suggested_tokens.append(tok_match[0])
+            token_scores.append(float(tok_match[1]))
+        else:
+            suggested_tokens.append(tkn)
+            token_scores.append(50.0)
+
+    token_joined = " ".join(suggested_tokens).strip() if suggested_tokens else ""
+    token_conf = sum(token_scores) / len(token_scores) if token_scores else 0.0
+
+    # Decide which suggestion to use
+    chosen_suggestion = None
+    chosen_conf = 0.0
+
+    if best_phrase:
+        chosen_suggestion = best_phrase[0]
+        chosen_conf = float(best_phrase[1]) / 100.0
+
+    if token_joined and token_joined.lower() != query.strip().lower():
+        # Compare combined token-based suggestion against phrase-based one using WRatio
+        joined_score = fuzz.WRatio(query, token_joined) / 100.0
+        if joined_score > chosen_conf + 0.05:  # prefer better by margin
+            chosen_suggestion = token_joined
+            chosen_conf = joined_score
+
+    # Avoid suggesting if confidence is low or suggestion equals original (case-insensitive)
+    if not chosen_suggestion:
+        return (None, 0.0)
+    if chosen_suggestion.strip().lower() == query.strip().lower():
+        return (None, 0.0)
+    if chosen_conf < 0.7:  # tuneable threshold
+        return (None, chosen_conf)
+
+    return (chosen_suggestion, chosen_conf)
+
+
+def deep_filter_theses_by_pdf(theses: List, query: str) -> List:
+    """Return only theses whose PDF contains the query.
+
+    Attaches `deep_search_results` and `deep_search_query` attributes to each
+    matched thesis for downstream rendering. This does not look at metadata
+    fields; it strictly searches PDF text content.
+    """
+    if not query:
+        return []
+
+    matched: List = []
+    for thesis in theses:
+        if not getattr(thesis, 'file', None):
+            continue
+        results = search_in_thesis_pdf(thesis, query)
+        if results.get('found'):
+            thesis.deep_search_results = results
+            thesis.deep_search_query = query
+            matched.append(thesis)
+    return matched

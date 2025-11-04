@@ -12,8 +12,9 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
 from .models import Thesis, Category, Submission, DownloadLog
-from .utils import search_in_thesis_pdf
+from .utils import search_in_thesis_pdf, suggest_query_correction, deep_filter_theses_by_pdf, get_thesis_preview
 from PyPDF2 import PdfReader, PdfWriter
+import fitz
 import os, json, io
 import re
 
@@ -47,29 +48,67 @@ def categories_page(request):
     selected_department = request.GET.get('department')
     selected_courses = request.GET.getlist('course')
 
-    # Filtering
-    if search_query and search_mode != 'deep':
-        tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
-        score_expr = Value(0, output_field=IntegerField())
-        for token in tokens:
-            token_score = (
-                Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
-                Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                Case(When(research_category__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                Case(When(category__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                Case(When(department__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                Case(When(course__name__icontains=token, then=Value(1)), default=Value(0), output_field=IntegerField())
-            )
-            # Include year matches if token is numeric
-            try:
-                year_int = int(token)
-                token_score = token_score + Case(When(year=year_int, then=Value(2)), default=Value(0), output_field=IntegerField())
-            except Exception:
-                pass
-            score_expr = score_expr + token_score
-        theses = theses.annotate(score=ExpressionWrapper(score_expr, output_field=IntegerField())).filter(score__gt=0)
+    # Optional fuzzy suggestion (only for normal mode)
+    did_you_mean = None
+    effective_query = search_query
+    if search_query:
+        try:
+            # Build a corpus of searchable tokens
+            title_list = list(Thesis.objects.values_list('title', flat=True))
+            author_list = list(Thesis.objects.values_list('author', flat=True))
+            keyword_list = [kw.strip() for kw in Thesis.objects.exclude(keywords__isnull=True).exclude(keywords__exact='').values_list('keywords', flat=True)]
+            # Split comma-separated keywords
+            split_keywords = []
+            for kw in keyword_list:
+                split_keywords.extend([t.strip() for t in kw.split(',') if t.strip()])
+            research_list = [rc.strip() for rc in Thesis.objects.exclude(research_category__isnull=True).exclude(research_category__exact='').values_list('research_category', flat=True)]
+            # Split comma-separated research categories
+            split_research = []
+            for rc in research_list:
+                split_research.extend([t.strip() for t in rc.split(',') if t.strip()])
+            # Departments and courses
+            from .models import Department, Course
+            dept_names = list(Department.objects.values_list('name', flat=True))
+            course_names = list(Course.objects.values_list('name', flat=True))
+
+            corpus = [s for s in (title_list + author_list + split_keywords + split_research + dept_names + course_names) if s]
+
+            suggestion, confidence = suggest_query_correction(search_query, corpus)
+            if suggestion and suggestion.strip().lower() != search_query.strip().lower():
+                did_you_mean = suggestion
+                if search_mode == 'deep':
+                    effective_query = suggestion
+        except Exception:
+            did_you_mean = None
+
+    # Filtering by search
+    if search_query:
+        if search_mode == 'deep':
+            # Deep search: only by PDF contents
+            # Apply non-search filters first to limit the set before PDF scanning
+            pass  # handled below; we will scan after applying facet filters
+        else:
+            # Normal search: search metadata fields (the card)
+            tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
+            score_expr = Value(0, output_field=IntegerField())
+            for token in tokens:
+                token_score = (
+                    Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(research_category__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(category__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(department__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(course__name__icontains=token, then=Value(1)), default=Value(0), output_field=IntegerField())
+                )
+                try:
+                    year_int = int(token)
+                    token_score = token_score + Case(When(year=year_int, then=Value(2)), default=Value(0), output_field=IntegerField())
+                except Exception:
+                    pass
+                score_expr = score_expr + token_score
+            theses = theses.annotate(score=ExpressionWrapper(score_expr, output_field=IntegerField())).filter(score__gt=0)
 
     if selected_years:
         numeric_years = [int(y) for y in selected_years if str(y).isdigit()]
@@ -102,6 +141,25 @@ def categories_page(request):
         except ValueError:
             pass
 
+    # If deep search is enabled, refine suggestion using PDF previews after facet filters
+    if search_query and search_mode == 'deep':
+        try:
+            # Limit to a reasonable number of items to avoid heavy IO
+            sample_theses = list(theses[:50])
+            pdf_tokens = []
+            for t in sample_theses:
+                if not getattr(t, 'file', None):
+                    continue
+                preview_text = get_thesis_preview(t, max_pages=2) or ''
+                # collect words as candidate tokens
+                pdf_tokens.extend([w for w in re.findall(r"\w+", preview_text) if w])
+            suggestion_pdf, conf_pdf = suggest_query_correction(search_query, pdf_tokens)
+            if suggestion_pdf and suggestion_pdf.strip().lower() != search_query.strip().lower():
+                did_you_mean = suggestion_pdf
+                effective_query = suggestion_pdf
+        except Exception:
+            pass
+
     # Sorting
     sort_options = {
         'date-asc': ('year', 'title'),
@@ -111,13 +169,21 @@ def categories_page(request):
         'author-asc': ('author', 'title'),
         'author-desc': ('-author', 'title')
     }
-    # Order by relevance score first if searching, then chosen sort
     base_order = sort_options.get(sort, ('-year', 'title'))
-    if search_query and search_mode != 'deep':
-        theses = theses.order_by('-score', *base_order)
+
+    # Apply deep search after facet filters, before final ordering
+    if search_query and search_mode == 'deep':
+        # Convert to list before scanning PDFs
+        theses_list = list(theses)
+        theses = deep_filter_theses_by_pdf(theses_list, effective_query)
+        # In deep mode we keep list semantics; no .order_by on list
     else:
-        theses = theses.order_by(*base_order)
-    theses = theses.distinct()
+        # Order by relevance score first if searching, then chosen sort
+        if search_query:
+            theses = theses.order_by('-score', *base_order)
+        else:
+            theses = theses.order_by(*base_order)
+        theses = theses.distinct()
 
     # If deep search is enabled, scan PDFs and keep only matches
     matched_theses = None
@@ -127,9 +193,10 @@ def categories_page(request):
             # Skip if there is no file
             if not thesis.file:
                 continue
-            deep_search_results = search_in_thesis_pdf(thesis, search_query)
+            deep_search_results = search_in_thesis_pdf(thesis, effective_query)
             if deep_search_results.get('found'):
                 thesis.deep_search_results = deep_search_results
+                thesis.deep_search_query = effective_query
                 matched_theses_list.append(thesis)
         theses = matched_theses_list
 
@@ -175,6 +242,8 @@ def categories_page(request):
         'departments': departments,
         'courses': courses,
         'search_mode': search_mode,
+        'did_you_mean': did_you_mean,
+        'effective_query': effective_query,
     }
     return render(request, 'main/categories.html', context)
 
@@ -426,6 +495,65 @@ def view_thesis_file(request, pk):
     response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
     return response
+
+
+def view_thesis_file_highlight(request, pk):
+    """Render a temporary PDF with highlighted query occurrences and optional page jump."""
+    thesis = get_object_or_404(Thesis, pk=pk)
+    if not thesis.file:
+        raise Http404('File not found.')
+
+    query = (request.GET.get('q') or '').strip()
+    if not query:
+        # Fallback to normal viewing if no query supplied
+        return view_thesis_file(request, pk)
+
+    try:
+        # Resolve file path
+        try:
+            pdf_path = thesis.file.path
+        except Exception:
+            from django.conf import settings
+            pdf_path = os.path.join(settings.MEDIA_ROOT, thesis.file.name)
+
+        doc = fitz.open(pdf_path)
+        query_lower = query.lower()
+        first_hit_page_index = None
+        highlight_count = 0
+
+        # Highlight on each page using text search rectangles
+        for page_index in range(doc.page_count):
+            page = doc[page_index]
+            text_instances = page.search_for(query)
+            # If nothing, try a simple regex-like approach by words
+            if not text_instances and len(query.split()) > 1:
+                # Try each token to increase chance of visibility
+                for token in query.split():
+                    text_instances.extend(page.search_for(token))
+            if text_instances:
+                if first_hit_page_index is None:
+                    first_hit_page_index = page_index
+                for rect in text_instances:
+                    annot = page.add_highlight_annot(rect)
+                    if annot:
+                        annot.update()
+                        highlight_count += 1
+
+        # Stream the modified document
+        output_buffer = io.BytesIO()
+        doc.save(output_buffer)
+        doc.close()
+        output_buffer.seek(0)
+
+        response = HttpResponse(output_buffer.getvalue(), content_type='application/pdf')
+        safe_name = os.path.basename(thesis.file.name)
+        response['Content-Disposition'] = f'inline; filename="highlight_{safe_name}"'
+        # Include X-Info about highlights for potential frontend telemetry
+        response['X-Highlights'] = str(highlight_count)
+        return response
+
+    except Exception as e:
+        return HttpResponse(f"Error highlighting PDF: {str(e)}", status=500)
 
 
 def get_client_ip(request):

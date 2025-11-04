@@ -19,6 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFilterForm();
     initializeFilterGroups();
     restoreFilterState();
+    // Apply theme for initial department
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentDepartment = urlParams.get('department') || 'all';
+    applyDepartmentThemeFromId(currentDepartment);
 });
 
 /**
@@ -62,6 +66,9 @@ function handleDepartmentSwitch(button) {
     // Update visual state
     updateDepartmentButtonStates(button);
     
+    // Apply department theme immediately and persist
+    applyDepartmentThemeFromButton(button);
+
     // Show/hide appropriate filter groups
     updateFilterGroupVisibility(departmentId);
     
@@ -99,6 +106,7 @@ function setActiveDepartmentButton() {
     const activeButton = document.querySelector(`[data-dept="${currentDepartment}"]`);
     if (activeButton) {
         updateDepartmentButtonStates(activeButton);
+        applyDepartmentThemeFromButton(activeButton);
     }
 }
 
@@ -221,6 +229,116 @@ function updateSort(sortValue) {
 // Make functions globally available for inline onclick handlers
 window.updateSort = updateSort;
 window.clearAllFilters = clearAllFilters;
+
+/**
+ * Department Theme Application
+ * Applies a per-department color theme via CSS variables with good contrast
+ */
+function applyDepartmentThemeFromButton(button) {
+    const deptId = button.getAttribute('data-dept') || 'all';
+    applyDepartmentThemeFromId(deptId);
+}
+
+function applyDepartmentThemeFromId(deptId) {
+    const button = document.querySelector(`.dept-bookmark[data-dept="${deptId}"]`);
+    let colorKey = (button && button.getAttribute('data-color')) || 'all';
+    // Normalize known mappings to existing CSS classes
+    const normalize = {
+        graduate: 'graduate',
+        ce: 'ce',
+        cict: 'cict',
+        cas: 'cas',
+        cbm: 'cbm',
+        ccj: 'ccj',
+        cee: 'ce',
+        cet: 'cet',
+        chtm: 'chtm',
+        coll: 'coll',
+        cols: 'cols',
+        colb: 'colb',
+        all: 'all'
+    };
+    colorKey = normalize[colorKey] || colorKey.toLowerCase();
+    const accent = pickAccentColor(colorKey);
+    setDeptThemeVars(accent);
+    setDeptClass(colorKey);
+    try { localStorage.setItem('deptTheme', JSON.stringify({ key: colorKey, accent })); } catch (_) {}
+}
+
+function pickAccentColor(colorKey) {
+    // Curated palette for known keys; fallback uses deterministic HSL from key
+    const palette = {
+        all: '#6B7280',        // gray-500
+        graduate: '#7C3AED',   // violet-600
+        ce: '#059669',         // emerald-600
+    };
+    if (palette[colorKey]) return palette[colorKey];
+    return stringToColor(colorKey);
+}
+
+function stringToColor(str) {
+    // Simple hash -> HSL with medium saturation for readability
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        hash |= 0;
+    }
+    const h = Math.abs(hash) % 360;
+    const s = 60; // percent
+    const l = 45; // percent
+    return hslToHex(h, s, l);
+}
+
+function hslToHex(h, s, l) {
+    s /= 100; l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
+    return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+}
+
+function hexToRgb(hex) {
+    const res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!res) return { r: 107, g: 114, b: 128 };
+    return { r: parseInt(res[1], 16), g: parseInt(res[2], 16), b: parseInt(res[3], 16) };
+}
+
+function luminance({ r, g, b }) {
+    const a = [r, g, b].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+}
+
+function setDeptThemeVars(accentHex) {
+    const root = document.documentElement;
+    const { r, g, b } = hexToRgb(accentHex);
+    const lum = luminance({ r, g, b });
+    const contrast = lum > 0.5 ? '#111827' : '#FFFFFF'; // black or white
+    const softBg = `rgba(${r}, ${g}, ${b}, 0.08)`;
+    const softBgDark = `rgba(${r}, ${g}, ${b}, 0.18)`;
+    const border = `rgba(${r}, ${g}, ${b}, 0.35)`;
+
+    root.style.setProperty('--dept-accent', accentHex);
+    root.style.setProperty('--dept-accent-contrast', contrast);
+    root.style.setProperty('--dept-bg-soft', softBg);
+    root.style.setProperty('--dept-bg-soft-dark', softBgDark);
+    root.style.setProperty('--dept-border', border);
+}
+
+function setDeptClass(colorKey) {
+    const container = document.querySelector('.categories-main');
+    if (!container) return;
+    // remove existing dept-* classes
+    container.className = container.className
+        .split(' ')
+        .filter(c => !/^dept-/.test(c))
+        .join(' ')
+        .trim();
+    container.classList.add(`dept-${colorKey}`);
+}
 
 /**
  * Co-Author List Expand/Collapse
