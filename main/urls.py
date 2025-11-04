@@ -33,6 +33,7 @@ urlpatterns = [
     path('theses/', views.theses_list, name='theses_list'),
     path('departments/', views.departments_list, name='departments_list'),
     path('courses/', views.courses_list, name='courses_list'),
+    path('admin-categories/', views.admin_categories, name='admin_categories'),
 ]
 
 if settings.DEBUG:
