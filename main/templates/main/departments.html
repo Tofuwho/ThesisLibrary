@@ -1,0 +1,135 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+  .search-bar {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .search-input {
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    width: 250px;
+    transition: 0.2s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #90caf9;
+    box-shadow: 0 0 5px #90caf9;
+  }
+
+  th {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  th.sort-asc::after {
+    content: " ▲";
+    color: #90caf9;
+  }
+
+  th.sort-desc::after {
+    content: " ▼";
+    color: #90caf9;
+  }
+
+  th:hover {
+    color: #90caf9;
+  }
+
+  #departmentTable tbody tr:hover {
+    background-color: #2a2a2a;
+    transition: background 0.2s;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  {% include 'main/admin_sidebar.html' %}
+
+  <main class="admin-main">
+    <div class="dashboard-header">
+      <h1>🏫 Departments</h1>
+      <p>List of departments with their categories and number of courses offered.</p>
+    </div>
+
+    <div class="dashboard-section" style="margin-top: 2rem;">
+      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+        <!-- 🔍 Search Bar -->
+        <div class="search-bar">
+          <input type="text" id="departmentSearch" class="search-input" placeholder="Search departments...">
+        </div>
+
+        <!-- 🧾 Table -->
+        <table id="departmentTable" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background-color:#2a2a2a;">
+              <th style="text-align:left; padding:0.8rem;">Name</th>
+              <th style="text-align:left; padding:0.8rem;">Category</th>
+              <th style="text-align:left; padding:0.8rem;">Courses</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for dept in departments %}
+            <tr style="border-bottom:1px solid #333;">
+              <td style="padding:0.8rem; color:#90caf9;">{{ dept.name }}</td>
+              <td style="padding:0.8rem;">{{ dept.category }}</td>
+              <td style="padding:0.8rem;">{{ dept.courses_count }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" style="text-align:center; padding:1rem; color:#777;">No departments found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ===== SORTING =====
+  document.querySelectorAll("#departmentTable th").forEach((th, index) => {
+    th.addEventListener("click", () => {
+      const table = th.closest("table");
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const asc = !th.classList.contains("sort-asc");
+
+      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
+      th.classList.toggle("sort-asc", asc);
+      th.classList.toggle("sort-desc", !asc);
+
+      rows.sort((a, b) => {
+        const cellA = a.children[index].innerText.trim().toLowerCase();
+        const cellB = b.children[index].innerText.trim().toLowerCase();
+        return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+      });
+
+      rows.forEach(row => tbody.appendChild(row));
+    });
+  });
+
+  // ===== SEARCH =====
+  const searchInput = document.getElementById("departmentSearch");
+  searchInput.addEventListener("input", () => {
+    const filter = searchInput.value.toLowerCase();
+    const rows = document.querySelectorAll("#departmentTable tbody tr");
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(filter) ? "" : "none";
+    });
+  });
+</script>
+{% endblock %}
