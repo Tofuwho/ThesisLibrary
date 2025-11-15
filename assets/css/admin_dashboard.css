@@ -1,10 +1,68 @@
 /* ===============================
+   THEME VARIABLES
+=============================== */
+:root {
+  /* 🌞 Light Mode */
+  --bg-color: #ffffff;
+  --text-color: #1f1f1f;
+  --card-bg: #f8f8f8;
+  --sidebar-bg: #f0f0f0;
+  --sidebar-text: #222;
+  --sidebar-hover-bg: #ddd;
+  --border-color: #ccc;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --muted-text: #555;
+  --accent-color: #8a2be2;
+}
+
+[data-theme="dark"] {
+  /* 🌙 Dark Mode */
+  --bg-color: #1f1f1f;
+  --text-color: #ffffff;
+  --card-bg: #2a2a2a;
+  --sidebar-bg: #232323;
+  --sidebar-text: #ddd;
+  --sidebar-hover-bg: #303030;
+  --border-color: #3a3a3a;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --muted-text: #bcbcbc;
+  --accent-color: #8a2be2;
+}
+
+/* ===============================
    GENERAL LAYOUT
 =============================== */
 body {
-  background-color: #1f1f1f;
-  color: #fff;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   font-family: "Poppins", sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.submission_trend_card {
+  flex: 1 1 60%;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 12px;
+  padding: 1rem;
+  transition: background 0.3s, color 0.3s;
+}
+
+.theses_by_category_card {
+  flex: 1 1 35%;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.text_themed_color {
+  color: var(--text-color);
+}
+
+.muted-text {
+  color: var(--muted-text);
+  font-size: 0.9rem;
 }
 
 .admin-dashboard {
@@ -12,7 +70,7 @@ body {
 }
 
 /* ===============================
-   HEADER / INTRO
+   HEADER
 =============================== */
 .dashboard-header {
   margin-bottom: 2rem;
@@ -21,12 +79,12 @@ body {
 
 .dashboard-header h1 {
   font-size: 2.2rem;
-  color: #ffffff;
+  color: var(--text-color);
   margin-bottom: 0.5rem;
 }
 
 .dashboard-header p {
-  color: #bcbcbc;
+  color: var(--muted-text);
   font-size: 1rem;
 }
 
@@ -35,12 +93,13 @@ body {
 }
 
 .meta-chip {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--card-bg);
   border-radius: 20px;
   padding: 0.4rem 1rem;
   margin: 0 0.3rem;
   font-size: 0.9rem;
-  color: #ddd;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
 
 .dot {
@@ -66,32 +125,32 @@ body {
 }
 
 .stat-card {
-  background: #2a2a2a;
+  background: var(--card-bg);
   border-radius: 15px;
   padding: 1.8rem 1.5rem;
   text-align: center;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  background: #343434;
 }
 
 .stat-icon {
   font-size: 2rem;
   margin-bottom: 0.5rem;
+  color: var(--accent-color);
 }
 
 .stat-info h2 {
   font-size: 2rem;
-  color: #ffffff;
+  color: var(--text-color);
   margin: 0;
 }
 
 .stat-info p {
-  color: #bcbcbc;
+  color: var(--muted-text);
   margin-top: 0.2rem;
 }
 
@@ -100,24 +159,27 @@ body {
 =============================== */
 .dashboard-section {
   margin-top: 2rem;
-  background: #2a2a2a;
+  background: var(--card-bg);
+  color: var(--text-color);
   border-radius: 12px;
   padding: 1.8rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 10px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .dashboard-section h2 {
-  color: #ffffff;
+  color: var(--text-color);
   margin-bottom: 1rem;
 }
 
 .placeholder-card {
-  background: #1f1f1f;
-  border: 2px dashed #555;
+  background: var(--bg-color);
+  border: 2px dashed var(--border-color);
   padding: 2rem;
   border-radius: 10px;
   text-align: center;
-  color: #999;
+  color: var(--muted-text);
   font-style: italic;
 }
 
@@ -144,9 +206,10 @@ body {
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: #1f1f1f;
-  color: #fff;
+  background: var(--bg-color);
+  color: var(--text-color);
   font-family: 'Poppins', sans-serif;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 /* ===============================
@@ -154,23 +217,25 @@ body {
 =============================== */
 .admin-sidebar {
   width: 250px;
-  background: #232323;
-  border-right: 2px solid #2e2e2e;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  border-right: 2px solid var(--border-color);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
   padding: 1rem 0;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .sidebar-header {
   text-align: center;
-  color: #fff;
+  color: var(--text-color);
   font-weight: 600;
   letter-spacing: 1px;
   margin-bottom: 1rem;
-  border-bottom: 1px solid #3a3a3a;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 1rem;
 }
 
@@ -188,7 +253,7 @@ body {
   padding: 0.9rem 1rem;
   font-size: 0.8rem;
   text-transform: uppercase;
-  color: #9fa3a7;
+  color: var(--muted-text);
   font-weight: 700;
   margin-top: 1rem;
   margin-bottom: 0.4rem;
@@ -200,7 +265,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #ddd;
+  color: var(--sidebar-text);
   text-decoration: none;
   padding: 0.7rem 1.2rem;
   transition: all 0.3s ease;
@@ -209,9 +274,9 @@ body {
 
 .sidebar-nav a:hover,
 .sidebar-nav a.active {
-  background: #303030;
-  color: #fff;
-  border-left: 3px solid #8a2be2;
+  background: var(--sidebar-hover-bg);
+  color: var(--text-color);
+  border-left: 3px solid var(--accent-color);
 }
 
 .sidebar-nav i {
@@ -226,6 +291,7 @@ body {
 .admin-main {
   flex: 1;
   padding: 2rem;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 /* ===============================
@@ -235,17 +301,17 @@ body {
   width: 6px;
 }
 .admin-sidebar::-webkit-scrollbar-thumb {
-  background: #444;
+  background: var(--border-color);
   border-radius: 10px;
 }
 
 #recent-activity {
-  background: #1f1f1f;              /* add background */
+  background: var(--card-bg);
   max-height: 350px;
   overflow-y: auto;
   padding-right: 5px;
-  scrollbar-width: thin;            /* Firefox support */
-  scrollbar-color: #555 #2a2a2a;    /* Firefox thumb + track */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--card-bg);
 }
 
 #recent-activity::-webkit-scrollbar {
@@ -253,14 +319,14 @@ body {
 }
 
 #recent-activity::-webkit-scrollbar-thumb {
-  background: #555;
+  background: var(--border-color);
   border-radius: 10px;
 }
 
 #recent-activity::-webkit-scrollbar-thumb:hover {
-  background: #777;  /* Better visibility */
+  background: var(--muted-text);
 }
 
 #recent-activity::-webkit-scrollbar-track {
-  background: #2a2a2a;
+  background: var(--card-bg);
 }

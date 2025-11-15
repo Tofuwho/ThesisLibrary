@@ -2,6 +2,11 @@
 {% load static %}
 
 {% block extra_head %}
+<script>
+  // Load saved theme before page renders
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <script src="{% static 'js/chart.js' %}"></script>
 <script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
@@ -61,16 +66,16 @@
         <div class="dashboard-section">
             <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
             <!-- Left: Submissions & Downloads Trend -->
-                <div style="flex: 1 1 60%; background: #1f1f1f; border-radius: 12px; padding: 1rem;">
+                <div class="submission_trend_card">
                     <h2>Submission Status Trend</h2>
-                    <p style="color: #bcbcbc; font-size: 0.9rem;">Approved, Pending, and Rejected per month</p>
+                    <p style="font-size: 0.9rem;">Approved, Pending, and Rejected per month</p>
                     <canvas id="trendChart" height="120"></canvas>
                 </div>
 
                 <!-- Right: Theses by Category -->
-                <div style="flex: 1 1 35%; background: #1f1f1f; border-radius: 12px; padding: 1rem;">
+                <div class="theses_by_category_card">
                     <h2>Theses by Course</h2>
-                    <p style="color: #bcbcbc; font-size: 0.9rem;">Distribution across top courses</p>
+                    <p style="font-size: 0.9rem;">Distribution across top courses</p>
                     <canvas id="courseChart" height="180"></canvas>
                 </div>
             </div>
@@ -81,23 +86,23 @@
           <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
 
             <!-- Left: Theses by Department -->
-            <div style="flex: 1 1 60%; background: #1f1f1f; border-radius: 12px; padding: 1rem;">
+            <div class="submission_trend_card">
               <h2>Theses by Department</h2>
-              <p style="color: #bcbcbc; font-size: 0.9rem;">Top 5 departments by thesis count</p>
+              <p style="font-size: 0.9rem;">Top 5 departments by thesis count</p>
               <canvas id="departmentChart" height="120"></canvas>
             </div>
 
             <!-- Right: Recent Activity -->
-            <div style="flex: 1 1 35%; background: #1f1f1f; border-radius: 12px; padding: 1rem;">
+            <div class="theses_by_category_card">
               <h2>Recent Activity</h2>
-              <p style="color: #bcbcbc; font-size: 0.9rem;">Latest thesis submissions and approvals</p>
+              <p style="font-size: 0.9rem;">Latest thesis submissions and approvals</p>
 
               <div id="recent-activity">
                 {% for submission in recent_theses %}
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 0; border-bottom:1px solid #333;">
                   <div>
-                    <strong style="color:#fff;">{{ submission.title }}</strong><br>
-                    <small style="color:#bcbcbc;">
+                    <strong class="text_themed_color">{{ submission.title }}</strong><br>
+                    <small class="text_themed_color">
                       by {{ submission.submitter }} •
                         {% if submission.status == 'rejected' %}
                             {{ submission.rejected_date|timesince }} ago

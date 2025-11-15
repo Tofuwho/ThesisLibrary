@@ -2,6 +2,11 @@
 {% load static %}
 
 {% block extra_head %}
+<script>
+  // Load saved theme before page renders
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 {% endblock %}
 

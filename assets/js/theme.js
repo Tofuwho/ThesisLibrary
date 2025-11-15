@@ -91,6 +91,7 @@ class ThemeManager {
         
         // Find the header buttons container for proper placement
         const headerButtons = document.querySelector('.nav-right, .auth-buttons, .header-buttons');
+
         if (headerButtons) {
             headerButtons.appendChild(toggle);
         } else {
