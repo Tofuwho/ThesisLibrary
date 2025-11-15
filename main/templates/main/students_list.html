@@ -1,5 +1,6 @@
 {% extends 'main/base.html' %}
 {% load static %}
+{% load tz %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
@@ -128,7 +129,7 @@
               <td style="padding:0.8rem;">{{ student.first_name|default:"—" }}</td>
               <td style="padding:0.8rem;">{{ student.last_name|default:"—" }}</td>
               <td style="padding:0.8rem;">{{ student.email|default:"—" }}</td>
-              <td style="padding:0.8rem;">{{ student.created_at|date:"M d, Y" }}</td>
+              <td style="padding:0.8rem;">{{ student.created_at|timezone:"Asia/Manila"|date:"M d, Y h:i A" }}</td>
               <td style="padding:0.8rem;">
                 <a href="/admin/main/student/{{ student.student_id }}/change/" class="admin-link" target="_blank">Edit</a>
               </td>
