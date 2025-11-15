@@ -687,6 +687,8 @@ def view_thesis(request, thesis_id):
     response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
     return response
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def rejected_thesis_list(request):
     rejected_theses = RejectedThesis.objects.all()
 
@@ -704,6 +706,8 @@ def rejected_thesis_list(request):
 
     return render(request, 'main/rejected_thesis.html', {'rejected_theses': rejected_theses})
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def theses_list(request):
     theses = Thesis.objects.all()
 
@@ -720,14 +724,17 @@ def theses_list(request):
 
     return render(request, 'main/theses.html', {'theses': theses})
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def departments_list(request):
     departments = Department.objects.annotate(courses_count=Count('courses'))
     return render(request, 'main/departments.html', {'departments': departments})
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def courses_list(request):
     courses = Course.objects.select_related('department').all()
     return render(request, 'main/courses.html', {'courses': courses})
-
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -736,6 +743,53 @@ def students_list(request):
     students = Student.objects.all().order_by('student_id')
     return render(request, 'main/students_list.html', {'students': students})
 
+def import_students(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+    try:
+        data = json.loads(request.body)  # <-- read JSON from body
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    students = data.get("students", [])
+    created_students = []
+
+    for s in students:
+        student_id = s.get("student_id")
+        first = s.get("first_name")
+        last = s.get("last_name")
+        email = s.get("email")
+
+        if not student_id:
+            continue
+
+        if not Student.objects.filter(student_id=student_id).exists():
+            student = Student.objects.create(
+                student_id=student_id,
+                first_name=first,
+                last_name=last,
+                email=email,
+                created_at=timezone.now(),
+            )
+            created_students.append(student)
+
+    # Prepare data to return to JS
+    response_students = [
+        {
+            "student_id": s.student_id,
+            "first_name": s.first_name,
+            "last_name": s.last_name,
+            "email": s.email,
+            "created_at": s.created_at.isoformat()
+        } for s in created_students
+    ]
+
+    return JsonResponse({
+        "message": "Imported",
+        "count": len(created_students),
+        "students": response_students
+    })
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)

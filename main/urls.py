@@ -38,6 +38,7 @@ urlpatterns = [
     path('courses/', views.courses_list, name='courses_list'),
     path('students/', views.students_list, name='students_list'),
     path('professors/', views.professors_list, name='professors_list'),
+    path('import-students/', views.import_students, name='import_students'),
 ]
 
 if settings.DEBUG:
