@@ -1,5 +1,6 @@
 {% extends 'main/base.html' %}
 {% load static %}
+{% load tz %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
@@ -9,6 +10,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
   }
 
   .search-input {
@@ -90,7 +97,11 @@
       <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
         <div class="search-bar">
           <input type="text" id="professorSearch" class="search-input" placeholder="Search professors...">
-          <a href="/admin/main/professor/" class="add-btn" target="_blank">+ Add Professor</a>
+          <div class="button-group">
+            <label for="importProfessorFile" class="add-btn" style="cursor:pointer;">⬆ Import</label>
+            <input type="file" id="importProfessorFile" accept=".csv, .xls, .xlsx" style="display:none;">
+            <a href="{% url 'add_professor' %}" class="add-btn">+ Add Professor</a>
+          </div>
         </div>
 
         <table id="professorTable" style="width:100%; border-collapse:collapse;">
@@ -111,15 +122,15 @@
               <td style="padding:0.8rem;">{{ professor.first_name|default:"—" }}</td>
               <td style="padding:0.8rem;">{{ professor.last_name|default:"—" }}</td>
               <td style="padding:0.8rem;">{{ professor.email|default:"—" }}</td>
-              <td style="padding:0.8rem;">{{ professor.created_at|date:"M d, Y" }}</td>
+              <td style="padding:0.8rem;">{{ professor.created_at|timezone:"Asia/Manila"|date:"M d, Y h:i A" }}</td>
               <td style="padding:0.8rem;">
-                <a href="/admin/main/professor/{{ professor.professor_id }}/change/" class="admin-link" target="_blank">Edit</a>
+                <a href="{% url 'edit_professor' professor.professor_id %}" class="admin-link">Edit</a>
               </td>
             </tr>
             {% empty %}
             <tr>
               <td colspan="6" style="text-align:center; padding:2rem; color:#777;">
-                No professors found. <a href="/admin/main/professor/" class="admin-link" target="_blank">Add your first professor</a>
+                No professors found. <a href="{% url 'add_professor' %}" class="admin-link" target="_blank">Add your first professor</a>
               </td>
             </tr>
             {% endfor %}
@@ -130,40 +141,182 @@
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-  // ===== SORTING =====
-  document.querySelectorAll("#professorTable th").forEach((th, index) => {
-    th.addEventListener("click", () => {
-      const table = th.closest("table");
-      const tbody = table.querySelector("tbody");
-      const rows = Array.from(tbody.querySelectorAll("tr"));
-      const asc = !th.classList.contains("sort-asc");
+let importedProfessors = [];
 
-      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
-      th.classList.toggle("sort-asc", asc);
-      th.classList.toggle("sort-desc", !asc);
+// ===== SORTING =====
+document.querySelectorAll("#professorTable th").forEach((th, index) => {
+  th.addEventListener("click", () => {
+    const table = th.closest("table");
+    const tbody = table.querySelector("tbody");
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    const asc = !th.classList.contains("sort-asc");
 
-      rows.sort((a, b) => {
-        const cellA = a.children[index].innerText.trim().toLowerCase();
-        const cellB = b.children[index].innerText.trim().toLowerCase();
-        return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
-      });
+    table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
+    th.classList.toggle("sort-asc", asc);
+    th.classList.toggle("sort-desc", !asc);
 
-      rows.forEach(row => tbody.appendChild(row));
+    rows.sort((a, b) => {
+      const cellA = a.children[index].innerText.trim().toLowerCase();
+      const cellB = b.children[index].innerText.trim().toLowerCase();
+      return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
     });
+
+    rows.forEach(row => tbody.appendChild(row));
   });
+});
 
-  // ===== SEARCH =====
-  const searchInput = document.getElementById("professorSearch");
-  searchInput.addEventListener("input", () => {
-    const filter = searchInput.value.toLowerCase();
-    const rows = document.querySelectorAll("#professorTable tbody tr");
+// ===== SEARCH =====
+const searchInput = document.getElementById("professorSearch");
+searchInput.addEventListener("input", () => {
+  const filter = searchInput.value.toLowerCase();
+  const rows = document.querySelectorAll("#professorTable tbody tr");
 
-    rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      row.style.display = text.includes(filter) ? "" : "none";
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(filter) ? "" : "none";
+  });
+});
+
+// ===== IMPORT HANDLER =====
+document.getElementById("importProfessorFile").addEventListener("change", function () {
+  const file = this.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  reader.onload = (e) => {
+    if (ext === "csv") processCSV(e.target.result);
+    else if (ext === "xls" || ext === "xlsx") processExcel(e.target.result, ext);
+  };
+
+  if (ext === "csv") reader.readAsText(file);
+  else reader.readAsArrayBuffer(file);
+});
+
+function mapColumns(headerRow) {
+  const map = {};
+  headerRow.forEach((h, i) => {
+    const key = h.trim().toLowerCase();
+    if (key.includes("professor")) map.professor_id = i;
+    if (key.includes("first")) map.first_name = i;
+    if (key.includes("last")) map.last_name = i;
+    if (key.includes("email")) map.email = i;
+  });
+  return map;
+}
+
+function extractProfessor(row, col) {
+  const professorID = col.professor_id !== undefined ? (row[col.professor_id] || "").trim() : "";
+  const firstName = col.first_name !== undefined ? (row[col.first_name] || "").trim() : "";
+  const lastName = col.last_name !== undefined ? (row[col.last_name] || "").trim() : "";
+  const email = col.email !== undefined ? (row[col.email] || "").trim() : "";
+
+  if (!professorID) return null;
+  return { professor_id: professorID, first_name: firstName, last_name: lastName, email: email };
+}
+
+function processCSV(text) {
+  const lines = text.split("\n").map(l => l.split(","));
+  const headers = lines[0];
+  const col = mapColumns(headers);
+
+  if (!Object.keys(col).length) {
+    alert("No valid professor columns found.");
+    return;
+  }
+
+  importedProfessors = [];
+  for (let i = 1; i < lines.length; i++) {
+    const prof = extractProfessor(lines[i], col);
+    if (prof) importedProfessors.push(prof);
+  }
+  saveImportedToDatabase();
+}
+
+function processExcel(binary, ext) {
+  const data = new Uint8Array(binary);
+  const arr = Array.from(data).map(byte => String.fromCharCode(byte)).join("");
+  const workbook = XLSX.read(arr, { type: "binary" });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  const headers = rows[0];
+  const col = mapColumns(headers);
+
+  if (!Object.keys(col).length) {
+    alert("No valid professor columns found.");
+    return;
+  }
+
+  importedProfessors = [];
+  for (let i = 1; i < rows.length; i++) {
+    const prof = extractProfessor(rows[i], col);
+    if (prof) importedProfessors.push(prof);
+  }
+  saveImportedToDatabase();
+}
+
+function saveImportedToDatabase() {
+  if (!importedProfessors.length) {
+    alert("No valid data to import.");
+    return;
+  }
+
+  fetch("/import-professors/", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCSRFToken(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ professors: importedProfessors })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.count > 0) addProfessorsToTable(data.professors);
+    else alert("No professors were added (maybe duplicates).");
+    importedProfessors = [];
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Import failed.");
+  });
+}
+
+function addProfessorsToTable(professors) {
+  const tbody = document.querySelector("#professorTable tbody");
+  professors.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid #333";
+
+    const createdAt = new Date(p.created_at);
+    const formattedDate = createdAt.toLocaleString("en-US", {
+      timeZone: "Asia/Manila",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
     });
+
+    tr.innerHTML = `
+      <td style="padding:0.8rem; color:#90caf9; font-weight:600;">${p.professor_id}</td>
+      <td style="padding:0.8rem;">${p.first_name || "—"}</td>
+      <td style="padding:0.8rem;">${p.last_name || "—"}</td>
+      <td style="padding:0.8rem;">${p.email || "—"}</td>
+      <td style="padding:0.8rem;">${formattedDate}</td>
+      <td style="padding:0.8rem;">
+        <a href="/admin/main/professor/${p.professor_id}/change/" class="admin-link" target="_blank">Edit</a>
+      </td>
+    `;
+    tbody.appendChild(tr);
   });
+}
+
+function getCSRFToken() {
+  return document.cookie.split("; ").find(row => row.startsWith("csrftoken"))?.split("=")[1];
+}
 </script>
 {% endblock %}
-

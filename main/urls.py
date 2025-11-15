@@ -39,6 +39,11 @@ urlpatterns = [
     path('students/', views.students_list, name='students_list'),
     path('professors/', views.professors_list, name='professors_list'),
     path('import-students/', views.import_students, name='import_students'),
+    path('add-student/', views.add_student, name='add_student'),
+    path('edit-student/<str:student_id>/', views.edit_student, name='edit_student'),
+    path('professor/add/', views.add_professor, name='add_professor'),  # ← add this
+    path('professor/<str:professor_id>/edit/', views.edit_professor, name='edit_professor'),
+    path('import-professors/', views.import_professors, name='import_professors'),
 ]
 
 if settings.DEBUG:

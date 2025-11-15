@@ -1,0 +1,121 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+  .form-wrapper {
+    background: #1f1f1f;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 600px;
+    margin: auto;
+  }
+
+  .form-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.3rem;
+  }
+
+  label {
+    display: block;
+    color: #ccc;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+
+  .form-input {
+    width: 100%;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    padding: 0.7rem 1rem;
+    color: white;
+    border-radius: 8px;
+    transition: 0.2s;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #90caf9;
+    box-shadow: 0 0 4px #90caf9;
+  }
+
+  .submit-btn {
+    background: #90caf9;
+    color: #1f1f1f;
+    font-weight: 700;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+    width: 100%;
+  }
+
+  .submit-btn:hover {
+    background: #64b5f6;
+  }
+
+  .back-btn {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #90caf9;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+  }
+
+  .back-btn:hover {
+    color: #64b5f6;
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  {% include 'main/admin_sidebar.html' %}
+
+  <main class="admin-main">
+    <a href="{% url 'professors_list' %}" class="back-btn">← Back to Professors</a>
+
+    <div class="dashboard-header">
+      <h1>✏️ Edit Professor</h1>
+      <p>Edit professor information.</p>
+    </div>
+
+    <div class="form-wrapper">
+      <form method="POST" action="">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label>Professor ID:</label>
+          <input type="text" name="professor_id" class="form-input" value="{{ professor.professor_id }}" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>First Name:</label>
+          <input type="text" name="first_name" class="form-input" value="{{ professor.first_name }}">
+        </div>
+
+        <div class="form-group">
+          <label>Last Name:</label>
+          <input type="text" name="last_name" class="form-input" value="{{ professor.last_name }}">
+        </div>
+
+        <div class="form-group">
+          <label>Email:</label>
+          <input type="email" name="email" class="form-input" value="{{ professor.email }}">
+        </div>
+
+        <button type="submit" class="submit-btn">Update Professor</button>
+      </form>
+    </div>
+  </main>
+</div>
+{% endblock %}

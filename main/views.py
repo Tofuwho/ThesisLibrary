@@ -791,12 +791,126 @@ def import_students(request):
         "students": response_students
     })
 
+def import_professors(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+    try:
+        data = json.loads(request.body)  # Read JSON from request body
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    professors = data.get("professors", [])
+    created_professors = []
+
+    for p in professors:
+        professor_id = p.get("professor_id")
+        first = p.get("first_name")
+        last = p.get("last_name")
+        email = p.get("email")
+
+        if not professor_id:
+            continue
+
+        # Only create if it doesn't already exist
+        if not Professor.objects.filter(professor_id=professor_id).exists():
+            professor = Professor.objects.create(
+                professor_id=professor_id,
+                first_name=first,
+                last_name=last,
+                email=email,
+                created_at=timezone.now(),
+            )
+            created_professors.append(professor)
+
+    # Prepare data to return to JS
+    response_professors = [
+        {
+            "professor_id": p.professor_id,
+            "first_name": p.first_name,
+            "last_name": p.last_name,
+            "email": p.email,
+            "created_at": p.created_at.isoformat()
+        } for p in created_professors
+    ]
+
+    return JsonResponse({
+        "message": "Imported",
+        "count": len(created_professors),
+        "professors": response_professors
+    })
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def add_student(request):
+    if request.method == "POST":
+        student_id = request.POST.get("student_id")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+
+        Student.objects.create(
+            student_id=student_id,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+        )
+
+        return redirect("students_list")
+
+    return render(request, "main/add_student.html")
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def edit_student(request, student_id):
+    student = get_object_or_404(Student, student_id=student_id)
+    if request.method == "POST":
+        student.student_id = request.POST.get("student_id")
+        student.first_name = request.POST.get("first_name")
+        student.last_name = request.POST.get("last_name")
+        student.email = request.POST.get("email")
+        student.save()
+        return redirect('students_list')
+    return render(request, 'main/edit_student.html', {'student': student})
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def professors_list(request):
     """List all professors for admin management"""
     professors = Professor.objects.all().order_by('professor_id')
     return render(request, 'main/professors_list.html', {'professors': professors})
+
+
+def add_professor(request):
+    if request.method == "POST":
+        professor_id = request.POST.get("professor_id")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+
+        Professor.objects.create(
+            professor_id=professor_id,
+            first_name=first_name,
+            last_name=last_name,
+            email=email
+        )
+        return redirect('professors_list')
+
+    return render(request, 'main/add_professor.html')
+
+
+def edit_professor(request, professor_id):
+    professor = get_object_or_404(Professor, professor_id=professor_id)
+
+    if request.method == "POST":
+        professor.first_name = request.POST.get("first_name")
+        professor.last_name = request.POST.get("last_name")
+        professor.email = request.POST.get("email")
+        professor.save()
+        return redirect('professors_list')
+
+    return render(request, 'main/edit_professor.html', {'professor': professor})
+
 
 @login_required
 @require_POST
