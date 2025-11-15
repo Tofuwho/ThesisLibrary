@@ -680,3 +680,4 @@ class LandingAboutIndexTests(TestCase):
         self.assertContains(response, "Category B")
 
 
+
