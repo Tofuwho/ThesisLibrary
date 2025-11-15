@@ -1,10 +1,11 @@
+# Django Test Suite
 name: Django Test Suite
 
 on:
   push:
-    branches: [ test ]
+    branches: [ testing ]
   pull_request:
-    branches: [ test ]
+    branches: [ testing ]
 
 jobs:
   test:
@@ -15,35 +16,23 @@ jobs:
       matrix:
         testcase:
           # ======================================================
-          # TC001 – TC004 (User Access & Search)
+          # TC001 – TC033 (existing tests)
           # ======================================================
           - main.tests.AuthTestCase.test_tc001_login_valid
           - main.tests.AuthTestCase.test_tc002_signup_valid
           - main.tests.SearchFilterTestCase.test_tc003_search_title_author_keyword
           - main.tests.SearchFilterTestCase.test_tc004_filter_by_category_year_author
-
-          # ======================================================
-          # TC005 – TC009 (Submission Stages)
-          # ======================================================
           - main.tests.SubmissionStagesTestCase.test_tc005_basic_info_stage
           - main.tests.SubmissionStagesTestCase.test_tc006_thesis_details_stage
           - main.tests.SubmissionStagesTestCase.test_tc007_file_upload_stage
           - main.tests.SubmissionStagesTestCase.test_tc008_supervisor_info_stage
           - main.tests.SubmissionStagesTestCase.test_tc009_review_and_submit_stage
-
-          # ======================================================
-          # TC010 – TC017 (Admin Panel)
-          # ======================================================
           - main.tests.AdminPanelTestCase.test_tc010_audit_logs
           - main.tests.AdminPanelTestCase.test_tc011_groups_permissions
           - main.tests.AdminPanelTestCase.test_tc012_create_admin_user
           - main.tests.AdminPanelTestCase.test_tc013_add_category
           - main.tests.AdminPanelTestCase.test_tc014_add_course
           - main.tests.AdminPanelTestCase.test_tc016_add_rejected_thesis
-
-          # ======================================================
-          # TC019 – TC033 (Extended Tests)
-          # ======================================================
           - main.tests.Updated_Test.test_tc019_deep_search_mode
           - main.tests.Updated_Test.test_tc020_restricted_view_guest
           - main.tests.Updated_Test.test_tc021_view_full_thesis_authenticated
@@ -59,6 +48,41 @@ jobs:
           - main.tests.Updated_Test.test_tc031_login_json_success
           - main.tests.Updated_Test.test_tc032_login_json_invalid
           - main.tests.Updated_Test.test_tc033_my_submissions_page
+
+          # ======================================================
+          # TC034 – TC054 (User List, Delete User, Thesis/Highlight)
+          # ======================================================
+          - main.tests.UserListTests.test_tc034_user_list_displays_users
+          - main.tests.UserListTests.test_tc035_user_list_requires_login
+          - main.tests.UserListTests.MySubmissionsTests.test_tc036_my_submissions_empty
+          - main.tests.UserListTests.test_tc037_user_list_shows_actions
+          - main.tests.DeleteUserTests.test_tc038_delete_user_redirects
+          - main.tests.DeleteUserTests.test_tc039_user_is_deleted
+          - main.tests.DeleteUserTests.test_tc040_delete_user_invalid_id
+          - main.tests.ThesisDetailTests.test_tc041_thesis_detail_loads
+          - main.tests.ThesisDetailTests.test_tc042_thesis_detail_displays_info
+          - main.tests.ThesisDetailTests.test_tc043_thesis_detail_invalid_id
+          - main.tests.EditUserTests.test_tc044_edit_user_loads
+          - main.tests.EditUserTests.test_tc045_edit_user_updates_info
+          - main.tests.EditUserTests.test_tc046_edit_user_requires_login
+          - main.tests.EditUserTests.test_tc047_edit_user_invalid_id
+          - main.tests.ViewThesisFileTests.test_tc048_view_file_guest_restricted
+          - main.tests.ViewThesisFileTests.test_tc049_view_file_authenticated_full_access
+          - main.tests.ViewThesisFileTests.test_tc050_view_file_missing_pdf
+          - main.tests.ViewThesisFileTests.test_tc051_view_file_invalid_id
+          - main.tests.ViewThesisFileTests.test_tc052_view_file_content_type
+          - main.tests.ViewThesisHighlightTests.test_tc053_highlight_invalid_id
+          - main.tests.ViewThesisHighlightTests.test_tc054_highlight_missing_pdf
+
+          # ======================================================
+          # TC055 – TC060 (Landing/About/Student Dashboard)
+          # ======================================================
+          - main.tests.LandingAboutIndexTests.test_TC055_landing_page_loads
+          - main.tests.LandingAboutIndexTests.test_TC056_landing_page_contains_content
+          - main.tests.LandingAboutIndexTests.test_TC057_about_page_loads
+          - main.tests.LandingAboutIndexTests.test_TC058_about_page_contains_text
+          - main.tests.LandingAboutIndexTests.test_TC059_student_dashboard_loads
+          - main.tests.LandingAboutIndexTests.test_TC060_student_dashboard_contains_categories
 
     services:
       mariadb:
