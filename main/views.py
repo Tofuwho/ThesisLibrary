@@ -736,6 +736,24 @@ def courses_list(request):
     courses = Course.objects.select_related('department').all()
     return render(request, 'main/courses.html', {'courses': courses})
 
+
+def admin_categories(request):
+    categories = Category.objects.all()
+
+    # Build a list with department and course counts (like in your friend’s admin)
+    category_data = []
+    for category in categories:
+        department_count = category.departments.count()
+        course_count = sum(dept.courses.count() for dept in category.departments.all())
+        category_data.append({
+            'name': category.name,
+            'department_count': department_count,
+            'course_count': course_count,
+        })
+
+    return render(request, 'main/admin_categories.html', {'categories': category_data})
+
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def students_list(request):

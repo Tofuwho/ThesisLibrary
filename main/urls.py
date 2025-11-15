@@ -44,6 +44,7 @@ urlpatterns = [
     path('professor/add/', views.add_professor, name='add_professor'),  # ← add this
     path('professor/<str:professor_id>/edit/', views.edit_professor, name='edit_professor'),
     path('import-professors/', views.import_professors, name='import_professors'),
+    path('admin-categories/', views.admin_categories, name='admin_categories'),
 ]
 
 if settings.DEBUG:

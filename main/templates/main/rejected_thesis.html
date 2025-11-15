@@ -78,6 +78,7 @@
     transform: translateY(-2px);
     box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
   }
+
 </style>
 {% endblock %}
 
@@ -146,53 +147,68 @@
 </div>
 
 <script>
-  // ===== SORTABLE TABLE =====
-  document.querySelectorAll("#rejectedTable th").forEach((th, index) => {
-    th.addEventListener("click", () => {
-      const table = th.closest("table");
-      const tbody = table.querySelector("tbody");
-      const rows = Array.from(tbody.querySelectorAll("tr"));
-      const asc = !th.classList.contains("sort-asc");
+// 🔍 Live Search with Highlight
+const searchInput = document.getElementById('searchInput'); // change to your input ID
+const rows = document.querySelectorAll('#rejectedTable tbody tr'); // change to your table ID
 
-      // Reset all sort icons
-      table.querySelectorAll("th").forEach(header => header.classList.remove("sort-asc", "sort-desc"));
-      th.classList.toggle("sort-asc", asc);
-      th.classList.toggle("sort-desc", !asc);
+searchInput.addEventListener('input', function() {
+  const query = this.value.toLowerCase();
 
-      rows.sort((a, b) => {
-        const A = a.children[index].innerText.trim().toLowerCase();
-        const B = b.children[index].innerText.trim().toLowerCase();
-        return asc ? A.localeCompare(B) : B.localeCompare(A);
-      });
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    let match = false;
 
-      rows.forEach(row => tbody.appendChild(row));
-    });
-  });
+    cells.forEach(cell => {
+      // Skip cells with links or buttons
+      if (cell.querySelector('a') || cell.querySelector('button')) return;
 
-  // ===== SEARCH + HIGHLIGHT =====
-  const searchInput = document.getElementById("searchInput");
-  searchInput.addEventListener("input", () => {
-    const filter = searchInput.value.toLowerCase();
-    const rows = document.querySelectorAll("#rejectedTable tbody tr");
+      // Remember original HTML (with links intact)
+      const originalHTML = cell.getAttribute('data-original') || cell.innerHTML;
+      cell.setAttribute('data-original', originalHTML);
+      cell.innerHTML = originalHTML;
 
-    rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      row.style.display = text.includes(filter) ? "" : "none";
-
-      // Remove previous highlights
-      row.querySelectorAll("td").forEach(td => {
-        td.innerHTML = td.innerText;
-      });
-
-      // Highlight matches
-      if (filter) {
-        row.querySelectorAll("td").forEach(td => {
-          const inner = td.innerText;
-          const regex = new RegExp(`(${filter})`, "gi");
-          td.innerHTML = inner.replace(regex, "<mark>$1</mark>");
-        });
+      // Apply highlight
+      if (query && cell.textContent.toLowerCase().includes(query)) {
+        match = true;
+        const regex = new RegExp(`(${query})`, 'gi');
+        cell.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
+      } else if (cell.textContent.toLowerCase().includes(query)) {
+        match = true;
       }
     });
+
+    // Show/hide rows based on match
+    row.style.display = match || query === '' ? '' : 'none';
   });
+});
+
+// 📊 Sortable Columns
+document.querySelectorAll('th.sortable').forEach((header, index) => {
+  header.addEventListener('click', () => {
+    const table = header.closest('table');
+    const tbody = table.querySelector('tbody');
+    const rowsArray = Array.from(tbody.querySelectorAll('tr'));
+    const isAsc = !header.classList.contains('sorted-asc');
+
+    // Remove sorting indicators
+    table.querySelectorAll('th.sortable').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
+    header.classList.add(isAsc ? 'sorted-asc' : 'sorted-desc');
+
+    // Sort rows
+    rowsArray.sort((a, b) => {
+      const aText = a.children[index].innerText.trim().toLowerCase();
+      const bText = b.children[index].innerText.trim().toLowerCase();
+
+      if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
+        return isAsc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
+      }
+
+      return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+
+    rowsArray.forEach(row => tbody.appendChild(row));
+  });
+});
 </script>
+
 {% endblock %}

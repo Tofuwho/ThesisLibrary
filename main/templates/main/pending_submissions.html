@@ -200,30 +200,45 @@
     });
   });
 
-  // ===== SEARCH + HIGHLIGHT =====
+  // ===== SEARCH + HIGHLIGHT (preserves buttons) =====
   const searchInput = document.getElementById("searchInput");
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
     const rows = document.querySelectorAll("#thesisTable tbody tr");
 
     rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      row.style.display = text.includes(filter) ? "" : "none";
+      let match = false;
+      const tds = row.querySelectorAll("td");
 
-      // Remove previous highlights
-      row.querySelectorAll("td").forEach(td => {
-        td.innerHTML = td.innerText;
+      tds.forEach(td => {
+        // Skip cells containing action buttons (approve/reject/view)
+        if (
+          td.querySelector("a") ||
+          td.querySelector("button") ||
+          td.querySelector(".btn-approve") ||
+          td.querySelector(".btn-reject") ||
+          td.querySelector(".btn-view")
+        ) return;
+
+        // Save original HTML content to restore later
+        const originalHTML = td.getAttribute("data-original") || td.innerHTML;
+        td.setAttribute("data-original", originalHTML);
+        td.innerHTML = originalHTML;
+
+        const text = td.textContent.toLowerCase();
+        if (filter && text.includes(filter)) {
+          match = true;
+          const regex = new RegExp(`(${filter})`, "gi");
+          td.innerHTML = originalHTML.replace(regex, "<mark>$1</mark>");
+        } else if (text.includes(filter)) {
+          match = true;
+        }
       });
 
-      // Highlight matches
-      if (filter) {
-        row.querySelectorAll("td").forEach(td => {
-          const inner = td.innerText;
-          const regex = new RegExp(`(${filter})`, "gi");
-          td.innerHTML = inner.replace(regex, "<mark>$1</mark>");
-        });
-      }
+      // Show/hide row
+      row.style.display = match || filter === "" ? "" : "none";
     });
   });
 </script>
+
 {% endblock %}
