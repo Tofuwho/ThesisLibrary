@@ -1445,9 +1445,7 @@ ul {
     gap: 8px;
   }
   .logo-container { margin-bottom: 6px; }
-  .header-flex-center { justify-content: flex-start; }
   .main-nav ul, .nav-center { gap: 10px; font-size: 0.98rem; }
-  .nav-right, .auth-buttons, .header-buttons { gap: 6px; }
 }
 /* --- END CONSISTENT HEADER STYLES --- */
 
@@ -1571,9 +1569,7 @@ ul {
     gap: 8px;
   }
   .main-header .logo-container { margin-bottom: 6px; }
-  .main-header .header-flex-center { justify-content: flex-start; }
   .main-header .main-nav ul, .main-header .nav-center { gap: 10px; font-size: 0.98rem; }
-  .main-header .nav-right, .main-header .auth-buttons, .main-header .header-buttons { gap: 6px; }
 }
 /* Theme Toggle Button */
 .theme-toggle {

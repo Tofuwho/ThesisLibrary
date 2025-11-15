@@ -14,7 +14,7 @@
             
             <button type="submit">Sign Up</button>
             <p id="signupMessage" class="error-msg"></p>
-        </form>
+          </form>
 
         </div>
         <div class="form-container sign-in-container">
@@ -33,7 +33,7 @@
             <p id="loginMessage" class="error-msg"></p>
         </form>
         </div>
-        <div class="form-container verify-container" id="verifyContainer" style="display: none;">
+        <div class="form-container verify-container" id="verifyContainer" style="display: none;">   <!--prob-->  <!--sign-up-container-->
             <form id="verifyForm" action="{% url 'verify_email' %}" method="POST">
             {% csrf_token %}
 
@@ -46,7 +46,7 @@
             <button type="submit">Verify Email</button>
             <button type="button" id="backToSignup" style="margin-top: 10px; background: #999;">Back to Sign Up</button>
             <p id="verifyMessage" class="error-msg"></p>
-        </form>
+            </form>
         </div>
         <div class="overlay-container">
             <div class="overlay">
