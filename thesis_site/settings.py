@@ -193,6 +193,6 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'your-email@gmail.com'
 # Verification code settings
 VERIFICATION_CODE_EXPIRY_HOURS = 24  # Codes expire after 24 hours
 
-EMAIL_HOST_USER = 'jacayabyab655@gmail.com'
-EMAIL_HOST_PASSWORD = 'bjrl hzkq lqgm ruja'  # Your generated app password
-DEFAULT_FROM_EMAIL = 'jcayabyab655@gmail.com'
+EMAIL_HOST_USER = 'Thesislibrarycode@gmail.com'
+EMAIL_HOST_PASSWORD = 'hcbv ztml cymy omxe'  # Your generated app password
+DEFAULT_FROM_EMAIL = 'Thesislibrarycode@gmail.com'

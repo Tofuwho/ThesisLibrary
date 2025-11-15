@@ -159,8 +159,6 @@
     gap: 8px;
   }
   .landing-header .logo-container { margin-bottom: 6px; }
-  .landing-header .header-flex-center { justify-content: flex-start; }
-  .landing-header .nav-right { gap: 6px; }
 }
 /* End Landing Header Styles */
   
