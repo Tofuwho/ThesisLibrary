@@ -90,7 +90,24 @@
       <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
         <div class="search-bar">
           <input type="text" id="studentSearch" class="search-input" placeholder="Search students...">
-          <a href="/admin/main/student/" class="add-btn" target="_blank">+ Add Student</a>
+          <div style="display:flex; gap:10px;">
+          <label for="importFile" class="add-btn" style="cursor:pointer;">⬆ Import</label>
+            <input type="file" id="importFile" accept=".csv, .xls, .xlsx" style="display:none;">
+            <a href="/admin/main/student/" class="add-btn" target="_blank">+ Add Student</a>
+          </div>
+        </div>
+
+        <div id="exportMenu" style="
+          display:none;
+          position:absolute;
+          right:2rem;
+          background:#2a2a2a;
+          border:1px solid #444;
+          border-radius:8px;
+          padding:0.5rem; z-index:1000;">
+          <button class="export-option" data-type="csv"   style="background:none; border:none; color:white; padding:0.5rem 1rem; width:100%; text-align:left; cursor:pointer;">Export CSV</button>
+          <button class="export-option" data-type="excel" style="background:none; border:none; color:white; padding:0.5rem 1rem; width:100%; text-align:left; cursor:pointer;">Export Excel</button>
+          <button class="export-option" data-type="pdf"   style="background:none; border:none; color:white; padding:0.5rem 1rem; width:100%; text-align:left; cursor:pointer;">Export PDF</button>
         </div>
 
         <table id="studentTable" style="width:100%; border-collapse:collapse;">
@@ -130,7 +147,9 @@
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
+  let importedStudents = [];
   // ===== SORTING =====
   document.querySelectorAll("#studentTable th").forEach((th, index) => {
     th.addEventListener("click", () => {
@@ -164,6 +183,155 @@
       row.style.display = text.includes(filter) ? "" : "none";
     });
   });
+
+  // =======================
+// IMPORT FILE HANDLER
+// =======================
+document.getElementById("importFile").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    reader.onload = (e) => {
+        if (ext === "csv") processCSV(e.target.result);
+        else if (ext === "xls" || ext === "xlsx") processExcel(e.target.result, ext);
+    };
+
+    if (ext === "csv") reader.readAsText(file);
+    else reader.readAsArrayBuffer(file);
+});
+
+// ===== COLUMN MAPPER =====
+function mapColumns(headerRow) {
+    const map = {};
+    headerRow.forEach((h, i) => {
+        const key = h.trim().toLowerCase();
+        if (key.includes("student")) map.student_id = i;
+        if (key.includes("first")) map.first_name = i;
+        if (key.includes("last")) map.last_name = i;
+        if (key.includes("email")) map.email = i;
+    });
+    return map;
+}
+
+// ===== PROCESS CSV =====
+function processCSV(text) {
+    const lines = text.split("\n").map(l => l.split(","));
+    const headers = lines[0];
+    const col = mapColumns(headers);
+
+    if (Object.keys(col).length === 0) {
+        alert("No valid student columns found.");
+        return;
+    }
+
+    importedStudents = [];
+    for (let i = 1; i < lines.length; i++) {
+        const student = extractStudent(lines[i], col);
+        if (student) importedStudents.push(student);
+    }
+
+    saveImportedToDatabase();
+}
+
+// ===== PROCESS EXCEL =====
+function processExcel(binary, ext) {
+    const data = new Uint8Array(binary);
+    const arr = Array.from(data).map(byte => String.fromCharCode(byte)).join("");
+    const workbook = XLSX.read(arr, { type: "binary" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    const headers = rows[0];
+    const col = mapColumns(headers);
+
+    if (Object.keys(col).length === 0) {
+        alert("No valid columns found in Excel file.");
+        return;
+    }
+
+    importedStudents = [];
+    for (let i = 1; i < rows.length; i++) {
+        const student = extractStudent(rows[i], col);
+        if (student) importedStudents.push(student);
+    }
+
+    saveImportedToDatabase();
+}
+
+// ===== EXTRACT STUDENT FROM ROW =====
+function extractStudent(row, col) {
+    const studentID = col.student_id !== undefined ? (row[col.student_id] || "").trim() : "";
+    const firstName = col.first_name !== undefined ? (row[col.first_name] || "").trim() : "";
+    const lastName = col.last_name !== undefined ? (row[col.last_name] || "").trim() : "";
+    const email = col.email !== undefined ? (row[col.email] || "").trim() : "";
+
+    if (!studentID) return null;
+    return { student_id: studentID, first_name: firstName, last_name: lastName, email: email };
+}
+
+// ===== SAVE TO DATABASE =====
+function saveImportedToDatabase() {
+    if (importedStudents.length === 0) {
+        alert("No valid data to import.");
+        return;
+    }
+
+    fetch("/import-students/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ students: importedStudents })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.count > 0) {
+            addStudentsToTable(data.students);
+            alert(`Successfully imported ${data.count} students into the database.`);
+        } else {
+            alert("No students were added (maybe duplicates).");
+        }
+        importedStudents = [];
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Import failed.");
+    });
+}
+
+// ===== ADD STUDENTS TO TABLE =====
+function addStudentsToTable(students) {
+    const tbody = document.querySelector("#studentTable tbody");
+    students.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #333";
+        tr.innerHTML = `
+            <td style="padding:0.8rem; color:#90caf9; font-weight:600;">${s.student_id}</td>
+            <td style="padding:0.8rem;">${s.first_name || "—"}</td>
+            <td style="padding:0.8rem;">${s.last_name || "—"}</td>
+            <td style="padding:0.8rem;">${s.email || "—"}</td>
+            <td style="padding:0.8rem;">${formatDate(s.created_at)}</td>
+            <td style="padding:0.8rem;">
+                <a href="/admin/main/student/${s.student_id}/change/" class="admin-link" target="_blank">Edit</a>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// ===== DATE FORMAT HELPER =====
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+}
+
+// ===== CSRF TOKEN =====
+function getCSRFToken() {
+    return document.cookie.split("; ").find(row => row.startsWith("csrftoken"))?.split("=")[1];
+}
 </script>
 {% endblock %}
 
