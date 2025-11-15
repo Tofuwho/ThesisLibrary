@@ -376,3 +376,55 @@ class Submission(models.Model):
 
     def __str__(self):
         return f"Submission: {self.title} by {self.submitter} [{self.status}]"
+
+
+class Student(models.Model):
+    """Student database - stores student IDs for verification"""
+    student_id = models.CharField(max_length=50, unique=True, primary_key=True)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Student"
+        verbose_name_plural = "Students"
+    
+    def __str__(self):
+        return f"{self.student_id} - {self.first_name} {self.last_name}".strip() or self.student_id
+
+
+class Professor(models.Model):
+    """Professor database - stores professor IDs for verification"""
+    professor_id = models.CharField(max_length=50, unique=True, primary_key=True)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Professor"
+        verbose_name_plural = "Professors"
+    
+    def __str__(self):
+        return f"{self.professor_id} - {self.first_name} {self.last_name}".strip() or self.professor_id
+
+
+class VerificationCode(models.Model):
+    """Stores verification codes for email verification"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='verification_code')
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_verified = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = "Verification Code"
+        verbose_name_plural = "Verification Codes"
+    
+    def __str__(self):
+        return f"Code for {self.user.username} - {self.code}"
+    
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at

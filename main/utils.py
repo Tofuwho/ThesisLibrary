@@ -229,6 +229,166 @@ def get_thesis_preview(thesis, max_pages: int = 3) -> str:
     return pdf_search_engine.get_pdf_preview(pdf_path, max_pages)
 
 
+def extract_abstract_from_pdf(pdf_file) -> str:
+    """
+    Extract abstract from a PDF file.
+    
+    This function looks for the abstract section in the first few pages of the PDF.
+    It searches for common abstract markers like "Abstract", "ABSTRACT", etc.
+    
+    Args:
+        pdf_file: Django UploadedFile or file path
+        
+    Returns:
+        Extracted abstract text, or empty string if not found
+    """
+    try:
+        # Handle both file path and Django UploadedFile
+        if hasattr(pdf_file, 'read'):
+            # It's a Django UploadedFile - save temporarily
+            import tempfile
+            # Reset file to beginning if possible (for InMemoryUploadedFile)
+            if hasattr(pdf_file, 'seek'):
+                try:
+                    pdf_file.seek(0)
+                except:
+                    pass
+            
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+                for chunk in pdf_file.chunks():
+                    tmp_file.write(chunk)
+                tmp_file_path = tmp_file.name
+            pdf_path = tmp_file_path
+            should_delete = True
+            
+            # Reset file pointer to beginning for Django to save it properly
+            if hasattr(pdf_file, 'seek'):
+                try:
+                    pdf_file.seek(0)
+                except:
+                    pass
+        else:
+            # It's a file path
+            pdf_path = pdf_file
+            should_delete = False
+        
+        if not os.path.exists(pdf_path):
+            return ""
+        
+        doc = fitz.open(pdf_path)
+        abstract_text = ""
+        
+        # Search in first 5 pages (abstract is usually in early pages)
+        search_pages = min(5, doc.page_count)
+        
+        for page_num in range(search_pages):
+            page = doc[page_num]
+            text = page.get_text()
+            
+            # Look for abstract section markers
+            abstract_patterns = [
+                r'(?i)\babstract\b',
+                r'(?i)\bsummary\b',
+                r'(?i)\bexecutive\s+summary\b',
+            ]
+            
+            # Find where abstract section starts
+            abstract_start = -1
+            for pattern in abstract_patterns:
+                match = re.search(pattern, text)
+                if match:
+                    abstract_start = match.end()
+                    break
+            
+            if abstract_start != -1:
+                # Extract text after "Abstract" marker
+                potential_abstract = text[abstract_start:].strip()
+                
+                # Remove common headers/footers and clean up
+                lines = potential_abstract.split('\n')
+                cleaned_lines = []
+                skip_next = False
+                
+                for i, line in enumerate(lines):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    # Skip common headers/footers
+                    if re.match(r'^(page|p\.?)\s*\d+', line, re.I):
+                        continue
+                    if re.match(r'^\d+$', line):  # Page numbers alone
+                        continue
+                    
+                    # Stop at common section markers (Introduction, Chapter 1, etc.)
+                    if re.search(r'(?i)^(introduction|chapter\s+[1-9]|table\s+of\s+contents|acknowledgment|acknowledgement|references|bibliography)', line):
+                        break
+                    
+                    cleaned_lines.append(line)
+                    
+                    # Limit abstract length (typically 150-500 words)
+                    if len(' '.join(cleaned_lines).split()) > 600:
+                        break
+                
+                abstract_text = ' '.join(cleaned_lines)
+                
+                # Clean up extra whitespace
+                abstract_text = re.sub(r'\s+', ' ', abstract_text).strip()
+                
+                # If we found a reasonable abstract (at least 50 words), return it
+                if len(abstract_text.split()) >= 50:
+                    doc.close()
+                    if should_delete and os.path.exists(pdf_path):
+                        os.unlink(pdf_path)
+                    return abstract_text
+        
+        # If no abstract marker found, try extracting first substantial paragraph
+        # from early pages (often the abstract is the first substantial text)
+        if not abstract_text:
+            for page_num in range(min(3, doc.page_count)):
+                page = doc[page_num]
+                text = page.get_text()
+                
+                # Split into paragraphs
+                paragraphs = [p.strip() for p in re.split(r'\n\s*\n', text) if p.strip()]
+                
+                for para in paragraphs:
+                    # Skip very short paragraphs (likely headers/footers)
+                    if len(para.split()) < 30:
+                        continue
+                    
+                    # Skip paragraphs that look like headers
+                    if len(para.split('\n')) > 5:  # Too many line breaks
+                        continue
+                    
+                    # Skip if contains common non-abstract content
+                    if re.search(r'(?i)(table\s+of\s+contents|chapter|page\s+\d+)', para):
+                        continue
+                    
+                    # Found a substantial paragraph - likely the abstract
+                    abstract_text = re.sub(r'\s+', ' ', para).strip()
+                    if len(abstract_text.split()) >= 50:
+                        doc.close()
+                        if should_delete and os.path.exists(pdf_path):
+                            os.unlink(pdf_path)
+                        return abstract_text
+        
+        doc.close()
+        if should_delete and os.path.exists(pdf_path):
+            os.unlink(pdf_path)
+        
+        return abstract_text
+        
+    except Exception as e:
+        print(f"Error extracting abstract from PDF: {str(e)}")
+        if should_delete and 'pdf_path' in locals() and os.path.exists(pdf_path):
+            try:
+                os.unlink(pdf_path)
+            except:
+                pass
+        return ""
+
+
 def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optional[str], float]:
     """Return a robust fuzzy suggestion for a possibly misspelled query.
 

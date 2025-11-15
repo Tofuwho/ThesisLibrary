@@ -147,13 +147,36 @@ document.addEventListener('DOMContentLoaded', () => {
   // === AJAX SIGNUP (FORM + JSON POST) ===
   const signupForm = document.getElementById('signupForm');
   if (signupForm) {
+    // Prevent any default form submission
+    signupForm.setAttribute('novalidate', 'novalidate'); // Disable HTML5 validation, we'll handle it in JS
+    
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const username = document.getElementById('signup-username').value;
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
+      e.stopPropagation();
+      
+      const user_id = document.getElementById('signup-id')?.value?.trim();
+      const email = document.getElementById('signup-email')?.value?.trim();
+      const password = document.getElementById('signup-password')?.value;
+      const signupMessage = document.getElementById('signupMessage');
       const submitButton = signupForm.querySelector('button[type="submit"]');
       const originalText = submitButton?.textContent;
+
+      // Clear previous messages
+      if (signupMessage) {
+        signupMessage.textContent = '';
+        signupMessage.className = 'error-msg';
+        signupMessage.style.display = 'none';
+      }
+
+      // Validate inputs
+      if (!user_id || !email || !password) {
+        if (signupMessage) {
+          signupMessage.textContent = 'Please fill in all fields.';
+          signupMessage.style.display = 'block';
+          signupMessage.style.color = 'red';
+        }
+        return;
+      }
 
       if (submitButton) {
         submitButton.disabled = true;
@@ -161,29 +184,164 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
+        const csrfToken = getCSRFToken();
+        if (!csrfToken) {
+          throw new Error('CSRF token not found');
+        }
+
         const response = await fetch(signupForm.action, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
           },
-          body: JSON.stringify({ username, email, password })
+          body: JSON.stringify({ id: user_id, email, password })
         });
 
         const data = await response.json();
 
         if (data.success) {
-          authContainer.classList.remove('right-panel-active');
-          showSuccessMessage('Account created successfully! Please sign in.');
-          signupForm.reset();
+          if (data.requires_verification) {
+            // Show verification form
+            showVerificationForm(user_id);
+            if (signupMessage) {
+              signupMessage.textContent = data.message || 'Account created! Please verify your email.';
+              signupMessage.style.color = 'green';
+              signupMessage.style.display = 'block';
+            }
+            showSuccessMessage(data.message || 'Account created! Please verify your email.');
+          } else {
+            authContainer.classList.remove('right-panel-active');
+            if (signupMessage) {
+              signupMessage.textContent = 'Account created successfully! Please sign in.';
+              signupMessage.style.color = 'green';
+              signupMessage.style.display = 'block';
+            }
+            showSuccessMessage('Account created successfully! Please sign in.');
+            signupForm.reset();
+          }
         } else {
           // Handle JSON error
+          const errorMessage = data.error || (data.errors && data.errors['__all__'] ? data.errors['__all__'][0] : 'Unknown error');
+          if (signupMessage) {
+            signupMessage.textContent = errorMessage;
+            signupMessage.style.color = 'red';
+            signupMessage.style.display = 'block';
+          }
           const errors = data.errors || { '__all__': [data.error || 'Unknown error'] };
           displaySignupErrors(errors);
         }
       } catch (error) {
         console.error('Signup error:', error);
-        displaySignupErrors({ '__all__': ['An error occurred. Please try again.'] });
+        const errorMsg = error.message || 'An error occurred. Please try again.';
+        if (signupMessage) {
+          signupMessage.textContent = errorMsg;
+          signupMessage.style.color = 'red';
+          signupMessage.style.display = 'block';
+        }
+        displaySignupErrors({ '__all__': [errorMsg] });
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalText;
+        }
+      }
+      return false;
+    });
+  }
+
+  // === VERIFICATION FORM HANDLING ===
+  const verifyForm = document.getElementById('verifyForm');
+  const verifyContainer = document.getElementById('verifyContainer');
+  const backToSignupBtn = document.getElementById('backToSignup');
+  
+  function showVerificationForm(userId) {
+    // Hide signup and login forms, show verification form
+    const signupContainer = document.querySelector('.sign-up-container');
+    const loginContainer = document.querySelector('.sign-in-container');
+    
+    if (signupContainer) signupContainer.style.display = 'none';
+    if (loginContainer) loginContainer.style.display = 'none';
+    if (verifyContainer) {
+      verifyContainer.style.display = 'block';
+      document.getElementById('verify-id').value = userId;
+    }
+  }
+
+  function hideVerificationForm() {
+    const signupContainer = document.querySelector('.sign-up-container');
+    const loginContainer = document.querySelector('.sign-in-container');
+    
+    if (signupContainer) signupContainer.style.display = 'block';
+    if (loginContainer) loginContainer.style.display = 'block';
+    if (verifyContainer) verifyContainer.style.display = 'none';
+  }
+
+  if (backToSignupBtn) {
+    backToSignupBtn.addEventListener('click', () => {
+      hideVerificationForm();
+      authContainer.classList.add('right-panel-active');
+    });
+  }
+
+  if (verifyForm) {
+    verifyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user_id = document.getElementById('verify-id').value;
+      const code = document.getElementById('verify-code').value;
+      const submitButton = verifyForm.querySelector('button[type="submit"]');
+      const originalText = submitButton?.textContent;
+      const verifyMessage = document.getElementById('verifyMessage');
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Verifying...';
+      }
+
+      if (verifyMessage) {
+        verifyMessage.textContent = '';
+        verifyMessage.className = 'error-msg';
+      }
+
+      try {
+        const response = await fetch(verifyForm.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify({ id: user_id, code })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          if (verifyMessage) {
+            verifyMessage.textContent = data.message || 'Email verified successfully!';
+            verifyMessage.className = 'success-msg';
+            verifyMessage.style.color = 'green';
+          }
+          // Hide verification form and show login
+          setTimeout(() => {
+            hideVerificationForm();
+            authContainer.classList.remove('right-panel-active');
+            showSuccessMessage('Email verified! You can now log in.');
+          }, 2000);
+        } else {
+          if (verifyMessage) {
+            verifyMessage.textContent = data.error || 'Verification failed. Please try again.';
+            verifyMessage.className = 'error-msg';
+            verifyMessage.style.color = 'red';
+          }
+        }
+      } catch (error) {
+        console.error('Verification error:', error);
+        if (verifyMessage) {
+          verifyMessage.textContent = 'An error occurred. Please try again.';
+          verifyMessage.className = 'error-msg';
+          verifyMessage.style.color = 'red';
+        }
       } finally {
         if (submitButton) {
           submitButton.disabled = false;

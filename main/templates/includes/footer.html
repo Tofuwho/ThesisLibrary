@@ -19,7 +19,7 @@
                 <li><a href="{% url 'about' %}">About Us</a></li>
                 {% if user.is_authenticated %}
                     {% if user.is_staff %}
-                        <li><a href="{% url 'admin:index' %}">Admin Panel</a></li>
+                        <li><a href="{% url 'admin_dashboard' %}">Admin Panel</a></li>
                     {% else %}
                         <li><a href="{% url 'student_dashboard' %}">Student Dashboard</a></li>
                         <li><a href="{% url 'my_submissions' %}">My Submissions</a></li>

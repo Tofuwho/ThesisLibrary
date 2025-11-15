@@ -1,0 +1,169 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+  .search-bar {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .search-input {
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    width: 250px;
+    transition: 0.2s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #90caf9;
+    box-shadow: 0 0 5px #90caf9;
+  }
+
+  .add-btn {
+    background: #90caf9;
+    color: #1f1f1f;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s;
+  }
+
+  .add-btn:hover {
+    background: #64b5f6;
+  }
+
+  th {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  th.sort-asc::after {
+    content: " ▲";
+    color: #90caf9;
+  }
+
+  th.sort-desc::after {
+    content: " ▼";
+    color: #90caf9;
+  }
+
+  th:hover {
+    color: #90caf9;
+  }
+
+  #studentTable tbody tr:hover {
+    background-color: #2a2a2a;
+    transition: background 0.2s;
+  }
+
+  .admin-link {
+    color: #90caf9;
+    text-decoration: none;
+  }
+
+  .admin-link:hover {
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  {% include 'main/admin_sidebar.html' %}
+
+  <main class="admin-main">
+    <div class="dashboard-header">
+      <h1>👥 Students Database</h1>
+      <p>Manage student IDs for account registration. Students can sign up using their ID.</p>
+    </div>
+
+    <div class="dashboard-section" style="margin-top: 2rem;">
+      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+        <div class="search-bar">
+          <input type="text" id="studentSearch" class="search-input" placeholder="Search students...">
+          <a href="/admin/main/student/" class="add-btn" target="_blank">+ Add Student</a>
+        </div>
+
+        <table id="studentTable" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background-color:#2a2a2a;">
+              <th style="padding:0.8rem; text-align:left;">Student ID</th>
+              <th style="padding:0.8rem; text-align:left;">First Name</th>
+              <th style="padding:0.8rem; text-align:left;">Last Name</th>
+              <th style="padding:0.8rem; text-align:left;">Email</th>
+              <th style="padding:0.8rem; text-align:left;">Created At</th>
+              <th style="padding:0.8rem; text-align:left;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in students %}
+            <tr style="border-bottom:1px solid #333;">
+              <td style="padding:0.8rem; color:#90caf9; font-weight:600;">{{ student.student_id }}</td>
+              <td style="padding:0.8rem;">{{ student.first_name|default:"—" }}</td>
+              <td style="padding:0.8rem;">{{ student.last_name|default:"—" }}</td>
+              <td style="padding:0.8rem;">{{ student.email|default:"—" }}</td>
+              <td style="padding:0.8rem;">{{ student.created_at|date:"M d, Y" }}</td>
+              <td style="padding:0.8rem;">
+                <a href="/admin/main/student/{{ student.student_id }}/change/" class="admin-link" target="_blank">Edit</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" style="text-align:center; padding:2rem; color:#777;">
+                No students found. <a href="/admin/main/student/" class="admin-link" target="_blank">Add your first student</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ===== SORTING =====
+  document.querySelectorAll("#studentTable th").forEach((th, index) => {
+    th.addEventListener("click", () => {
+      const table = th.closest("table");
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const asc = !th.classList.contains("sort-asc");
+
+      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
+      th.classList.toggle("sort-asc", asc);
+      th.classList.toggle("sort-desc", !asc);
+
+      rows.sort((a, b) => {
+        const cellA = a.children[index].innerText.trim().toLowerCase();
+        const cellB = b.children[index].innerText.trim().toLowerCase();
+        return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+      });
+
+      rows.forEach(row => tbody.appendChild(row));
+    });
+  });
+
+  // ===== SEARCH =====
+  const searchInput = document.getElementById("studentSearch");
+  searchInput.addEventListener("input", () => {
+    const filter = searchInput.value.toLowerCase();
+    const rows = document.querySelectorAll("#studentTable tbody tr");
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(filter) ? "" : "none";
+    });
+  });
+</script>
+{% endblock %}
+

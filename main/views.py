@@ -13,8 +13,12 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django import forms
-from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department
-from .utils import search_in_thesis_pdf, suggest_query_correction, deep_filter_theses_by_pdf, get_thesis_preview
+from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department, Student, Professor, VerificationCode
+from django.core.mail import send_mail
+from django.conf import settings
+import random
+import string
+from .utils import search_in_thesis_pdf, suggest_query_correction, deep_filter_theses_by_pdf, get_thesis_preview, extract_abstract_from_pdf
 from django.utils import timezone
 from PyPDF2 import PdfReader, PdfWriter
 import fitz
@@ -724,6 +728,22 @@ def courses_list(request):
     courses = Course.objects.select_related('department').all()
     return render(request, 'main/courses.html', {'courses': courses})
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def students_list(request):
+    """List all students for admin management"""
+    students = Student.objects.all().order_by('student_id')
+    return render(request, 'main/students_list.html', {'students': students})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def professors_list(request):
+    """List all professors for admin management"""
+    professors = Professor.objects.all().order_by('professor_id')
+    return render(request, 'main/professors_list.html', {'professors': professors})
+
 @login_required
 @require_POST
 def create_submission(request):
@@ -803,6 +823,19 @@ def create_submission(request):
         supervisor_title = request.POST.get('supervisorTitle', '').strip()
         co_supervisor_name = request.POST.get('coSupervisorName', '').strip()
         co_supervisor_email = request.POST.get('coSupervisorEmail', '').strip()
+
+        # Extract abstract from PDF if not provided
+        if not abstract or abstract.strip() == '':
+            if thesis_file:
+                try:
+                    # The extract_abstract_from_pdf function handles file reading internally
+                    # and creates a temporary copy, so the original file remains intact
+                    extracted_abstract = extract_abstract_from_pdf(thesis_file)
+                    if extracted_abstract:
+                        abstract = extracted_abstract
+                except Exception as e:
+                    # If extraction fails, continue with empty abstract
+                    print(f"Warning: Could not extract abstract from PDF: {str(e)}")
 
         submission = Submission.objects.create(
             submitter=request.user,
@@ -1056,46 +1089,117 @@ def restricted_view_thesis_file(request, pk):
 # ----------------------
 # Authentication
 # ----------------------
-class CustomSignupForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-    first_name = forms.CharField(max_length=30, required=False)
-    last_name = forms.CharField(max_length=30, required=False)
 
-    class Meta:
-        model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+def generate_verification_code():
+    """Generate a 6-digit verification code"""
+    return ''.join(random.choices(string.digits, k=6))
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data['last_name']
-        if commit:
-            user.save()
-        return user
+
+def send_verification_email(user, code):
+    """Send verification code to user's email"""
+    subject = 'Thesis Library - Email Verification Code'
+    message = f'''
+Hello {user.username},
+
+Thank you for signing up for Thesis Library!
+
+Your verification code is: {code}
+
+This code will expire in 24 hours.
+
+If you did not create this account, please ignore this email.
+
+Best regards,
+Thesis Library Team
+'''
+    try:
+        send_mail(
+            subject,
+            message,
+            getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@thesislibrary.com'),
+            [user.email],
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
+        return False
 
 
 @csrf_protect
 def login_view(request):
-    """Handle regular, AJAX, and JSON login"""
+    """Handle login with ID as username - only verified accounts can login"""
     if request.method == 'POST':
         if request.content_type == 'application/json':
             try:
                 data = json.loads(request.body)
-                username = data.get('username')
+                user_id = data.get('username')  # This is actually the ID
                 password = data.get('password')
-                user = authenticate(request, username=username, password=password)
+                
+                if not user_id or not password:
+                    return JsonResponse({'success': False, 'error': 'ID and password are required'}, status=400)
+                
+                # Authenticate using ID as username
+                user = authenticate(request, username=user_id, password=password)
+                
                 if user:
+                    # Check if account is active and verified
+                    if not user.is_active:
+                        return JsonResponse({'success': False, 'error': 'Your account is inactive. Please verify your email first.'}, status=400)
+                    
+                    # Check if user has been verified
+                    try:
+                        verification = VerificationCode.objects.get(user=user)
+                        if not verification.is_verified:
+                            return JsonResponse({'success': False, 'error': 'Please verify your email before logging in. Check your email for the verification code.'}, status=400)
+                    except VerificationCode.DoesNotExist:
+                        # If no verification code exists, account might be old - allow login if active
+                        pass
+                    
                     login(request, user)
                     return JsonResponse({'success': True})
                 else:
-                    return JsonResponse({'success': False, 'error': 'Invalid credentials'}, status=400)
+                    return JsonResponse({'success': False, 'error': 'Invalid ID or password'}, status=400)
             except Exception as e:
                 return JsonResponse({'success': False, 'error': str(e)}, status=500)
         else:
-            form = AuthenticationForm(request, data=request.POST)
-            if form.is_valid():
-                user = form.get_user()
+            # Form POST
+            user_id = request.POST.get('username')  # This is actually the ID
+            password = request.POST.get('password')
+            
+            if not user_id or not password:
+                errors = {'__all__': ['ID and password are required']}
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': errors})
+                else:
+                    messages.error(request, 'ID and password are required.')
+                    return redirect('/')
+            
+            user = authenticate(request, username=user_id, password=password)
+            
+            if user:
+                # Check if account is active and verified
+                if not user.is_active:
+                    errors = {'__all__': ['Your account is inactive. Please verify your email first.']}
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'errors': errors})
+                    else:
+                        messages.error(request, 'Your account is inactive. Please verify your email first.')
+                        return redirect('/')
+                
+                # Check if user has been verified
+                try:
+                    verification = VerificationCode.objects.get(user=user)
+                    if not verification.is_verified:
+                        errors = {'__all__': ['Please verify your email before logging in. Check your email for the verification code.']}
+                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                            return JsonResponse({'success': False, 'errors': errors})
+                        else:
+                            messages.error(request, 'Please verify your email before logging in.')
+                            return redirect('/')
+                except VerificationCode.DoesNotExist:
+                    pass
+                
                 login(request, user)
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     next_url = request.POST.get('next') or request.GET.get('next') or '/'
@@ -1104,58 +1208,455 @@ def login_view(request):
                     next_url = request.POST.get('next') or request.GET.get('next') or '/'
                     return redirect(next_url)
             else:
-                errors = {field: [str(e) for e in errs] for field, errs in form.errors.items()}
+                errors = {'__all__': ['Invalid ID or password']}
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({'success': False, 'errors': errors})
                 else:
-                    messages.error(request, 'Invalid username or password.')
+                    messages.error(request, 'Invalid ID or password.')
                     return redirect('/')
     return redirect('/')
 
 
 @csrf_exempt
 def signup_view(request):
-    """Handle form POST, AJAX POST, and raw JSON POST"""
+    """Handle signup with ID verification - checks Student/Professor DB"""
     if request.method == 'POST':
-        # JSON POST
         if request.content_type == 'application/json':
             try:
                 data = json.loads(request.body)
-                username = data.get("username")
+                user_id = data.get("id") or data.get("username")  # Accept both 'id' and 'username'
                 email = data.get("email")
                 password = data.get("password")
                 
-                if not username or not password or not email:
-                    return JsonResponse({"success": False, "error": "Username, email, and password are required"}, status=400)
-
-                if User.objects.filter(username=username).exists():
-                    return JsonResponse({"success": False, "error": "Username already taken"}, status=400)
-
-                user = User.objects.create_user(username=username, email=email, password=password)
-                user.save()
-                return JsonResponse({"success": True, "message": "Account created successfully!"})
+                if not user_id or not password or not email:
+                    return JsonResponse({"success": False, "error": "ID, email, and password are required"}, status=400)
+                
+                # Check if ID exists in Student or Professor database
+                student = None
+                professor = None
+                student_exists = False
+                professor_exists = False
+                
+                try:
+                    student = Student.objects.get(student_id=user_id)
+                    student_exists = True
+                except Student.DoesNotExist:
+                    pass
+                
+                try:
+                    professor = Professor.objects.get(professor_id=user_id)
+                    professor_exists = True
+                except Professor.DoesNotExist:
+                    pass
+                
+                if not student_exists and not professor_exists:
+                    return JsonResponse({"success": False, "error": "ID not found in our database. Please contact administrator."}, status=400)
+                
+                # Use email from Student/Professor record if available, otherwise use entered email
+                official_email = None
+                if student_exists and student.email:
+                    official_email = student.email
+                elif professor_exists and professor.email:
+                    official_email = professor.email
+                
+                # If official email exists, use it; otherwise use the email they entered
+                final_email = official_email if official_email else email
+                
+                # Check if user already exists
+                existing_user = None
+                try:
+                    existing_user = User.objects.get(username=user_id)
+                except User.DoesNotExist:
+                    pass
+                
+                if existing_user:
+                    # User already exists - check if verified
+                    try:
+                        verification = VerificationCode.objects.get(user=existing_user)
+                        if verification.is_verified:
+                            # Account is already verified - tell them to log in
+                            return JsonResponse({
+                                "success": False, 
+                                "error": "An account with this ID already exists and is verified. Please log in instead."
+                            }, status=400)
+                        else:
+                            # Account exists but not verified - resend verification code
+                            # Update password if provided
+                            if password:
+                                existing_user.set_password(password)
+                                existing_user.save()
+                            
+                            # Update email if it's different
+                            if existing_user.email != final_email:
+                                existing_user.email = final_email
+                                existing_user.save()
+                            
+                            # Generate new verification code
+                            code = generate_verification_code()
+                            expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
+                            
+                            # Update or create verification code
+                            verification.code = code
+                            verification.expires_at = expires_at
+                            verification.is_verified = False
+                            verification.save()
+                            
+                            # Resend verification email
+                            email_sent = send_verification_email(existing_user, code)
+                            
+                            if email_sent:
+                                return JsonResponse({
+                                    "success": True,
+                                    "message": f"Verification code has been resent to {final_email}. Please check your email.",
+                                    "requires_verification": True,
+                                    "email_sent_to": final_email,
+                                    "resend": True
+                                })
+                            else:
+                                return JsonResponse({
+                                    "success": False,
+                                    "error": "Failed to resend verification email. Please contact support."
+                                }, status=500)
+                    except VerificationCode.DoesNotExist:
+                        # User exists but no verification code - create one
+                        code = generate_verification_code()
+                        expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
+                        VerificationCode.objects.create(
+                            user=existing_user,
+                            code=code,
+                            expires_at=expires_at
+                        )
+                        
+                        # Update password and email
+                        if password:
+                            existing_user.set_password(password)
+                        existing_user.email = final_email
+                        existing_user.is_active = False
+                        if professor_exists:
+                            existing_user.is_staff = True
+                        existing_user.save()
+                        
+                        email_sent = send_verification_email(existing_user, code)
+                        
+                        if email_sent:
+                            return JsonResponse({
+                                "success": True,
+                                "message": f"Verification code has been sent to {final_email}. Please check your email.",
+                                "requires_verification": True,
+                                "email_sent_to": final_email
+                            })
+                        else:
+                            return JsonResponse({
+                                "success": False,
+                                "error": "Failed to send verification email. Please contact support."
+                            }, status=500)
+                
+                # Check if email is already in use by a different user
+                if User.objects.filter(email=final_email).exclude(username=user_id).exists():
+                    return JsonResponse({"success": False, "error": "This email is already registered with a different account"}, status=400)
+                
+                # Create new inactive user account
+                user = User.objects.create_user(
+                    username=user_id,
+                    email=final_email,
+                    password=password,
+                    is_active=False  # Account is inactive until verified
+                )
+                
+                # Set user as staff if professor
+                if professor_exists:
+                    user.is_staff = True
+                    user.save()
+                
+                # Generate verification code
+                code = generate_verification_code()
+                expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
+                
+                # Create verification code record
+                VerificationCode.objects.create(
+                    user=user,
+                    code=code,
+                    expires_at=expires_at
+                )
+                
+                # Automatically send verification email to the email address (from DB or entered)
+                email_sent = send_verification_email(user, code)
+                
+                if email_sent:
+                    email_message = f"Account created! Verification code has been automatically sent to {final_email}."
+                    return JsonResponse({
+                        "success": True, 
+                        "message": email_message,
+                        "requires_verification": True,
+                        "email_sent_to": final_email
+                    })
+                else:
+                    return JsonResponse({
+                        "success": False, 
+                        "error": "Account created but failed to send verification email. Please contact support."
+                    }, status=500)
 
             except Exception as e:
                 return JsonResponse({"success": False, "error": str(e)}, status=500)
-
-        # Form / AJAX POST
         else:
-            form = CustomSignupForm(request.POST)
-            if form.is_valid():
-                user = form.save()
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return JsonResponse({'success': True, 'message': 'Account created successfully! Please sign in.', 'redirect_url': None})
-                else:
-                    login(request, user)
-                    return redirect('/')
-            else:
-                errors = {field: [str(e) for e in errs] for field, errs in form.errors.items()}
+            # Form POST
+            user_id = request.POST.get('id') or request.POST.get('username')
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            
+            if not user_id or not email or not password:
+                errors = {'__all__': ['ID, email, and password are required']}
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({'success': False, 'errors': errors})
                 else:
-                    messages.error(request, 'Please correct the errors below.')
+                    messages.error(request, 'ID, email, and password are required.')
                     return redirect('/')
+            
+            # Check if ID exists in Student or Professor database
+            student = None
+            professor = None
+            student_exists = False
+            professor_exists = False
+            
+            try:
+                student = Student.objects.get(student_id=user_id)
+                student_exists = True
+            except Student.DoesNotExist:
+                pass
+            
+            try:
+                professor = Professor.objects.get(professor_id=user_id)
+                professor_exists = True
+            except Professor.DoesNotExist:
+                pass
+            
+            if not student_exists and not professor_exists:
+                errors = {'__all__': ['ID not found in our database. Please contact administrator.']}
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': errors})
+                else:
+                    messages.error(request, 'ID not found in our database.')
+                    return redirect('/')
+            
+            # Use email from Student/Professor record if available, otherwise use entered email
+            official_email = None
+            if student_exists and student.email:
+                official_email = student.email
+            elif professor_exists and professor.email:
+                official_email = professor.email
+            
+            # If official email exists, use it; otherwise use the email they entered
+            final_email = official_email if official_email else email
+            
+            # Check if user already exists
+            existing_user = None
+            try:
+                existing_user = User.objects.get(username=user_id)
+            except User.DoesNotExist:
+                pass
+            
+            if existing_user:
+                # User already exists - check if verified
+                try:
+                    verification = VerificationCode.objects.get(user=existing_user)
+                    if verification.is_verified:
+                        # Account is already verified
+                        errors = {'__all__': ['An account with this ID already exists and is verified. Please log in instead.']}
+                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                            return JsonResponse({'success': False, 'errors': errors})
+                        else:
+                            messages.error(request, 'An account with this ID already exists and is verified. Please log in instead.')
+                            return redirect('/')
+                    else:
+                        # Account exists but not verified - resend verification code
+                        if password:
+                            existing_user.set_password(password)
+                            existing_user.save()
+                        
+                        if existing_user.email != final_email:
+                            existing_user.email = final_email
+                            existing_user.save()
+                        
+                        code = generate_verification_code()
+                        expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
+                        verification.code = code
+                        verification.expires_at = expires_at
+                        verification.is_verified = False
+                        verification.save()
+                        
+                        email_sent = send_verification_email(existing_user, code)
+                        email_message = f"Verification code has been resent to {final_email}. Please check your email."
+                        
+                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                            return JsonResponse({
+                                'success': True,
+                                'message': email_message,
+                                'requires_verification': True,
+                                'email_sent_to': final_email,
+                                'resend': True
+                            })
+                        else:
+                            messages.success(request, email_message)
+                            return redirect('/')
+                except VerificationCode.DoesNotExist:
+                    # User exists but no verification code - create one
+                    code = generate_verification_code()
+                    expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
+                    VerificationCode.objects.create(
+                        user=existing_user,
+                        code=code,
+                        expires_at=expires_at
+                    )
+                    
+                    if password:
+                        existing_user.set_password(password)
+                    existing_user.email = final_email
+                    existing_user.is_active = False
+                    if professor_exists:
+                        existing_user.is_staff = True
+                    existing_user.save()
+                    
+                    email_sent = send_verification_email(existing_user, code)
+                    email_message = f"Verification code has been sent to {final_email}. Please check your email."
+                    
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({
+                            'success': True,
+                            'message': email_message,
+                            'requires_verification': True,
+                            'email_sent_to': final_email
+                        })
+                    else:
+                        messages.success(request, email_message)
+                        return redirect('/')
+            
+            # Check if email is already in use by a different user
+            if User.objects.filter(email=final_email).exclude(username=user_id).exists():
+                errors = {'__all__': ['This email is already registered with a different account']}
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': errors})
+                else:
+                    messages.error(request, 'This email is already registered with a different account.')
+                    return redirect('/')
+            
+            # Create new inactive user
+            user = User.objects.create_user(
+                username=user_id,
+                email=final_email,
+                password=password,
+                is_active=False
+            )
+            
+            if professor_exists:
+                user.is_staff = True
+                user.save()
+            
+            # Generate and automatically send verification code
+            code = generate_verification_code()
+            expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
+            VerificationCode.objects.create(user=user, code=code, expires_at=expires_at)
+            email_sent = send_verification_email(user, code)
+            
+            email_message = f"Account created! Verification code has been automatically sent to {final_email}."
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True, 
+                    'message': email_message,
+                    'requires_verification': True,
+                    'email_sent_to': final_email
+                })
+            else:
+                messages.success(request, email_message)
+                return redirect('/')
+    
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+
+@csrf_protect
+def verify_email_view(request):
+    """Handle email verification with code"""
+    if request.method == 'POST':
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                user_id = data.get('id') or data.get('username')
+                code = data.get('code')
+                
+                if not user_id or not code:
+                    return JsonResponse({'success': False, 'error': 'ID and verification code are required'}, status=400)
+                
+                try:
+                    user = User.objects.get(username=user_id)
+                except User.DoesNotExist:
+                    return JsonResponse({'success': False, 'error': 'User not found'}, status=404)
+                
+                try:
+                    verification = VerificationCode.objects.get(user=user)
+                    
+                    if verification.is_verified:
+                        return JsonResponse({'success': False, 'error': 'Email already verified'}, status=400)
+                    
+                    if verification.is_expired():
+                        return JsonResponse({'success': False, 'error': 'Verification code has expired. Please request a new one.'}, status=400)
+                    
+                    if verification.code != code:
+                        return JsonResponse({'success': False, 'error': 'Invalid verification code'}, status=400)
+                    
+                    # Verify the account
+                    verification.is_verified = True
+                    verification.save()
+                    user.is_active = True
+                    user.save()
+                    
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Email verified successfully! You can now log in.'
+                    })
+                    
+                except VerificationCode.DoesNotExist:
+                    return JsonResponse({'success': False, 'error': 'No verification code found for this account'}, status=404)
+                    
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        else:
+            # Form POST
+            user_id = request.POST.get('id') or request.POST.get('username')
+            code = request.POST.get('code')
+            
+            if not user_id or not code:
+                messages.error(request, 'ID and verification code are required.')
+                return redirect('/')
+            
+            try:
+                user = User.objects.get(username=user_id)
+                verification = VerificationCode.objects.get(user=user)
+                
+                if verification.is_verified:
+                    messages.info(request, 'Email already verified.')
+                    return redirect('/')
+                
+                if verification.is_expired():
+                    messages.error(request, 'Verification code has expired.')
+                    return redirect('/')
+                
+                if verification.code != code:
+                    messages.error(request, 'Invalid verification code.')
+                    return redirect('/')
+                
+                verification.is_verified = True
+                verification.save()
+                user.is_active = True
+                user.save()
+                
+                messages.success(request, 'Email verified successfully! You can now log in.')
+                return redirect('/')
+                
+            except (User.DoesNotExist, VerificationCode.DoesNotExist):
+                messages.error(request, 'Invalid verification request.')
+                return redirect('/')
+    
+    return redirect('/')
 
 
 # ----------------------
@@ -1202,6 +1703,45 @@ def api_courses(request, department_id):
         return JsonResponse({'error': 'Department not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def api_extract_abstract(request):
+    """Extract abstract from uploaded PDF file"""
+    try:
+        if 'pdf_file' not in request.FILES:
+            return JsonResponse({'error': 'No PDF file provided'}, status=400)
+        
+        pdf_file = request.FILES['pdf_file']
+        
+        # Validate file type
+        if not pdf_file.name.lower().endswith('.pdf'):
+            return JsonResponse({'error': 'File must be a PDF'}, status=400)
+        
+        # Validate file size (max 50MB)
+        if pdf_file.size > 50 * 1024 * 1024:
+            return JsonResponse({'error': 'File size exceeds 50MB limit'}, status=400)
+        
+        # Extract abstract
+        abstract = extract_abstract_from_pdf(pdf_file)
+        
+        if abstract:
+            return JsonResponse({
+                'success': True,
+                'abstract': abstract,
+                'word_count': len(abstract.split())
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'abstract': '',
+                'message': 'Could not extract abstract from PDF. Please enter it manually.'
+            })
+            
+    except Exception as e:
+        return JsonResponse({'error': f'Error extracting abstract: {str(e)}'}, status=500)
+
 
 def csrf_failure(request, reason=""):
     return render(request, "errors/csrf_failure.html", status=403)
