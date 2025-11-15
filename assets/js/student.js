@@ -446,6 +446,11 @@ function setupFileUploads() {
             if (!fileInput) return;
             fileInput.files = e.dataTransfer.files;
             handleFileSelection(fileInput);
+            
+            // Auto-extract abstract if this is the thesis file upload
+            if (fileInput.id === 'thesisFile' && fileInput.files && fileInput.files.length > 0) {
+                extractAbstractFromPDF(fileInput.files[0]);
+            }
         });
     });
 }
@@ -455,6 +460,11 @@ function setupSingleFileUpload(inputId, listId, maxSizeMB) {
     if (!input) return;
     input.addEventListener('change', function() {
         handleFileSelection(this, listId, maxSizeMB, false);
+        
+        // Auto-extract abstract if this is the thesis file upload
+        if (inputId === 'thesisFile' && this.files && this.files.length > 0) {
+            extractAbstractFromPDF(this.files[0]);
+        }
     });
 }
 function setupMultipleFileUpload(inputId, listId, maxSizeMB) {
@@ -526,6 +536,82 @@ function formatFileSize(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+/**
+ * Extract abstract from uploaded PDF file
+ * @param {File} pdfFile - The PDF file to extract abstract from
+ */
+function extractAbstractFromPDF(pdfFile) {
+    const abstractTextarea = document.getElementById('abstract');
+    if (!abstractTextarea) return;
+    
+    // Show loading indicator
+    const originalPlaceholder = abstractTextarea.placeholder;
+    abstractTextarea.placeholder = 'Extracting abstract from PDF...';
+    abstractTextarea.disabled = true;
+    
+    // Create FormData to send the file
+    const formData = new FormData();
+    formData.append('pdf_file', pdfFile);
+    
+    // Get CSRF token
+    const csrftoken = getCookie('csrftoken');
+    
+    // Make API call to extract abstract
+    fetch('/api/extract-abstract/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        abstractTextarea.disabled = false;
+        abstractTextarea.placeholder = originalPlaceholder;
+        
+        if (data.success && data.abstract) {
+            // Populate abstract field with extracted text
+            abstractTextarea.value = data.abstract;
+            
+            // Show success message
+            showAlert(`Abstract extracted successfully! (${data.word_count} words)`, 'success');
+            
+            // Update review section if visible
+            updateReviewSection();
+        } else {
+            // Show info message if extraction failed
+            const message = data.message || 'Could not automatically extract abstract. Please enter it manually.';
+            showAlert(message, 'info');
+        }
+    })
+    .catch(error => {
+        console.error('Error extracting abstract:', error);
+        abstractTextarea.disabled = false;
+        abstractTextarea.placeholder = originalPlaceholder;
+        showAlert('Error extracting abstract. Please enter it manually.', 'error');
+    });
+}
+
+/**
+ * Get CSRF token from cookies
+ * @param {string} name - Cookie name
+ * @returns {string} Cookie value
+ */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 /* ---------------------------

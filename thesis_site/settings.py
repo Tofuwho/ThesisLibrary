@@ -171,3 +171,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_FAILURE_VIEW = "main.views.csrf_failure"
 
+# Email Configuration
+# IMPORTANT: To use Gmail, you need to:
+# 1. Enable 2-Factor Authentication on your Google account
+# 2. Generate an App Password: https://myaccount.google.com/apppasswords
+# 3. Use that App Password (16 characters) as EMAIL_HOST_PASSWORD
+# 4. Replace 'your-email@gmail.com' with your actual Gmail address
+
+# For development/testing - prints to console (comment out to disable)
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For production - Gmail SMTP (uncomment and configure)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'your-email@gmail.com')  # Set via environment variable or replace directly
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'your-app-password')  # Set via environment variable or replace directly
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'your-email@gmail.com')  # Set via environment variable or replace directly
+
+# Verification code settings
+VERIFICATION_CODE_EXPIRY_HOURS = 24  # Codes expire after 24 hours
+
+EMAIL_HOST_USER = 'jacayabyab655@gmail.com'
+EMAIL_HOST_PASSWORD = 'bjrl hzkq lqgm ruja'  # Your generated app password
+DEFAULT_FROM_EMAIL = 'jcayabyab655@gmail.com'

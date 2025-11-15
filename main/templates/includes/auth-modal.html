@@ -8,17 +8,9 @@
 
             <h2>Create Account</h2>
 
-            <input type="text" id="signup-username" placeholder="Username" required />
-            <input type="email" id="signup-email" placeholder="Email" required />
-            <input type="password" id="signup-password" placeholder="Password" required />
-            
-            <div>
-                <label for="role">Select Role</label>
-                <select id="role" name="role" required>
-                  <option value="student">Student</option>
-                  <option value="admin">Admin</option>
-                </select>
-            </div>
+            <input type="text" id="signup-id" name="id" placeholder="Student/Professor ID" required />
+            <input type="email" id="signup-email" name="email" placeholder="Email" required />
+            <input type="password" id="signup-password" name="password" placeholder="Password" required />
             
             <button type="submit">Sign Up</button>
             <p id="signupMessage" class="error-msg"></p>
@@ -31,14 +23,29 @@
 
             <h2>Login to Thesis Library</h2>
 
-            <label for="username">Username or Email</label>
-            <input type="text" id="username" name="username" placeholder="Username or Email" required>
+            <label for="username">ID</label>
+            <input type="text" id="username" name="username" placeholder="Enter your ID" required>
 
             <label for="password">Password</label>
             <input type="password" id="password" name="password" placeholder="Password" required>
 
             <button type="submit">Login</button>
             <p id="loginMessage" class="error-msg"></p>
+        </form>
+        </div>
+        <div class="form-container verify-container" id="verifyContainer" style="display: none;">
+            <form id="verifyForm" action="{% url 'verify_email' %}" method="POST">
+            {% csrf_token %}
+
+            <h2>Verify Your Email</h2>
+            <p style="margin-bottom: 20px; color: #666;">Please enter the verification code sent to your email</p>
+
+            <input type="text" id="verify-id" name="id" placeholder="Your ID" required />
+            <input type="text" id="verify-code" name="code" placeholder="Verification Code" required maxlength="6" />
+
+            <button type="submit">Verify Email</button>
+            <button type="button" id="backToSignup" style="margin-top: 10px; background: #999;">Back to Sign Up</button>
+            <p id="verifyMessage" class="error-msg"></p>
         </form>
         </div>
         <div class="overlay-container">

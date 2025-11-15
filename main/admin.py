@@ -9,7 +9,7 @@ from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect
 from django.contrib.admin.models import LogEntry, CHANGE, DELETION, ADDITION
 from django.contrib.contenttypes.models import ContentType
-from .models import Thesis, SubmissionCoAuthor, CoAuthor, Submission, Category, Department, Course, RejectedThesis, DownloadLog
+from .models import Thesis, SubmissionCoAuthor, CoAuthor, Submission, Category, Department, Course, RejectedThesis, DownloadLog, Student, Professor, VerificationCode
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
 
@@ -498,3 +498,40 @@ custom_admin_site.register(LogEntry, LogEntryAdmin)
 custom_admin_site.register(DownloadLog, DownloadLogAdmin)
 custom_admin_site.register(User, UserAdmin)
 custom_admin_site.register(Group, GroupAdmin)
+
+
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ('student_id', 'first_name', 'last_name', 'email', 'created_at')
+    search_fields = ('student_id', 'first_name', 'last_name', 'email')
+    ordering = ('student_id',)
+    list_filter = ('created_at',)
+
+
+class ProfessorAdmin(admin.ModelAdmin):
+    list_display = ('professor_id', 'first_name', 'last_name', 'email', 'created_at')
+    search_fields = ('professor_id', 'first_name', 'last_name', 'email')
+    ordering = ('professor_id',)
+    list_filter = ('created_at',)
+
+
+class VerificationCodeAdmin(admin.ModelAdmin):
+    list_display = ('user', 'code', 'is_verified', 'created_at', 'expires_at', 'is_expired_display')
+    search_fields = ('user__username', 'code')
+    list_filter = ('is_verified', 'created_at', 'expires_at')
+    readonly_fields = ('created_at', 'expires_at')
+    ordering = ('-created_at',)
+    
+    def is_expired_display(self, obj):
+        return 'Yes' if obj.is_expired() else 'No'
+    is_expired_display.short_description = 'Expired'
+    is_expired_display.boolean = True
+
+
+# Register with both default admin and custom admin site
+admin.site.register(Student, StudentAdmin)
+admin.site.register(Professor, ProfessorAdmin)
+admin.site.register(VerificationCode, VerificationCodeAdmin)
+
+custom_admin_site.register(Student, StudentAdmin)
+custom_admin_site.register(Professor, ProfessorAdmin)
+custom_admin_site.register(VerificationCode, VerificationCodeAdmin)

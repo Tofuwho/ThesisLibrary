@@ -18,8 +18,10 @@ urlpatterns = [
     path('thesis/<int:pk>/download/', views.download_thesis_file, name='thesis_download_file'),
     path('login/', views.login_view, name='login'),
     path('signup/', views.signup_view, name='signup'),
+    path('verify-email/', views.verify_email_view, name='verify_email'),
     path('api/departments/<int:category_id>/', views.api_departments, name='api_departments'),
     path('api/courses/<int:department_id>/', views.api_courses, name='api_courses'),
+    path('api/extract-abstract/', views.api_extract_abstract, name='api_extract_abstract'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-logs', views.admin_log_entries, name='admin_log_entries'),
     path('users/', views.user_list, name='user_list'),
@@ -34,6 +36,8 @@ urlpatterns = [
     path('theses/', views.theses_list, name='theses_list'),
     path('departments/', views.departments_list, name='departments_list'),
     path('courses/', views.courses_list, name='courses_list'),
+    path('students/', views.students_list, name='students_list'),
+    path('professors/', views.professors_list, name='professors_list'),
 ]
 
 if settings.DEBUG:
