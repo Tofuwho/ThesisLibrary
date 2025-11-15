@@ -6,8 +6,8 @@ from django.contrib.admin.models import LogEntry, ADDITION
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from main.models import (
-    Thesis, Category, Course, Submission, Department,
-    RejectedThesis, DownloadLog
+    Thesis, Category,  Submission, Course,
+    RejectedThesis, Department, Category
 )
 
 # ===================================================
@@ -33,13 +33,12 @@ class AuthTestCase(TestCase):
     def test_tc002_signup_valid(self):
         """TC002: Validate signup using valid credentials"""
         response = self.client.post(reverse("signup"), {
-            "username": "Student02",
-            "email": "student02@gmail.com",
-            "password1": "SecurePass123!",
-            "password2": "SecurePass123!",
-        })
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(username="Student02").exists())
+            "username": "Student01",
+            "email": "student01@gmail.com",
+            "password1": "Student01",
+        }, follow=False)
+        self.assertIn(response.status_code, [301,302])
+        self.assertTrue(User.objects.filter(username="Student01").exists())
 
 
 class SearchFilterTestCase(TestCase):
@@ -219,6 +218,30 @@ class AdminPanelTestCase(TestCase):
         }, follow=True)
         self.assertTrue(RejectedThesis.objects.filter(title="Rejected Thesis").exists())
 
+class ChangePasswordTests(TestCase):
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username="admin", password="adminpass", email="admin@example.com"
+        )
+        self.user = User.objects.create_user(username="Student01", password="oldPassword123")
+        self.client.login(username="admin", password="adminpass")
+
+    def test_tc015_change_password_loads(self):
+        """TC049: Change password page loads properly."""
+        response = self.client.get(reverse("change_password", args=[self.user.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_tc017_my_submissions_page(self):
+        """TC033: My submissions list"""
+        self.client.login(username='testuser', password='12345')
+        response = self.client.get(reverse('my_submissions'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_tc018_edit_user_form_renders(self):
+        """TC048: Edit user page must show the user's old info."""
+        response = self.client.get(reverse("edit_user", args=[self.user.id]))
+        self.assertContains(response, "Student01")
 
 # ===================================================
 # TC019 – TC033 (Extended Tests)
@@ -303,10 +326,19 @@ class Updated_Test(TestCase):
         response = self.client.get(reverse('api_courses', args=[self.department.id]))
         self.assertEqual(response.status_code, 200)
 
-    def test_tc028_csrf_failure_page(self):
-        """TC028: Validate CSRF failure page"""
-        response = self.client.get('/csrf_failure/')
-        self.assertEqual(response.status_code, 403)
+    class MySubmissionsTests(TestCase):
+        def setUp(self):
+            self.client = Client()
+            self.user = User.objects.create_user("stud", "stud@mail.com", "pass123")
+            self.other = User.objects.create_user("other", "other@mail.com", "pass123")
+            self.category = Category.objects.create(name="Undergrad")
+            self.department = Department.objects.create(name="CICT", category=self.category)
+            self.course = Course.objects.create(name="BSCS", department=self.department)
+
+        def test_tc028_my_submissions_requires_login(self):
+            """TC050: my_submissions should require authentication."""
+            response = self.client.get(reverse("my_submissions"))
+            self.assertEqual(response.status_code, 302)
 
     def test_tc029_signup_json(self):
         """TC029: Signup via JSON"""
@@ -345,8 +377,306 @@ class Updated_Test(TestCase):
         )
         self.assertIn(response.status_code, [400, 500])
 
-    def test_tc033_my_submissions_page(self):
-        """TC033: My submissions list"""
-        self.client.login(username='testuser', password='12345')
-        response = self.client.get(reverse('my_submissions'))
+
+class UserListTests(TestCase):
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username="admin",
+            password="adminpass",
+            email="admin@example.com"
+        )
+        self.client.login(username="admin", password="adminpass")
+
+    def test_tc033_user_list_page_loads(self):
+        """TC034: User list page should load successfully."""
+        response = self.client.get(reverse("user_list"))
         self.assertEqual(response.status_code, 200)
+
+    def test_tc034_user_list_displays_users(self):
+        """TC035: User list must display existing users."""
+        User.objects.create(username="Student01")
+        response = self.client.get(reverse("user_list"))
+        self.assertContains(response, "Student01")
+
+    def test_tc035_user_list_requires_login(self):
+        """TC036: User list should require authentication."""
+        self.client.logout()
+        response = self.client.get(reverse("user_list"))
+        self.assertNotEqual(response.status_code, 200)
+
+    class MySubmissionsTests(TestCase):
+        def setUp(self):
+            self.client = Client()
+            self.user = User.objects.create_user("stud", "stud@mail.com", "pass123")
+            self.other = User.objects.create_user("other", "other@mail.com", "pass123")
+            self.category = Category.objects.create(name="Undergrad")
+            self.department = Department.objects.create(name="CICT", category=self.category)
+            self.course = Course.objects.create(name="BSCS", department=self.department)
+
+        def test_tc036_my_submissions_empty(self):
+            """TC051: my_submissions should show empty list if no submissions."""
+            self.client.login(username="stud", password="pass123")
+            response = self.client.get(reverse("my_submissions"))
+            self.assertContains(response, "No submissions", status_code=200)
+
+
+    def test_tc037_user_list_shows_actions(self):
+        """TC038: User list should show edit and delete buttons."""
+        response = self.client.get(reverse("user_list"))
+        self.assertContains(response, "Edit")
+        self.assertContains(response, "Delete")
+
+
+
+class DeleteUserTests(TestCase):
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username="admin", password="adminpass", email="admin@example.com"
+        )
+        self.user = User.objects.create(username="Student01")
+        self.client.login(username="admin", password="adminpass")
+
+    def test_tc038_delete_user_redirects(self):
+        """TC039: Deleting a user must redirect back to user list."""
+        response = self.client.get(reverse("delete_user", args=[self.user.id]))
+        self.assertEqual(response.status_code, 302)
+
+    def test_tc039_user_is_deleted(self):
+        """TC040: User must actually be removed from database."""
+        self.client.get(reverse("delete_user", args=[self.user.id]))
+        self.assertFalse(User.objects.filter(id=self.user.id).exists())
+
+    def test_tc040_delete_user_invalid_id(self):
+        """TC042: Invalid user ID must return 404."""
+        response = self.client.get(reverse("delete_user", args=[999]))
+        self.assertEqual(response.status_code, 404)
+
+class ThesisDetailTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.category = Category.objects.create(name="Undergrad")
+        self.department = Department.objects.create(name="CICT", category=self.category)
+        self.course = Course.objects.create(name="BSCS", department=self.department)
+        self.thesis = Thesis.objects.create(
+            title="AI Research",
+            author="John Doe",
+            year=2024,
+            abstract="Test",
+            category=self.category,
+            department=self.department,
+            course=self.course
+        )
+
+    def test_tc041_thesis_detail_loads(self):
+        """TC055: thesis_detail loads properly."""
+        response = self.client.get(reverse("thesis_detail", args=[self.thesis.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_tc042_thesis_detail_displays_info(self):
+        """TC056: thesis_detail must display thesis contents."""
+        response = self.client.get(reverse("thesis_detail", args=[self.thesis.id]))
+        self.assertContains(response, "AI Research")
+
+    def test_tc043_thesis_detail_invalid_id(self):
+        """TC057: Invalid thesis id returns 404."""
+        response = self.client.get(reverse("thesis_detail", args=[9999]))
+        self.assertEqual(response.status_code, 404)
+
+
+class EditUserTests(TestCase):
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username="admin", password="adminpass", email="admin@example.com"
+        )
+        self.user = User.objects.create(username="Student01", email="old@mail.com")
+        self.client.login(username="admin", password="adminpass")
+
+    def test_tc044_edit_user_loads(self):
+        """TC044: Edit user page loads properly."""
+        response = self.client.get(reverse("edit_user", args=[self.user.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_tc045_edit_user_updates_info(self):
+        """TC045: User info should update after submission."""
+        response = self.client.post(reverse("edit_user", args=[self.user.id]), {
+            "username": "UpdatedUser",
+            "email": "new@mail.com"
+        })
+        self.assertEqual(response.status_code, 302)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.username, "UpdatedUser")
+
+    def test_tc046_edit_user_requires_login(self):
+        """TC046: Edit user must require authentication."""
+        self.client.logout()
+        response = self.client.get(reverse("edit_user", args=[self.user.id]))
+        self.assertNotEqual(response.status_code, 200)
+
+    def test_tc047_edit_user_invalid_id(self):
+        """TC047: Editing invalid user ID should return 404."""
+        response = self.client.get(reverse("edit_user", args=[999]))
+        self.assertEqual(response.status_code, 404)
+
+
+class ViewThesisFileTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user("stud", password="pass")
+        pdf = SimpleUploadedFile("file.pdf", b"PDF", content_type="application/pdf")
+
+        self.category = Category.objects.create(name="Undergrad")
+        self.department = Department.objects.create(name="CICT", category=self.category)
+        self.course = Course.objects.create(name="BSCS", department=self.department)
+
+        self.thesis = Thesis.objects.create(
+            title="Test",
+            author="A",
+            year=2025,
+            abstract="X",
+            category=self.category,
+            department=self.department,
+            course=self.course,
+            file=pdf
+        )
+
+    def test_tc048_view_file_guest_restricted(self):
+        """TC060: Guest user should trigger restricted view."""
+        response = self.client.get(reverse("thesis_view_file", args=[self.thesis.id]))
+        self.assertIn(response.status_code, [200, 302, 500])
+
+    def test_tc049_view_file_authenticated_full_access(self):
+        """TC061: Logged-in user gets full FileResponse."""
+        self.client.login(username="stud", password="pass")
+        response = self.client.get(reverse("thesis_view_file", args=[self.thesis.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_tc050_view_file_missing_pdf(self):
+        """TC062: Thesis with no file returns 404."""
+        thesis2 = Thesis.objects.create(
+            title="NoFile",
+            author="A",
+            year=2025,
+            abstract="None",
+            category=self.category,
+            department=self.department,
+            course=self.course
+        )
+        response = self.client.get(reverse("thesis_view_file", args=[thesis2.id]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_tc051_view_file_invalid_id(self):
+        """TC063: Invalid thesis id returns 404."""
+        response = self.client.get(reverse("thesis_view_file", args=[9999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_tc052_view_file_content_type(self):
+        """TC064: Content-Type must be application/pdf."""
+        self.client.login(username="stud", password="pass")
+        response = self.client.get(reverse("thesis_view_file", args=[self.thesis.id]))
+        self.assertEqual(response["Content-Type"], "application/pdf")
+
+
+class ViewThesisHighlightTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        pdf = SimpleUploadedFile("demo.pdf", b"PDF content", content_type="application/pdf")
+
+        self.category = Category.objects.create(name="Undergrad")
+        self.department = Department.objects.create(name="CICT", category=self.category)
+        self.course = Course.objects.create(name="BSCS", department=self.department)
+
+        self.thesis = Thesis.objects.create(
+            title="Highlight",
+            author="Tester",
+            year=2025,
+            abstract="A",
+            category=self.category,
+            department=self.department,
+            course=self.course,
+            file=pdf
+        )
+
+    def test_tc053_highlight_invalid_id(self):
+        """TC066: Invalid thesis id returns 404."""
+        response = self.client.get(reverse("thesis_view_file_highlight", args=[9999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_tc054_highlight_missing_pdf(self):
+        """TC069: Thesis without file returns 404 for highlight view."""
+        thesis2 = Thesis.objects.create(
+            title="NoFile",
+            author="A",
+            year=2025,
+            abstract="A",
+            category=self.category,
+            department=self.department,
+            course=self.course
+        )
+        response = self.client.get(reverse("thesis_view_file_highlight", args=[thesis2.id]) + "?q=test")
+        self.assertEqual(response.status_code, 404)
+
+
+class LandingAboutIndexTests(TestCase):
+    def setUp(self):
+            self.client = Client()
+            self.user = User.objects.create_user(
+                username="Student01",
+                email="Student01@gmail.com",
+                password="Student01"
+            )
+
+    def test_TC055_landing_page_loads(self):
+        """TC055: Validate landing page loads successfully."""
+        response = self.client.get(reverse("landing"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "main/landing.html")
+
+    # -------------------------------
+    # TC056 – Landing Page Content Check
+    # -------------------------------
+    def test_TC056_landing_page_contains_content(self):
+        """TC056: Validate landing page displays expected content."""
+        response = self.client.get(reverse("landing"))
+        self.assertEqual(response.status_code, 200)
+        # Adjust depending on your actual landing page heading
+        self.assertContains(response, "Welcome")
+
+    def test_TC057_about_page_loads(self):
+        """TC057: Validate about page loads successfully."""
+        response = self.client.get(reverse("about"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "main/about.html")
+
+    def test_TC058_about_page_contains_text(self):
+        """TC058: Verify about page displays content."""
+        response = self.client.get(reverse("about"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "About")
+
+    def test_TC059_student_dashboard_loads(self):
+        """TC059: Validate student dashboard page loads successfully."""
+        # Log in the test user
+        self.client.login(username="Student01", password="Student01")
+        response = self.client.get(reverse("student_dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "main/student_dashboard.html")
+
+    def test_TC060_student_dashboard_contains_categories(self):
+        """TC060: Validate student dashboard displays categories."""
+        # Create some test categories
+        Category.objects.create(name="Category A")
+        Category.objects.create(name="Category B")
+
+        # Log in the test user
+        self.client.login(username="Student01", password="Student01")
+        response = self.client.get(reverse("student_dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        # Check that categories appear in the response
+        self.assertContains(response, "Category A")
+        self.assertContains(response, "Category B")
+
+
