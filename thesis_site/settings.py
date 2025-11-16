@@ -83,7 +83,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': '',               # set your MySQL password if any
         'HOST': 'localhost',
-        'PORT': '3306',               # default MySQL port
+        'PORT': '3308',               # default MySQL port
         'OPTIONS': {
             'charset': 'utf8mb4',
         }
