@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.innerWidth <= 768) {
         initializeMobileMenu();
         removeMobileScrollAnimations();
-        setupMobileModalToggles();
+        // setupMobileModalToggles(); <-- This is NOW HANDLED BY AUTH.JS
     }
 
     // Re-initialize on window resize
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.innerWidth <= 768) {
                 initializeMobileMenu();
                 removeMobileScrollAnimations();
-                setupMobileModalToggles();
+                // setupMobileModalToggles(); <-- This is NOW HANDLED BY AUTH.JS
             } else {
                 cleanupMobileMenu();
             }
@@ -68,6 +68,7 @@ function initializeMobileMenu() {
             const originalLoginBtn = document.querySelector('#loginButton');
             if (originalLoginBtn) {
                 clonedLoginBtn.addEventListener('click', function() {
+                    // This click will be caught by the listener in auth.js
                     originalLoginBtn.click();
                 });
             }
@@ -124,10 +125,6 @@ function initializeMobileMenu() {
         }
     });
 
-    // Prevent body scroll when menu is open
-    mobileMenu.addEventListener('touchmove', function(e) {
-        e.stopPropagation();
-    });
 }
 
 function cleanupMobileMenu() {
@@ -161,74 +158,4 @@ function removeMobileScrollAnimations() {
         section.style.opacity = '1';
         section.style.transform = 'none';
     });
-}
-
-// Setup mobile modal toggle buttons
-function setupMobileModalToggles() {
-    const signInContainer = document.querySelector('.sign-in-container');
-    const signUpContainer = document.querySelector('.sign-up-container');
-    const authContainer = document.getElementById('auth-container');
-
-    if (!signInContainer || !signUpContainer || !authContainer) {
-        console.log('Modal containers not found');
-        return;
-    }
-
-    // Check if toggles already exist
-    if (signInContainer.querySelector('.mobile-auth-toggle')) {
-        console.log('Toggles already exist');
-        return;
-    }
-
-    // Create "Don't have an account?" toggle for login form
-    const loginToggle = document.createElement('div');
-    loginToggle.className = 'mobile-auth-toggle';
-    loginToggle.innerHTML = `
-        <p>Don't have an account?</p>
-        <button type="button" id="mobileSignUpBtn">Sign Up</button>
-    `;
-
-    // Find the login form and append after it
-    const loginForm = signInContainer.querySelector('form');
-    if (loginForm) {
-        loginForm.appendChild(loginToggle);
-    }
-
-    // Create "Already have an account?" toggle for signup form
-    const signupToggle = document.createElement('div');
-    signupToggle.className = 'mobile-auth-toggle';
-    signupToggle.innerHTML = `
-        <p>Already have an account?</p>
-        <button type="button" id="mobileSignInBtn">Sign In</button>
-    `;
-
-    // Find the signup form and append after it
-    const signupForm = signUpContainer.querySelector('form');
-    if (signupForm) {
-        signupForm.appendChild(signupToggle);
-    }
-
-    // Add event listeners with slight delay to ensure elements are in DOM
-    setTimeout(() => {
-        const mobileSignUpBtn = document.getElementById('mobileSignUpBtn');
-        const mobileSignInBtn = document.getElementById('mobileSignInBtn');
-
-        if (mobileSignUpBtn) {
-            mobileSignUpBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('Mobile Sign Up clicked');
-                authContainer.classList.add('right-panel-active');
-            });
-        }
-
-        if (mobileSignInBtn) {
-            mobileSignInBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('Mobile Sign In clicked');
-                authContainer.classList.remove('right-panel-active');
-            });
-        }
-    }, 100);
-
-    console.log('Mobile toggles added successfully');
 }
