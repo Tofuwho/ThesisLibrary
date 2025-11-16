@@ -1,24 +1,20 @@
 /**
  * Authentication Module
  * Handles user authentication, login/logout, and form submissions
- * 
- * This module provides:
+ * * This module provides:
  * - CSRF token management
- * - Modal event handling
+ * - Modal event handling (desktop & mobile) via CSS CLASSES ONLY
  * - AJAX form submissions for login/signup
  * - Error handling and user feedback
+ * - Verification form logic
  */
 
 /**
  * Retrieves CSRF token from cookies for Django CSRF protection
- * Required for all POST requests to Django backend
- * 
- * @returns {string} CSRF token value or empty string if not found
  */
 function getCSRFToken() {
   const name = 'csrftoken';
   const cookies = document.cookie.split(';');
-  
   for (let i = 0; i < cookies.length; i++) {
     let cookie = cookies[i].trim();
     if (cookie.startsWith(name + '=')) {
@@ -30,7 +26,6 @@ function getCSRFToken() {
 
 /**
  * Initialize authentication module when DOM is loaded
- * Sets up event listeners for modal interactions and form submissions
  */
 document.addEventListener('DOMContentLoaded', () => {
   // Get DOM elements for modal functionality
@@ -38,6 +33,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginModal = document.getElementById('authModal');
   const closeBtn = document.getElementById('closeModal');
   const authContainer = document.getElementById('auth-container');
+  const verifyContainer = document.getElementById('verifyContainer');
+
+  // === 1. SETUP MOBILE-ONLY TOGGLES ===
+  if (window.innerWidth <= 768) {
+    setupMobileModalToggles();
+  }
+
+  // Resize listener to add/remove mobile toggles
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        if (window.innerWidth <= 768) {
+            setupMobileModalToggles();
+        } else {
+            cleanupMobileModalToggles();
+        }
+    }, 250);
+  });
+
+  // === 2. CORE MODAL LISTENERS ===
 
   // Initialize modal state - ensure it's hidden on page load
   if (loginModal) {
@@ -51,7 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       loginModal.classList.add('active');
       document.body.style.overflow = 'hidden';
-      if (authContainer) authContainer.classList.remove('right-panel-active');
+      // Reset to login state
+      if (authContainer) {
+        authContainer.classList.remove('right-panel-active');
+        authContainer.classList.remove('show-verify');
+      }
     });
   }
 
@@ -73,11 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Handle modal panel switching between login and signup forms
+  // Handle modal panel switching between login and signup forms (DESKTOP)
   const signUpBtn = document.getElementById('signUp');
   const signInBtn = document.getElementById('signIn');
 
-  // Switch to signup form when signup button is clicked
   if (signUpBtn && authContainer) {
     signUpBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -85,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Switch to login form when signin button is clicked
   if (signInBtn && authContainer) {
     signInBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -93,22 +111,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === AJAX LOGIN FORM HANDLING ===
-  /**
-   * Handles login form submission via AJAX
-   * Prevents page reload and provides user feedback during authentication
-   */
+  // === 3. AJAX FORM HANDLING ===
+
+  // === AJAX LOGIN ===
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault(); // Prevent default form submission
-      
-      // Prepare form data and UI feedback
+      e.preventDefault();
       const formData = new FormData(loginForm);
       const submitButton = loginForm.querySelector('button[type="submit"]');
       const originalText = submitButton?.textContent;
-      
-      // Disable button and show loading state
+
       if (submitButton) {
         submitButton.disabled = true;
         submitButton.textContent = 'Signing In...';
@@ -123,9 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'X-CSRFToken': getCSRFToken()
           }
         });
-
         const data = await response.json();
-
         if (data.success) {
           if (data.redirect_url) window.location.href = data.redirect_url;
           else window.location.reload();
@@ -144,16 +155,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === AJAX SIGNUP (FORM + JSON POST) ===
+  // === AJAX SIGNUP ===
   const signupForm = document.getElementById('signupForm');
   if (signupForm) {
-    // Prevent any default form submission
-    signupForm.setAttribute('novalidate', 'novalidate'); // Disable HTML5 validation, we'll handle it in JS
-    
+    signupForm.setAttribute('novalidate', 'novalidate');
+
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       e.stopPropagation();
-      
+
       const user_id = document.getElementById('signup-id')?.value?.trim();
       const email = document.getElementById('signup-email')?.value?.trim();
       const password = document.getElementById('signup-password')?.value;
@@ -161,14 +171,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const submitButton = signupForm.querySelector('button[type="submit"]');
       const originalText = submitButton?.textContent;
 
-      // Clear previous messages
       if (signupMessage) {
         signupMessage.textContent = '';
-        signupMessage.className = 'error-msg';
         signupMessage.style.display = 'none';
       }
-
-      // Validate inputs
       if (!user_id || !email || !password) {
         if (signupMessage) {
           signupMessage.textContent = 'Please fill in all fields.';
@@ -185,9 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const csrfToken = getCSRFToken();
-        if (!csrfToken) {
-          throw new Error('CSRF token not found');
-        }
+        if (!csrfToken) throw new Error('CSRF token not found');
 
         const response = await fetch(signupForm.action, {
           method: 'POST',
@@ -203,14 +207,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.success) {
           if (data.requires_verification) {
-            // Show verification form
-            showVerificationForm(user_id);
+            showVerificationForm(user_id); // <-- This now ONLY adds a class
             if (signupMessage) {
               signupMessage.textContent = data.message || 'Account created! Please verify your email.';
               signupMessage.style.color = 'green';
               signupMessage.style.display = 'block';
             }
-            showSuccessMessage(data.message || 'Account created! Please verify your email.');
           } else {
             authContainer.classList.remove('right-panel-active');
             if (signupMessage) {
@@ -222,15 +224,13 @@ document.addEventListener('DOMContentLoaded', () => {
             signupForm.reset();
           }
         } else {
-          // Handle JSON error
           const errorMessage = data.error || (data.errors && data.errors['__all__'] ? data.errors['__all__'][0] : 'Unknown error');
           if (signupMessage) {
             signupMessage.textContent = errorMessage;
             signupMessage.style.color = 'red';
             signupMessage.style.display = 'block';
           }
-          const errors = data.errors || { '__all__': [data.error || 'Unknown error'] };
-          displaySignupErrors(errors);
+          displaySignupErrors(data.errors || { '__all__': [data.error || 'Unknown error'] });
         }
       } catch (error) {
         console.error('Signup error:', error);
@@ -251,37 +251,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === VERIFICATION FORM HANDLING ===
+  // === 4. VERIFICATION FORM HANDLING ===
   const verifyForm = document.getElementById('verifyForm');
-  const verifyContainer = document.getElementById('verifyContainer');
   const backToSignupBtn = document.getElementById('backToSignup');
-  
-  function showVerificationForm(userId) {
-    // Hide signup and login forms, show verification form
-    const signupContainer = document.querySelector('.sign-up-container');
-    const loginContainer = document.querySelector('.sign-in-container');
-    
-    if (signupContainer) signupContainer.style.display = 'none';
-    if (loginContainer) loginContainer.style.display = 'none';
-    if (verifyContainer) {
-      verifyContainer.style.display = 'block';
-      document.getElementById('verify-id').value = userId;
-    }
-  }
 
-  function hideVerificationForm() {
-    const signupContainer = document.querySelector('.sign-up-container');
-    const loginContainer = document.querySelector('.sign-in-container');
-    
-    if (signupContainer) signupContainer.style.display = 'block';
-    if (loginContainer) loginContainer.style.display = 'block';
-    if (verifyContainer) verifyContainer.style.display = 'none';
+
+//⚠️ FIXED VERIFICATION FUNCTIONS (Verify on Right) ⚠️
+function showVerificationForm(userId) {
+  // This function now ONLY adds classes. CSS does the rest.
+  if (authContainer) {
+    // === THIS IS THE FIX ===
+    // We ADD right-panel-active to show the right panel
+    authContainer.classList.add('right-panel-active');
+    authContainer.classList.add('show-verify'); // Show the verify form
   }
+  if (verifyContainer) {
+    document.getElementById('verify-id').value = userId;
+  }
+}
+
+function hideVerificationForm() {
+  // This function now ONLY removes classes.
+  if (authContainer) {
+    authContainer.classList.remove('show-verify');
+  }
+}
 
   if (backToSignupBtn) {
     backToSignupBtn.addEventListener('click', () => {
-      hideVerificationForm();
-      authContainer.classList.add('right-panel-active');
+      hideVerificationForm(); // Hide verify
+      authContainer.classList.add('right-panel-active'); // Show signup
     });
   }
 
@@ -301,7 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (verifyMessage) {
         verifyMessage.textContent = '';
-        verifyMessage.className = 'error-msg';
       }
 
       try {
@@ -322,10 +320,9 @@ document.addEventListener('DOMContentLoaded', () => {
             verifyMessage.className = 'success-msg';
             verifyMessage.style.color = 'green';
           }
-          // Hide verification form and show login
           setTimeout(() => {
-            hideVerificationForm();
-            authContainer.classList.remove('right-panel-active');
+            hideVerificationForm(); // Hide verify
+            authContainer.classList.remove('right-panel-active'); // Show login
             showSuccessMessage('Email verified! You can now log in.');
           }, 2000);
         } else {
@@ -351,20 +348,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === Helper Functions ===
+  // === 5. HELPER FUNCTIONS (Error/Success/Mobile Toggles) ===
+
   function displayLoginErrors(errors) {
     clearErrors('loginForm');
     Object.keys(errors).forEach(field => {
-      const errorMessages = Array.isArray(errors[field]) ? errors[field] : [errors[field]];
-      errorMessages.forEach(message => showFieldError('loginForm', field, message));
+      errors[field].forEach(message => showFieldError('loginForm', field, message));
     });
   }
 
   function displaySignupErrors(errors) {
     clearErrors('signupForm');
     Object.keys(errors).forEach(field => {
-      const errorMessages = Array.isArray(errors[field]) ? errors[field] : [errors[field]];
-      errorMessages.forEach(message => showFieldError('signupForm', field, message));
+      errors[field].forEach(message => showFieldError('signupForm', field, message));
     });
   }
 
@@ -372,7 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById(formId);
     if (!form) return;
     form.querySelectorAll('.error-message').forEach(el => el.remove());
-    form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
   }
 
   function showFieldError(formId, fieldName, message) {
@@ -383,15 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
       errorDiv.className = 'error-message alert alert-danger';
       errorDiv.textContent = message;
       form.insertBefore(errorDiv, form.firstChild);
-    } else {
-      const fieldElement = form.querySelector(`[name="${fieldName}"]`);
-      if (fieldElement) {
-        fieldElement.classList.add('error');
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message text-danger small';
-        errorDiv.textContent = message;
-        fieldElement.parentNode.insertBefore(errorDiv, fieldElement.nextSibling);
-      }
     }
   }
 
@@ -404,5 +390,57 @@ document.addEventListener('DOMContentLoaded', () => {
       loginForm.insertBefore(successDiv, loginForm.firstChild);
       setTimeout(() => successDiv.remove(), 5000);
     }
+  }
+
+  function cleanupMobileModalToggles() {
+    const toggles = document.querySelectorAll('.mobile-auth-toggle');
+    toggles.forEach(toggle => {
+      toggle.remove();
+    });
+  }
+
+  function setupMobileModalToggles() {
+      const signInContainer = document.querySelector('.sign-in-container');
+      const signUpContainer = document.querySelector('.sign-up-container');
+      const authContainer = document.getElementById('auth-container');
+
+      if (!signInContainer || !signUpContainer || !authContainer) return;
+      if (signInContainer.querySelector('.mobile-auth-toggle')) return; // Already exists
+
+      // Create "Don't have an account?" toggle for login form
+      const loginToggle = document.createElement('div');
+      loginToggle.className = 'mobile-auth-toggle';
+      loginToggle.innerHTML = `
+          <p>Don't have an account?</p>
+          <button type="button" id="mobileSignUpBtn">Sign Up</button>
+      `;
+      signInContainer.querySelector('form').appendChild(loginToggle);
+
+      // Create "Already have an account?" toggle for signup form
+      const signupToggle = document.createElement('div');
+      signupToggle.className = 'mobile-auth-toggle';
+      signupToggle.innerHTML = `
+          <p>Already have an account?</p>
+          <button type="button" id="mobileSignInBtn">Sign In</button>
+      `;
+      signUpContainer.querySelector('form').appendChild(signupToggle);
+
+      // Add event listeners
+      const mobileSignUpBtn = document.getElementById('mobileSignUpBtn');
+      const mobileSignInBtn = document.getElementById('mobileSignInBtn');
+
+      if (mobileSignUpBtn) {
+          mobileSignUpBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              authContainer.classList.add('right-panel-active');
+          });
+      }
+
+      if (mobileSignInBtn) {
+          mobileSignInBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              authContainer.classList.remove('right-panel-active');
+          });
+      }
   }
 });

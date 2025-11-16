@@ -375,9 +375,7 @@ ul {
     gap: 8px;
   }
   .logo-container { margin-bottom: 6px; }
-  .header-flex-center { justify-content: flex-start; }
   .main-nav ul, .nav-center { gap: 10px; font-size: 0.98rem; }
-  .nav-right, .auth-buttons, .header-buttons { gap: 6px; }
 }
 /* --- END HEADER LAYOUT FIX --- */
 
