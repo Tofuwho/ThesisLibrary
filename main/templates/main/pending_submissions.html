@@ -109,6 +109,18 @@
     transform: translateY(-2px);
     box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
   }
+  .open-image {
+  color: #90caf9;
+  text-decoration: none;
+  transition: color 0.2s, text-decoration 0.2s;
+  cursor: pointer;
+  }
+
+  .open-image:hover {
+    color: #42a5f5; /* Blue color on hover */
+    text-decoration: underline; /* Optional underline on hover */
+    cursor: pointer;
+  }
 </style>
 {% endblock %}
 
@@ -142,6 +154,7 @@
               <th style="padding:0.8rem;">Supervisor</th>
               <th style="padding:0.8rem;">Course</th>
               <th style="padding:0.8rem;">Date Submitted</th>
+              <th style="padding:0.8rem;">Approval Sheet</th>
               <th style="padding:0.8rem;">Actions</th>
             </tr>
           </thead>
@@ -156,6 +169,17 @@
               <td style="padding:0.8rem;">{{ thesis.supervisor_name }}</td>
               <td style="padding:0.8rem;">{{ thesis.course }}</td>
               <td style="padding:0.8rem;">{{ thesis.created_at|date:"Y-m-d" }}</td>
+              <td style="padding:0.8rem;">
+                {% if thesis.approval_sheet %}
+                  <a href="#"
+                     class="open-image"
+                     data-img="{{ thesis.approval_sheet.url }}">
+                     {{ thesis.approval_sheet.name|slice:"-12:" }}
+                  </a>
+                {% else %}
+                  <span style="color:#777;">None</span>
+                {% endif %}
+              </td>
               <td style="padding:0.8rem;">
                 <div class="action-buttons">
                   <a href="{% url 'approve_thesis' thesis.id %}" class="btn-approve">Approve</a>
@@ -172,6 +196,19 @@
           </tbody>
         </table>
       </div>
+    </div>
+    <div id="imageModal"
+         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+                justify-content:center; align-items:center; z-index:2000;">
+
+      <span id="closeModal"
+            style="position:absolute; top:20px; right:30px;
+                   font-size:2rem; color:white; cursor:pointer;">&times;</span>
+
+      <img id="modalImage"
+           src=""
+           style="max-width:80%; max-height:80%; transition:transform 0.2s ease; cursor:grab;">
     </div>
   </main>
 </div>
@@ -238,6 +275,43 @@
       // Show/hide row
       row.style.display = match || filter === "" ? "" : "none";
     });
+  });
+
+  const modal = document.getElementById("imageModal");
+  const modalImg = document.getElementById("modalImage");
+  const closeModal = document.getElementById("closeModal");
+
+  document.querySelectorAll(".open-image").forEach(link => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      modal.style.display = "flex";
+      modalImg.src = this.getAttribute("data-img");
+      scale = 1; // reset zoom
+      modalImg.style.transform = "scale(1)";
+    });
+  });
+
+  // Close modal
+  closeModal.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  // Close when clicking outside image
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+
+  // ===== Zoom Feature =====
+  let scale = 1;
+
+  modalImg.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      scale += 0.1; // zoom in
+    } else {
+      scale = Math.max(1, scale - 0.1); // zoom out (min = original)
+    }
+    modalImg.style.transform = `scale(${scale})`;
   });
 </script>
 
