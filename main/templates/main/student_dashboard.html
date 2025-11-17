@@ -7,6 +7,15 @@
 
 {% block extra_scripts %}
 <script src="{% static 'js/student.js' %}"></script>
+<script>
+    // User data for autofill
+    const USER_DATA = {
+        firstName: '{{ user_data.first_name|escapejs }}',
+        lastName: '{{ user_data.last_name|escapejs }}',
+        email: '{{ user_data.email|escapejs }}',
+        studentId: '{{ user_data.student_id|escapejs }}'
+    };
+</script>
 {% endblock %}
 
 {% block content %}
@@ -29,17 +38,17 @@
                 <div class="nav-icon">1</div>
                 Personal & Academic Information
             </div>
-            <div class="nav-item" data-section="thesis-details">
-                <div class="nav-icon">2</div>
-                Research Details & Abstract
-            </div>
             <div class="nav-item" data-section="upload">
-                <div class="nav-icon">3</div>
+                <div class="nav-icon">2</div>
                 Document Upload
             </div>
             <div class="nav-item" data-section="supervisor">
-                <div class="nav-icon">4</div>
+                <div class="nav-icon">3</div>
                 Academic Supervision
+            </div>
+            <div class="nav-item" data-section="thesis-details">
+                <div class="nav-icon">4</div>
+                Research Details & Abstract
             </div>
             <div class="nav-item" data-section="review">
                 <div class="nav-icon">5</div>
@@ -134,7 +143,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn" onclick="nextSection('thesis-details')">Next</button>
+                        <button type="button" class="btn" onclick="nextSection('upload')">Next</button>
                     </div>
                 </div>
 
@@ -142,7 +151,7 @@
                 <div class="section" id="thesis-details">
                     <h2>Research Details & Abstract</h2>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 40%"></div>
+                        <div class="progress-fill" style="width: 80%"></div>
                     </div>
 
                     <div class="form-group">
@@ -179,8 +188,8 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="previousSection('basic-info')">Previous</button>
-                        <button type="button" class="btn" onclick="nextSection('upload')">Next</button>
+                        <button type="button" class="btn btn-secondary" onclick="previousSection('supervisor')">Previous</button>
+                        <button type="button" class="btn" onclick="nextSection('review')">Next</button>
                     </div>
                 </div>
 
@@ -188,7 +197,7 @@
                 <div class="section" id="upload">
                     <h2>Document Upload</h2>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 60%"></div>
+                        <div class="progress-fill" style="width: 40%"></div>
                     </div>
 
                     <div class="form-group">
@@ -225,7 +234,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="previousSection('thesis-details')">Previous</button>
+                        <button type="button" class="btn btn-secondary" onclick="previousSection('basic-info')">Previous</button>
                         <button type="button" class="btn" onclick="nextSection('supervisor')">Next</button>
                     </div>
                 </div>
@@ -234,7 +243,7 @@
                 <div class="section" id="supervisor">
                     <h2>Academic Supervision</h2>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 80%"></div>
+                        <div class="progress-fill" style="width: 60%"></div>
                     </div>
 
                     <div class="supervisor-info">
@@ -277,7 +286,7 @@
 
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" onclick="previousSection('upload')">Previous</button>
-                        <button type="button" class="btn" onclick="nextSection('review')">Next</button>
+                        <button type="button" class="btn" onclick="nextSection('thesis-details')">Next</button>
                     </div>
                 </div>
 
@@ -368,7 +377,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="previousSection('supervisor')">Previous</button>
+                        <button type="button" class="btn btn-secondary" onclick="previousSection('thesis-details')">Previous</button>
                         <button type="submit" class="btn" id="submitBtn">Submit Thesis</button>
                     </div>
                 </div>
