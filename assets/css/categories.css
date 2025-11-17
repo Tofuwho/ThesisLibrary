@@ -1140,19 +1140,15 @@
     width: 80px;
     min-width: 80px;
     height: 110px;
+    background-image: url('/static/images/thesis-cover-default.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
 }
 
 .cat-thesis-cover-placeholder {
-    color: var(--medium-gray);
-    font-size: 2rem;
-    opacity: 0.6;
-    transition: all 0.3s ease;
-}
-
-.cat-thesis-item:hover .cat-thesis-cover-placeholder {
-    color: var(--primary-color);
-    transform: scale(1.1);
-    opacity: 1;
+    display: none; /* Hide placeholder icon when using image */
 }
 
 .cat-thesis-item-content {

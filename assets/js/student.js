@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupFileUploads();
     setupAutoSave();
     loadSavedData();
+    autofillUserData(); // Autofill after loading saved data (saved data takes precedence)
     setupAcademicStructure();
     setupCoAuthorManagement(); // new
 });
@@ -218,9 +219,9 @@ function showSection(sectionId) {
 function updateProgressBar(sectionId) {
     const progressMap = {
         'basic-info': 20,
-        'thesis-details': 40,
-        'upload': 60,
-        'supervisor': 80,
+        'upload': 40,
+        'supervisor': 60,
+        'thesis-details': 80,
         'review': 100
     };
     const activeSection = document.querySelector('.section.active');
@@ -365,7 +366,7 @@ function validateCurrentSection() {
 
 function initializeEventListeners() {
     const navItems = document.querySelectorAll('.nav-item');
-    const sectionOrder = ["basic-info", "thesis-details", "upload", "supervisor", "review"];
+    const sectionOrder = ["basic-info", "upload", "supervisor", "thesis-details", "review"];
 
     navItems.forEach(item => {
         item.addEventListener('click', function(e) {
@@ -758,7 +759,7 @@ function handleFormSubmission(e) {
 }
 
 function validateForm() {
-    const sectionOrder = ["basic-info", "thesis-details", "upload", "supervisor", "review"];
+    const sectionOrder = ["basic-info", "upload", "supervisor", "thesis-details", "review"];
     let allValid = true;
     for (let i = 0; i < sectionOrder.length; i++) {
         const sec = document.getElementById(sectionOrder[i]);
@@ -789,6 +790,49 @@ function validateForm() {
     if (!approvalSheet) { showAlert('Please upload your approval sheet.', 'error'); allValid = false; }
 
     return allValid;
+}
+
+/* ---------------------------
+   --- Autofill user data ---
+   --------------------------- */
+
+/**
+ * Autofill form fields with logged-in user's data
+ * Only fills fields that are empty (so saved data takes precedence)
+ */
+function autofillUserData() {
+    // Check if USER_DATA is available (defined in template)
+    if (typeof USER_DATA === 'undefined') return;
+    
+    const firstNameField = document.getElementById('firstName');
+    const lastNameField = document.getElementById('lastName');
+    const emailField = document.getElementById('email');
+    const studentIdField = document.getElementById('studentId');
+    
+    // Only autofill if field is empty (preserve any saved or manually entered data)
+    if (firstNameField && !firstNameField.value.trim() && USER_DATA.firstName) {
+        firstNameField.value = USER_DATA.firstName;
+    }
+    
+    if (lastNameField && !lastNameField.value.trim() && USER_DATA.lastName) {
+        lastNameField.value = USER_DATA.lastName;
+    }
+    
+    if (emailField && !emailField.value.trim() && USER_DATA.email) {
+        emailField.value = USER_DATA.email;
+    }
+    
+    if (studentIdField && !studentIdField.value.trim() && USER_DATA.studentId) {
+        studentIdField.value = USER_DATA.studentId;
+    }
+    
+    // Update review section if any fields were filled
+    if ((firstNameField && firstNameField.value) || 
+        (lastNameField && lastNameField.value) || 
+        (emailField && emailField.value) || 
+        (studentIdField && studentIdField.value)) {
+        updateReviewSection();
+    }
 }
 
 /* ---------------------------

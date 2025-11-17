@@ -648,7 +648,11 @@ ul {
 
 .thesis-cover {
   height: 200px;
-  background: linear-gradient(135deg, var(--light-gray) 0%, var(--bg-tertiary) 100%);
+  background-image: url('/static/images/thesis-cover-default.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--light-gray); /* Fallback color if image doesn't load */
   position: relative;
   overflow: hidden;
   display: flex;
@@ -673,12 +677,7 @@ ul {
 }
 
 .thesis-cover-placeholder {
-  color: var(--medium-gray);
-  font-weight: 600;
-  font-size: 1.1rem;
-  text-align: center;
-  z-index: 1;
-  position: relative;
+  display: none; /* Hide placeholder text/icon when using image */
 }
 
 .thesis-info {

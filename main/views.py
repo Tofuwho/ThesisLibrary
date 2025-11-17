@@ -346,8 +346,43 @@ def category_detail(request, category_name):
 @login_required
 def student_dashboard(request):
     categories = Category.objects.all().order_by('name')
+    
+    # Get user data from Student or Professor database for autofill
+    user_data = {
+        'first_name': '',
+        'last_name': '',
+        'email': '',
+        'student_id': ''
+    }
+    
+    # The username is the student_id or professor_id
+    user_id = request.user.username
+    
+    # Try to get student data
+    try:
+        student = Student.objects.get(student_id=user_id)
+        user_data['first_name'] = student.first_name or ''
+        user_data['last_name'] = student.last_name or ''
+        user_data['email'] = student.email or request.user.email or ''
+        user_data['student_id'] = student.student_id
+    except Student.DoesNotExist:
+        # Try to get professor data
+        try:
+            professor = Professor.objects.get(professor_id=user_id)
+            user_data['first_name'] = professor.first_name or ''
+            user_data['last_name'] = professor.last_name or ''
+            user_data['email'] = professor.email or request.user.email or ''
+            user_data['student_id'] = professor.professor_id  # Use professor_id as student_id for form
+        except Professor.DoesNotExist:
+            # Fallback to user model data if Student/Professor record doesn't exist
+            user_data['first_name'] = request.user.first_name or ''
+            user_data['last_name'] = request.user.last_name or ''
+            user_data['email'] = request.user.email or ''
+            user_data['student_id'] = user_id
+    
     return render(request, 'main/student_dashboard.html', {
-        'categories': categories
+        'categories': categories,
+        'user_data': user_data
     })
 
 def log_admin_action(user, obj, action_flag, message):
@@ -1438,15 +1473,46 @@ def signup_view(request):
                 if not student_exists and not professor_exists:
                     return JsonResponse({"success": False, "error": "ID not found in our database. Please contact administrator."}, status=400)
                 
-                # Use email from Student/Professor record if available, otherwise use entered email
+                # Get official email from Student/Professor record
                 official_email = None
+                official_email_original = None
                 if student_exists and student.email:
-                    official_email = student.email
+                    official_email_original = student.email.strip()
+                    official_email = official_email_original.lower()
                 elif professor_exists and professor.email:
-                    official_email = professor.email
+                    official_email_original = professor.email.strip()
+                    official_email = official_email_original.lower()
                 
-                # If official email exists, use it; otherwise use the email they entered
-                final_email = official_email if official_email else email
+                # Validate that the entered email matches the official email for this ID
+                if official_email:
+                    # If official email exists in database, user must enter the exact same email (case-insensitive)
+                    if email.strip().lower() != official_email:
+                        return JsonResponse({
+                            "success": False, 
+                            "error": f"The email you entered does not match the email on file for ID {user_id}. Please use the correct email address."
+                        }, status=400)
+                    final_email = official_email_original
+                else:
+                    # If no official email in database, use the email they entered
+                    # But check if this email is already associated with a different ID
+                    email_lower = email.strip().lower()
+                    # Check if this email is associated with another student/professor
+                    conflicting_student = Student.objects.filter(email__iexact=email_lower).exclude(student_id=user_id).first()
+                    conflicting_professor = Professor.objects.filter(email__iexact=email_lower).exclude(professor_id=user_id).first()
+                    
+                    if conflicting_student:
+                        return JsonResponse({
+                            "success": False,
+                            "error": f"This email is already associated with Student ID {conflicting_student.student_id}. Please use the correct email for your ID."
+                        }, status=400)
+                    
+                    if conflicting_professor:
+                        return JsonResponse({
+                            "success": False,
+                            "error": f"This email is already associated with Professor ID {conflicting_professor.professor_id}. Please use the correct email for your ID."
+                        }, status=400)
+                    
+                    final_email = email.strip()
                 
                 # Check if user already exists
                 existing_user = None
@@ -1624,15 +1690,55 @@ def signup_view(request):
                     messages.error(request, 'ID not found in our database.')
                     return redirect('/')
             
-            # Use email from Student/Professor record if available, otherwise use entered email
+            # Get official email from Student/Professor record
             official_email = None
+            official_email_original = None
             if student_exists and student.email:
-                official_email = student.email
+                official_email_original = student.email.strip()
+                official_email = official_email_original.lower()
             elif professor_exists and professor.email:
-                official_email = professor.email
+                official_email_original = professor.email.strip()
+                official_email = official_email_original.lower()
             
-            # If official email exists, use it; otherwise use the email they entered
-            final_email = official_email if official_email else email
+            # Validate that the entered email matches the official email for this ID
+            if official_email:
+                # If official email exists in database, user must enter the exact same email (case-insensitive)
+                if email.strip().lower() != official_email:
+                    error_msg = f'The email you entered does not match the email on file for ID {user_id}. Please use the correct email address.'
+                    errors = {'__all__': [error_msg]}
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'errors': errors})
+                    else:
+                        messages.error(request, error_msg)
+                        return redirect('/')
+                final_email = official_email_original
+            else:
+                # If no official email in database, use the email they entered
+                # But check if this email is already associated with a different ID
+                email_lower = email.strip().lower()
+                # Check if this email is associated with another student/professor
+                conflicting_student = Student.objects.filter(email__iexact=email_lower).exclude(student_id=user_id).first()
+                conflicting_professor = Professor.objects.filter(email__iexact=email_lower).exclude(professor_id=user_id).first()
+                
+                if conflicting_student:
+                    error_msg = f'This email is already associated with Student ID {conflicting_student.student_id}. Please use the correct email for your ID.'
+                    errors = {'__all__': [error_msg]}
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'errors': errors})
+                    else:
+                        messages.error(request, error_msg)
+                        return redirect('/')
+                
+                if conflicting_professor:
+                    error_msg = f'This email is already associated with Professor ID {conflicting_professor.professor_id}. Please use the correct email for your ID.'
+                    errors = {'__all__': [error_msg]}
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'errors': errors})
+                    else:
+                        messages.error(request, error_msg)
+                        return redirect('/')
+                
+                final_email = email.strip()
             
             # Check if user already exists
             existing_user = None
