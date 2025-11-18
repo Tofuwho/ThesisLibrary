@@ -37,6 +37,7 @@
   th {
     cursor: pointer;
     transition: color 0.2s;
+    text-align: left;
   }
 
   th.sort-asc::after {
@@ -121,6 +122,18 @@
     text-decoration: underline; /* Optional underline on hover */
     cursor: pointer;
   }
+  .pagination { display:flex; justify-content:center; gap:8px; margin-top:1rem; flex-wrap:wrap; }
+  .pagination button {
+  background:#2a2a2a;
+  border:1px solid #444;
+  color:#fff;
+  padding:6px 12px;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.2s;
+  }
+  .pagination button:hover { background:#90caf9; color:#000; }
+  .pagination button.active { background:#90caf9; color:#000; }
 </style>
 {% endblock %}
 
@@ -195,6 +208,7 @@
             {% endfor %}
           </tbody>
         </table>
+        <div class="pagination" id="pagination"></div>
       </div>
     </div>
     <div id="imageModal"
@@ -237,27 +251,84 @@
     });
   });
 
-  // ===== SEARCH + HIGHLIGHT (preserves buttons) =====
+  const table = document.getElementById("thesisTable");
+  const tbody = table.querySelector("tbody");
+  let rows = Array.from(tbody.querySelectorAll("tr"));
   const searchInput = document.getElementById("searchInput");
+  const rowsPerPage = 10;
+  let currentPage = 1;
+
+  // ===== Render table page =====
+  function renderTablePage(page = 1) {
+    const visibleRows = rows.filter(r => r.dataset.visible !== "0");
+    const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
+
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    currentPage = page;
+
+    rows.forEach(r => r.style.display = "none");
+    visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage).forEach(r => r.style.display = "");
+
+    renderPagination(totalPages);
+  }
+
+  // ===== Render pagination with ellipses =====
+  function renderPagination(totalPages) {
+    const container = document.getElementById("pagination");
+    container.innerHTML = "";
+
+    const createBtn = (text, disabled, clickHandler, isActive = false) => {
+      const btn = document.createElement("button");
+      btn.innerText = text;
+      btn.disabled = disabled;
+      if (isActive) btn.classList.add("active");
+      btn.addEventListener("click", clickHandler);
+      container.appendChild(btn);
+    };
+
+    // Prev
+    createBtn("Prev", currentPage === 1, () => renderTablePage(currentPage - 1));
+
+    // Page numbers with ellipses
+    const pageRange = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pageRange.push(i);
+    } else {
+      pageRange.push(1);
+      if (currentPage > 4) pageRange.push("...");
+      const start = Math.max(2, currentPage - 2);
+      const end = Math.min(totalPages - 1, currentPage + 2);
+      for (let i = start; i <= end; i++) pageRange.push(i);
+      if (currentPage < totalPages - 3) pageRange.push("...");
+      pageRange.push(totalPages);
+    }
+
+    pageRange.forEach(p => {
+      if (p === "...") {
+        const span = document.createElement("span");
+        span.innerText = "...";
+        span.style.padding = "6px 12px";
+        span.style.color = "#fff";
+        container.appendChild(span);
+      } else {
+        createBtn(p, false, () => renderTablePage(p), p === currentPage);
+      }
+    });
+
+    // Next
+    createBtn("Next", currentPage === totalPages, () => renderTablePage(currentPage + 1));
+  }
+
+  // ===== Search + highlight (preserve buttons) =====
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
-    const rows = document.querySelectorAll("#thesisTable tbody tr");
-
     rows.forEach(row => {
       let match = false;
       const tds = row.querySelectorAll("td");
 
       tds.forEach(td => {
-        // Skip cells containing action buttons (approve/reject/view)
-        if (
-          td.querySelector("a") ||
-          td.querySelector("button") ||
-          td.querySelector(".btn-approve") ||
-          td.querySelector(".btn-reject") ||
-          td.querySelector(".btn-view")
-        ) return;
-
-        // Save original HTML content to restore later
+        if (td.querySelector("a") || td.querySelector("button") || td.querySelector(".btn-approve") || td.querySelector(".btn-reject") || td.querySelector(".btn-view")) return;
         const originalHTML = td.getAttribute("data-original") || td.innerHTML;
         td.setAttribute("data-original", originalHTML);
         td.innerHTML = originalHTML;
@@ -272,10 +343,40 @@
         }
       });
 
-      // Show/hide row
-      row.style.display = match || filter === "" ? "" : "none";
+      row.dataset.visible = match || filter === "" ? "1" : "0";
+    });
+
+    currentPage = 1;
+    renderTablePage(currentPage);
+  });
+
+  // ===== Sorting =====
+  table.querySelectorAll("th").forEach((th, index) => {
+    th.addEventListener("click", () => {
+      const asc = !th.classList.contains("sort-asc");
+      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
+      th.classList.add(asc ? "sort-asc" : "sort-desc");
+
+      rows.sort((a, b) => {
+        const aText = a.children[index].innerText.trim().toLowerCase();
+        const bText = b.children[index].innerText.trim().toLowerCase();
+        if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
+          return asc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
+        }
+        return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+      });
+
+      rows.forEach(r => tbody.appendChild(r));
+      renderTablePage(currentPage);
     });
   });
+
+  // ===== Initialize =====
+  window.onload = () => {
+    rows.forEach(r => r.dataset.visible = "1");
+    renderTablePage();
+    table.style.visibility = "visible";
+  };
 
   const modal = document.getElementById("imageModal");
   const modalImg = document.getElementById("modalImage");

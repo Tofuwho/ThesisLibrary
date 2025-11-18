@@ -79,6 +79,50 @@
   .admin-link:hover {
     text-decoration: underline;
   }
+  #studentTable {
+    visibility: hidden; /* hide table until JS paginates */
+  }
+
+  .pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pagination button {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #90caf9;
+  color: #000;
+}
+
+.pagination button.active {
+  background: #90caf9;
+  color: #000;
+  pointer-events: none;
+}
+
+.pagination span {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #ccc;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  user-select: none;
+  transition: 0.2s;
+}
 
 </style>
 {% endblock %}
@@ -149,6 +193,7 @@
             {% endfor %}
           </tbody>
         </table>
+        <div id="studentPagination" class="pagination"></div>
       </div>
     </div>
   </main>
@@ -186,10 +231,17 @@
     const rows = document.querySelectorAll("#studentTable tbody tr");
 
     rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      row.style.display = text.includes(filter) ? "" : "none";
+        const text = row.innerText.toLowerCase();
+        if (text.includes(filter)) {
+            row.dataset.visible = "1";
+        } else {
+            row.dataset.visible = "0";
+        }
     });
-  });
+
+    currentPage = 1;
+    paginateTable();
+});
 
   // =======================
 // IMPORT FILE HANDLER
@@ -353,6 +405,90 @@ function formatDate(dateStr) {
 function getCSRFToken() {
     return document.cookie.split("; ").find(row => row.startsWith("csrftoken"))?.split("=")[1];
 }
+
+let currentPage = 1;
+const rowsPerPage = 16;
+const table = document.getElementById("studentTable");
+const tbody = table.querySelector("tbody");
+
+function renderPage(page = 1) {
+    const allRows = Array.from(tbody.querySelectorAll("tr"));
+    const visibleRows = allRows.filter(r => r.dataset.visible !== "0");
+    const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
+
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    currentPage = page;
+
+    allRows.forEach(r => r.style.display = "none");
+    visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage)
+               .forEach(r => r.style.display = "");
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const container = document.getElementById("studentPagination");
+    container.innerHTML = "";
+
+    function createBtn(label, page, disabled = false, active = false) {
+        const btn = document.createElement("button");
+        btn.innerText = label;
+        btn.disabled = disabled;
+        btn.classList.toggle("active", active);
+        if (!disabled && !active) btn.addEventListener("click", () => renderPage(page));
+        container.appendChild(btn);
+    }
+
+    // Prev
+    createBtn("Prev", currentPage - 1, currentPage === 1);
+
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+            createBtn(i, i, false, i === currentPage);
+        } else if (i === 2 && currentPage > 3) {
+            const ellipsis = document.createElement("span");
+            ellipsis.innerText = "...";
+            container.appendChild(ellipsis);
+        } else if (i === totalPages - 1 && currentPage < totalPages - 2) {
+            const ellipsis = document.createElement("span");
+            ellipsis.innerText = "...";
+            container.appendChild(ellipsis);
+        }
+    }
+
+    // Next
+    createBtn("Next", currentPage + 1, currentPage === totalPages);
+}
+
+// Update visible rows after search or sorting
+function updateVisibility() {
+    const filter = document.getElementById("studentSearch").value.toLowerCase();
+    const allRows = Array.from(tbody.querySelectorAll("tr"));
+    allRows.forEach(row => {
+        row.dataset.visible = row.innerText.toLowerCase().includes(filter) ? "1" : "0";
+    });
+    renderPage(1);
+}
+
+// Attach search
+document.getElementById("studentSearch").addEventListener("input", updateVisibility);
+
+// Attach sorting
+document.querySelectorAll("#studentTable th").forEach(th => {
+    th.addEventListener("click", () => {
+        setTimeout(() => renderPage(1), 10);
+    });
+});
+
+// Initial load
+window.addEventListener("load", () => {
+    document.querySelectorAll("#studentTable tbody tr").forEach(r => r.dataset.visible = "1");
+    renderPage();
+    table.style.visibility = "visible"; // show table after JS
+});
+
+
 </script>
 {% endblock %}
 
