@@ -43,6 +43,65 @@ def index_page(request):
         'departments': departments,
     })
 
+
+@login_required
+def profile_card(request):
+    """Display a simple profile card for the logged-in user."""
+    user = request.user
+    student_record = Student.objects.filter(student_id=user.username).first()
+    professor_record = Professor.objects.filter(professor_id=user.username).first()
+
+    def build_name():
+        if student_record:
+            return f"{student_record.first_name or ''} {student_record.last_name or ''}".strip()
+        if professor_record:
+            return f"{professor_record.first_name or ''} {professor_record.last_name or ''}".strip()
+        if user.first_name or user.last_name:
+            return f"{user.first_name or ''} {user.last_name or ''}".strip()
+        return user.username
+
+    full_name = build_name()
+    contact_email = (
+        (student_record.email if student_record and student_record.email else None)
+        or (professor_record.email if professor_record and professor_record.email else None)
+        or user.email
+    )
+    identifier = (
+        student_record.student_id if student_record else
+        professor_record.professor_id if professor_record else
+        user.username
+    )
+    role = "Administrator" if user.is_staff else (
+        "Professor" if professor_record else
+        "Student" if student_record else
+        "Member"
+    )
+
+    submissions_qs = Submission.objects.filter(submitter=user)
+    recent_submission = submissions_qs.order_by('-created_at').first()
+
+    initials = ''.join([part[0] for part in full_name.split() if part])[:2].upper()
+    if not initials:
+        initials = (user.username[:2] or "??").upper()
+
+    profile = {
+        "full_name": full_name,
+        "role": role,
+        "username": user.username,
+        "identifier": identifier,
+        "email": contact_email or "Not provided",
+        "joined": user.date_joined,
+        "last_login": user.last_login,
+        "submission_count": submissions_qs.count(),
+        "recent_submission_title": recent_submission.title if recent_submission else None,
+        "recent_submission_date": recent_submission.created_at if recent_submission else None,
+        "initials": initials,
+        "is_admin": user.is_staff,
+        "has_dashboard": not user.is_staff,
+    }
+
+    return render(request, 'main/profile_card.html', {"profile": profile})
+
 def categories_page(request):
     theses = Thesis.objects.all()
     search_query = request.GET.get('search') or ''
@@ -972,7 +1031,6 @@ def create_submission(request):
     abstract = request.POST.get('abstract', '')
     keywords = request.POST.get('keywords', '')
     research_category = request.POST.get('research_category', '')
-    expected_completion = request.POST.get('expectedCompletion') or None
     specialization = request.POST.get('specialization', '')
     year = request.POST.get('year')
     academic_level_id = request.POST.get('academic_level')
@@ -1066,7 +1124,6 @@ def create_submission(request):
             abstract=abstract,
             keywords=keywords,
             research_category=research_category,
-            expected_completion=expected_completion or None,
             specialization=specialization,
             category=academic_level,
             department=department,
@@ -1198,50 +1255,12 @@ def get_client_ip(request):
 
 def download_thesis_file(request, pk):
     """
-    Handles thesis file downloads with authentication checks
-    Logs the download event for auditing.
+    Downloads have been disabled site-wide to keep theses view-only.
     """
-    # Check if user is authenticated
-    if not request.user.is_authenticated:
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': False, 
-                'error': 'Please log in to download thesis files.', 
-                'require_login': True
-            }, status=401)
-        else:
-            messages.error(request, 'Please log in to download thesis files.')
-            return redirect('/')
-
-    # User is authenticated - proceed with file download
-    thesis = get_object_or_404(Thesis, pk=pk)
-    if not thesis.file:
-        raise Http404('File not found.')
-
-    try:
-        # Log the download - make sure this happens
-        DownloadLog.objects.create(
-            user=request.user,
-            thesis=thesis,
-            ip_address=get_client_ip(request),
-            user_agent=request.META.get('HTTP_USER_AGENT', '')[:500]  # Truncate long user agents
-        )
-        
-        # Create file response with proper headers for download
-        response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
-        return response
-        
-    except Exception as e:
-        # If logging fails, still allow download but log the error
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Download logging failed for thesis {pk}: {str(e)}")
-        
-        # Still provide the file download
-        response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(thesis.file.name)}"'
-        return response
+    message = 'Thesis downloads are currently disabled. Please use the in-browser viewer instead.'
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': message}, status=403)
+    return HttpResponseForbidden(message)
 
 
 def restricted_view_thesis_file(request, pk):
@@ -1285,7 +1304,7 @@ def restricted_view_thesis_file(request, pk):
             p.drawString(100, 700, f"Title: {thesis.title}")
             p.drawString(100, 650, f"Author: {thesis.author}")
             p.drawString(100, 600, "This is a preview of the first few pages.")
-            p.drawString(100, 550, "Please log in to view the complete thesis and download the full document.")
+            p.drawString(100, 550, "Please log in to view the complete thesis.")
             p.showPage()
             p.save()
             

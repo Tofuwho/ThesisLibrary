@@ -1,0 +1,73 @@
+{% extends 'main/base.html' %}
+{% block title %}My Profile - Thesis Library{% endblock %}
+
+{% block content %}
+<section class="profile-card-page">
+    <div class="container">
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div class="profile-avatar">{{ profile.initials }}</div>
+                <div class="profile-card-title">
+                    <h1>{{ profile.full_name }}</h1>
+                    <span><i class="fas fa-user-circle"></i> {{ profile.role }}</span>
+                </div>
+            </div>
+
+            <div class="profile-card-body">
+                <div class="profile-info-block">
+                    <label>Username</label>
+                    <p>{{ profile.username }}</p>
+                </div>
+                <div class="profile-info-block">
+                    <label>Identifier</label>
+                    <p>{{ profile.identifier }}</p>
+                </div>
+                <div class="profile-info-block">
+                    <label>Email</label>
+                    <p>{{ profile.email }}</p>
+                </div>
+                <div class="profile-info-block">
+                    <label>Member Since</label>
+                    <p>{{ profile.joined|date:"F j, Y" }}</p>
+                </div>
+                <div class="profile-info-block">
+                    <label>Last Login</label>
+                    <p>
+                        {% if profile.last_login %}
+                            {{ profile.last_login|date:"F j, Y g:i A" }}
+                        {% else %}
+                            Not recorded
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="profile-card-stats">
+                <div class="profile-stat">
+                    <span>Total Submissions</span>
+                    <strong>{{ profile.submission_count }}</strong>
+                </div>
+                <div class="profile-stat">
+                    <span>Most Recent Submission</span>
+                    {% if profile.recent_submission_title %}
+                        <strong>{{ profile.recent_submission_title }}</strong>
+                        <small>{{ profile.recent_submission_date|date:"M j, Y" }}</small>
+                    {% else %}
+                        <strong>None yet</strong>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="profile-card-actions">
+                {% if profile.is_admin %}
+                    <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Go to Admin Dashboard</a>
+                {% else %}
+                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Student Dashboard</a>
+                    <a href="{% url 'my_submissions' %}" class="btn btn-outline">My Submissions</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

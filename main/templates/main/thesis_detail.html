@@ -46,22 +46,16 @@
               <a href="{% url 'thesis_view_file' thesis.id %}" class="view-button" target="_blank">
                 <i class="fas fa-eye"></i> View Full PDF
               </a>
-              <button class="download-button" onclick="showDpaModal({{ thesis.id }})">
-                <i class="fas fa-download"></i> Download
-              </button>
             {% else %}
               <!-- Non-authenticated users see restricted access -->
               <div class="restricted-access">
                 <a href="{% url 'thesis_view_file' thesis.id %}" class="preview-button" target="_blank">
                   <i class="fas fa-eye"></i> Preview (First 3 Pages)
                 </a>
-                <button class="download-button" onclick="handleDownloadClick({{ thesis.id }})">
-                  <i class="fas fa-download"></i> Download
-                </button>
                 <div class="login-required">
                   <p class="restriction-notice">
                     <i class="fas fa-lock"></i> 
-                    Please <a href="#" class="login-link" onclick="showLoginModal('{{ request.get_full_path }}')">log in</a> to view the complete thesis and download the full document.
+                    Please <a href="#" class="login-link" onclick="showLoginModal('{{ request.get_full_path }}')">log in</a> to view the complete thesis.
                   </p>
                 </div>
               </div>

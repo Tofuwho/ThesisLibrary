@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log(courseData); // should log array from backend
   console.log(deptData);
 
-  // ===== Submissions & Downloads Trend =====
+  // ===== Submission Trend =====
   const trendCtx = document.getElementById('trendChart').getContext('2d');
 
   // Get data from Django context
