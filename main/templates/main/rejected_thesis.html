@@ -37,6 +37,7 @@
   th {
     cursor: pointer;
     transition: color 0.2s;
+    text-align: left;
   }
 
   th.sort-asc::after {
@@ -79,6 +80,46 @@
     box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
   }
 
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .pagination button {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .pagination button:hover:not(:disabled) {
+    background: #90caf9;
+    color: #000;
+  }
+
+  .pagination button.active {
+    background: #90caf9;
+    color: #000;
+    pointer-events: none; /* prevent clicking active page */
+  }
+
+  .pagination span {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #ccc;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    user-select: none;
+    transition: 0.2s;
+  }
 </style>
 {% endblock %}
 
@@ -141,6 +182,7 @@
             {% endfor %}
           </tbody>
         </table>
+        <div class="pagination" id="rejectedPagination"></div>
       </div>
     </div>
   </main>
@@ -209,6 +251,109 @@ document.querySelectorAll('th.sortable').forEach((header, index) => {
     rowsArray.forEach(row => tbody.appendChild(row));
   });
 });
+
+  const rejectedTable = document.getElementById('rejectedTable');
+  const rejectedTbody = rejectedTable.querySelector('tbody');
+  const rejectedRows = Array.from(rejectedTbody.querySelectorAll('tr'));
+  const rejectedSearch = document.getElementById('searchInput');
+  const rowsPerPage = 10; // change as needed
+  let currentPage = 1;
+
+// ===== RENDER TABLE PAGE =====
+function renderRejectedPage(page = 1) {
+  const visibleRows = rejectedRows.filter(r => r.dataset.visible !== "0");
+  const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
+
+  if (page > totalPages) page = totalPages;
+  if (page < 1) page = 1;
+  currentPage = page;
+
+  rejectedRows.forEach(r => r.style.display = "none");
+  visibleRows.slice((page-1)*rowsPerPage, page*rowsPerPage).forEach(r => r.style.display = "");
+
+  renderRejectedPagination(totalPages);
+}
+
+// ===== RENDER PAGINATION BUTTONS WITH ELLIPSES =====
+function renderRejectedPagination(totalPages) {
+  const container = document.getElementById('rejectedPagination');
+  container.innerHTML = "";
+
+  const createBtn = (text, disabled, clickHandler, isActive = false) => {
+    const btn = document.createElement("button");
+    btn.innerText = text;
+    btn.disabled = disabled;
+    if (isActive) btn.classList.add("active");
+    btn.addEventListener("click", clickHandler);
+    container.appendChild(btn);
+  };
+
+  // Prev button
+  createBtn("Prev", currentPage === 1, () => renderRejectedPage(currentPage - 1));
+
+  // Numbered buttons with ellipses
+  const pageNumbers = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+  } else {
+    pageNumbers.push(1);
+    if (currentPage > 4) pageNumbers.push("...");
+    for (let i = Math.max(2, currentPage-2); i <= Math.min(totalPages-1, currentPage+2); i++) pageNumbers.push(i);
+    if (currentPage < totalPages-3) pageNumbers.push("...");
+    pageNumbers.push(totalPages);
+  }
+
+  pageNumbers.forEach(p => {
+    if (p === "...") {
+      const span = document.createElement("span");
+      span.innerText = "...";
+      span.style.padding = "6px 12px";
+      span.style.color = "#ccc";
+      container.appendChild(span);
+    } else {
+      createBtn(p, false, () => renderRejectedPage(p), p === currentPage);
+    }
+  });
+
+  // Next button
+  createBtn("Next", currentPage === totalPages, () => renderRejectedPage(currentPage + 1));
+}
+
+// ===== SEARCH + FILTER =====
+rejectedSearch.addEventListener('input', () => {
+  const query = rejectedSearch.value.toLowerCase();
+  rejectedRows.forEach(row => {
+    const tds = row.querySelectorAll('td');
+    let match = false;
+
+    tds.forEach(td => {
+      // Skip action/view cells
+      if (td.querySelector('a') || td.querySelector('button')) return;
+
+      const originalHTML = td.getAttribute('data-original') || td.innerHTML;
+      td.setAttribute('data-original', originalHTML);
+      td.innerHTML = originalHTML;
+
+      if (query && td.textContent.toLowerCase().includes(query)) {
+        match = true;
+        td.innerHTML = originalHTML.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
+      } else if (td.textContent.toLowerCase().includes(query)) {
+        match = true;
+      }
+    });
+
+    row.dataset.visible = match || query === '' ? "1" : "0";
+  });
+
+  currentPage = 1;
+  renderRejectedPage(currentPage);
+});
+
+// ===== INITIALIZE =====
+window.onload = () => {
+  rejectedRows.forEach(r => r.dataset.visible = "1");
+  renderRejectedPage();
+};
 </script>
 
 {% endblock %}

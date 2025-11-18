@@ -37,6 +37,7 @@
   th {
     cursor: pointer;
     transition: color 0.2s;
+    text-align: left;
   }
 
   th.sort-asc::after {
@@ -109,6 +110,30 @@
     transform: translateY(-2px);
     box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
   }
+  .open-image {
+  color: #90caf9;
+  text-decoration: none;
+  transition: color 0.2s, text-decoration 0.2s;
+  cursor: pointer;
+  }
+
+  .open-image:hover {
+    color: #42a5f5; /* Blue color on hover */
+    text-decoration: underline; /* Optional underline on hover */
+    cursor: pointer;
+  }
+  .pagination { display:flex; justify-content:center; gap:8px; margin-top:1rem; flex-wrap:wrap; }
+  .pagination button {
+  background:#2a2a2a;
+  border:1px solid #444;
+  color:#fff;
+  padding:6px 12px;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.2s;
+  }
+  .pagination button:hover { background:#90caf9; color:#000; }
+  .pagination button.active { background:#90caf9; color:#000; }
 </style>
 {% endblock %}
 
@@ -142,6 +167,7 @@
               <th style="padding:0.8rem;">Supervisor</th>
               <th style="padding:0.8rem;">Course</th>
               <th style="padding:0.8rem;">Date Submitted</th>
+              <th style="padding:0.8rem;">Approval Sheet</th>
               <th style="padding:0.8rem;">Actions</th>
             </tr>
           </thead>
@@ -157,6 +183,17 @@
               <td style="padding:0.8rem;">{{ thesis.course }}</td>
               <td style="padding:0.8rem;">{{ thesis.created_at|date:"Y-m-d" }}</td>
               <td style="padding:0.8rem;">
+                {% if thesis.approval_sheet %}
+                  <a href="#"
+                     class="open-image"
+                     data-img="{{ thesis.approval_sheet.url }}">
+                     {{ thesis.approval_sheet.name|slice:"-12:" }}
+                  </a>
+                {% else %}
+                  <span style="color:#777;">None</span>
+                {% endif %}
+              </td>
+              <td style="padding:0.8rem;">
                 <div class="action-buttons">
                   <a href="{% url 'approve_thesis' thesis.id %}" class="btn-approve">Approve</a>
                   <a href="{% url 'reject_thesis' thesis.id %}" class="btn-reject">Reject</a>
@@ -171,7 +208,21 @@
             {% endfor %}
           </tbody>
         </table>
+        <div class="pagination" id="pagination"></div>
       </div>
+    </div>
+    <div id="imageModal"
+         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+                justify-content:center; align-items:center; z-index:2000;">
+
+      <span id="closeModal"
+            style="position:absolute; top:20px; right:30px;
+                   font-size:2rem; color:white; cursor:pointer;">&times;</span>
+
+      <img id="modalImage"
+           src=""
+           style="max-width:80%; max-height:80%; transition:transform 0.2s ease; cursor:grab;">
     </div>
   </main>
 </div>
@@ -200,27 +251,84 @@
     });
   });
 
-  // ===== SEARCH + HIGHLIGHT (preserves buttons) =====
+  const table = document.getElementById("thesisTable");
+  const tbody = table.querySelector("tbody");
+  let rows = Array.from(tbody.querySelectorAll("tr"));
   const searchInput = document.getElementById("searchInput");
+  const rowsPerPage = 10;
+  let currentPage = 1;
+
+  // ===== Render table page =====
+  function renderTablePage(page = 1) {
+    const visibleRows = rows.filter(r => r.dataset.visible !== "0");
+    const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
+
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    currentPage = page;
+
+    rows.forEach(r => r.style.display = "none");
+    visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage).forEach(r => r.style.display = "");
+
+    renderPagination(totalPages);
+  }
+
+  // ===== Render pagination with ellipses =====
+  function renderPagination(totalPages) {
+    const container = document.getElementById("pagination");
+    container.innerHTML = "";
+
+    const createBtn = (text, disabled, clickHandler, isActive = false) => {
+      const btn = document.createElement("button");
+      btn.innerText = text;
+      btn.disabled = disabled;
+      if (isActive) btn.classList.add("active");
+      btn.addEventListener("click", clickHandler);
+      container.appendChild(btn);
+    };
+
+    // Prev
+    createBtn("Prev", currentPage === 1, () => renderTablePage(currentPage - 1));
+
+    // Page numbers with ellipses
+    const pageRange = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pageRange.push(i);
+    } else {
+      pageRange.push(1);
+      if (currentPage > 4) pageRange.push("...");
+      const start = Math.max(2, currentPage - 2);
+      const end = Math.min(totalPages - 1, currentPage + 2);
+      for (let i = start; i <= end; i++) pageRange.push(i);
+      if (currentPage < totalPages - 3) pageRange.push("...");
+      pageRange.push(totalPages);
+    }
+
+    pageRange.forEach(p => {
+      if (p === "...") {
+        const span = document.createElement("span");
+        span.innerText = "...";
+        span.style.padding = "6px 12px";
+        span.style.color = "#fff";
+        container.appendChild(span);
+      } else {
+        createBtn(p, false, () => renderTablePage(p), p === currentPage);
+      }
+    });
+
+    // Next
+    createBtn("Next", currentPage === totalPages, () => renderTablePage(currentPage + 1));
+  }
+
+  // ===== Search + highlight (preserve buttons) =====
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
-    const rows = document.querySelectorAll("#thesisTable tbody tr");
-
     rows.forEach(row => {
       let match = false;
       const tds = row.querySelectorAll("td");
 
       tds.forEach(td => {
-        // Skip cells containing action buttons (approve/reject/view)
-        if (
-          td.querySelector("a") ||
-          td.querySelector("button") ||
-          td.querySelector(".btn-approve") ||
-          td.querySelector(".btn-reject") ||
-          td.querySelector(".btn-view")
-        ) return;
-
-        // Save original HTML content to restore later
+        if (td.querySelector("a") || td.querySelector("button") || td.querySelector(".btn-approve") || td.querySelector(".btn-reject") || td.querySelector(".btn-view")) return;
         const originalHTML = td.getAttribute("data-original") || td.innerHTML;
         td.setAttribute("data-original", originalHTML);
         td.innerHTML = originalHTML;
@@ -235,9 +343,76 @@
         }
       });
 
-      // Show/hide row
-      row.style.display = match || filter === "" ? "" : "none";
+      row.dataset.visible = match || filter === "" ? "1" : "0";
     });
+
+    currentPage = 1;
+    renderTablePage(currentPage);
+  });
+
+  // ===== Sorting =====
+  table.querySelectorAll("th").forEach((th, index) => {
+    th.addEventListener("click", () => {
+      const asc = !th.classList.contains("sort-asc");
+      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
+      th.classList.add(asc ? "sort-asc" : "sort-desc");
+
+      rows.sort((a, b) => {
+        const aText = a.children[index].innerText.trim().toLowerCase();
+        const bText = b.children[index].innerText.trim().toLowerCase();
+        if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
+          return asc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
+        }
+        return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+      });
+
+      rows.forEach(r => tbody.appendChild(r));
+      renderTablePage(currentPage);
+    });
+  });
+
+  // ===== Initialize =====
+  window.onload = () => {
+    rows.forEach(r => r.dataset.visible = "1");
+    renderTablePage();
+    table.style.visibility = "visible";
+  };
+
+  const modal = document.getElementById("imageModal");
+  const modalImg = document.getElementById("modalImage");
+  const closeModal = document.getElementById("closeModal");
+
+  document.querySelectorAll(".open-image").forEach(link => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      modal.style.display = "flex";
+      modalImg.src = this.getAttribute("data-img");
+      scale = 1; // reset zoom
+      modalImg.style.transform = "scale(1)";
+    });
+  });
+
+  // Close modal
+  closeModal.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  // Close when clicking outside image
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+
+  // ===== Zoom Feature =====
+  let scale = 1;
+
+  modalImg.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      scale += 0.1; // zoom in
+    } else {
+      scale = Math.max(1, scale - 0.1); // zoom out (min = original)
+    }
+    modalImg.style.transform = `scale(${scale})`;
   });
 </script>
 
