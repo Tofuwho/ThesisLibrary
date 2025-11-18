@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Count, Q, OuterRef, Subquery
 from django.db.models import Value, IntegerField, Case, When, F, ExpressionWrapper, CharField, DateTimeField
+from django.db.models.functions import Concat
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.db.models.functions import Cast, TruncMonth
@@ -11,10 +12,13 @@ from django.http import FileResponse, Http404, JsonResponse, HttpResponse, HttpR
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
+
 from django.contrib import messages
 from django import forms
 from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department, Student, Professor, VerificationCode
 from django.core.mail import send_mail
+from django.core.paginator import Paginator
+from collections import Counter
 from django.conf import settings
 import random
 import string
@@ -456,6 +460,7 @@ def admin_dashboard(request):
         'approved_data': approved_data,
         'pending_data': pending_data,
         'rejected_data': rejected_data,
+
     }
 
     return render(request, 'main/admin_dashboard.html', context)
