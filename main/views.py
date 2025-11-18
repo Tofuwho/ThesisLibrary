@@ -509,6 +509,15 @@ def admin_dashboard(request):
         .order_by('-activity_date')[:16]
     )
 
+    archive_path = os.path.join(settings.MEDIA_ROOT, 'thesis_files', 'Archived')
+    if os.path.exists(archive_path):
+        archived_theses_count = len([
+            f for f in os.listdir(archive_path)
+            if os.path.isfile(os.path.join(archive_path, f))
+        ])
+    else:
+        archived_theses_count = 0
+
     context = {
         'total_theses': total_theses,
         'total_users': total_users,
@@ -522,7 +531,7 @@ def admin_dashboard(request):
         'approved_data': approved_data,
         'pending_data': pending_data,
         'rejected_data': rejected_data,
-
+        'archived_theses_count': archived_theses_count,
     }
 
     return render(request, 'main/admin_dashboard.html', context)
