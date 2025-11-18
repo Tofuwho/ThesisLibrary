@@ -169,23 +169,7 @@
                         <input type="text" id="keywords" name="keywords" placeholder="Enter keywords separated by commas" required>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="research_category">Research Category *</label>
-                            <select id="research_category" name="research_category" required>
-                                <option value="">Select Research Category</option>
-                                <option value="theoretical">Theoretical Research</option>
-                                <option value="empirical">Empirical Research</option>
-                                <option value="experimental">Experimental Research</option>
-                                <option value="applied">Applied Research</option>
-                                <option value="literature-review">Literature Review</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="expectedCompletion">Expected Completion Date</label>
-                            <input type="date" id="expectedCompletion" name="expectedCompletion">
-                        </div>
-                    </div>
+                    <!-- Research category removed -->
 
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" onclick="previousSection('supervisor')">Previous</button>
@@ -332,10 +316,6 @@
                             <span id="reviewYear">-</span>
                         </div>
                         <div class="summary-item">
-                            <span><strong>Research Category:</strong></span>
-                            <span id="reviewResearchCategory">-</span>
-                        </div>
-                        <div class="summary-item">
                             <span><strong>Thesis Title:</strong></span>
                             <span id="reviewThesisTitle">-</span>
                         </div>
@@ -359,10 +339,6 @@
                             <span><strong>Co-Authors:</strong></span>
                             <ul id="reviewCoAuthors"></ul>
                         </div>                        
-                        <div class="summary-item">
-                            <span><strong>Expected Completion:</strong></span>
-                            <span id="reviewExpectedCompletion">-</span>
-                        </div>
                         <div class="summary-item">
                             <span><strong>Status:</strong></span>
                             <span class="status-badge status-draft">Draft</span>

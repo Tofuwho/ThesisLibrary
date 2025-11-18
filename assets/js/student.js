@@ -684,13 +684,11 @@ function updateReviewSection() {
     document.getElementById('reviewDepartment').textContent = departmentText;
     document.getElementById('reviewCourse').textContent = courseText;
     document.getElementById('reviewYear').textContent = formData.get('year') || '-';
-    document.getElementById('reviewResearchCategory').textContent = formData.get('research_category') || '-';
     document.getElementById('reviewThesisTitle').textContent = formData.get('thesisTitle') || '-';
     document.getElementById('reviewAbstract').textContent = formData.get('abstract') || '-';
     document.getElementById('reviewKeywords').textContent = formData.get('keywords') || '-';
     document.getElementById('reviewSupervisor').textContent = formData.get('supervisorName') || '-';
     document.getElementById('reviewCoSupervisor').textContent = formData.get('coSupervisorName') || '-';
-    document.getElementById('reviewExpectedCompletion').textContent = formData.get('expectedCompletion') || '-';
 
     // Co-authors: prefer dynamic list container (#reviewCoAuthors). If not present, fill up to 3 fallback slots.
     const reviewList = document.getElementById('reviewCoAuthors');

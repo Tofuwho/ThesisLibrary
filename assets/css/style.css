@@ -1554,6 +1554,26 @@ ul {
   background: var(--primary-light);
   color: var(--primary-dark);
 }
+/* Profile card trigger replaces legacy theme toggle */
+.profile-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 10px;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.profile-card-btn:hover {
+  background: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-dark);
+}
 /* Remove welcome user styles from main header */
 .main-header .user-welcome { display: none !important; }
 @media (max-width: 900px) {
@@ -1570,33 +1590,6 @@ ul {
   .main-header .logo-container { margin-bottom: 6px; }
   .main-header .main-nav ul, .main-header .nav-center { gap: 10px; font-size: 0.98rem; }
 }
-/* Theme Toggle Button */
-.theme-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 2px solid var(--primary-color);
-  background: transparent;
-  color: var(--primary-color);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1.1rem;
-  margin-left: 10px;
-}
-
-.theme-toggle:hover {
-  background: var(--primary-color);
-  color: var(--white);
-  transform: scale(1.1);
-}
-
-.theme-toggle:active {
-  transform: scale(0.95);
-}
-
 /* Theme transition for smooth switching */
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
@@ -1613,7 +1606,7 @@ ul {
 /* End Main Header Styles */
 
 /* Thesis Card Button Styles - Consistent with Category Pages */
-.thesis-view-button, .thesis-download-button {
+.thesis-view-button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1638,28 +1631,6 @@ ul {
     transform: translateY(-1px);
 }
 
-.thesis-download-button {
-    background: var(--primary-light);
-    color: var(--primary-color);
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-    padding: 8px 16px;
-    border-radius: 6px;
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-}
-
-.thesis-download-button:hover {
-    background: var(--primary-medium);
-    color: white;
-    transform: translateY(-1px);
-}
-
 /* Thesis Detail Page Styles */
 .thesis-actions {
   margin-top: 20px;
@@ -1668,7 +1639,7 @@ ul {
   gap: 15px;
 }
 
-.view-button, .download-button, .preview-button {
+.view-button, .preview-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1683,13 +1654,13 @@ ul {
   justify-content: center;
 }
 
-.view-button, .download-button {
+.view-button {
   background: var(--primary-color);
   color: #ffffff !important;
   border-color: var(--primary-color);
 }
 
-.view-button:hover, .download-button:hover {
+.view-button:hover {
   background: var(--white);
   color: var(--primary-color);
   transform: translateY(-2px);
@@ -1762,7 +1733,7 @@ ul {
     gap: 12px;
   }
   
-  .view-button, .download-button, .preview-button {
+  .view-button, .preview-button {
     padding: 10px 20px;
     font-size: 0.95rem;
   }
@@ -1776,282 +1747,6 @@ ul {
   }
 }
 
-/* DPA Confirmation Modal Styles */
-.dpa-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.dpa-modal.hidden {
-  opacity: 0;
-  visibility: hidden;
-}
-
-.dpa-modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  transition: opacity 0.3s ease;
-}
-
-.dpa-modal-content {
-  position: relative;
-  background: var(--card-bg);
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  transform: scale(0.9);
-  transition: transform 0.3s ease;
-  border: 1px solid var(--border-color);
-}
-
-.dpa-modal:not(.hidden) .dpa-modal-content {
-  transform: scale(1);
-}
-
-.dpa-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24px 24px 0 24px;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 20px;
-}
-
-.dpa-modal-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.dpa-modal-title::before {
-  content: "🛡️";
-  font-size: 1.2rem;
-}
-
-.dpa-modal-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-}
-
-.dpa-modal-close:hover {
-  background: var(--lighter-gray);
-  color: var(--text-primary);
-}
-
-.dpa-modal-body {
-  padding: 0 24px 20px 24px;
-}
-
-.dpa-icon {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.dpa-icon i {
-  font-size: 3rem;
-  color: var(--primary-color);
-  background: var(--primary-light);
-  padding: 20px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.dpa-text {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--text-primary);
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.dpa-legal-notice {
-  background: var(--lighter-gray);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 20px;
-}
-
-.dpa-legal-notice p {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-  font-size: 0.95rem;
-}
-
-.dpa-legal-notice ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.dpa-legal-notice li {
-  position: relative;
-  padding-left: 24px;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
-.dpa-legal-notice li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  color: var(--primary-color);
-  font-weight: bold;
-  font-size: 0.9rem;
-}
-
-.dpa-modal-footer {
-  display: flex;
-  gap: 12px;
-  padding: 20px 24px 24px 24px;
-  border-top: 1px solid var(--border-color);
-  justify-content: flex-end;
-}
-
-.dpa-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: var(--transition);
-  text-decoration: none;
-  min-width: 140px;
-  justify-content: center;
-}
-
-.dpa-btn-cancel {
-  background: var(--lighter-gray);
-  color: var(--text-secondary);
-  border-color: var(--border-color);
-}
-
-.dpa-btn-cancel:hover {
-  background: var(--light-gray);
-  color: var(--text-primary);
-  border-color: var(--medium-gray);
-}
-
-.dpa-btn-confirm {
-  background: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-color);
-}
-
-.dpa-btn-confirm:hover {
-  background: var(--primary-medium);
-  border-color: var(--primary-medium);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
-}
-
-/* Responsive Design for DPA Modal */
-@media (max-width: 768px) {
-  .dpa-modal-content {
-    width: 95%;
-    margin: 20px;
-  }
-  
-  .dpa-modal-header {
-    padding: 20px 20px 0 20px;
-  }
-  
-  .dpa-modal-title {
-    font-size: 1.3rem;
-  }
-  
-  .dpa-modal-body {
-    padding: 0 20px 16px 20px;
-  }
-  
-  .dpa-icon i {
-    font-size: 2.5rem;
-    padding: 16px;
-  }
-  
-  .dpa-text {
-    font-size: 0.95rem;
-  }
-  
-  .dpa-legal-notice {
-    padding: 16px;
-  }
-  
-  .dpa-legal-notice p {
-    font-size: 0.9rem;
-  }
-  
-  .dpa-legal-notice li {
-    font-size: 0.85rem;
-  }
-  
-  .dpa-modal-footer {
-    padding: 16px 20px 20px 20px;
-    flex-direction: column;
-  }
-  
-  .dpa-btn {
-    width: 100%;
-    padding: 14px 24px;
-  }
-}
-
-@media (max-width: 480px) {
-  .dpa-modal-content {
-    width: 98%;
-    margin: 10px;
-  }
-  
-  .dpa-modal-header {
-    padding: 16px 16px 0 16px;
-  }
-  
-  .dpa-modal-body {
-    padding: 0 16px 12px 16px;
-  }
-  
-  .dpa-modal-footer {
-    padding: 12px 16px 16px 16px;
-  }
-}
 
 /* Co-Authors Styling */
 .thesis-authors {
@@ -2098,6 +1793,127 @@ ul {
   color: var(--primary-color);
   font-weight: bold;
   margin-right: 0.5rem;
+}
+
+/* Profile Card Page */
+.profile-card-page {
+  background: linear-gradient(135deg, #f8f6f0 0%, #f2eee4 100%);
+  padding: 60px 20px 80px;
+}
+.profile-card-page .container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.profile-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
+}
+.profile-card-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+.profile-card-title h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  color: var(--primary-dark);
+}
+.profile-card-title span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  color: var(--medium-gray);
+}
+.profile-card-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.profile-info-block {
+  padding: 16px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: #fffdf9;
+}
+.profile-info-block label {
+  font-size: 0.85rem;
+  color: var(--medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.profile-info-block p {
+  margin: 6px 0 0;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+.profile-card-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.profile-stat {
+  flex: 1 1 180px;
+  border-radius: 14px;
+  padding: 18px;
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.08), rgba(212, 175, 55, 0.1));
+  border: 1px solid rgba(139, 0, 0, 0.2);
+}
+.profile-stat span {
+  font-size: 0.85rem;
+  color: var(--medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.profile-stat strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.6rem;
+  color: var(--primary-dark);
+}
+.profile-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.profile-card-actions .btn,
+.profile-card-actions .dashboard-btn {
+  flex: 1 1 200px;
+  justify-content: center;
+}
+@media (max-width: 600px) {
+  .profile-card {
+    padding: 24px;
+  }
+  .profile-card-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  .profile-card-actions .btn,
+  .profile-card-actions .dashboard-btn {
+    flex: 1 1 100%;
+  }
 }
 
 /* Categories page co-author styling */

@@ -178,6 +178,12 @@
   color: inherit;
 }
 
+/* Deep search accents must remain legible regardless of theme */
+.deep-search-count,
+.deep-search-page {
+    color: #ffffff !important;
+}
+
 /* Hero header for categories - Academic Styling */
 .categories-hero {
   position: relative;
@@ -1290,7 +1296,7 @@
     margin-top: auto;
 }
 
-.cat-view-button, .cat-download-button {
+.cat-view-button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1310,33 +1316,20 @@
 
 .cat-view-button { 
     background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%); 
-    color: #ffffff; 
+    color: #ffffff !important; 
     border-color: #8B0000;
     box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
 }
 
 .cat-view-button:hover {
     background: linear-gradient(135deg, #A52A2A 0%, #8B0000 100%);
-    color: #ffffff;
+    color: #ffffff !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(139, 0, 0, 0.3);
 }
 
-.cat-download-button { 
-    background: rgba(139, 0, 0, 0.05); 
-    color: #8B0000; 
-    border-color: #8B0000;
-    cursor: pointer; 
-    font-family: inherit; 
-    font-size: inherit; 
-    text-decoration: none; 
-}
-
-.cat-download-button:hover {
-    background: rgba(139, 0, 0, 0.1);
-    color: #5C0000;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.15);
+.cat-view-button i {
+    color: inherit;
 }
 
 /* Dark theme contrast fixes */
@@ -1349,8 +1342,6 @@
 [data-theme="dark"] .cat-view-button { color: #fff !important; }
 [data-theme="dark"] .chip { color: #ffffff !important; }
 [data-theme="dark"] .keyword-chip { color: #ffffff !important; }
-[data-theme="dark"] .cat-download-button { background: rgba(139, 0, 0, 0.2); color: #d1d5db; }
-[data-theme="dark"] .cat-download-button:hover { background: rgba(139, 0, 0, 0.3); color: #f3f4f6; }
 [data-theme="dark"] .filter-sidebar { background: #111827; border-color: #8B0000; }
 [data-theme="dark"] .cat-results-header { background: #111827; border-color: #8B0000; }
 [data-theme="dark"] .cat-sort-select { background: #111827; border-color: #8B0000; color: #e5e7eb; }
@@ -1856,20 +1847,6 @@
     background: linear-gradient(135deg, #A52A2A 0%, #8B0000 100%);
     color: white;
     border-color: #8B0000;
-}
-.cat-download-button {
-    background: rgba(139, 0, 0, 0.05);
-    color: #8B0000;
-    border: 2px solid #8B0000;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-    text-decoration: none;
-}
-.cat-download-button:hover {
-    background: rgba(139, 0, 0, 0.1);
-    color: #5C0000;
-    border-color: #D4AF37;
 }
 
 /* === Department-Responsive Sidebar Buttons === */

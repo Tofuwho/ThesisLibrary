@@ -21,9 +21,17 @@
             {% if user.is_authenticated %}
                 {% if user.is_staff %}
                     <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Admin Panel</a>
+                    <a href="{% url 'profile_card' %}" class="profile-card-btn">
+                        <i class="fas fa-id-card"></i>
+                        <span>Profile Card</span>
+                    </a>
                 {% else %}
                     <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Dashboard</a>
                     <a href="{% url 'my_submissions' %}" class="dashboard-btn" style="margin-left:8px;">My Submissions</a>
+                    <a href="{% url 'profile_card' %}" class="profile-card-btn">
+                        <i class="fas fa-id-card"></i>
+                        <span>Profile Card</span>
+                    </a>
                 {% endif %}
                 <form method="POST" action="{% url 'logout' %}" style="display:inline; margin-left:10px;">
                     {% csrf_token %}

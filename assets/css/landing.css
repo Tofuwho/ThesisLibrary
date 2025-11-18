@@ -835,7 +835,6 @@
   
   /* Override global button styles for all other button types */
   .view-button,
-  .cat-download-button,
   .pagination-button,
   .browse-button,
   .resource-button,
@@ -846,7 +845,6 @@
   }
   
   .view-button:hover,
-  .cat-download-button:hover,
   .pagination-button:hover,
   .browse-button:hover,
   .resource-button:hover,

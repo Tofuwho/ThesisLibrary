@@ -268,25 +268,26 @@ class Updated_Test(TestCase):
         response = self.client.get(reverse('thesis_view_file', args=[self.thesis.id]))
         self.assertIn(response.status_code, [200, 404])
 
-    def test_tc022_download_logging(self):
-        """TC022: Download logging for thesis"""
+    def test_tc022_download_disabled(self):
+        """TC022: Download endpoint returns forbidden"""
         self.client.login(username='testuser', password='12345')
         response = self.client.get(reverse('thesis_download_file', args=[self.thesis.id]))
-        self.assertIn(response.status_code, [200, 404])
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(DownloadLog.objects.count(), 0)
 
-    def test_tc023_invalid_thesis_download(self):
-        """TC023: Invalid thesis download (404)"""
+    def test_tc023_download_disabled_for_invalid_id(self):
+        """TC023: Download endpoint forbidden even for invalid thesis"""
         self.client.login(username='testuser', password='12345')
         response = self.client.get(reverse('thesis_download_file', args=[999]))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
-    def test_tc024_ajax_unauthorized_download(self):
-        """TC024: AJAX unauthorized thesis download"""
+    def test_tc024_ajax_download_disabled(self):
+        """TC024: AJAX download attempts are forbidden"""
         response = self.client.get(
             reverse('thesis_download_file', args=[self.thesis.id]),
             HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
-        self.assertIn(response.status_code, [401, 302])
+        self.assertEqual(response.status_code, 403)
 
     def test_tc025_api_departments_valid(self):
         """TC025: API departments (valid)"""

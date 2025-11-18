@@ -8,12 +8,10 @@ This document describes the refactored code structure of the Thesis Library appl
 ### Core Modules
 - **main.js** - Core application functionality with comprehensive comments
 - **auth.js** - Authentication handling and form submissions with detailed documentation
-- **theme.js** - Theme switching and UI preferences with class-based architecture
 - **student.js** - Student dashboard functionality with multi-step form management
 
 ### Feature-Specific Modules
 - **modal-handler.js** - Authentication modal management
-- **download-handler.js** - Thesis download functionality with auth checks
 - **categories.js** - Categories page functionality with department filtering
 - **utils.js** - Common utility functions
 
@@ -36,15 +34,6 @@ This document describes the refactored code structure of the Thesis Library appl
 - Error handling and user feedback systems
 - CSRF token management
 - Real-time form validation
-
-### `/assets/js/theme.js`
-**Purpose**: Theme management system with class-based architecture
-**Key Features**:
-- ThemeManager class with comprehensive method documentation
-- Light/dark theme switching with persistence
-- System preference detection (prefers-color-scheme)
-- Dynamic theme toggle button creation
-- Smooth theme transitions and icon updates
 
 ### `/assets/js/student.js`
 **Purpose**: Student dashboard functionality with multi-step form management
@@ -71,12 +60,6 @@ This document describes the refactored code structure of the Thesis Library appl
 - `hideLoginModal()` - Hides the modal and restores scrolling
 - `showSignupForm()` / `showLoginForm()` - Switches between form panels
 
-### `/assets/js/download-handler.js`
-**Purpose**: Handles thesis download requests with authentication checks
-**Key Functions**:
-- `handleDownloadClick(thesisId)` - Main download handler with AJAX auth check
-- `getCSRFToken()` - Retrieves CSRF token for Django requests
-
 ### `/assets/js/utils.js`
 **Purpose**: Common utility functions used across the application
 **Key Functions**:
@@ -95,11 +78,17 @@ This document describes the refactored code structure of the Thesis Library appl
 ## Django Views Documentation
 
 ### `download_thesis_file(request, pk)`
-**Purpose**: Handles thesis file downloads with authentication checks
+**Status**: Disabled to enforce view-only access
 **Behavior**:
-- Returns JSON response for AJAX requests requiring authentication
-- Serves file directly for authenticated users
-- Redirects to login page for non-AJAX unauthenticated requests
+- Always returns HTTP 403 with an explanatory message
+- Prevents any direct download of thesis files
+
+### `profile_card(request)`
+**Purpose**: Displays a read-only profile card for the authenticated user
+**Behavior**:
+- Requires login
+- Pulls Student/Professor metadata when available
+- Shows submission totals plus shortcuts to dashboards
 
 ### `restricted_view_thesis_file(request, pk)`
 **Purpose**: Serves preview version of thesis files for non-authenticated users
@@ -112,13 +101,13 @@ This document describes the refactored code structure of the Thesis Library appl
 
 ### Base Template (`main/templates/main/base.html`)
 **JavaScript Loading Order**:
-1. Core modules (main.js, auth.js, theme.js)
+1. Core modules (main.js, auth.js)
 2. Utility modules (utils.js)
-3. Feature modules (modal-handler.js, download-handler.js)
+3. Feature modules (modal-handler.js)
 
 ### Template Updates
 - Removed all inline JavaScript from templates
-- Updated download buttons to use JavaScript handlers for unauthenticated users
+- Added a persistent profile-card trigger for authenticated users
 - Maintained existing functionality while improving code organization
 
 ## Benefits of Refactoring
@@ -149,12 +138,6 @@ showLoginModal(window.location.pathname);
 showLoginModal();
 ```
 
-### Handling Downloads
-```javascript
-// Called by download buttons for unauthenticated users
-handleDownloadClick(thesisId);
-```
-
 ### Showing Notifications
 ```javascript
 // Success notification
@@ -166,9 +149,6 @@ showNotification('Please log in to continue', 'error', 3000);
 
 ## Testing Checklist
 
-- [ ] Login modal appears when clicking download buttons while logged out
-- [ ] Login redirects back to original page after authentication
-- [ ] Downloads work immediately after login
 - [ ] Modal can be closed by clicking outside or close button
 - [ ] Form switching between login/signup works
 - [ ] AJAX form submissions work without page reload
