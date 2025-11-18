@@ -315,26 +315,6 @@ ul {
   gap: 12px;
 }
 
-.logo-square {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--primary-color), var(--luxury-gold));
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3), 0 0 0 1px var(--luxury-gold-light);
-  position: relative;
-  overflow: hidden;
-}
-
-.logo-square::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, var(--luxury-gold-light) 50%, transparent 70%);
-  opacity: 0.6;
-}
 
 .logo-container h1 {
   font-size: 1.7rem;
@@ -1341,27 +1321,6 @@ ul {
   gap: 12px;
 }
 
-.logo-square {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--primary-color), var(--luxury-gold));
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3), 0 0 0 1px var(--luxury-gold-light);
-  position: relative;
-  overflow: hidden;
-}
-
-.logo-square::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, var(--luxury-gold-light) 50%, transparent 70%);
-  opacity: 0.6;
-}
-
 .logo-container h1 {
   font-size: 1.7rem;
   font-weight: 700;
@@ -1474,26 +1433,14 @@ ul {
   align-items: center;
   gap: 12px;
 }
-.main-header .logo-square {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--primary-color), var(--luxury-gold));
+
+.main-header .logo-image {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3), 0 0 0 1px var(--luxury-gold-light);
-  position: relative;
-  overflow: hidden;
 }
 
-.logo-square::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, var(--luxury-gold-light) 50%, transparent 70%);
-  opacity: 0.6;
-}
 .main-header .logo-container h1 {
   font-size: 1.7rem;
   font-weight: 700;

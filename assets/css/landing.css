@@ -78,13 +78,15 @@
   align-items: center;
   gap: 12px;
 }
-.landing-header .logo-square {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+
+.landing-header .logo-image {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
 }
+
 .landing-header .logo-container h1 {
   font-size: 1.7rem;
   font-weight: 700;

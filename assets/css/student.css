@@ -242,10 +242,10 @@ ul {
   gap: 12px;
 }
 
-.logo-square {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+.logo-image {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
   border-radius: 8px;
 }
 
