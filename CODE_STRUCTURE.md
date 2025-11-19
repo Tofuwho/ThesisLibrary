@@ -8,7 +8,7 @@ This document describes the refactored code structure of the Thesis Library appl
 ### Core Modules
 - **main.js** - Core application functionality with comprehensive comments
 - **auth.js** - Authentication handling and form submissions with detailed documentation
-- **student.js** - Student dashboard functionality with multi-step form management
+- **student.js** - Submission portal functionality with multi-step form management
 
 ### Feature-Specific Modules
 - **modal-handler.js** - Authentication modal management
@@ -36,7 +36,7 @@ This document describes the refactored code structure of the Thesis Library appl
 - Real-time form validation
 
 ### `/assets/js/student.js`
-**Purpose**: Student dashboard functionality with multi-step form management
+**Purpose**: Submission portal functionality with multi-step form management
 **Key Features**:
 - Multi-step form navigation with progress tracking
 - File upload management with drag & drop support

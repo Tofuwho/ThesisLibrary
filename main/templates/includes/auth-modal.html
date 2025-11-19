@@ -30,6 +30,8 @@
             <label for="password">Password</label>
             <input type="password" id="password" name="password" placeholder="Password" required>
 
+            <a href="#" id="forgotPasswordLink" style="display: block; text-align: right; margin-top: 5px; margin-bottom: 15px; color: #666; text-decoration: none; font-size: 0.9em;">Forgot Password?</a>
+
             <button type="submit">Login</button>
             <p id="loginMessage" class="error-msg"></p>
         </form>
@@ -47,6 +49,48 @@
             <button type="submit">Verify Email</button>
             <button type="button" id="backToSignup" style="margin-top: 10px; background: #999;">Back to Sign Up</button>
             <p id="verifyMessage" class="error-msg"></p>
+            </form>
+        </div>
+        <div class="form-container forgot-password-container" id="forgotPasswordContainer" style="display: none;">
+            <form id="forgotPasswordForm" action="{% url 'forgot_password' %}" method="POST">
+            {% csrf_token %}
+
+            <h2>Reset Password</h2>
+            <p style="margin-bottom: 20px; color: #666;">Enter your ID and email to receive a password reset code</p>
+
+            <label for="forgot-id">ID</label>
+            <input type="text" id="forgot-id" name="id" placeholder="Enter your ID" required />
+
+            <label for="forgot-email">Email</label>
+            <input type="email" id="forgot-email" name="email" placeholder="Enter your email" required />
+
+            <button type="submit">Send Reset Code</button>
+            <button type="button" id="backToLogin" style="margin-top: 10px; background: #999;">Back to Login</button>
+            <p id="forgotPasswordMessage" class="error-msg"></p>
+            </form>
+        </div>
+        <div class="form-container reset-password-container" id="resetPasswordContainer" style="display: none;">
+            <form id="resetPasswordForm" action="{% url 'reset_password' %}" method="POST">
+            {% csrf_token %}
+
+            <h2>Reset Password</h2>
+            <p style="margin-bottom: 20px; color: #666;">Enter the reset code sent to your email and your new password</p>
+
+            <label for="reset-id">ID</label>
+            <input type="text" id="reset-id" name="id" placeholder="Enter your ID" required />
+
+            <label for="reset-code">Reset Code</label>
+            <input type="text" id="reset-code" name="code" placeholder="Enter reset code" required maxlength="6" />
+
+            <label for="reset-password">New Password</label>
+            <input type="password" id="reset-password" name="new_password" placeholder="Enter new password" required />
+
+            <label for="reset-confirm">Confirm Password</label>
+            <input type="password" id="reset-confirm" name="confirm_password" placeholder="Confirm new password" required />
+
+            <button type="submit">Reset Password</button>
+            <button type="button" id="backToForgot" style="margin-top: 10px; background: #999;">Back</button>
+            <p id="resetPasswordMessage" class="error-msg"></p>
             </form>
         </div>
         <div class="overlay-container">

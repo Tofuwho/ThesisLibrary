@@ -12,7 +12,6 @@
                     <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
                     <li><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
                     <li><a href="{% url 'about' %}" class="nav-link">About</a></li>
-                    <li><a href="#" class="nav-link">Contact</a></li>
                 </ul>
             </nav>
             {% endif %}
@@ -26,7 +25,7 @@
                         <span>Profile Card</span>
                     </a>
                 {% else %}
-                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Dashboard</a>
+                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Submission Portal</a>
                     <a href="{% url 'my_submissions' %}" class="dashboard-btn" style="margin-left:8px;">My Submissions</a>
                     <a href="{% url 'profile_card' %}" class="profile-card-btn">
                         <i class="fas fa-id-card"></i>

@@ -62,12 +62,156 @@
                 {% if profile.is_admin %}
                     <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Go to Admin Dashboard</a>
                 {% else %}
-                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Student Dashboard</a>
+                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Submission Portal</a>
                     <a href="{% url 'my_submissions' %}" class="btn btn-outline">My Submissions</a>
                 {% endif %}
+                <button type="button" id="changePasswordBtn" class="btn btn-outline" style="margin-top: 10px;">Change Password</button>
+            </div>
+            
+            <!-- Change Password Modal -->
+            <div id="changePasswordModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+                <div style="background: #1a1a1a; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
+                    <h2 style="margin-top: 0; color: #fff;">Change Password</h2>
+                    <form id="changePasswordForm" method="POST" action="{% url 'change_password_profile' %}">
+                        {% csrf_token %}
+                        <div style="margin-bottom: 1rem;">
+                            <label for="old_password" style="display: block; margin-bottom: 0.5rem; color: #fff;">Current Password</label>
+                            <input type="password" id="old_password" name="old_password" required style="width: 100%; padding: 0.75rem; border: 1px solid #333; border-radius: 4px; background: #2a2a2a; color: #fff;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label for="new_password" style="display: block; margin-bottom: 0.5rem; color: #fff;">New Password</label>
+                            <input type="password" id="new_password" name="new_password" required style="width: 100%; padding: 0.75rem; border: 1px solid #333; border-radius: 4px; background: #2a2a2a; color: #fff;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label for="confirm_password" style="display: block; margin-bottom: 0.5rem; color: #fff;">Confirm New Password</label>
+                            <input type="password" id="confirm_password" name="confirm_password" required style="width: 100%; padding: 0.75rem; border: 1px solid #333; border-radius: 4px; background: #2a2a2a; color: #fff;">
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button type="button" id="cancelChangePassword" style="padding: 0.75rem 1.5rem; background: #666; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                            <button type="submit" style="padding: 0.75rem 1.5rem; background: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Change Password</button>
+                        </div>
+                        <p id="changePasswordMessage" style="margin-top: 1rem; color: #ff6b6b;"></p>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    const cancelChangePassword = document.getElementById('cancelChangePassword');
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    const changePasswordMessage = document.getElementById('changePasswordMessage');
+
+    // Open change password modal
+    if (changePasswordBtn && changePasswordModal) {
+        changePasswordBtn.addEventListener('click', function() {
+            changePasswordModal.style.display = 'flex';
+        });
+    }
+
+    // Close change password modal
+    if (cancelChangePassword && changePasswordModal) {
+        cancelChangePassword.addEventListener('click', function() {
+            changePasswordModal.style.display = 'none';
+            changePasswordForm.reset();
+            if (changePasswordMessage) {
+                changePasswordMessage.textContent = '';
+            }
+        });
+    }
+
+    // Close modal when clicking outside
+    if (changePasswordModal) {
+        changePasswordModal.addEventListener('click', function(e) {
+            if (e.target === changePasswordModal) {
+                changePasswordModal.style.display = 'none';
+                changePasswordForm.reset();
+                if (changePasswordMessage) {
+                    changePasswordMessage.textContent = '';
+                }
+            }
+        });
+    }
+
+    // Handle form submission
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(changePasswordForm);
+            const submitButton = changePasswordForm.querySelector('button[type="submit"]');
+            const originalText = submitButton?.textContent;
+
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Changing...';
+            }
+
+            try {
+                const response = await fetch(changePasswordForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (changePasswordMessage) {
+                        changePasswordMessage.textContent = data.message || 'Password changed successfully!';
+                        changePasswordMessage.style.color = '#4caf50';
+                        changePasswordMessage.style.display = 'block';
+                    }
+                    // Close modal and reload after 2 seconds
+                    setTimeout(() => {
+                        changePasswordModal.style.display = 'none';
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    if (changePasswordMessage) {
+                        changePasswordMessage.textContent = data.error || 'An error occurred. Please try again.';
+                        changePasswordMessage.style.color = '#ff6b6b';
+                        changePasswordMessage.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Change password error:', error);
+                if (changePasswordMessage) {
+                    changePasswordMessage.textContent = 'An error occurred. Please try again.';
+                    changePasswordMessage.style.color = '#ff6b6b';
+                    changePasswordMessage.style.display = 'block';
+                }
+            } finally {
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalText;
+                }
+            }
+        });
+    }
+
+    // Helper function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
 {% endblock %}
 

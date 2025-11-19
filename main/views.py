@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 
 from django.contrib import messages
 from django import forms
-from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department, Student, Professor, VerificationCode
+from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department, Student, Professor, VerificationCode, PasswordResetCode
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from collections import Counter
@@ -706,50 +706,96 @@ def reject_thesis(request, thesis_id):
     if not request.user.is_staff:
         return HttpResponseForbidden("You are not authorized to perform this action.")
 
-    submission = get_object_or_404(Submission, id=thesis_id, status=Submission.STATUS_PENDING)
+    # Get submission first without status filter to handle already-rejected cases
+    submission = get_object_or_404(Submission, id=thesis_id)
 
-    try:
-        # Store submission title before rejection
-        submission_title = submission.title
+    # Handle POST request - process rejection with reason
+    if request.method == 'POST':
+        # Check if already rejected (prevents double-submit issues)
+        if submission.status == Submission.STATUS_REJECTED:
+            messages.info(request, f"This submission '{submission.title}' has already been rejected.")
+            return redirect('pending_submissions')
+        
+        # Verify it's still pending
+        if submission.status != Submission.STATUS_PENDING:
+            messages.error(request, f"Cannot reject submission '{submission.title}'. It is not in pending status.")
+            return redirect('pending_submissions')
+        
+        rejection_reason = request.POST.get('rejection_reason', '').strip()
+        
+        if not rejection_reason:
+            messages.error(request, "Rejection reason is required. Please provide a reason for rejecting this thesis.")
+            # Create a simple form object for error display
+            class SimpleForm:
+                def __init__(self):
+                    self.rejection_reason = type('obj', (object,), {'value': '', 'errors': ['This field is required.']})()
+            form = SimpleForm()
+            return render(request, 'main/reject_thesis.html', {
+                'submission': submission,
+                'form': form
+            })
 
-        # Perform rejection
-        rejected_thesis = submission.reject(
-            rejection_reason="Rejected via admin action",
-            rejected_by=request.user
-        )
+        try:
+            # Store submission title before rejection
+            submission_title = submission.title
 
-        # --- Clean up automatic logs ---
-        rejected_ct = ContentType.objects.get_for_model(rejected_thesis)
-        LogEntry.objects.filter(
-            user=request.user,
-            content_type=rejected_ct,
-            object_id=rejected_thesis.id,
-            action_flag=ADDITION
-        ).delete()
+            # Perform rejection with provided reason
+            rejected_thesis = submission.reject(
+                rejection_reason=rejection_reason,
+                rejected_by=request.user
+            )
 
-        submission_ct = ContentType.objects.get_for_model(submission)
-        LogEntry.objects.filter(
-            user=request.user,
-            content_type=submission_ct,
-            object_id=submission.id,
-            action_flag__in=[CHANGE, DELETION]
-        ).delete()
+            # --- Clean up automatic logs ---
+            rejected_ct = ContentType.objects.get_for_model(rejected_thesis)
+            LogEntry.objects.filter(
+                user=request.user,
+                content_type=rejected_ct,
+                object_id=rejected_thesis.id,
+                action_flag=ADDITION
+            ).delete()
 
-        # --- Custom log entry for rejection ---
-        log_admin_action(
-            request.user,
-            rejected_thesis,
-            ADDITION,
-            f"[REJECTED] Submission '{submission_title}' and moved to Rejected Thesis archive"
-        )
+            submission_ct = ContentType.objects.get_for_model(submission)
+            LogEntry.objects.filter(
+                user=request.user,
+                content_type=submission_ct,
+                object_id=submission.id,
+                action_flag__in=[CHANGE, DELETION]
+            ).delete()
 
-        # Success feedback
-        messages.success(request, f"Successfully rejected '{submission_title}'. It has been moved to the Rejected Thesis archive.")
+            # --- Custom log entry for rejection ---
+            log_admin_action(
+                request.user,
+                rejected_thesis,
+                ADDITION,
+                f"[REJECTED] Submission '{submission_title}' - Reason: {rejection_reason[:100]}"
+            )
 
-    except ValueError as e:
-        messages.error(request, f"Could not reject '{submission.title}': {str(e)}")
+            # Success feedback
+            messages.success(request, f"Successfully rejected '{submission_title}'. It has been moved to the Rejected Thesis archive.")
 
-    return redirect('pending_submissions.html')  # Change this redirect to wherever your admin dashboard lives
+        except ValueError as e:
+            messages.error(request, f"Could not reject '{submission.title}': {str(e)}")
+
+        return redirect('pending_submissions')
+
+    # Handle GET request - show rejection form
+    # Verify it's still pending for GET requests too
+    if submission.status != Submission.STATUS_PENDING:
+        if submission.status == Submission.STATUS_REJECTED:
+            messages.info(request, f"This submission '{submission.title}' has already been rejected.")
+        else:
+            messages.error(request, f"Cannot reject submission '{submission.title}'. It is not in pending status.")
+        return redirect('pending_submissions')
+    
+    class SimpleForm:
+        def __init__(self):
+            self.rejection_reason = type('obj', (object,), {'value': '', 'errors': []})()
+    
+    form = SimpleForm()
+    return render(request, 'main/reject_thesis.html', {
+        'submission': submission,
+        'form': form
+    })
 
 def view_thesis(request, thesis_id):
     """
@@ -1371,6 +1417,37 @@ Thesis Library Team
         return False
 
 
+def send_password_reset_email(user, code):
+    """Send password reset code to user's email"""
+    subject = 'Thesis Library - Password Reset Code'
+    message = f'''
+Hello {user.username},
+
+You requested to reset your password for Thesis Library.
+
+Your password reset code is: {code}
+
+This code will expire in 1 hour.
+
+If you did not request this password reset, please ignore this email and your password will remain unchanged.
+
+Best regards,
+Thesis Library Team
+'''
+    try:
+        send_mail(
+            subject,
+            message,
+            getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@thesislibrary.com'),
+            [user.email],
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
+        return False
+
+
 @csrf_protect
 def login_view(request):
     """Handle login with ID as username - only verified accounts can login"""
@@ -1973,6 +2050,281 @@ def verify_email_view(request):
                 return redirect('/')
     
     return redirect('/')
+
+
+@csrf_protect
+def forgot_password(request):
+    """Handle forgot password request - send reset code to email"""
+    if request.method == 'POST':
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                user_id = data.get('id') or data.get('username')
+                email = data.get('email')
+                
+                if not user_id or not email:
+                    return JsonResponse({'success': False, 'error': 'ID and email are required'}, status=400)
+                
+                try:
+                    user = User.objects.get(username=user_id, email=email)
+                except User.DoesNotExist:
+                    # Don't reveal if user exists or not for security
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'If an account exists with this ID and email, a password reset code has been sent.'
+                    })
+                
+                # Generate reset code
+                code = generate_verification_code()
+                expires_at = timezone.now() + timezone.timedelta(hours=1)
+                
+                # Create or update reset code
+                PasswordResetCode.objects.filter(user=user, is_used=False).update(is_used=True)
+                PasswordResetCode.objects.create(
+                    user=user,
+                    code=code,
+                    expires_at=expires_at
+                )
+                
+                # Send email
+                email_sent = send_password_reset_email(user, code)
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Password reset code has been sent to your email.'
+                })
+                
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        else:
+            # Form POST (could be AJAX with FormData)
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            user_id = request.POST.get('id') or request.POST.get('username')
+            email = request.POST.get('email')
+            
+            if not user_id or not email:
+                if is_ajax:
+                    return JsonResponse({'success': False, 'error': 'ID and email are required'}, status=400)
+                messages.error(request, 'ID and email are required.')
+                return redirect('/')
+            
+            try:
+                user = User.objects.get(username=user_id, email=email)
+                
+                # Generate reset code
+                code = generate_verification_code()
+                expires_at = timezone.now() + timezone.timedelta(hours=1)
+                
+                # Create or update reset code
+                PasswordResetCode.objects.filter(user=user, is_used=False).update(is_used=True)
+                PasswordResetCode.objects.create(
+                    user=user,
+                    code=code,
+                    expires_at=expires_at
+                )
+                
+                # Send email
+                email_sent = send_password_reset_email(user, code)
+                
+                if is_ajax:
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Password reset code has been sent to your email.'
+                    })
+                messages.success(request, 'Password reset code has been sent to your email.')
+                
+            except User.DoesNotExist:
+                # Don't reveal if user exists or not
+                if is_ajax:
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'If an account exists with this ID and email, a password reset code has been sent.'
+                    })
+                messages.success(request, 'If an account exists with this ID and email, a password reset code has been sent.')
+            except Exception as e:
+                if is_ajax:
+                    return JsonResponse({'success': False, 'error': str(e)}, status=500)
+                messages.error(request, f'An error occurred: {str(e)}')
+            
+            if not is_ajax:
+                return redirect('/')
+    
+    return redirect('/')
+
+
+@csrf_protect
+def reset_password(request):
+    """Handle password reset with code"""
+    if request.method == 'POST':
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                user_id = data.get('id') or data.get('username')
+                code = data.get('code')
+                new_password = data.get('new_password')
+                confirm_password = data.get('confirm_password')
+                
+                if not user_id or not code or not new_password or not confirm_password:
+                    return JsonResponse({'success': False, 'error': 'All fields are required'}, status=400)
+                
+                if new_password != confirm_password:
+                    return JsonResponse({'success': False, 'error': 'Passwords do not match'}, status=400)
+                
+                try:
+                    user = User.objects.get(username=user_id)
+                except User.DoesNotExist:
+                    return JsonResponse({'success': False, 'error': 'User not found'}, status=404)
+                
+                # Get the most recent unused reset code
+                try:
+                    reset_code = PasswordResetCode.objects.filter(
+                        user=user,
+                        is_used=False
+                    ).order_by('-created_at').first()
+                    
+                    if not reset_code:
+                        return JsonResponse({'success': False, 'error': 'No valid reset code found. Please request a new one.'}, status=400)
+                    
+                    if reset_code.is_expired():
+                        return JsonResponse({'success': False, 'error': 'Reset code has expired. Please request a new one.'}, status=400)
+                    
+                    if reset_code.code != code:
+                        return JsonResponse({'success': False, 'error': 'Invalid reset code'}, status=400)
+                    
+                    # Reset password
+                    user.set_password(new_password)
+                    user.save()
+                    
+                    # Mark code as used
+                    reset_code.is_used = True
+                    reset_code.save()
+                    
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Password reset successfully! You can now log in with your new password.'
+                    })
+                    
+                except Exception as e:
+                    return JsonResponse({'success': False, 'error': str(e)}, status=500)
+                    
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        else:
+            # Form POST
+            user_id = request.POST.get('id') or request.POST.get('username')
+            code = request.POST.get('code')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            if not user_id or not code or not new_password or not confirm_password:
+                messages.error(request, 'All fields are required.')
+                return redirect('/')
+            
+            if new_password != confirm_password:
+                messages.error(request, 'Passwords do not match.')
+                return redirect('/')
+            
+            try:
+                user = User.objects.get(username=user_id)
+                
+                # Get the most recent unused reset code
+                reset_code = PasswordResetCode.objects.filter(
+                    user=user,
+                    is_used=False
+                ).order_by('-created_at').first()
+                
+                if not reset_code:
+                    messages.error(request, 'No valid reset code found. Please request a new one.')
+                    return redirect('/')
+                
+                if reset_code.is_expired():
+                    messages.error(request, 'Reset code has expired. Please request a new one.')
+                    return redirect('/')
+                
+                if reset_code.code != code:
+                    messages.error(request, 'Invalid reset code.')
+                    return redirect('/')
+                
+                # Reset password
+                user.set_password(new_password)
+                user.save()
+                
+                # Mark code as used
+                reset_code.is_used = True
+                reset_code.save()
+                
+                messages.success(request, 'Password reset successfully! You can now log in with your new password.')
+                return redirect('/')
+                
+            except User.DoesNotExist:
+                messages.error(request, 'User not found.')
+            except Exception as e:
+                messages.error(request, f'An error occurred: {str(e)}')
+            
+            return redirect('/')
+    
+    return redirect('/')
+
+
+@login_required
+def change_password_profile(request):
+    """Handle password change for logged-in users from profile"""
+    if request.method == 'POST':
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                old_password = data.get('old_password')
+                new_password = data.get('new_password')
+                confirm_password = data.get('confirm_password')
+                
+                if not old_password or not new_password or not confirm_password:
+                    return JsonResponse({'success': False, 'error': 'All fields are required'}, status=400)
+                
+                if new_password != confirm_password:
+                    return JsonResponse({'success': False, 'error': 'New passwords do not match'}, status=400)
+                
+                user = request.user
+                
+                if not user.check_password(old_password):
+                    return JsonResponse({'success': False, 'error': 'Current password is incorrect'}, status=400)
+                
+                user.set_password(new_password)
+                user.save()
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Password changed successfully!'
+                })
+                
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        else:
+            # Form POST
+            old_password = request.POST.get('old_password')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            if not old_password or not new_password or not confirm_password:
+                messages.error(request, 'All fields are required.')
+                return redirect('profile_card')
+            
+            if new_password != confirm_password:
+                messages.error(request, 'New passwords do not match.')
+                return redirect('profile_card')
+            
+            user = request.user
+            
+            if not user.check_password(old_password):
+                messages.error(request, 'Current password is incorrect.')
+                return redirect('profile_card')
+            
+            user.set_password(new_password)
+            user.save()
+            
+            messages.success(request, 'Password changed successfully!')
+            return redirect('profile_card')
+    
+    return redirect('profile_card')
 
 
 # ----------------------

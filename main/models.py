@@ -227,7 +227,7 @@ class Submission(models.Model):
     thesis_type = models.CharField(max_length=100, blank=True)
     specialization = models.CharField(max_length=120, blank=True)
 
-    # Extended metadata from student dashboard
+    # Extended metadata from submission portal
     keywords = models.CharField(max_length=255, blank=True)
     research_category = models.CharField(max_length=50, blank=True)
     expected_completion = models.DateField(null=True, blank=True)
@@ -424,6 +424,27 @@ class VerificationCode(models.Model):
     
     def __str__(self):
         return f"Code for {self.user.username} - {self.code}"
+    
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+
+
+class PasswordResetCode(models.Model):
+    """Stores password reset codes for password recovery"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_codes')
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = "Password Reset Code"
+        verbose_name_plural = "Password Reset Codes"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Reset code for {self.user.username} - {self.code}"
     
     def is_expired(self):
         from django.utils import timezone

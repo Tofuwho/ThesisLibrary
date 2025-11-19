@@ -1,5 +1,5 @@
 /**
- * Student Dashboard JavaScript Module
+ * Submission Portal JavaScript Module
  * Handles thesis submission form functionality and user interactions
  * 
  * This module provides:
@@ -12,7 +12,7 @@
  */
 
 /**
- * Initialize student dashboard functionality when DOM is loaded
+ * Initialize submission portal functionality when DOM is loaded
  * Sets up all form interactions, file uploads, and auto-save features
  */
 document.addEventListener('DOMContentLoaded', function() {

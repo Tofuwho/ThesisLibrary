@@ -203,6 +203,23 @@
   animation: slideInUp 0.8s ease forwards;
 }
 
+/* Disable animations when no-animation class is present */
+.categories-hero.no-animation,
+.academic-header.no-animation,
+.university-crest.no-animation,
+.categories-hero h1.no-animation,
+.categories-hero p.no-animation,
+.hero-meta.no-animation,
+.hero-search.no-animation,
+.filter-sidebar.no-animation,
+.department-bookmarks.no-animation,
+.dept-bookmark.no-animation,
+.cat-thesis-results.no-animation {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 .categories-hero::after {
   content: '';
   position: absolute;
@@ -247,6 +264,10 @@
   opacity: 0;
 }
 
+.academic-header.no-animation {
+  opacity: 1;
+}
+
 .university-crest {
   width: 80px;
   height: 80px;
@@ -262,6 +283,10 @@
   animation: bounceIn 1s ease forwards 0.4s;
   opacity: 0;
   transition: all 0.3s ease;
+}
+
+.university-crest.no-animation {
+  opacity: 1;
 }
 
 .university-crest:hover {
@@ -305,6 +330,10 @@
     opacity: 0;
 }
 
+.categories-hero h1.no-animation {
+  opacity: 1;
+}
+
 .categories-hero h1::after {
     content: '';
     position: absolute;
@@ -328,6 +357,10 @@
     opacity: 0;
 }
 
+.categories-hero p.no-animation {
+  opacity: 1;
+}
+
 .hero-meta {
     margin-top: 14px;
     display: flex;
@@ -335,6 +368,10 @@
     gap: 10px;
     animation: slideInUp 0.8s ease forwards 1s;
     opacity: 0;
+}
+
+.hero-meta.no-animation {
+  opacity: 1;
 }
 
 .hero-chip {
@@ -381,6 +418,10 @@
     max-width: 640px;
     animation: slideInUp 0.8s ease forwards 1.2s;
     opacity: 0;
+}
+
+.hero-search.no-animation {
+  opacity: 1;
 }
 
 .hero-search .search-form { 
@@ -725,6 +766,10 @@
     opacity: 0;
 }
 
+.filter-sidebar.no-animation {
+  opacity: 1;
+}
+
 .filter-sidebar::before {
     content: '';
     position: absolute;
@@ -971,6 +1016,10 @@
     opacity: 0;
 }
 
+.cat-thesis-results.no-animation {
+  opacity: 1;
+}
+
 .cat-results-header {
     display: flex;
     justify-content: space-between;
@@ -986,6 +1035,10 @@
     border: 3px solid #8B0000;
     position: relative;
     z-index: 1;
+}
+
+.cat-results-header.no-animation {
+    opacity: 1;
 }
 
 .cat-results-header::before {
@@ -1097,6 +1150,27 @@
     min-height: 120px;
     position: relative;
     z-index: 1;
+}
+
+/* When searching, only animate results header and thesis items */
+.search-mode .cat-results-header.search-animate {
+    animation: slideInDown 0.5s ease forwards;
+    opacity: 0;
+}
+
+.search-mode .cat-thesis-item.search-animate {
+    animation: slideInUp 0.4s ease forwards;
+    animation-delay: calc(var(--i, 0) * 0.05s);
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+/* Disable thesis item animations when not in search mode and not first visit */
+.subsequent-visit .cat-thesis-item:not(.search-animate),
+.cat-thesis-item.no-animation {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
 }
 
 .cat-thesis-item::before {
@@ -1882,6 +1956,10 @@
   animation: slideInUp 0.8s ease forwards 1.4s;
   opacity: 0;
 }
+
+.department-bookmarks.no-animation {
+  opacity: 1;
+}
 .dept-bookmark {
   margin-left: 20px;
   display: flex;
@@ -1912,6 +1990,11 @@
   animation: scaleIn 0.6s ease forwards;
   opacity: 0;
   transform: scale(0.8);
+}
+
+.dept-bookmark.no-animation {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .dept-bookmark:nth-child(1) { animation-delay: 1.6s; }
