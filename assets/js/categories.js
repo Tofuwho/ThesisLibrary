@@ -23,7 +23,94 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const currentDepartment = urlParams.get('department') || 'all';
     applyDepartmentThemeFromId(currentDepartment);
+    
+    // Optimize animations: only animate categories on first visit, and only animate results when searching
+    optimizeAnimations();
 });
+
+/**
+ * Animation Optimization
+ * Controls which elements animate based on first visit and search state
+ */
+function optimizeAnimations() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasSearch = urlParams.get('search') && urlParams.get('search').trim() !== '';
+    const categoriesMain = document.querySelector('.categories-main');
+    
+    if (!categoriesMain) return;
+    
+    // Check if this is the first time visiting categories (not just first time on this page load)
+    const hasAnimatedBefore = sessionStorage.getItem('categoriesAnimated') === 'true';
+    
+    if (hasSearch) {
+        // When searching: only animate results header and thesis items
+        categoriesMain.classList.add('search-mode');
+        // Disable all other animations
+        disableCategoryAnimations();
+        // Enable only results animations
+        enableSearchResultsAnimations();
+    } else if (!hasAnimatedBefore) {
+        // First time visiting: allow all animations
+        sessionStorage.setItem('categoriesAnimated', 'true');
+        categoriesMain.classList.add('first-visit');
+    } else {
+        // Subsequent visits without search: disable all animations including thesis items
+        categoriesMain.classList.add('subsequent-visit');
+        disableCategoryAnimations();
+        // Also disable thesis items on subsequent visits
+        const thesisItems = document.querySelectorAll('.cat-thesis-item');
+        thesisItems.forEach(item => {
+            item.classList.add('no-animation');
+        });
+    }
+}
+
+/**
+ * Disable category animations (hero, sidebar, etc.)
+ * Note: Does not disable thesis items - they are handled separately
+ */
+function disableCategoryAnimations() {
+    const elementsToDisable = [
+        '.categories-hero',
+        '.academic-header',
+        '.university-crest',
+        '.categories-hero h1',
+        '.categories-hero p',
+        '.hero-meta',
+        '.hero-search',
+        '.filter-sidebar',
+        '.department-bookmarks',
+        '.dept-bookmark',
+        '.cat-thesis-results'
+    ];
+    
+    elementsToDisable.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(el => {
+            el.classList.add('no-animation');
+        });
+    });
+}
+
+/**
+ * Enable animations only for search results (header and thesis items)
+ */
+function enableSearchResultsAnimations() {
+    // Results header should animate
+    const resultsHeader = document.querySelector('.cat-results-header');
+    if (resultsHeader) {
+        resultsHeader.classList.remove('no-animation');
+        resultsHeader.classList.add('search-animate');
+    }
+    
+    // Thesis items should animate
+    const thesisItems = document.querySelectorAll('.cat-thesis-item');
+    thesisItems.forEach((item, index) => {
+        item.classList.remove('no-animation');
+        item.classList.add('search-animate');
+        item.style.setProperty('--i', index);
+    });
+}
 
 /**
  * Department Button Management

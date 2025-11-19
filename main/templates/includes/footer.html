@@ -21,7 +21,7 @@
                     {% if user.is_staff %}
                         <li><a href="{% url 'admin_dashboard' %}">Admin Panel</a></li>
                     {% else %}
-                        <li><a href="{% url 'student_dashboard' %}">Student Dashboard</a></li>
+                        <li><a href="{% url 'student_dashboard' %}">Submission Portal</a></li>
                         <li><a href="{% url 'my_submissions' %}">My Submissions</a></li>
                     {% endif %}
                 {% endif %}

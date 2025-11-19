@@ -151,6 +151,7 @@
               <th style="padding:0.8rem;">Category</th>
               <th style="padding:0.8rem;">Department</th>
               <th style="padding:0.8rem;">Course</th>
+              <th style="padding:0.8rem;">Rejection Reason</th>
               <th style="padding:0.8rem;">Rejected At</th>
               <th style="padding:0.8rem;">Rejected By</th>
               <th style="padding:0.8rem;">File</th>
@@ -165,6 +166,15 @@
               <td style="padding:0.8rem;">{{ thesis.category }}</td>
               <td style="padding:0.8rem;">{{ thesis.department }}</td>
               <td style="padding:0.8rem;">{{ thesis.course_display }}</td>
+              <td style="padding:0.8rem; max-width:300px;">
+                {% if thesis.rejection_reason %}
+                  <span title="{{ thesis.rejection_reason }}" style="color:#ffc107;">
+                    {{ thesis.rejection_reason|truncatewords:15 }}
+                  </span>
+                {% else %}
+                  <span style="color:#888;">No reason provided</span>
+                {% endif %}
+              </td>
               <td style="padding:0.8rem;">{{ thesis.rejected_at|date:"Y-m-d H:i" }}</td>
               <td style="padding:0.8rem;">{{ thesis.rejected_by }}</td>
               <td style="padding:0.8rem; text-align:center;">
@@ -177,7 +187,7 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="9" style="text-align:center; padding:1rem; color:#777;">No rejected theses found.</td>
+              <td colspan="10" style="text-align:center; padding:1rem; color:#777;">No rejected theses found.</td>
             </tr>
             {% endfor %}
           </tbody>

@@ -21,6 +21,15 @@
                     {% if s.category %} • {{ s.category.name }}{% endif %}
                     {% if s.year %} • {{ s.year }}{% endif %}
                 </div>
+                {% if s.status == 'rejected' and s.decision_note %}
+                <div class="rejection-reason" style="margin-top: 1rem; padding: 1rem; background: rgba(211, 47, 47, 0.1); border-left: 4px solid #d32f2f; border-radius: 4px;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-exclamation-triangle" style="color: #d32f2f;"></i>
+                        <strong style="color: #d32f2f;">Rejection Reason:</strong>
+                    </div>
+                    <p style="color: #333; margin: 0; line-height: 1.5;">{{ s.decision_note }}</p>
+                </div>
+                {% endif %}
                 {% if s.file %}
                 <a class="view-button" href="{{ s.file.url }}" target="_blank">View File</a>
                 {% else %}
@@ -33,8 +42,8 @@
     {% else %}
     <div class="resource-card" style="margin-top: 20px;">
         <h3>No submissions yet</h3>
-        <p>Submit your thesis from your dashboard to see it listed here and track approval status.</p>
-        <a class="btn-outline" href="{% url 'student_dashboard' %}">Go to Dashboard</a>
+        <p>Submit your thesis from your submission portal to see it listed here and track approval status.</p>
+        <a class="btn-outline" href="{% url 'student_dashboard' %}">Go to Submission Portal</a>
     </div>
     {% endif %}
 </div>

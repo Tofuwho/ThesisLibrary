@@ -252,6 +252,197 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // === 4. VERIFICATION FORM HANDLING ===
+  // === FORGOT PASSWORD HANDLING ===
+  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+  const forgotPasswordContainer = document.getElementById('forgotPasswordContainer');
+  const resetPasswordContainer = document.getElementById('resetPasswordContainer');
+  const backToLoginBtn = document.getElementById('backToLogin');
+  const backToForgotBtn = document.getElementById('backToForgot');
+
+  if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Hide login form and show forgot password form
+      document.querySelector('.sign-in-container').style.display = 'none';
+      if (forgotPasswordContainer) {
+        forgotPasswordContainer.style.display = 'block';
+      }
+    });
+  }
+
+  if (backToLoginBtn) {
+    backToLoginBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Show login form and hide forgot password form
+      document.querySelector('.sign-in-container').style.display = 'block';
+      if (forgotPasswordContainer) {
+        forgotPasswordContainer.style.display = 'none';
+      }
+      if (resetPasswordContainer) {
+        resetPasswordContainer.style.display = 'none';
+      }
+    });
+  }
+
+  if (backToForgotBtn) {
+    backToForgotBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Show forgot password form and hide reset password form
+      if (forgotPasswordContainer) {
+        forgotPasswordContainer.style.display = 'block';
+      }
+      if (resetPasswordContainer) {
+        resetPasswordContainer.style.display = 'none';
+      }
+    });
+  }
+
+  // === FORGOT PASSWORD FORM ===
+  const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+  if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(forgotPasswordForm);
+      const submitButton = forgotPasswordForm.querySelector('button[type="submit"]');
+      const originalText = submitButton?.textContent;
+      const messageEl = document.getElementById('forgotPasswordMessage');
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+      }
+
+      try {
+        const response = await fetch(forgotPasswordForm.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCSRFToken()
+          }
+        });
+        
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          console.error('Failed to parse JSON response:', jsonError);
+          if (messageEl) {
+            messageEl.textContent = 'An error occurred. Please try again.';
+            messageEl.style.color = 'red';
+            messageEl.style.display = 'block';
+          }
+          return;
+        }
+        
+        if (data.success) {
+          if (messageEl) {
+            messageEl.textContent = data.message || 'Password reset code has been sent to your email.';
+            messageEl.style.color = 'green';
+            messageEl.style.display = 'block';
+          }
+          // Show reset password form
+          if (forgotPasswordContainer) {
+            forgotPasswordContainer.style.display = 'none';
+          }
+          if (resetPasswordContainer) {
+            resetPasswordContainer.style.display = 'block';
+            // Pre-fill the ID field
+            const resetIdField = document.getElementById('reset-id');
+            if (resetIdField) {
+              resetIdField.value = document.getElementById('forgot-id').value;
+            }
+          }
+        } else {
+          if (messageEl) {
+            messageEl.textContent = data.error || 'An error occurred. Please try again.';
+            messageEl.style.color = 'red';
+            messageEl.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Forgot password error:', error);
+        if (messageEl) {
+          messageEl.textContent = 'An error occurred. Please try again.';
+          messageEl.style.color = 'red';
+          messageEl.style.display = 'block';
+        }
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalText;
+        }
+      }
+    });
+  }
+
+  // === RESET PASSWORD FORM ===
+  const resetPasswordForm = document.getElementById('resetPasswordForm');
+  if (resetPasswordForm) {
+    resetPasswordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(resetPasswordForm);
+      const submitButton = resetPasswordForm.querySelector('button[type="submit"]');
+      const originalText = submitButton?.textContent;
+      const messageEl = document.getElementById('resetPasswordMessage');
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Resetting...';
+      }
+
+      try {
+        const response = await fetch(resetPasswordForm.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCSRFToken()
+          }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          if (messageEl) {
+            messageEl.textContent = data.message || 'Password reset successfully! You can now log in.';
+            messageEl.style.color = 'green';
+            messageEl.style.display = 'block';
+          }
+          // Close modal and redirect to login after 2 seconds
+          setTimeout(() => {
+            if (loginModal) {
+              loginModal.classList.remove('active');
+              document.body.style.overflow = '';
+            }
+            // Reset forms
+            if (forgotPasswordContainer) forgotPasswordContainer.style.display = 'none';
+            if (resetPasswordContainer) resetPasswordContainer.style.display = 'none';
+            document.querySelector('.sign-in-container').style.display = 'block';
+            resetPasswordForm.reset();
+          }, 2000);
+        } else {
+          if (messageEl) {
+            messageEl.textContent = data.error || 'An error occurred. Please try again.';
+            messageEl.style.color = 'red';
+            messageEl.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Reset password error:', error);
+        if (messageEl) {
+          messageEl.textContent = 'An error occurred. Please try again.';
+          messageEl.style.color = 'red';
+          messageEl.style.display = 'block';
+        }
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalText;
+        }
+      }
+    });
+  }
+
   const verifyForm = document.getElementById('verifyForm');
   const backToSignupBtn = document.getElementById('backToSignup');
 

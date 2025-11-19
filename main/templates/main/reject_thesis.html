@@ -1,0 +1,219 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+  .reject-form-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: #1f1f1f;
+    border-radius: 12px;
+    padding: 2rem;
+  }
+
+  .reject-form-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #333;
+  }
+
+  .reject-form-header h1 {
+    color: #d32f2f;
+    margin-bottom: 0.5rem;
+  }
+
+  .thesis-info {
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .thesis-info-item {
+    display: flex;
+    margin-bottom: 0.8rem;
+  }
+
+  .thesis-info-item label {
+    font-weight: 600;
+    color: #90caf9;
+    min-width: 150px;
+  }
+
+  .thesis-info-item span {
+    color: #fff;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 1rem;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+  }
+
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #90caf9;
+    box-shadow: 0 0 5px rgba(144, 202, 249, 0.3);
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-cancel {
+    background: #555;
+    color: #fff;
+  }
+
+  .btn-cancel:hover {
+    background: #666;
+  }
+
+  .btn-reject {
+    background: #d32f2f;
+    color: #fff;
+  }
+
+  .btn-reject:hover {
+    background: #f44336;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+  }
+
+  .alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .alert-warning {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    color: #ffc107;
+  }
+
+  .error-message {
+    color: #f44336;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  {% include 'main/admin_sidebar.html' %}
+
+  <main class="admin-main">
+    <div class="reject-form-container">
+      <div class="reject-form-header">
+        <h1>❌ Reject Thesis Submission</h1>
+        <p style="color: #ccc;">Please provide a reason for rejecting this thesis submission.</p>
+      </div>
+
+      <div class="alert alert-warning">
+        <strong>⚠️ Warning:</strong> This action cannot be undone. The thesis will be moved to the rejected archive.
+      </div>
+
+      <div class="thesis-info">
+        <h3 style="color: #90caf9; margin-bottom: 1rem;">Thesis Information</h3>
+        <div class="thesis-info-item">
+          <label>Title:</label>
+          <span>{{ submission.title }}</span>
+        </div>
+        <div class="thesis-info-item">
+          <label>Author:</label>
+          <span>{{ submission.author }}</span>
+        </div>
+        {% if submission.department %}
+        <div class="thesis-info-item">
+          <label>Department:</label>
+          <span>{{ submission.department }}</span>
+        </div>
+        {% endif %}
+        {% if submission.course %}
+        <div class="thesis-info-item">
+          <label>Course:</label>
+          <span>{{ submission.course }}</span>
+        </div>
+        {% endif %}
+        {% if submission.year %}
+        <div class="thesis-info-item">
+          <label>Year:</label>
+          <span>{{ submission.year }}</span>
+        </div>
+        {% endif %}
+        <div class="thesis-info-item">
+          <label>Submitted by:</label>
+          <span>{{ submission.submitter.get_full_name|default:submission.submitter.username }}</span>
+        </div>
+        <div class="thesis-info-item">
+          <label>Submitted on:</label>
+          <span>{{ submission.created_at|date:"F d, Y" }}</span>
+        </div>
+      </div>
+
+      <form method="POST" action="{% url 'reject_thesis' submission.id %}">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="rejection_reason">
+            Rejection Reason <span style="color: #f44336;">*</span>
+          </label>
+          <textarea 
+            id="rejection_reason" 
+            name="rejection_reason" 
+            placeholder="Please provide a clear and detailed reason for rejecting this thesis submission. This will be visible to the submitter."
+            required
+          >{{ form.rejection_reason.value|default:'' }}</textarea>
+          {% if form.rejection_reason.errors %}
+            <div class="error-message">{{ form.rejection_reason.errors.0 }}</div>
+          {% endif %}
+          <small style="color: #888; display: block; margin-top: 0.5rem;">
+            This reason will be stored with the rejected thesis and may be visible to the submitter.
+          </small>
+        </div>
+
+        <div class="form-actions">
+          <a href="{% url 'pending_submissions' %}" class="btn btn-cancel">Cancel</a>
+          <button type="submit" class="btn btn-reject">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
