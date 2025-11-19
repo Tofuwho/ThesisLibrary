@@ -1,3 +1,6 @@
+import shutil
+from datetime import timedelta
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Count, Q, OuterRef, Subquery
 from django.db.models import Value, IntegerField, Case, When, F, ExpressionWrapper, CharField, DateTimeField
@@ -9,10 +12,10 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.http import FileResponse, Http404, JsonResponse, HttpResponse, HttpResponseForbidden
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
-
+from datetime import datetime
 from django.contrib import messages
 from django import forms
 from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department, Student, Professor, VerificationCode
@@ -317,6 +320,65 @@ def categories_page(request):
     }
     return render(request, 'main/categories.html', context)
 
+@csrf_exempt
+def archive_old_theses(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+    User = get_user_model()
+    system_user = User.objects.filter(is_superuser=True).first()  # pick any admin as the "system" user
+    if not system_user:
+        return JsonResponse({"error": "No admin user found to log actions."}, status=500)
+
+    current_year = datetime.now().year
+    cutoff_year = current_year - 10
+
+    old_theses = Thesis.objects.filter(year__lte=cutoff_year)
+    archived_count = 0
+
+    for thesis in old_theses:
+
+        # Delete related co-authors
+        thesis.co_authors.all().delete()
+
+        # Delete related approved Submissions
+        Submission.objects.filter(
+            title=thesis.title,
+            author=thesis.author,
+            year=thesis.year,
+            status=Submission.STATUS_APPROVED
+        ).delete()
+
+        # Move thesis file if it exists
+        if thesis.file and thesis.file.name:
+            old_path = thesis.file.path
+            archive_dir = os.path.join(settings.MEDIA_ROOT, "thesis_files", "Archived")
+            os.makedirs(archive_dir, exist_ok=True)
+
+            filename = os.path.basename(old_path)
+            new_path = os.path.join(archive_dir, filename)
+
+            if os.path.exists(old_path):
+                shutil.move(old_path, new_path)
+                thesis.file.name = f"thesis_files/Archived/{filename}"
+                thesis.save()
+                archived_count += 1
+
+        # Log before deletion
+        LogEntry.objects.log_action(
+            user_id=system_user.id,
+            content_type_id=ContentType.objects.get_for_model(Thesis).pk,
+            object_id=thesis.pk,
+            object_repr=str(thesis),
+            action_flag=DELETION,
+            change_message="Archived thesis older than 10 years"
+        )
+
+        # Delete the Thesis record
+        thesis.delete()
+
+    return JsonResponse({"archived": archived_count})
+
 
 def category_detail(request, category_name):
     """Browse theses by specific category"""
@@ -541,6 +603,15 @@ def admin_dashboard(request):
         .order_by('-activity_date')[:16]
     )
 
+    archive_path = os.path.join(settings.MEDIA_ROOT, 'thesis_files', 'Archived')
+    if os.path.exists(archive_path):
+        archived_theses_count = len([
+            f for f in os.listdir(archive_path)
+            if os.path.isfile(os.path.join(archive_path, f))
+        ])
+    else:
+        archived_theses_count = 0
+
     context = {
         'total_theses': total_theses,
         'total_users': total_users,
@@ -554,7 +625,7 @@ def admin_dashboard(request):
         'approved_data': approved_data,
         'pending_data': pending_data,
         'rejected_data': rejected_data,
-
+        'archived_theses_count': archived_theses_count,
     }
 
     return render(request, 'main/admin_dashboard.html', context)
@@ -989,6 +1060,18 @@ def edit_student(request, student_id):
         student.save()
         return redirect('students_list')
     return render(request, 'main/edit_student.html', {'student': student})
+
+def delete_student(request, student_id):
+    student = get_object_or_404(Student, student_id=student_id)
+    student.delete()
+    messages.success(request, f"Student {student.student_id} has been deleted.")
+    return redirect('students_list')  # adjust if your listing URL name is different
+
+def delete_professor(request, professor_id):
+    professor = get_object_or_404(Professor, professor_id=professor_id)
+    professor.delete()
+    messages.success(request, f"Professor {professor.professor_id} has been deleted.")
+    return redirect('professors_list')  # adjust this name to your listing URL
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
