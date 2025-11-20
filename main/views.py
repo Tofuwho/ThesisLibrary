@@ -868,40 +868,48 @@ def reject_thesis(request, thesis_id):
         'form': form
     })
 
+
 def view_thesis(request, thesis_id):
     """
-    Displays or streams the thesis PDF file.
-    Works for both Thesis and Submission models.
-    Falls back to restricted version if not logged in.
+    Securely views the thesis.
+    REPLACED: FileResponse (PDF Downloadable)
+    WITH: HTML Viewer (Images Only)
     """
-    # Try to find the thesis in the Thesis table first
+    # 1. Get the object
     try:
         thesis = Thesis.objects.get(pk=thesis_id)
     except Thesis.DoesNotExist:
-        # Fallback: maybe it's still a pending submission
         thesis = get_object_or_404(Submission, pk=thesis_id)
 
-    # If it has no file attached
-    if not getattr(thesis, 'file', None):
-        raise Http404("File not found for this thesis.")
-
-    # If file field exists but is empty or missing in storage
-    if not thesis.file.name or not thesis.file.storage.exists(thesis.file.name):
-        raise Http404("Thesis file is missing or unavailable.")
-
-    # If the user isn't authenticated → use restricted view
+    # 2. Check Authentication (IPP Restriction)
     if not request.user.is_authenticated:
-        # Optional: redirect to a limited PDF generator view
-        # or just render a restricted notice
-        return restricted_view_thesis_file(request, thesis_id)
+        # Redirect to login or show restriction notice
+        messages.error(request, "You must be logged in to view this document.")
+        return redirect('login')  # Or use your restricted_view_thesis_file
 
-    # Serve the file as inline PDF (opens in browser)
-    response = FileResponse(
-        thesis.file.open('rb'),
-        content_type='application/pdf'
-    )
-    response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
-    return response
+    # 3. Verify file exists
+    if not getattr(thesis, 'file', None) or not os.path.exists(thesis.file.path):
+        raise Http404("Thesis file is missing.")
+
+    # 4. Get Page Count
+    try:
+        doc = fitz.open(thesis.file.path)
+        total_pages = doc.page_count
+        doc.close()
+    except Exception:
+        raise Http404("Corrupted PDF file.")
+
+    # 5. Render a Secure Viewer Page
+    # This HTML disables right-click and overlays a transparent div to prevent drag-and-drop
+    query = request.GET.get('q', '')
+
+    context = {
+        'thesis': thesis,
+        'total_pages': range(1, total_pages + 1),
+        'thesis_id': thesis_id,
+        'query': query  # Pass query to template
+    }
+    return render(request, 'main/secure_viewer.html', context)
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -1387,14 +1395,17 @@ def get_client_ip(request):
         return x_forwarded_for.split(',')[0]
     return request.META.get('REMOTE_ADDR')
 
+
 def download_thesis_file(request, pk):
     """
-    Downloads have been disabled site-wide to keep theses view-only.
+    Strictly forbids downloading.
     """
-    message = 'Thesis downloads are currently disabled. Please use the in-browser viewer instead.'
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({'success': False, 'error': message}, status=403)
-    return HttpResponseForbidden(message)
+    # Log the attempt if necessary
+    if request.user.is_authenticated:
+        print(f"Security Alert: User {request.user.username} attempted to download thesis {pk}")
+
+    return HttpResponseForbidden(
+        "Security Policy: Downloading thesis documents is strictly prohibited. Intellectual Property Protection Active.")
 
 
 def restricted_view_thesis_file(request, pk):
@@ -2496,3 +2507,59 @@ def api_extract_abstract(request):
 
 def csrf_failure(request, reason=""):
     return render(request, "errors/csrf_failure.html", status=403)
+
+
+# ----------------------
+# Secure Image Serving (IPP)
+# ----------------------
+@login_required
+def serve_thesis_page_image(request, thesis_id, page_num):
+    """
+    Serves a page as an image, BUT if a '?q=' parameter is present,
+    it highlights the text on the image before sending it.
+    """
+    try:
+        # ... [Same Thesis/Submission lookup logic as before] ...
+        try:
+            thesis = Thesis.objects.get(pk=thesis_id)
+        except Thesis.DoesNotExist:
+            thesis = get_object_or_404(Submission, pk=thesis_id)
+
+        if not thesis.file or not os.path.exists(thesis.file.path):
+            raise Http404("File not found")
+
+        doc = fitz.open(thesis.file.path)
+        page_index = int(page_num) - 1
+
+        if page_index < 0 or page_index >= doc.page_count:
+            raise Http404("Page not found")
+
+        page = doc.load_page(page_index)
+
+        # --- NEW: HIGHLIGHTING LOGIC ---
+        search_query = request.GET.get('q', '').strip()
+        if search_query:
+            # Search for the text on this specific page
+            # quad=True returns coordinates of the text
+            text_instances = page.search_for(search_query, quads=True)
+
+            # Draw yellow highlights on the "image" version of the page
+            # We use 'Highlight' annotation which looks like a marker pen
+            for quad in text_instances:
+                highlight = page.add_highlight_annot(quad)
+                highlight.set_colors(stroke=[1, 1, 0])  # Yellow color
+                highlight.update()
+        # -------------------------------
+
+        # Render to high-res image
+        mat = fitz.Matrix(2.0, 2.0)
+        pix = page.get_pixmap(matrix=mat)
+
+        response = HttpResponse(pix.tobytes("png"), content_type="image/png")
+        response['Cache-Control'] = 'no-store, no-cache'
+        doc.close()
+        return response
+
+    except Exception as e:
+        print(f"Error: {e}")
+        raise Http404

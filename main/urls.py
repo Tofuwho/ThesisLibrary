@@ -14,8 +14,6 @@ urlpatterns = [
     path('student/submissions/create/', views.create_submission, name='create_submission'),
     path('student/submissions/mine/', views.my_submissions, name='my_submissions'),
     path('thesis/<int:pk>/', views.thesis_detail, name='thesis_detail'),
-    path('thesis/<int:pk>/view/', views.view_thesis_file, name='thesis_view_file'),
-    path('thesis/<int:pk>/view/highlight/', views.view_thesis_file_highlight, name='thesis_view_file_highlight'),
     path('thesis/<int:pk>/download/', views.download_thesis_file, name='thesis_download_file'),
     path('login/', views.login_view, name='login'),
     path('signup/', views.signup_view, name='signup'),
@@ -34,7 +32,6 @@ urlpatterns = [
     path('users/change-password/<int:user_id>/', views.change_password, name='change_password'),
     path('pending-submissions/', views.pending_submissions, name='pending_submissions'),
     path('approve-thesis/<int:thesis_id>/', views.approve_thesis, name='approve_thesis'),
-    path('view-thesis/<int:thesis_id>/', views.view_thesis, name='view_thesis'),
     path('reject-thesis/<int:thesis_id>/', views.reject_thesis, name='reject_thesis'),
     path('rejected-thesis/', views.rejected_thesis_list, name='rejected_thesis_list'),
     path('theses/', views.theses_list, name='theses_list'),
@@ -45,13 +42,15 @@ urlpatterns = [
     path('import-students/', views.import_students, name='import_students'),
     path('add-student/', views.add_student, name='add_student'),
     path('edit-student/<str:student_id>/', views.edit_student, name='edit_student'),
-    path('professor/add/', views.add_professor, name='add_professor'),  # ← add this
+    path('professor/add/', views.add_professor, name='add_professor'),
     path('professor/<str:professor_id>/edit/', views.edit_professor, name='edit_professor'),
     path('import-professors/', views.import_professors, name='import_professors'),
     path('admin-categories/', views.admin_categories, name='admin_categories'),
     path("archive-old-theses/", views.archive_old_theses, name="archive_old_theses"),
     path('students/<str:student_id>/delete/', views.delete_student, name='delete_student'),
     path('professors/<str:professor_id>/delete/', views.delete_professor, name='delete_professor'),
+    path('thesis/<int:thesis_id>/view/', views.view_thesis, name='view_thesis'),
+    path('thesis/<int:thesis_id>/page/<int:page_num>/', views.serve_thesis_page_image, name='serve_thesis_page_image'),
 ]
 
 if settings.DEBUG:

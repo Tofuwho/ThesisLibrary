@@ -1,0 +1,37 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="container mt-4" oncontextmenu="return false;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>{{ thesis.title }}</h3>
+        <a href="{% url 'categories' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Categories
+        </a>
+    </div>
+
+    <div class="pdf-container" style="background: #525659; padding: 20px; text-align: center; user-select: none; -webkit-user-select: none;">
+        {% for i in total_pages %}
+            <div class="page-wrapper" style="position: relative; display: inline-block; margin-bottom: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+                <img src="{% url 'serve_thesis_page_image' thesis_id i %}{% if query %}?q={{ query }}{% endif %}"
+                     alt="Page {{ i }}"
+                     style="max-width: 100%; height: auto; display: block;"
+                     draggable="false">
+
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;"></div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Disable right click
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    // Disable keyboard shortcuts like Ctrl+S, Ctrl+P
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) {
+            e.preventDefault();
+            alert('This action is disabled for Intellectual Property Protection.');
+        }
+    });
+</script>
+{% endblock %}
