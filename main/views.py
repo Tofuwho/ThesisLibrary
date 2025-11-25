@@ -2515,11 +2515,13 @@ def csrf_failure(request, reason=""):
 @login_required
 def serve_thesis_page_image(request, thesis_id, page_num):
     """
-    Serves a page as an image, BUT if a '?q=' parameter is present,
-    it highlights the text on the image before sending it.
+    Serves a page as an image with IPP (Intellectual Property Protection):
+    1. Highlights search terms (if any).
+    2. Applies a Watermark logo.
+    3. Renders as a flat PNG.
     """
     try:
-        # ... [Same Thesis/Submission lookup logic as before] ...
+        # Try to find the thesis in Thesis or Submission
         try:
             thesis = Thesis.objects.get(pk=thesis_id)
         except Thesis.DoesNotExist:
@@ -2529,37 +2531,58 @@ def serve_thesis_page_image(request, thesis_id, page_num):
             raise Http404("File not found")
 
         doc = fitz.open(thesis.file.path)
-        page_index = int(page_num) - 1
 
+        # Validate page number
+        page_index = int(page_num) - 1
         if page_index < 0 or page_index >= doc.page_count:
             raise Http404("Page not found")
 
         page = doc.load_page(page_index)
 
-        # --- NEW: HIGHLIGHTING LOGIC ---
+        # -------------------------------
+        # 1. SEARCH HIGHLIGHTING LOGIC
+        # -------------------------------
         search_query = request.GET.get('q', '').strip()
         if search_query:
-            # Search for the text on this specific page
-            # quad=True returns coordinates of the text
             text_instances = page.search_for(search_query, quads=True)
-
-            # Draw yellow highlights on the "image" version of the page
-            # We use 'Highlight' annotation which looks like a marker pen
             for quad in text_instances:
                 highlight = page.add_highlight_annot(quad)
                 highlight.set_colors(stroke=[1, 1, 0])  # Yellow color
                 highlight.update()
-        # -------------------------------
 
-        # Render to high-res image
+        # -------------------------------
+        # 2. WATERMARK LOGIC (NEW)
+        # -------------------------------
+        # Construct path: BASE_DIR/assets/images/watermark.png
+        # Adjust 'watermark.png' if your file has a different extension
+        watermark_path = os.path.join(settings.BASE_DIR, 'assets', 'images', 'watermark.png')
+
+        if os.path.exists(watermark_path):
+            # Insert the image into the center of the page
+            # overlay=True puts it ON TOP of text (prevents OCR/Screenshots)
+            # overlay=False puts it BEHIND text
+            page.insert_image(
+                page.rect,  # Fill the page area (it will center itself)
+                filename=watermark_path,
+                keep_proportion=True,  # Don't stretch the logo
+                overlay=False  # Put on top of text?
+            )
+        else:
+            # Optional: Print to console if watermark is missing so you know to fix the path
+            print(f"Warning: Watermark not found at {watermark_path}")
+
+        # -------------------------------
+        # 3. RENDER TO IMAGE
+        # -------------------------------
+        # zoom_x and zoom_y=2.0 creates high-res images (approx 200 DPI)
         mat = fitz.Matrix(2.0, 2.0)
         pix = page.get_pixmap(matrix=mat)
 
         response = HttpResponse(pix.tobytes("png"), content_type="image/png")
-        response['Cache-Control'] = 'no-store, no-cache'
+        response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         doc.close()
         return response
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error serving page: {e}")
         raise Http404
