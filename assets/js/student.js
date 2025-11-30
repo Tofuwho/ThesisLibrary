@@ -572,18 +572,37 @@ function extractAbstractFromPDF(pdfFile) {
         abstractTextarea.disabled = false;
         abstractTextarea.placeholder = originalPlaceholder;
         
-        if (data.success && data.abstract) {
+        if (data.success) {
+            let successMessages = [];
+            
+            // Populate title field if extracted
+            if (data.title) {
+                const titleInput = document.getElementById('thesisTitle');
+                if (titleInput && !titleInput.value.trim()) {
+                    titleInput.value = data.title;
+                    successMessages.push('Title extracted');
+                }
+            }
+            
             // Populate abstract field with extracted text
-            abstractTextarea.value = data.abstract;
+            if (data.abstract) {
+                abstractTextarea.value = data.abstract;
+                const wordCount = data.word_count || data.abstract.split(/\s+/).length;
+                successMessages.push(`Abstract extracted (${wordCount} words)`);
+            }
             
             // Show success message
-            showAlert(`Abstract extracted successfully! (${data.word_count} words)`, 'success');
+            if (successMessages.length > 0) {
+                showAlert(successMessages.join(' and ') + ' successfully!', 'success');
+            } else {
+                showAlert('Extraction completed, but no title or abstract found. Please enter them manually.', 'info');
+            }
             
             // Update review section if visible
             updateReviewSection();
         } else {
             // Show info message if extraction failed
-            const message = data.message || 'Could not automatically extract abstract. Please enter it manually.';
+            const message = data.message || 'Could not automatically extract abstract or title. Please enter them manually.';
             showAlert(message, 'info');
         }
     })
