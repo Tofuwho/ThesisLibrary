@@ -2,8 +2,10 @@
 <header class="main-header">
     <div class="main-header-inner">
         <div class="logo-container">
-             <img src="{% static 'images/logo.svg' %}" alt="Thesis Library Logo" class="logo-image">
-             <h1>Thesis Library</h1>
+            <div class="logo-square">
+                <img src="{% static 'assets/images/nobglogo.png' %}" alt="Logo" class="logo-img">
+            </div>
+            <h1>Thesis Library</h1>
         </div>
         <div class="header-flex-center">
             {% if not hide_nav %}
@@ -12,6 +14,7 @@
                     <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
                     <li><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
                     <li><a href="{% url 'about' %}" class="nav-link">About</a></li>
+                    <li><a href="#" class="nav-link">Contact</a></li>
                 </ul>
             </nav>
             {% endif %}
@@ -20,17 +23,9 @@
             {% if user.is_authenticated %}
                 {% if user.is_staff %}
                     <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Admin Panel</a>
-                    <a href="{% url 'profile_card' %}" class="profile-card-btn">
-                        <i class="fas fa-id-card"></i>
-                        <span>Profile Card</span>
-                    </a>
                 {% else %}
-                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Submission Portal</a>
+                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Dashboard</a>
                     <a href="{% url 'my_submissions' %}" class="dashboard-btn" style="margin-left:8px;">My Submissions</a>
-                    <a href="{% url 'profile_card' %}" class="profile-card-btn">
-                        <i class="fas fa-id-card"></i>
-                        <span>Profile Card</span>
-                    </a>
                 {% endif %}
                 <form method="POST" action="{% url 'logout' %}" style="display:inline; margin-left:10px;">
                     {% csrf_token %}
@@ -41,4 +36,4 @@
             {% endif %}
         </div>
     </div>
-</header>
+</header> 
