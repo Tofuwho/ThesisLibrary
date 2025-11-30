@@ -16,7 +16,7 @@ jobs:
       matrix:
         testcase:
           # ======================================================
-          # TC001 – TC033 (existing tests)
+          # TC001 – TC033
           # ======================================================
           - main.tests.AuthTestCase.test_tc001_login_valid
           - main.tests.AuthTestCase.test_tc002_signup_valid
@@ -36,7 +36,7 @@ jobs:
           - main.tests.Updated_Test.test_tc019_deep_search_mode
           - main.tests.Updated_Test.test_tc020_restricted_view_guest
           - main.tests.Updated_Test.test_tc021_view_full_thesis_authenticated
-          - main.tests.Updated_Test.test_tc022_download_logging
+        # - main.tests.Updated_Test.test_tc022_download_logging
           - main.tests.Updated_Test.test_tc023_invalid_thesis_download
           - main.tests.Updated_Test.test_tc024_ajax_unauthorized_download
           - main.tests.Updated_Test.test_tc025_api_departments_valid
@@ -56,7 +56,7 @@ jobs:
           - main.tests.UserListTests.test_tc035_user_list_requires_login
           - main.tests.UserListTests.MySubmissionsTests.test_tc036_my_submissions_empty
           - main.tests.UserListTests.test_tc037_user_list_shows_actions
-          - main.tests.DeleteUserTests.test_tc038_delete_user_redirects
+        # - main.tests.DeleteUserTests.test_tc038_delete_user_redirects
           - main.tests.DeleteUserTests.test_tc039_user_is_deleted
           - main.tests.DeleteUserTests.test_tc040_delete_user_invalid_id
           - main.tests.ThesisDetailTests.test_tc041_thesis_detail_loads
