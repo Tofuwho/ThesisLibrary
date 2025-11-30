@@ -389,6 +389,297 @@ def extract_abstract_from_pdf(pdf_file) -> str:
         return ""
 
 
+def extract_title_from_pdf(pdf_file) -> str:
+    """
+    Extract title from a PDF file.
+    
+    This function extracts the title from the first page of the PDF, prioritizing
+    bold text and excluding logo/header text. Titles are typically bold and located
+    near the top of the first page.
+    
+    Args:
+        pdf_file: Django UploadedFile or file path
+        
+    Returns:
+        Extracted title text, or empty string if not found
+    """
+    try:
+        # Handle both file path and Django UploadedFile
+        if hasattr(pdf_file, 'read'):
+            # It's a Django UploadedFile - save temporarily
+            import tempfile
+            # Reset file to beginning if possible (for InMemoryUploadedFile)
+            if hasattr(pdf_file, 'seek'):
+                try:
+                    pdf_file.seek(0)
+                except:
+                    pass
+            
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+                for chunk in pdf_file.chunks():
+                    tmp_file.write(chunk)
+                tmp_file_path = tmp_file.name
+            pdf_path = tmp_file_path
+            should_delete = True
+            
+            # Reset file pointer to beginning for Django to save it properly
+            if hasattr(pdf_file, 'seek'):
+                try:
+                    pdf_file.seek(0)
+                except:
+                    pass
+        else:
+            # It's a file path
+            pdf_path = pdf_file
+            should_delete = False
+        
+        if not os.path.exists(pdf_path):
+            return ""
+        
+        doc = fitz.open(pdf_path)
+        title_text = ""
+        
+        # Extract from first page only
+        if doc.page_count > 0:
+            first_page = doc[0]
+            text_dict = first_page.get_text("dict")
+            page_rect = first_page.rect
+            page_height = page_rect.height
+            
+            # Collect all text lines with their properties (bold, position, font size)
+            all_lines = []
+            
+            for block in text_dict.get("blocks", []):
+                if "lines" in block:
+                    for line in block["lines"]:
+                        line_text_parts = []
+                        line_y_position = None
+                        line_is_bold = False
+                        line_font_size = 0
+                        line_bbox = None
+                        
+                        for span in line.get("spans", []):
+                            text_content = span.get("text", "").strip()
+                            if not text_content:
+                                continue
+                            
+                            # Get font properties
+                            font_size = span.get("size", 0)
+                            flags = span.get("flags", 0)
+                            is_bold = bool(flags & 16)  # Bit 4 (16) indicates bold
+                            
+                            # Get position (y-coordinate - top of span)
+                            bbox = span.get("bbox", [0, 0, 0, 0])
+                            y_position = bbox[1] if len(bbox) > 1 else 0
+                            
+                            if not line_y_position:
+                                line_y_position = y_position
+                                line_bbox = bbox
+                            
+                            # Track if any part of the line is bold
+                            if is_bold:
+                                line_is_bold = True
+                            
+                            # Track largest font size in line
+                            if font_size > line_font_size:
+                                line_font_size = font_size
+                            
+                            line_text_parts.append(text_content)
+                        
+                        if line_text_parts:
+                            full_line_text = ' '.join(line_text_parts)
+                            full_line_text = re.sub(r'\s+', ' ', full_line_text).strip()
+                            
+                            # Skip empty or very short lines
+                            if len(full_line_text) < 5:
+                                continue
+                            
+                            # Skip page numbers and headers
+                            if re.match(r'^(page|p\.?)\s*\d+', full_line_text, re.I):
+                                continue
+                            if re.match(r'^\d+$', full_line_text):
+                                continue
+                            
+                            # Skip filenames (contains .pdf, path separators, etc.)
+                            if re.search(r'\.(pdf|doc|docx|txt)$', full_line_text, re.I):
+                                continue
+                            if '/' in full_line_text or '\\' in full_line_text:
+                                continue
+                            
+                            # Skip common non-title patterns (abstract, TOC, etc.)
+                            if re.search(r'(?i)^(abstract|table\s+of\s+contents|acknowledgment|acknowledgement|introduction|chapter\s+[1-9]|references|bibliography|by:?|presented\s+to)', full_line_text):
+                                continue
+                            
+                            all_lines.append({
+                                'text': full_line_text,
+                                'is_bold': line_is_bold,
+                                'font_size': line_font_size,
+                                'y_position': line_y_position,
+                                'bbox': line_bbox
+                            })
+            
+            # Group consecutive bold lines that are close together (multi-line titles)
+            bold_groups = []
+            current_group = []
+            
+            for i, line in enumerate(all_lines):
+                if line['is_bold']:
+                    # Check if this line should be grouped with the previous bold line
+                    if current_group:
+                        prev_line = current_group[-1]
+                        # Group if lines are close vertically (within reasonable distance)
+                        y_diff = abs(line['y_position'] - prev_line['y_position'])
+                        # Typical line spacing is around 15-25 points, allow up to 40 for title wrapping
+                        if y_diff < 40:
+                            current_group.append(line)
+                        else:
+                            # Start a new group
+                            if current_group:
+                                bold_groups.append(current_group)
+                            current_group = [line]
+                    else:
+                        current_group = [line]
+                else:
+                    # Non-bold line - end current group if exists
+                    if current_group:
+                        bold_groups.append(current_group)
+                        current_group = []
+            
+            # Add last group if exists
+            if current_group:
+                bold_groups.append(current_group)
+            
+            # Process bold groups to create title candidates
+            text_candidates = []
+            top_threshold = page_height * 0.12  # Top 12% is likely logo area
+            
+            for group in bold_groups:
+                # Combine all lines in the group
+                group_text = ' '.join([line['text'] for line in group])
+                group_text = re.sub(r'\s+', ' ', group_text).strip()
+                
+                # Get properties from the first line in group
+                first_line = group[0]
+                y_pos = first_line['y_position']
+                font_size = first_line['font_size']
+                
+                # Filter out logo/header text
+                is_likely_logo = False
+                
+                if y_pos < top_threshold:
+                    # Very short text at top is likely logo/header
+                    if len(group_text) < 20:
+                        is_likely_logo = True
+                    # Short all-caps text at top is likely logo (but longer all-caps might be title)
+                    elif group_text.isupper() and len(group_text) < 50:
+                        is_likely_logo = True
+                    # Contains common logo/header words
+                    elif re.search(r'(?i)^(university|college|institute|department|faculty|school)\s+(of|at)', group_text):
+                        is_likely_logo = True
+                
+                # Skip if it's likely a logo
+                if is_likely_logo:
+                    continue
+                
+                # Valid title candidate - check length (titles are usually 10-300 chars)
+                if 10 <= len(group_text) <= 500:
+                    # Calculate score: bold text gets higher priority
+                    score = 200  # Bold groups get high base score
+                    
+                    # Larger font size gets higher priority
+                    score += font_size * 2
+                    
+                    # Longer text gets slightly higher priority (titles are usually substantial)
+                    score += min(len(group_text) / 10, 20)
+                    
+                    # Text below logo area gets higher priority
+                    if y_pos > top_threshold:
+                        score += 50
+                    
+                    text_candidates.append({
+                        'text': group_text,
+                        'score': score,
+                        'is_bold': True,
+                        'font_size': font_size,
+                        'y_position': y_pos,
+                        'length': len(group_text)
+                    })
+            
+            # Also add individual bold lines that weren't grouped (in case title is single line)
+            for line in all_lines:
+                if line['is_bold'] and 10 <= len(line['text']) <= 500:
+                    # Check if this line is already in a group
+                    already_grouped = False
+                    for group in bold_groups:
+                        if any(l['text'] == line['text'] for l in group):
+                            already_grouped = True
+                            break
+                    
+                    if not already_grouped:
+                        # Filter logo
+                        is_likely_logo = False
+                        if line['y_position'] < top_threshold:
+                            if len(line['text']) < 20:
+                                is_likely_logo = True
+                            elif line['text'].isupper() and len(line['text']) < 50:
+                                is_likely_logo = True
+                            elif re.search(r'(?i)^(university|college|institute|department|faculty|school)\s+(of|at)', line['text']):
+                                is_likely_logo = True
+                        
+                        if not is_likely_logo:
+                            score = 150  # Slightly lower than groups
+                            score += line['font_size'] * 2
+                            score += min(len(line['text']) / 10, 20)
+                            if line['y_position'] > top_threshold:
+                                score += 50
+                            
+                            text_candidates.append({
+                                'text': line['text'],
+                                'score': score,
+                                'is_bold': True,
+                                'font_size': line['font_size'],
+                                'y_position': line['y_position'],
+                                'length': len(line['text'])
+                            })
+            
+            # Sort candidates by score (highest first)
+            text_candidates.sort(key=lambda x: x['score'], reverse=True)
+            
+            # Select the best candidate
+            # Prioritize bold text that's substantial in length and below logo area
+            for candidate in text_candidates:
+                text = candidate['text']
+                y_pos = candidate['y_position']
+                
+                # Best case: bold, substantial length, below logo area
+                if candidate['is_bold'] and len(text) >= 30 and y_pos > top_threshold:
+                    title_text = text
+                    break
+                # Second best: bold, substantial length, even if at top
+                elif candidate['is_bold'] and len(text) >= 30:
+                    title_text = text
+                    break
+            
+            # If still no title, use the highest scoring candidate
+            if not title_text and text_candidates:
+                title_text = text_candidates[0]['text']
+        
+        doc.close()
+        if should_delete and os.path.exists(pdf_path):
+            os.unlink(pdf_path)
+        
+        return title_text
+        
+    except Exception as e:
+        print(f"Error extracting title from PDF: {str(e)}")
+        if 'should_delete' in locals() and should_delete and 'pdf_path' in locals() and os.path.exists(pdf_path):
+            try:
+                os.unlink(pdf_path)
+            except:
+                pass
+        return ""
+
+
 def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optional[str], float]:
     """Return a robust fuzzy suggestion for a possibly misspelled query.
 
