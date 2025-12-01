@@ -25,7 +25,7 @@ from collections import Counter
 from django.conf import settings
 import random
 import string
-from .utils import search_in_thesis_pdf, suggest_query_correction, deep_filter_theses_by_pdf, get_thesis_preview, extract_abstract_from_pdf
+from .utils import search_in_thesis_pdf, suggest_query_correction, deep_filter_theses_by_pdf, get_thesis_preview, extract_abstract_from_pdf, extract_title_from_pdf
 from django.utils import timezone
 from PyPDF2 import PdfReader, PdfWriter
 import fitz
@@ -1245,6 +1245,19 @@ def create_submission(request):
         co_supervisor_name = request.POST.get('coSupervisorName', '').strip()
         co_supervisor_email = request.POST.get('coSupervisorEmail', '').strip()
 
+        # Extract title from PDF if not provided
+        if not title or title.strip() == '':
+            if thesis_file:
+                try:
+                    # The extract_title_from_pdf function handles file reading internally
+                    # and creates a temporary copy, so the original file remains intact
+                    extracted_title = extract_title_from_pdf(thesis_file)
+                    if extracted_title:
+                        title = extracted_title
+                except Exception as e:
+                    # If extraction fails, continue with empty title
+                    print(f"Warning: Could not extract title from PDF: {str(e)}")
+        
         # Extract abstract from PDF if not provided
         if not abstract or abstract.strip() == '':
             if thesis_file:
@@ -2485,20 +2498,25 @@ def api_extract_abstract(request):
         if pdf_file.size > 50 * 1024 * 1024:
             return JsonResponse({'error': 'File size exceeds 50MB limit'}, status=400)
         
-        # Extract abstract
+        # Extract abstract and title
         abstract = extract_abstract_from_pdf(pdf_file)
+        title = extract_title_from_pdf(pdf_file)
         
-        if abstract:
-            return JsonResponse({
+        if abstract or title:
+            response_data = {
                 'success': True,
                 'abstract': abstract,
-                'word_count': len(abstract.split())
-            })
+                'title': title
+            }
+            if abstract:
+                response_data['word_count'] = len(abstract.split())
+            return JsonResponse(response_data)
         else:
             return JsonResponse({
                 'success': False,
                 'abstract': '',
-                'message': 'Could not extract abstract from PDF. Please enter it manually.'
+                'title': '',
+                'message': 'Could not extract abstract or title from PDF. Please enter them manually.'
             })
             
     except Exception as e:
