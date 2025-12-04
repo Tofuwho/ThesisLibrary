@@ -4,7 +4,6 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
-  /* Search styling */
   .search-bar {
     margin-bottom: 1rem;
     display: flex;
@@ -12,9 +11,9 @@
   }
 
   .search-input {
-    background: #2a2a2a;
-    color: #fff;
-    border: 1px solid #444;
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #ced4da;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     width: 250px;
@@ -23,13 +22,12 @@
 
   .search-input:focus {
     outline: none;
-    border-color: #90caf9;
-    box-shadow: 0 0 5px #90caf9;
+    border-color: #0277bd;
+    box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
   }
 
-  /* Highlighted search results */
   mark {
-    background-color: #ffb300;
+    background-color: #ffeb3b;
     color: #000;
     border-radius: 4px;
     padding: 0 2px;
@@ -38,26 +36,26 @@
   th {
     cursor: pointer;
     transition: color 0.2s;
+    color: #555;
   }
 
   th.sort-asc::after {
     content: " ▲";
-    color: #90caf9;
+    color: #0277bd;
   }
 
   th.sort-desc::after {
     content: " ▼";
-    color: #90caf9;
+    color: #0277bd;
   }
 
   th:hover {
-    color: #90caf9;
+    color: #0277bd;
   }
   #logTable tbody tr:hover {
-  background-color: #2a2a2a;
+  background-color: #f8f9fa;
   transition: background 0.2s;
   }
-  /* --- Pagination --- */
 .pagination {
   display: flex;
   justify-content: center;
@@ -68,9 +66,9 @@
 }
 
 .pagination button {
-  background: #2a2a2a;
-  border: 1px solid #444;
-  color: #fff;
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  color: #333;
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -78,20 +76,20 @@
 }
 
 .pagination button:hover:not(:disabled) {
-  background: #90caf9;
-  color: #000;
+  background: #e3f2fd;
+  color: #0d47a1;
 }
 
 .pagination button.active {
-  background: #90caf9;
-  color: #000;
+  background: #0277bd;
+  color: #fff;
   pointer-events: none;
 }
 
 .pagination span {
-  background: #2a2a2a;
-  border: 1px solid #444;
-  color: #ccc;
+  background: #fff;
+  border: 1px solid #ced4da;
+  color: #777;
   padding: 6px 12px;
   border-radius: 6px;
   display: inline-block;
@@ -113,17 +111,18 @@
     </div>
 
     <div class="dashboard-section" style="margin-top: 2rem;">
-      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
 
-        <!-- 🔍 Search Bar -->
         <div class="search-bar">
+          <button onclick="exportTableToExcel('logTable', 'Admin_Logs')" class="add-btn" style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
+            📊 Export
+          </button>
           <input type="text" id="logSearch" class="search-input" placeholder="Search logs...">
         </div>
 
-        <!-- 🧾 Sortable & Searchable Table -->
         <table id="logTable" style="width:100%; border-collapse:collapse;">
           <thead>
-            <tr style="background-color:#2a2a2a;">
+            <tr style="background-color:#f8f9fa;">
               <th style="text-align:left; padding:0.8rem;">Action Time</th>
               <th style="text-align:left; padding:0.8rem;">User</th>
               <th style="text-align:left; padding:0.8rem;">Content Type</th>
@@ -134,11 +133,11 @@
           </thead>
           <tbody>
             {% for entry in logs %}
-            <tr style="border-bottom:1px solid #333;">
-              <td style="padding:0.8rem; color:#90caf9;">{{ entry.action_time|date:"M d, Y h:i a" }}</td>
-              <td style="padding:0.8rem;">{{ entry.user }}</td>
-              <td style="padding:0.8rem;">{{ entry.content_type }}</td>
-              <td style="padding:0.8rem;">{{ entry.object_repr }}</td>
+            <tr style="border-bottom:1px solid #eee;">
+              <td style="padding:0.8rem; color:#0277bd;">{{ entry.action_time|date:"M d, Y h:i a" }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ entry.user }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ entry.content_type }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ entry.object_repr }}</td>
               <td style="padding:0.8rem;">
                 {% if entry.action_flag == 1 %}
                   <span style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Addition</span>
@@ -150,11 +149,11 @@
                   <span style="background:#777; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Other</span>
                 {% endif %}
               </td>
-              <td style="padding:0.8rem; color:#a5d6a7; font-style:italic;">{{ entry.change_message }}</td>
+              <td style="padding:0.8rem; color:#555; font-style:italic;">{{ entry.change_message }}</td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" style="text-align:center; padding:1rem; color:#777;">No log entries found.</td>
+              <td colspan="6" style="text-align:center; padding:1rem; color:#6c757d;">No log entries found.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -167,7 +166,6 @@
 
 
 <script>
-  // ===== TABLE SORTING =====
   document.querySelectorAll("#logTable th").forEach((th, index) => {
     th.addEventListener("click", () => {
       const table = th.closest("table");
@@ -175,7 +173,6 @@
       const rows = Array.from(tbody.querySelectorAll("tr"));
       const asc = !th.classList.contains("sort-asc");
 
-      // Reset all headers
       table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
       th.classList.toggle("sort-asc", asc);
       th.classList.toggle("sort-desc", !asc);
@@ -194,10 +191,9 @@
 const logTbody = logTable.querySelector("tbody");
 const logRows = Array.from(logTbody.querySelectorAll("tr"));
 const logSearch = document.getElementById("logSearch");
-const logRowsPerPage = 10; // adjust rows per page
+const logRowsPerPage = 10;
 let logCurrentPage = 1;
 
-// ===== Render table page =====
 function renderLogPage(page = 1) {
   const visibleRows = logRows.filter(r => r.dataset.visible !== "0");
   const totalPages = Math.ceil(visibleRows.length / logRowsPerPage) || 1;
@@ -213,7 +209,6 @@ function renderLogPage(page = 1) {
   renderLogPagination(totalPages);
 }
 
-// ===== Render pagination buttons with ellipses =====
 function renderLogPagination(totalPages) {
   const container = document.getElementById("logPagination");
   container.innerHTML = "";
@@ -229,10 +224,8 @@ function renderLogPagination(totalPages) {
     container.appendChild(btn);
   }
 
-  // Prev button
   createBtn("Prev", logCurrentPage - 1, logCurrentPage === 1);
 
-  // Numbered buttons with ellipses
   for (let i = 1; i <= totalPages; i++) {
     if (i === 1 || i === totalPages || (i >= logCurrentPage - 1 && i <= logCurrentPage + 1)) {
       createBtn(i, i, false, i === logCurrentPage);
@@ -247,11 +240,9 @@ function renderLogPagination(totalPages) {
     }
   }
 
-  // Next button
   createBtn("Next", logCurrentPage + 1, logCurrentPage === totalPages);
 }
 
-// ===== Search + filter =====
 logSearch.addEventListener("input", () => {
   const filter = logSearch.value.toLowerCase();
   logRows.forEach(row => {
@@ -271,10 +262,20 @@ logSearch.addEventListener("input", () => {
   renderLogPage(1);
 });
 
-// ===== Initialize =====
 window.addEventListener("load", () => {
   logRows.forEach(r => r.dataset.visible = "1");
   renderLogPage();
 });
+</script>
+<script src="{% static 'js/xlsx.full.min.js' %}"></script>
+<script>
+function exportTableToExcel(tableID, filename) {
+    let originalTable = document.getElementById(tableID);
+    let tableClone = originalTable.cloneNode(true);
+    let rows = tableClone.querySelectorAll('tr');
+    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
+    let wb = XLSX.utils.table_to_book(tableClone, {sheet: "Sheet1"});
+    XLSX.writeFile(wb, filename + '.xlsx');
+}
 </script>
 {% endblock %}
