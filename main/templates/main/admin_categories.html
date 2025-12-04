@@ -11,9 +11,9 @@
   }
 
   .search-input {
-    background: #2a2a2a;
-    color: #fff;
-    border: 1px solid #444;
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #ced4da;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     width: 250px;
@@ -22,35 +22,36 @@
 
   .search-input:focus {
     outline: none;
-    border-color: #90caf9;
-    box-shadow: 0 0 5px #90caf9;
+    border-color: #0277bd;
+    box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
   }
 
   th {
     cursor: pointer;
     transition: color 0.2s;
+    color: #555;
   }
 
   th.sort-asc::after {
     content: " ▲";
-    color: #90caf9;
+    color: #0277bd;
   }
 
   th.sort-desc::after {
     content: " ▼";
-    color: #90caf9;
+    color: #0277bd;
   }
 
   th:hover {
-    color: #90caf9;
+    color: #0277bd;
   }
 
   #categoriesTable tbody tr:hover {
-    background-color: #2a2a2a;
+    background-color: #f8f9fa;
     transition: background 0.2s;
   }
   .highlight {
-    background-color: #90caf9;
+    background-color: #e3f2fd;
     color: #000;
     border-radius: 3px;
     padding: 0 3px;
@@ -69,14 +70,14 @@
     </div>
 
     <div class="dashboard-section" style="margin-top: 2rem;">
-      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
         <div class="search-bar">
           <input type="text" id="categorySearch" class="search-input" placeholder="Search categories...">
         </div>
 
         <table id="categoriesTable" style="width:100%; border-collapse:collapse;">
           <thead>
-            <tr style="background-color:#2a2a2a;">
+            <tr style="background-color:#f8f9fa;">
               <th style="padding:0.8rem; text-align:left;">Name</th>
               <th style="padding:0.8rem; text-align:left;">Departments</th>
               <th style="padding:0.8rem; text-align:left;">Total Courses</th>
@@ -84,14 +85,14 @@
           </thead>
           <tbody>
             {% for category in categories %}
-            <tr style="border-bottom:1px solid #333;">
-              <td style="padding:0.8rem; color:#90caf9;">{{ category.name }}</td>
-              <td style="padding:0.8rem;">{{ category.department_count }}</td>
-              <td style="padding:0.8rem;">{{ category.course_count }}</td>
+            <tr style="border-bottom:1px solid #eee;">
+              <td style="padding:0.8rem; color:#0277bd;">{{ category.name }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ category.department_count }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ category.course_count }}</td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="3" style="text-align:center; padding:1rem; color:#777;">No categories found.</td>
+              <td colspan="3" style="text-align:center; padding:1rem; color:#6c757d;">No categories found.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -102,7 +103,6 @@
 </div>
 
 <script>
-  // ===== SORTING =====
   document.querySelectorAll("#categoriesTable th").forEach((th, index) => {
     th.addEventListener("click", () => {
       const table = th.closest("table");
@@ -124,7 +124,6 @@
     });
   });
 
-  // ===== SEARCH + HIGHLIGHT =====
   const searchInput = document.getElementById("categorySearch");
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
@@ -135,12 +134,10 @@
       const match = text.includes(filter);
       row.style.display = match ? "" : "none";
 
-      // Remove old highlights
       row.querySelectorAll("td").forEach(td => {
         td.innerHTML = td.textContent;
       });
 
-      // Add new highlights
       if (filter && match) {
         row.querySelectorAll("td").forEach(td => {
           const innerText = td.textContent;

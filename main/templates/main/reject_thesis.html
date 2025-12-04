@@ -7,15 +7,17 @@
   .reject-form-container {
     max-width: 800px;
     margin: 2rem auto;
-    background: #1f1f1f;
+    background: #ffffff;
     border-radius: 12px;
     padding: 2rem;
+    border: 1px solid #eaeaea;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   }
 
   .reject-form-header {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 2px solid #333;
+    border-bottom: 2px solid #eee;
   }
 
   .reject-form-header h1 {
@@ -24,7 +26,7 @@
   }
 
   .thesis-info {
-    background: #2a2a2a;
+    background: #f8f9fa;
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 2rem;
@@ -37,12 +39,12 @@
 
   .thesis-info-item label {
     font-weight: 600;
-    color: #90caf9;
+    color: #0277bd;
     min-width: 150px;
   }
 
   .thesis-info-item span {
-    color: #fff;
+    color: #333;
   }
 
   .form-group {
@@ -51,7 +53,7 @@
 
   .form-group label {
     display: block;
-    color: #fff;
+    color: #333;
     font-weight: 600;
     margin-bottom: 0.5rem;
   }
@@ -60,10 +62,10 @@
     width: 100%;
     min-height: 150px;
     padding: 1rem;
-    background: #2a2a2a;
-    border: 1px solid #444;
+    background: #ffffff;
+    border: 1px solid #ced4da;
     border-radius: 8px;
-    color: #fff;
+    color: #333;
     font-family: inherit;
     font-size: 0.95rem;
     resize: vertical;
@@ -71,8 +73,8 @@
 
   .form-group textarea:focus {
     outline: none;
-    border-color: #90caf9;
-    box-shadow: 0 0 5px rgba(144, 202, 249, 0.3);
+    border-color: #0277bd;
+    box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
   }
 
   .form-actions {
@@ -94,12 +96,12 @@
   }
 
   .btn-cancel {
-    background: #555;
-    color: #fff;
+    background: #e0e0e0;
+    color: #333;
   }
 
   .btn-cancel:hover {
-    background: #666;
+    background: #d5d5d5;
   }
 
   .btn-reject {
@@ -108,9 +110,9 @@
   }
 
   .btn-reject:hover {
-    background: #f44336;
+    background: #b71c1c;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
   }
 
   .alert {
@@ -120,13 +122,13 @@
   }
 
   .alert-warning {
-    background: rgba(255, 193, 7, 0.1);
-    border: 1px solid rgba(255, 193, 7, 0.3);
-    color: #ffc107;
+    background: #fff8e1;
+    border: 1px solid #ffecb3;
+    color: #f57f17;
   }
 
   .error-message {
-    color: #f44336;
+    color: #d32f2f;
     font-size: 0.9rem;
     margin-top: 0.5rem;
   }
@@ -141,7 +143,7 @@
     <div class="reject-form-container">
       <div class="reject-form-header">
         <h1>❌ Reject Thesis Submission</h1>
-        <p style="color: #ccc;">Please provide a reason for rejecting this thesis submission.</p>
+        <p style="color: #6c757d;">Please provide a reason for rejecting this thesis submission.</p>
       </div>
 
       <div class="alert alert-warning">
@@ -149,7 +151,7 @@
       </div>
 
       <div class="thesis-info">
-        <h3 style="color: #90caf9; margin-bottom: 1rem;">Thesis Information</h3>
+        <h3 style="color: #0277bd; margin-bottom: 1rem;">Thesis Information</h3>
         <div class="thesis-info-item">
           <label>Title:</label>
           <span>{{ submission.title }}</span>
@@ -188,21 +190,21 @@
 
       <form method="POST" action="{% url 'reject_thesis' submission.id %}">
         {% csrf_token %}
-        
+
         <div class="form-group">
           <label for="rejection_reason">
-            Rejection Reason <span style="color: #f44336;">*</span>
+            Rejection Reason <span style="color: #d32f2f;">*</span>
           </label>
-          <textarea 
-            id="rejection_reason" 
-            name="rejection_reason" 
+          <textarea
+            id="rejection_reason"
+            name="rejection_reason"
             placeholder="Please provide a clear and detailed reason for rejecting this thesis submission. This will be visible to the submitter."
             required
           >{{ form.rejection_reason.value|default:'' }}</textarea>
           {% if form.rejection_reason.errors %}
             <div class="error-message">{{ form.rejection_reason.errors.0 }}</div>
           {% endif %}
-          <small style="color: #888; display: block; margin-top: 0.5rem;">
+          <small style="color: #6c757d; display: block; margin-top: 0.5rem;">
             This reason will be stored with the rejected thesis and may be visible to the submitter.
           </small>
         </div>
@@ -216,4 +218,3 @@
   </main>
 </div>
 {% endblock %}
-

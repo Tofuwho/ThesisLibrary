@@ -4,67 +4,63 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
-  /* --- Search input --- */
   .search-bar {
-  flex: 1;               /* 🔥 makes it stretch to fill space */
+  flex: 1;
   display: flex;
   }
 
   .search-input {
-    background: #2a2a2a;
-    color: #fff;
-    border: 1px solid #444;
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #ced4da;
     padding: 0.5rem 1rem;
     border-radius: 8px;
-    width: 100%;            /* 🔥 full width */
+    width: 100%;
     transition: 0.2s;
   }
-  .search-input:focus { outline:none; border-color:#90caf9; box-shadow:0 0 5px #90caf9; }
+  .search-input:focus { outline:none; border-color:#0277bd; box-shadow:0 0 5px rgba(2, 119, 189, 0.3); }
 
-  /* --- Table --- */
   table { width:100%; border-collapse:collapse; }
   th, td { padding:0.8rem; vertical-align:middle; }
-  th { cursor:pointer; transition: color 0.2s; text-align: left; }
-  th.sort-asc::after { content:" ▲"; color:#90caf9; }
-  th.sort-desc::after { content:" ▼"; color:#90caf9; }
-  th:hover { color:#90caf9; }
-  tbody tr:hover { background-color:#2a2a2a; transition:background 0.2s; }
-  td.title { color:#90caf9; font-weight:600; }
+  th { cursor:pointer; transition: color 0.2s; text-align: left; color: #555; }
+  th.sort-asc::after { content:" ▲"; color:#0277bd; }
+  th.sort-desc::after { content:" ▼"; color:#0277bd; }
+  th:hover { color:#0277bd; }
+  tbody tr:hover { background-color:#f8f9fa; transition:background 0.2s; }
+  td.title { color:#0277bd; font-weight:600; }
 
-  /* --- Highlight for search --- */
-  .highlight { background-color:#90caf9; color:#000; border-radius:3px; padding:0 3px; }
+  .highlight { background-color:#e3f2fd; color:#000; border-radius:3px; padding:0 3px; }
 
-  /* --- Pagination --- */
   .pagination { display:flex; justify-content:center; gap:8px; margin-top:1rem; flex-wrap:wrap; }
   .pagination button {
-    background:#2a2a2a; border:1px solid #444; color:#fff;
+    background:#ffffff; border:1px solid #ced4da; color:#333;
     padding:6px 12px; border-radius:6px; cursor:pointer; transition:0.2s;
   }
-  .pagination button:hover { background:#90caf9; color:#000; }
-  .pagination button.active { background:#90caf9; color:#000; }
+  .pagination button:hover { background:#e3f2fd; color:#0d47a1; }
+  .pagination button.active { background:#0277bd; color:#fff; }
   .top-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
     gap: 1rem;
-    flex-wrap: wrap;   /* prevents overlap on small screens */
+    flex-wrap: wrap;
   }
 
   .archive-btn {
-    background: #90caf9;
-    color: #000;
+    background: #0277bd;
+    color: #fff;
     padding: 0.6rem 1rem;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
-    white-space: nowrap; /* keep text in one line */
+    white-space: nowrap;
     transition: 0.2s;
   }
 
   .archive-btn:hover {
-    background: #b5ddff;
+    background: #01579b;
   }
 </style>
 {% endblock %}
@@ -79,10 +75,13 @@
     </div>
 
     <div class="dashboard-section" style="margin-top:2rem;">
-      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
 
           <div class="top-controls">
               <div class="search-bar">
+                <button onclick="exportTableToExcel('thesisTable', 'Approved_Theses')" class="archive-btn" style="background: #2e7d32;">
+                  📊 Export
+                </button>
                 <input type="text" id="thesisSearch" class="search-input" placeholder="Search theses...">
               </div>
 
@@ -92,7 +91,7 @@
           </div>
         <table id="thesisTable">
           <thead>
-            <tr style="background-color:#2a2a2a;">
+            <tr style="background-color:#f8f9fa;">
               <th>Title</th>
               <th>Author</th>
               <th>Co-Authors</th>
@@ -103,17 +102,17 @@
           </thead>
           <tbody>
             {% for thesis in theses %}
-            <tr>
+            <tr style="border-bottom: 1px solid #eee;">
               <td class="title">{{ thesis.title }}</td>
-              <td>{{ thesis.author }}</td>
-              <td>{{ thesis.co_authors|default:"—" }}</td>
-              <td>{{ thesis.year|default:"—" }}</td>
-              <td>{{ thesis.department.name }}</td>
-              <td>{{ thesis.course_display }}</td>
+              <td style="color:#333;">{{ thesis.author }}</td>
+              <td style="color:#333;">{{ thesis.co_authors|default:"—" }}</td>
+              <td style="color:#333;">{{ thesis.year|default:"—" }}</td>
+              <td style="color:#333;">{{ thesis.department.name }}</td>
+              <td style="color:#333;">{{ thesis.course_display }}</td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" style="text-align:center; color:#777; padding:1rem;">No theses found.</td>
+              <td colspan="6" style="text-align:center; color:#6c757d; padding:1rem;">No theses found.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -133,7 +132,6 @@ const searchInput = document.getElementById("thesisSearch");
 const rowsPerPage = 16;
 let currentPage = 1;
 
-// ===== Render table page =====
 function renderTablePage(page = 1) {
   const visibleRows = rows.filter(r => r.dataset.visible !== "0");
   const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
@@ -148,19 +146,16 @@ function renderTablePage(page = 1) {
   renderPagination(totalPages);
 }
 
-// ===== Render pagination with ellipses =====
 function renderPagination(totalPages) {
   const container = document.getElementById("pagination");
   container.innerHTML = "";
 
-  // Prev button
   const prevBtn = document.createElement("button");
   prevBtn.innerText = "Prev";
   prevBtn.disabled = currentPage === 1;
   prevBtn.addEventListener("click", () => renderTablePage(currentPage - 1));
   container.appendChild(prevBtn);
 
-  // Helper to add page button
   function addPageBtn(i) {
     const btn = document.createElement("button");
     btn.innerText = i;
@@ -172,37 +167,31 @@ function renderPagination(totalPages) {
   if (totalPages <= 7) {
     for (let i = 1; i <= totalPages; i++) addPageBtn(i);
   } else {
-    // Always show first page
     addPageBtn(1);
 
-    // Ellipsis before current range
     if (currentPage > 4) {
       const ellipsis = document.createElement("span");
       ellipsis.innerText = "…";
       ellipsis.style.padding = "6px 12px";
-      ellipsis.style.color = "#fff";
+      ellipsis.style.color = "#777";
       container.appendChild(ellipsis);
     }
 
-    // Pages around current
     const start = Math.max(2, currentPage - 2);
     const end = Math.min(totalPages - 1, currentPage + 2);
     for (let i = start; i <= end; i++) addPageBtn(i);
 
-    // Ellipsis after current range
     if (currentPage < totalPages - 3) {
       const ellipsis = document.createElement("span");
       ellipsis.innerText = "…";
       ellipsis.style.padding = "6px 12px";
-      ellipsis.style.color = "#fff";
+      ellipsis.style.color = "#777";
       container.appendChild(ellipsis);
     }
 
-    // Always show last page
     addPageBtn(totalPages);
   }
 
-  // Next button
   const nextBtn = document.createElement("button");
   nextBtn.innerText = "Next";
   nextBtn.disabled = currentPage === totalPages;
@@ -210,7 +199,6 @@ function renderPagination(totalPages) {
   container.appendChild(nextBtn);
 }
 
-// ===== Search + highlight =====
 searchInput.addEventListener("input", () => {
   const filter = searchInput.value.toLowerCase();
 
@@ -231,7 +219,6 @@ searchInput.addEventListener("input", () => {
   renderTablePage(currentPage);
 });
 
-// ===== Sorting =====
 table.querySelectorAll("th").forEach((th, index) => {
   th.addEventListener("click", () => {
     const isAsc = !th.classList.contains("sort-asc");
@@ -254,7 +241,6 @@ table.querySelectorAll("th").forEach((th, index) => {
   });
 });
 
-// ===== Initialize =====
 window.onload = () => {
   rows.forEach(r => r.dataset.visible = "1");
   renderTablePage();
@@ -276,5 +262,16 @@ window.onload = () => {
         location.reload();
     });
 });
+</script>
+<script src="{% static 'js/xlsx.full.min.js' %}"></script>
+<script>
+function exportTableToExcel(tableID, filename) {
+    let originalTable = document.getElementById(tableID);
+    let tableClone = originalTable.cloneNode(true);
+    let rows = tableClone.querySelectorAll('tr');
+    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
+    let wb = XLSX.utils.table_to_book(tableClone, {sheet: "Sheet1"});
+    XLSX.writeFile(wb, filename + '.xlsx');
+}
 </script>
 {% endblock %}
