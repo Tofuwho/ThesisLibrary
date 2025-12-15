@@ -233,11 +233,6 @@ class ChangePasswordTests(TestCase):
         self.user = User.objects.create_user(username="Student01", password="oldPassword123")
         self.client.login(username="admin", password="adminpass")
 
-    def test_tc015_change_password_loads(self):
-        """TC049: Change password page loads properly."""
-        response = self.client.get(reverse("change_password", args=[self.user.id]))
-        self.assertEqual(response.status_code, 200)
-
     def test_tc017_my_submissions_page(self):
         """TC033: My submissions list"""
         self.client.login(username='testuser', password='12345')

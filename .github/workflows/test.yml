@@ -33,8 +33,8 @@ jobs:
           - main.tests.AdminPanelTestCase.test_tc012_create_admin_user
           - main.tests.AdminPanelTestCase.test_tc013_add_category
           - main.tests.AdminPanelTestCase.test_tc014_add_course
-          - main.tests.ChangePasswordTests.test_TC015_delete_student
-          - main.tests.ChangePasswordTests.test_tc016_add_rejected_thesis
+          - main.tests.AdminPanelTestCase.test_TC015_delete_student
+          - main.tests.AdminPanelTestCase.test_tc016_add_rejected_thesis
           - main.tests.ChangePasswordTests.test_tc017_my_submissions_page
           - main.tests.ChangePasswordTests.test_tc018_edit_user_form_renders
           - main.tests.Updated_Test.test_tc019_deep_search_mode
@@ -65,9 +65,9 @@ jobs:
           # ======================================================
           # ✅ TC033 – TC035 (UserListTests)
           # ======================================================
-          - main.tests.UserlistTests.test_tc033_user_list_page_loads
-          - main.tests.UserlistTests.test_tc034_user_list_displays_users
-          - main.tests.UserlistTests.test_tc035_user_list_requires_login
+          - main.tests.UserListTests.test_tc033_user_list_page_loads
+          - main.tests.UserListTests.test_tc034_user_list_displays_users
+          - main.tests.UserListTests.test_tc035_user_list_requires_login
 
           # ======================================================
           # ✅ TC033 – TC035 (UserListTests)
@@ -76,11 +76,11 @@ jobs:
           - main.tests.SubmissionTestCase.test_TC37_serve_thesis_page_image
 
           # ======================================================
-          # ✅ TC038 – TC040 (UserManagementTests)
+          # ✅ TC038 – TC040 (StudentsListTests)
           # ======================================================
           - main.tests.StudentsListTests.test_tc038_students_list_loads
           - main.tests.StudentsListTests.test_tc039_professors_list_loads
-          - main.tests.ThesisDetailTests.test_tc040_delete_invalid_user_returns_404
+          - main.tests.StudentsListTests.test_TC040_login_view
 
           # ======================================================
           # ✅ TC041 – TC043 (ThesisDetailTests)
@@ -108,15 +108,15 @@ jobs:
           - main.tests.StudentDB.test_tc051_create_submission
           - main.tests.StudentDB.test_tc052_my_submissions
           - main.tests.AdminCategoriesTests.test_tc053_admin_categories_loads
-          - main.tests.AdminCategoriesTests.test_tc054_download_thesis_file
+          - main.tests.AdminCategoriesTests.test_tc054_signup_view
 
 
           # ======================================================
           # ✅ TC055 – TC060 (Landing / About / Student Dashboard)
           # ======================================================
-          - main.tests.LandingAboutIndexTests.test_TC055_landing_page_loads
+          - main.tests.LandingAboutIndexTests.test_tc055_view_thesis
           - main.tests.LandingAboutIndexTests.test_TC056_landing_page_contains_content
-          - main.tests.LandingAboutIndexTests.test_TC057_about_page_loads
+          - main.tests.LandingAboutIndexTests.test_TC057_delete_professor
           - main.tests.LandingAboutIndexTests.test_TC058_about_page_contains_text
           - main.tests.LandingAboutIndexTests.test_TC059_student_dashboard_loads
           - main.tests.LandingAboutIndexTests.test_TC060_student_dashboard_contains_categories
