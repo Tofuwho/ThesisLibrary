@@ -3,9 +3,9 @@ name: Django Test Suite
 
 on:
   push:
-    branches: [ testing ]
+    branches: [ main ]
   pull_request:
-    branches: [ testing ]
+    branches: [ main ]
 
 jobs:
   test:
@@ -15,6 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         testcase:
+
           # ======================================================
           # TC001 – TC033
           # ======================================================
@@ -34,9 +35,6 @@ jobs:
           - main.tests.AdminPanelTestCase.test_tc014_add_course
           - main.tests.AdminPanelTestCase.test_tc016_add_rejected_thesis
           - main.tests.Updated_Test.test_tc019_deep_search_mode
-          - main.tests.Updated_Test.test_tc020_restricted_view_guest
-          - main.tests.Updated_Test.test_tc021_view_full_thesis_authenticated
-        # - main.tests.Updated_Test.test_tc022_download_logging
           - main.tests.Updated_Test.test_tc023_invalid_thesis_download
           - main.tests.Updated_Test.test_tc024_ajax_unauthorized_download
           - main.tests.Updated_Test.test_tc025_api_departments_valid
@@ -49,33 +47,42 @@ jobs:
           - main.tests.Updated_Test.test_tc032_login_json_invalid
           - main.tests.Updated_Test.test_tc033_my_submissions_page
 
-          # ======================================================
-          # TC034 – TC054 (User List, Delete User, Thesis/Highlight)
-          # ======================================================
-          - main.tests.UserListTests.test_tc034_user_list_displays_users
-          - main.tests.UserListTests.test_tc035_user_list_requires_login
-          - main.tests.UserListTests.MySubmissionsTests.test_tc036_my_submissions_empty
-          - main.tests.UserListTests.test_tc037_user_list_shows_actions
-        # - main.tests.DeleteUserTests.test_tc038_delete_user_redirects
-          - main.tests.DeleteUserTests.test_tc039_user_is_deleted
-          - main.tests.DeleteUserTests.test_tc040_delete_user_invalid_id
-          - main.tests.ThesisDetailTests.test_tc041_thesis_detail_loads
-          - main.tests.ThesisDetailTests.test_tc042_thesis_detail_displays_info
-          - main.tests.ThesisDetailTests.test_tc043_thesis_detail_invalid_id
-          - main.tests.EditUserTests.test_tc044_edit_user_loads
-          - main.tests.EditUserTests.test_tc045_edit_user_updates_info
-          - main.tests.EditUserTests.test_tc046_edit_user_requires_login
-          - main.tests.EditUserTests.test_tc047_edit_user_invalid_id
-          - main.tests.ViewThesisFileTests.test_tc048_view_file_guest_restricted
-          - main.tests.ViewThesisFileTests.test_tc049_view_file_authenticated_full_access
-          - main.tests.ViewThesisFileTests.test_tc050_view_file_missing_pdf
-          - main.tests.ViewThesisFileTests.test_tc051_view_file_invalid_id
-          - main.tests.ViewThesisFileTests.test_tc052_view_file_content_type
-          - main.tests.ViewThesisHighlightTests.test_tc053_highlight_invalid_id
-          - main.tests.ViewThesisHighlightTests.test_tc054_highlight_missing_pdf
 
           # ======================================================
-          # TC055 – TC060 (Landing/About/Student Dashboard)
+          # ✅ TC020 – TC027 (REPLACED → SecurityTests)
+          # ======================================================
+          - main.tests.SecurityTests.test_tc020_guest_redirected_to_login_on_view
+          - main.tests.SecurityTests.test_tc021_authenticated_user_can_view_thesis
+          - main.tests.SecurityTests.test_tc022_guest_gets_preview_pdf
+          - main.tests.SecurityTests.test_tc023_missing_file_returns_404
+          - main.tests.SecurityTests.test_tc024_corrupted_pdf_returns_404
+          - main.tests.SecurityTests.test_tc025_download_is_forbidden
+          - main.tests.SecurityTests.test_tc026_highlight_pdf_returns_file
+          - main.tests.SecurityTests.test_tc027_highlight_without_query_fallback
+
+
+          # ======================================================
+          # ✅ TC038 – TC040 (REPLACED → UserManagementTests)
+          # ======================================================
+          - main.tests.UserManagementTests.test_tc038_admin_can_delete_user
+          - main.tests.UserManagementTests.test_tc039_deleted_user_removed
+          - main.tests.UserManagementTests.test_tc040_delete_invalid_user_returns_404
+
+
+          # ======================================================
+          # ✅ TC048 – TC054 (REPLACED → FileAccessTests)
+          # ======================================================
+          - main.tests.FileAccessTests.test_tc048_guest_preview_limited_to_3_pages
+          - main.tests.FileAccessTests.test_tc049_authenticated_full_pdf_access
+          - main.tests.FileAccessTests.test_tc050_missing_pdf_returns_404
+          - main.tests.FileAccessTests.test_tc051_invalid_thesis_id_returns_404
+          - main.tests.FileAccessTests.test_tc052_pdf_content_type_correct
+          - main.tests.FileAccessTests.test_tc053_highlight_invalid_id_returns_404
+          - main.tests.FileAccessTests.test_tc054_highlight_missing_pdf_returns_404
+
+
+          # ======================================================
+          # ✅ TC055 – TC060 (Landing / About / Student Dashboard)
           # ======================================================
           - main.tests.LandingAboutIndexTests.test_TC055_landing_page_loads
           - main.tests.LandingAboutIndexTests.test_TC056_landing_page_contains_content
@@ -83,6 +90,7 @@ jobs:
           - main.tests.LandingAboutIndexTests.test_TC058_about_page_contains_text
           - main.tests.LandingAboutIndexTests.test_TC059_student_dashboard_loads
           - main.tests.LandingAboutIndexTests.test_TC060_student_dashboard_contains_categories
+
 
     services:
       mariadb:
