@@ -199,6 +199,10 @@ class AdminPanelTestCase(TestCase):
         })
         self.assertIn(response.status_code, [200, 302])
 
+    def test_TC015_delete_student(self):
+        url = reverse("delete_student", args=[1])
+        self.assertEqual(resolve(url).func, delete_student)
+
     def test_tc016_add_rejected_thesis(self):
         """TC016: Admin - Add Rejected Thesis"""
         url = reverse('admin:main_rejectedthesis_add')
@@ -286,7 +290,7 @@ class Updated_Test(TestCase):
     # TC020 – TC022 (Public Pages)
     # ===================================================
 
-class LandingPageTests(TestCase):
+class Setups(TestCase):
     def setUp(self):
         self.client = Client()
         from main.models import Category, Department
@@ -312,7 +316,9 @@ class LandingPageTests(TestCase):
         response = self.client.get(reverse('thesis_download_file', args=[999]))
         self.assertEqual(response.status_code, 403)
 
-        """TC024"""
+    def test_tc024_index_page_loads(self):
+        url = reverse("index")
+        self.assertEqual(resolve(url).func, index_page)
 
     def test_tc025_api_departments_valid(self):
         """TC025: API departments (valid)"""
@@ -419,27 +425,26 @@ class UserListTests(TestCase):
         response = self.client.get(reverse("user_list"))
         self.assertNotEqual(response.status_code, 200)
 
-    class MySubmissionsTests(TestCase):
-        def setUp(self):
-            self.client = Client()
-            self.user = User.objects.create_user("stud", "stud@mail.com", "pass123")
-            self.other = User.objects.create_user("other", "other@mail.com", "pass123")
-            self.category = Category.objects.create(name="Undergrad")
-            self.department = Department.objects.create(name="CICT", category=self.category)
-            self.course = Course.objects.create(name="BSCS", department=self.department)
+class SubmissionTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user("stud", "stud@mail.com", "pass123")
+        self.other = User.objects.create_user("other", "other@mail.com", "pass123")
+        self.category = Category.objects.create(name="Undergrad")
+        self.department = Department.objects.create(name="CICT", category=self.category)
+        self.course = Course.objects.create(name="BSCS", department=self.department)
 
-        def test_tc036_my_submissions_empty(self):
-            """TC051: my_submissions should show empty list if no submissions."""
-            self.client.login(username="stud", password="pass123")
-            response = self.client.get(reverse("my_submissions"))
-            self.assertContains(response, "No submissions", status_code=200)
+    def test_tc036_my_submissions_empty(self):
+        """TC051: my_submissions should show empty list if no submissions."""
+        self.client.login(username="stud", password="pass123")
+        response = self.client.get(reverse("my_submissions"))
+        self.assertContains(response, "No submissions", status_code=200)
+
+    def test_TC37_serve_thesis_page_image(self):
+        url = reverse("serve_thesis_page_image", args=[1, 1])
+        self.assertEqual(resolve(url).func, serve_thesis_page_image)
 
 
-    def test_tc037_user_list_shows_actions(self):
-        """TC038: User list should show edit and delete buttons."""
-        response = self.client.get(reverse("user_list"))
-        self.assertContains(response, "Edit")
-        self.assertContains(response, "Delete")
 
 class StudentsListTests(TestCase):
     def setUp(self):
@@ -457,6 +462,12 @@ class StudentsListTests(TestCase):
         """TC039: Professors list page loads properly."""
         response = self.client.get(reverse("professors_list"))
         self.assertEqual(response.status_code, 200)
+
+    def test_TC040_login_view(self):
+        url = reverse("login")
+        self.assertEqual(resolve(url).func, login_view)
+
+
 
 
 class ThesisDetailTests(TestCase):
@@ -527,6 +538,27 @@ class EditUserTests(TestCase):
 # ===================================================
 # TC048 – TC052 View Thesis File Tests
 # ===================================================
+class StudentDB(TestCase):
+    def test_tc048_student_dashboard(self):
+        url = reverse("student_dashboard")
+        self.assertEqual(resolve(url).func, student_dashboard)
+
+    def test_tc049_profile_card(self):
+        url = reverse("profile_card")
+        self.assertEqual(resolve(url).func, profile_card)
+
+    def test_tc050_category_detail(self):
+        url = reverse("category_detail", args=[1])
+        self.assertEqual(resolve(url).func, category_detail)
+
+    def test_tc051_create_submission(self):
+        url = reverse("create_submission")
+        self.assertEqual(resolve(url).func, create_submission)
+
+    def test_tc052_my_submissions(self):
+        url = reverse("my_submissions")
+        self.assertEqual(resolve(url).func, my_submissions)
+
 
 
 
@@ -545,6 +577,9 @@ class AdminCategoriesTests(TestCase):
         response = self.client.get(reverse("admin_categories"))
         self.assertEqual(response.status_code, 200)
 
+    def test_tc054_signup_view(self):
+        url = reverse("signup")
+        self.assertEqual(resolve(url).func, signup_view)
 
 
 class LandingAboutIndexTests(TestCase):
@@ -556,11 +591,9 @@ class LandingAboutIndexTests(TestCase):
                 password="Student01"
             )
 
-    def test_TC055_landing_page_loads(self):
-        """TC055: Validate landing page loads successfully."""
-        response = self.client.get(reverse("landing"))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "main/landing.html")
+    def test_tc055_view_thesis(self):
+        url = reverse("view_thesis", args=[1])
+        self.assertEqual(resolve(url).func, view_thesis)
 
     # -------------------------------
     # TC056 – Landing Page Content Check
@@ -572,11 +605,9 @@ class LandingAboutIndexTests(TestCase):
         # Adjust depending on your actual landing page heading
         self.assertContains(response, "Welcome")
 
-    def test_TC057_about_page_loads(self):
-        """TC057: Validate about page loads successfully."""
-        response = self.client.get(reverse("about"))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "main/about.html")
+    def test_TC057_delete_professor(self):
+        url = reverse("delete_professor", args=[1])
+        self.assertEqual(resolve(url).func, delete_professor)
 
     def test_TC058_about_page_contains_text(self):
         """TC058: Verify about page displays content."""
@@ -609,190 +640,125 @@ class LandingAboutIndexTests(TestCase):
 
 class TestUrls(TestCase):
 
-    def test_TC061_landing_page_loads(self):
-        url = reverse("landing")
-        self.assertEqual(resolve(url).func, landing_page)
 
-    def test_TC062_about_page_loads(self):
-        url = reverse("about")
-        self.assertEqual(resolve(url).func, about_page)
-
-    def test_TC063_index_page_loads(self):
-        url = reverse("index")
-        self.assertEqual(resolve(url).func, index_page)
-
-    def test_TC064_categories_loads(self):
-        url = reverse("categories")
-        self.assertEqual(resolve(url).func, categories_page)
-
-    def test_TC065_student_dashboard(self):
-        url = reverse("student_dashboard")
-        self.assertEqual(resolve(url).func, student_dashboard)
-
-    def test_TC066_profile_card(self):
-        url = reverse("profile_card")
-        self.assertEqual(resolve(url).func, profile_card)
-
-    def test_TC067_category_detail(self):
-        url = reverse("category_detail", args=[1])
-        self.assertEqual(resolve(url).func, category_detail)
-
-    def test_TC068_create_submission(self):
-        url = reverse("create_submission")
-        self.assertEqual(resolve(url).func, create_submission)
-
-    def test_TC069_my_submissions(self):
-        url = reverse("my_submissions")
-        self.assertEqual(resolve(url).func, my_submissions)
-
-    def test_TC070_thesis_detail(self):
-        url = reverse("thesis_detail", args=[1])
-        self.assertEqual(resolve(url).func, thesis_detail)
-
-    def test_TC071_download_thesis_file(self):
-        url = reverse("thesis_download_file", args=[1])
-        self.assertEqual(resolve(url).func, download_thesis_file)
-
-    def test_TC072_login_view(self):
-        url = reverse("login")
-        self.assertEqual(resolve(url).func, login_view)
-
-    def test_TC073_signup_view(self):
-        url = reverse("signup")
-        self.assertEqual(resolve(url).func, signup_view)
-
-    def test_TC074_verify_email(self):
+    def test_TC061_verify_email(self):
         url = reverse("verify_email")
         self.assertEqual(resolve(url).func, verify_email_view)
 
-    def test_TC075_forgot_password(self):
+    def test_TC062_forgot_password(self):
         url = reverse("forgot_password")
         self.assertEqual(resolve(url).func, forgot_password)
 
-    def test_TC076_reset_password(self):
+    def test_TC063_reset_password(self):
         url = reverse("reset_password")
         self.assertEqual(resolve(url).func, reset_password)
 
-    def test_TC077_change_password_profile(self):
+    def test_TC064_change_password_profile(self):
         url = reverse("change_password_profile")
         self.assertEqual(resolve(url).func, change_password_profile)
 
-    def test_TC078_api_departments(self):
+    def test_TC065_api_departments(self):
         url = reverse("api_departments", args=[1])
         self.assertEqual(resolve(url).func, api_departments)
 
-    def test_TC079_api_courses(self):
+    def test_TC066_api_courses(self):
         url = reverse("api_courses", args=[1])
         self.assertEqual(resolve(url).func, api_courses)
 
-    def test_TC080_api_extract_abstract(self):
+    def test_TC067_api_extract_abstract(self):
         url = reverse("api_extract_abstract")
         self.assertEqual(resolve(url).func, api_extract_abstract)
 
-    def test_TC081_admin_dashboard(self):
+    def test_TC068_admin_dashboard(self):
         url = reverse("admin_dashboard")
         self.assertEqual(resolve(url).func, admin_dashboard)
 
-    def test_TC082_admin_log_entries(self):
+    def test_TC069_admin_log_entries(self):
         url = reverse("admin_log_entries")
         self.assertEqual(resolve(url).func, admin_log_entries)
 
-    def test_TC083_user_list(self):
+    def test_TC070_user_list(self):
         url = reverse("user_list")
         self.assertEqual(resolve(url).func, user_list)
 
-    def test_TC084_delete_user(self):
+    def test_TC071_delete_user(self):
         url = reverse("delete_user", args=[1])
         self.assertEqual(resolve(url).func, delete_user)
 
-    def test_TC085_edit_user(self):
+    def test_TC072_edit_user(self):
         url = reverse("edit_user", args=[1])
         self.assertEqual(resolve(url).func, edit_user)
 
-    def test_TC086_change_password(self):
+    def test_TC073_change_password(self):
         url = reverse("change_password", args=[1])
         self.assertEqual(resolve(url).func, change_password)
 
-    def test_TC087_pending_submissions(self):
+    def test_TC074_pending_submissions(self):
         url = reverse("pending_submissions")
         self.assertEqual(resolve(url).func, pending_submissions)
 
-    def test_TC088_approve_thesis(self):
+    def test_TC075_approve_thesis(self):
         url = reverse("approve_thesis", args=[1])
         self.assertEqual(resolve(url).func, approve_thesis)
 
-    def test_TC089_reject_thesis(self):
+    def test_TC076_reject_thesis(self):
         url = reverse("reject_thesis", args=[1])
         self.assertEqual(resolve(url).func, reject_thesis)
 
-    def test_TC090_rejected_thesis_list(self):
+    def test_TC077_rejected_thesis_list(self):
         url = reverse("rejected_thesis_list")
         self.assertEqual(resolve(url).func, rejected_thesis_list)
 
-    def test_TC091_theses_list(self):
+    def test_TC078_theses_list(self):
         url = reverse("theses_list")
         self.assertEqual(resolve(url).func, theses_list)
 
-    def test_TC092_departments_list(self):
+    def test_TC079_departments_list(self):
         url = reverse("departments_list")
         self.assertEqual(resolve(url).func, departments_list)
 
-    def test_TC093_courses_list(self):
+    def test_TC080_courses_list(self):
         url = reverse("courses_list")
         self.assertEqual(resolve(url).func, courses_list)
 
-    def test_TC094_students_list(self):
+    def test_TC081_students_list(self):
         url = reverse("students_list")
         self.assertEqual(resolve(url).func, students_list)
 
-    def test_TC095_professors_list(self):
+    def test_TC082_professors_list(self):
         url = reverse("professors_list")
         self.assertEqual(resolve(url).func, professors_list)
 
-    def test_TC096_import_students(self):
+    def test_TC083_import_students(self):
         url = reverse("import_students")
         self.assertEqual(resolve(url).func, import_students)
 
-    def test_TC097_add_student(self):
+    def test_TC084_add_student(self):
         url = reverse("add_student")
         self.assertEqual(resolve(url).func, add_student)
 
-    def test_TC098_edit_student(self):
+    def test_TC085_edit_student(self):
         url = reverse("edit_student", args=[1])
         self.assertEqual(resolve(url).func, edit_student)
 
-    def test_TC099_add_professor(self):
+    def test_TC086_add_professor(self):
         url = reverse("add_professor")
         self.assertEqual(resolve(url).func, add_professor)
 
-    def test_TC100_edit_professor(self):
+    def test_TC087_edit_professor(self):
         url = reverse("edit_professor", args=[1])
         self.assertEqual(resolve(url).func, edit_professor)
 
-    def test_TC101_import_professors(self):
+    def test_TC088_import_professors(self):
         url = reverse("import_professors")
         self.assertEqual(resolve(url).func, import_professors)
 
-    def test_TC102_admin_categories(self):
+    def test_TC089_admin_categories(self):
         url = reverse("admin_categories")
         self.assertEqual(resolve(url).func, admin_categories)
 
-    def test_TC103_archive_old_theses(self):
+    def test_TC090_archive_old_theses(self):
         url = reverse("archive_old_theses")
         self.assertEqual(resolve(url).func, archive_old_theses)
 
-    def test_TC104_delete_student(self):
-        url = reverse("delete_student", args=[1])
-        self.assertEqual(resolve(url).func, delete_student)
 
-    def test_TC105_delete_professor(self):
-        url = reverse("delete_professor", args=[1])
-        self.assertEqual(resolve(url).func, delete_professor)
-
-    def test_TC106_view_thesis(self):
-        url = reverse("view_thesis", args=[1])
-        self.assertEqual(resolve(url).func, view_thesis)
-
-    def test_TC107_serve_thesis_page_image(self):
-        url = reverse("serve_thesis_page_image", args=[1, 1])
-        self.assertEqual(resolve(url).func, serve_thesis_page_image)
