@@ -4,7 +4,6 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
-  /* Search styling */
   .search-bar {
     margin-bottom: 1rem;
     display: flex;
@@ -12,9 +11,9 @@
   }
 
   .search-input {
-    background: #2a2a2a;
-    color: #fff;
-    border: 1px solid #444;
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #ced4da;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     width: 250px;
@@ -23,12 +22,12 @@
 
   .search-input:focus {
     outline: none;
-    border-color: #90caf9;
-    box-shadow: 0 0 5px #90caf9;
+    border-color: #0277bd;
+    box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
   }
 
   mark {
-    background-color: #ffb300;
+    background-color: #ffeb3b;
     color: #000;
     border-radius: 4px;
     padding: 0 2px;
@@ -38,24 +37,25 @@
     cursor: pointer;
     transition: color 0.2s;
     text-align: left;
+    color: #555;
   }
 
   th.sort-asc::after {
     content: " ▲";
-    color: #90caf9;
+    color: #0277bd;
   }
 
   th.sort-desc::after {
     content: " ▼";
-    color: #90caf9;
+    color: #0277bd;
   }
 
   th:hover {
-    color: #90caf9;
+    color: #0277bd;
   }
 
   #rejectedTable tbody tr:hover {
-    background-color: #2a2a2a;
+    background-color: #f8f9fa;
     transition: background 0.2s;
   }
 
@@ -75,7 +75,7 @@
   }
 
   .btn-view:hover {
-    background: #2196f3;
+    background: #1565c0;
     transform: translateY(-2px);
     box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
   }
@@ -90,9 +90,9 @@
   }
 
   .pagination button {
-    background: #2a2a2a;
-    border: 1px solid #444;
-    color: #fff;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    color: #333;
     padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
@@ -100,20 +100,20 @@
   }
 
   .pagination button:hover:not(:disabled) {
-    background: #90caf9;
-    color: #000;
+    background: #e3f2fd;
+    color: #0d47a1;
   }
 
   .pagination button.active {
-    background: #90caf9;
-    color: #000;
-    pointer-events: none; /* prevent clicking active page */
+    background: #0277bd;
+    color: #fff;
+    pointer-events: none;
   }
 
   .pagination span {
-    background: #2a2a2a;
-    border: 1px solid #444;
-    color: #ccc;
+    background: #fff;
+    border: 1px solid #ced4da;
+    color: #777;
     padding: 6px 12px;
     border-radius: 6px;
     display: inline-block;
@@ -134,17 +134,18 @@
     </div>
 
     <div class="dashboard-section" style="margin-top: 2rem;">
-      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
 
-        <!-- 🔍 Search Bar -->
         <div class="search-bar">
+          <button onclick="exportTableToExcel('rejectedTable', 'Rejected_Theses')" class="add-btn" style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
+              📊 Export
+          </button>
           <input type="text" id="searchInput" class="search-input" placeholder="Search rejected theses...">
         </div>
 
-        <!-- 📋 Sortable + Searchable Table -->
         <table id="rejectedTable" style="width:100%; border-collapse:collapse;">
           <thead>
-            <tr style="background-color:#2a2a2a;">
+            <tr style="background-color:#f8f9fa;">
               <th style="padding:0.8rem;">Title</th>
               <th style="padding:0.8rem;">Author</th>
               <th style="padding:0.8rem;">Original Submitter</th>
@@ -159,35 +160,35 @@
           </thead>
           <tbody>
             {% for thesis in rejected_theses %}
-            <tr style="border-bottom:1px solid #333;">
-              <td style="padding:0.8rem;">{{ thesis.title }}</td>
-              <td style="padding:0.8rem;">{{ thesis.author }}</td>
-              <td style="padding:0.8rem;">{{ thesis.original_submitter }}</td>
-              <td style="padding:0.8rem;">{{ thesis.category }}</td>
-              <td style="padding:0.8rem;">{{ thesis.department }}</td>
-              <td style="padding:0.8rem;">{{ thesis.course_display }}</td>
+            <tr style="border-bottom:1px solid #eee;">
+              <td style="padding:0.8rem; color: #0277bd; font-weight: 500;">{{ thesis.title }}</td>
+              <td style="padding:0.8rem; color: #333;">{{ thesis.author }}</td>
+              <td style="padding:0.8rem; color: #333;">{{ thesis.original_submitter }}</td>
+              <td style="padding:0.8rem; color: #333;">{{ thesis.category }}</td>
+              <td style="padding:0.8rem; color: #333;">{{ thesis.department }}</td>
+              <td style="padding:0.8rem; color: #333;">{{ thesis.course_display }}</td>
               <td style="padding:0.8rem; max-width:300px;">
                 {% if thesis.rejection_reason %}
-                  <span title="{{ thesis.rejection_reason }}" style="color:#ffc107;">
+                  <span title="{{ thesis.rejection_reason }}" style="color:#e65100;">
                     {{ thesis.rejection_reason|truncatewords:15 }}
                   </span>
                 {% else %}
-                  <span style="color:#888;">No reason provided</span>
+                  <span style="color:#6c757d;">No reason provided</span>
                 {% endif %}
               </td>
-              <td style="padding:0.8rem;">{{ thesis.rejected_at|date:"Y-m-d H:i" }}</td>
-              <td style="padding:0.8rem;">{{ thesis.rejected_by }}</td>
+              <td style="padding:0.8rem; color: #333;">{{ thesis.rejected_at|date:"Y-m-d H:i" }}</td>
+              <td style="padding:0.8rem; color: #333;">{{ thesis.rejected_by }}</td>
               <td style="padding:0.8rem; text-align:center;">
                 {% if thesis.file %}
                 <a href="{{ thesis.file.url }}" target="_blank" class="btn-view">View</a>
                 {% else %}
-                <span style="color:#888;">No file</span>
+                <span style="color:#6c757d;">No file</span>
                 {% endif %}
               </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="10" style="text-align:center; padding:1rem; color:#777;">No rejected theses found.</td>
+              <td colspan="10" style="text-align:center; padding:1rem; color:#6c757d;">No rejected theses found.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -199,9 +200,8 @@
 </div>
 
 <script>
-// 🔍 Live Search with Highlight
-const searchInput = document.getElementById('searchInput'); // change to your input ID
-const rows = document.querySelectorAll('#rejectedTable tbody tr'); // change to your table ID
+const searchInput = document.getElementById('searchInput');
+const rows = document.querySelectorAll('#rejectedTable tbody tr');
 
 searchInput.addEventListener('input', function() {
   const query = this.value.toLowerCase();
@@ -211,15 +211,12 @@ searchInput.addEventListener('input', function() {
     let match = false;
 
     cells.forEach(cell => {
-      // Skip cells with links or buttons
       if (cell.querySelector('a') || cell.querySelector('button')) return;
 
-      // Remember original HTML (with links intact)
       const originalHTML = cell.getAttribute('data-original') || cell.innerHTML;
       cell.setAttribute('data-original', originalHTML);
       cell.innerHTML = originalHTML;
 
-      // Apply highlight
       if (query && cell.textContent.toLowerCase().includes(query)) {
         match = true;
         const regex = new RegExp(`(${query})`, 'gi');
@@ -229,12 +226,10 @@ searchInput.addEventListener('input', function() {
       }
     });
 
-    // Show/hide rows based on match
     row.style.display = match || query === '' ? '' : 'none';
   });
 });
 
-// 📊 Sortable Columns
 document.querySelectorAll('th.sortable').forEach((header, index) => {
   header.addEventListener('click', () => {
     const table = header.closest('table');
@@ -242,11 +237,9 @@ document.querySelectorAll('th.sortable').forEach((header, index) => {
     const rowsArray = Array.from(tbody.querySelectorAll('tr'));
     const isAsc = !header.classList.contains('sorted-asc');
 
-    // Remove sorting indicators
     table.querySelectorAll('th.sortable').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
     header.classList.add(isAsc ? 'sorted-asc' : 'sorted-desc');
 
-    // Sort rows
     rowsArray.sort((a, b) => {
       const aText = a.children[index].innerText.trim().toLowerCase();
       const bText = b.children[index].innerText.trim().toLowerCase();
@@ -266,10 +259,9 @@ document.querySelectorAll('th.sortable').forEach((header, index) => {
   const rejectedTbody = rejectedTable.querySelector('tbody');
   const rejectedRows = Array.from(rejectedTbody.querySelectorAll('tr'));
   const rejectedSearch = document.getElementById('searchInput');
-  const rowsPerPage = 10; // change as needed
+  const rowsPerPage = 10;
   let currentPage = 1;
 
-// ===== RENDER TABLE PAGE =====
 function renderRejectedPage(page = 1) {
   const visibleRows = rejectedRows.filter(r => r.dataset.visible !== "0");
   const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
@@ -284,7 +276,6 @@ function renderRejectedPage(page = 1) {
   renderRejectedPagination(totalPages);
 }
 
-// ===== RENDER PAGINATION BUTTONS WITH ELLIPSES =====
 function renderRejectedPagination(totalPages) {
   const container = document.getElementById('rejectedPagination');
   container.innerHTML = "";
@@ -298,10 +289,8 @@ function renderRejectedPagination(totalPages) {
     container.appendChild(btn);
   };
 
-  // Prev button
   createBtn("Prev", currentPage === 1, () => renderRejectedPage(currentPage - 1));
 
-  // Numbered buttons with ellipses
   const pageNumbers = [];
   if (totalPages <= 7) {
     for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
@@ -325,11 +314,9 @@ function renderRejectedPagination(totalPages) {
     }
   });
 
-  // Next button
   createBtn("Next", currentPage === totalPages, () => renderRejectedPage(currentPage + 1));
 }
 
-// ===== SEARCH + FILTER =====
 rejectedSearch.addEventListener('input', () => {
   const query = rejectedSearch.value.toLowerCase();
   rejectedRows.forEach(row => {
@@ -337,7 +324,6 @@ rejectedSearch.addEventListener('input', () => {
     let match = false;
 
     tds.forEach(td => {
-      // Skip action/view cells
       if (td.querySelector('a') || td.querySelector('button')) return;
 
       const originalHTML = td.getAttribute('data-original') || td.innerHTML;
@@ -359,11 +345,20 @@ rejectedSearch.addEventListener('input', () => {
   renderRejectedPage(currentPage);
 });
 
-// ===== INITIALIZE =====
 window.onload = () => {
   rejectedRows.forEach(r => r.dataset.visible = "1");
   renderRejectedPage();
 };
 </script>
-
+<script src="{% static 'js/xlsx.full.min.js' %}"></script>
+<script>
+function exportTableToExcel(tableID, filename) {
+    let originalTable = document.getElementById(tableID);
+    let tableClone = originalTable.cloneNode(true);
+    let rows = tableClone.querySelectorAll('tr');
+    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
+    let wb = XLSX.utils.table_to_book(tableClone, {sheet: "Sheet1"});
+    XLSX.writeFile(wb, filename + '.xlsx');
+}
+</script>
 {% endblock %}
