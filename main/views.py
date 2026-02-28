@@ -162,18 +162,46 @@ def categories_page(request):
             pass  # handled below; we will scan after applying facet filters
         else:
             # Normal search: search metadata fields (the card)
+            exact_match_score = (
+                Case(When(title__icontains=search_query, then=Value(100)), default=Value(0), output_field=IntegerField()) +
+                Case(When(abstract__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
+                Case(When(author__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField()) +
+                Case(When(keywords__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField())
+            )
+            
             tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
-            score_expr = Value(0, output_field=IntegerField())
+            score_expr = exact_match_score
+            
+            try:
+                from main.nlp_utils import get_lemmas
+            except Exception:
+                def get_lemmas(w): return {w}
+                
+            from django.db.models import Q
             for token in tokens:
+                lemmas = get_lemmas(token)
+                title_q = Q(); author_q = Q(); abstract_q = Q(); keywords_q = Q()
+                research_cat_q = Q(); cat_name_q = Q(); dept_name_q = Q(); course_name_q = Q()
+                
+                for lemma in lemmas:
+                    title_q |= Q(title__icontains=lemma)
+                    author_q |= Q(author__icontains=lemma)
+                    abstract_q |= Q(abstract__icontains=lemma)
+                    keywords_q |= Q(keywords__icontains=lemma)
+                    research_cat_q |= Q(research_category__icontains=lemma)
+                    cat_name_q |= Q(category__name__icontains=lemma)
+                    dept_name_q |= Q(department__name__icontains=lemma)
+                    course_name_q |= Q(course__name__icontains=lemma)
+                
                 token_score = (
-                    Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(research_category__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(category__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(department__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(course__name__icontains=token, then=Value(1)), default=Value(0), output_field=IntegerField())
+                    Case(When(title_q, then=Value(8)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(author_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(abstract_q, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(keywords_q, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(research_cat_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(cat_name_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(dept_name_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(course_name_q, then=Value(1)), default=Value(0), output_field=IntegerField())
                 )
                 try:
                     year_int = int(token)
@@ -396,20 +424,48 @@ def category_detail(request, category_name):
     sort = request.GET.get('sort') or 'date-desc'
 
     if search_query:
+        exact_match_score = (
+            Case(When(title__icontains=search_query, then=Value(100)), default=Value(0), output_field=IntegerField()) +
+            Case(When(abstract__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
+            Case(When(author__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField()) +
+            Case(When(keywords__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField())
+        )
         tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
         theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
-        score_expr = Value(0, output_field=IntegerField())
+        score_expr = exact_match_score
+        
+        try:
+            from main.nlp_utils import get_lemmas
+        except Exception:
+            def get_lemmas(w): return {w}
+            
+        from django.db.models import Q
         for token in tokens:
+            lemmas = get_lemmas(token)
+            title_q = Q(); author_q = Q(); coauthor_q = Q(); abstract_q = Q(); keywords_q = Q()
+            research_cat_q = Q(); cat_name_q = Q(); dept_name_q = Q(); course_name_q = Q()
+            
+            for lemma in lemmas:
+                title_q |= Q(title__icontains=lemma)
+                author_q |= Q(author__icontains=lemma)
+                coauthor_q |= Q(coauthor_json_text__icontains=lemma)
+                abstract_q |= Q(abstract__icontains=lemma)
+                keywords_q |= Q(keywords__icontains=lemma)
+                research_cat_q |= Q(research_category__icontains=lemma)
+                cat_name_q |= Q(category__name__icontains=lemma)
+                dept_name_q |= Q(department__name__icontains=lemma)
+                course_name_q |= Q(course__name__icontains=lemma)
+                
             token_score = (
-                Case(When(title__icontains=token, then=Value(8)), default=Value(0), output_field=IntegerField()) +
-                Case(When(author__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                Case(When(coauthor_json_text__icontains=token, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                Case(When(abstract__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                Case(When(keywords__icontains=token, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                Case(When(research_category__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                Case(When(category__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                Case(When(department__name__icontains=token, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                Case(When(course__name__icontains=token, then=Value(1)), default=Value(0), output_field=IntegerField())
+                Case(When(title_q, then=Value(8)), default=Value(0), output_field=IntegerField()) +
+                Case(When(author_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(coauthor_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(abstract_q, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(keywords_q, then=Value(3)), default=Value(0), output_field=IntegerField()) +
+                Case(When(research_cat_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(cat_name_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(dept_name_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
+                Case(When(course_name_q, then=Value(1)), default=Value(0), output_field=IntegerField())
             )
             try:
                 year_int = int(token)

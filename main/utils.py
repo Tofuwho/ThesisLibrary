@@ -693,17 +693,33 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
         (suggestion, confidence) where suggestion may be None if no good match
     """
     if not query or not candidates:
+        print(f"DEBUG: empty query ({query}) or candidates")
         return (None, 0.0)
+
+    try:
+        from main.nlp_utils import get_english_dictionary_words
+        dict_words = get_english_dictionary_words()
+    except Exception:
+        dict_words = set()
 
     # Filter out empty/None candidates and keep insertion order
     seen = set()
     corpus_unique: List[str] = []
+    word_corpus = set()
     for c in candidates:
         if not c:
             continue
         if c not in seen:
             seen.add(c)
             corpus_unique.append(c)
+            # Add individual words to word_corpus for token-by-token comparison
+            for w in re.findall(r"\w+", c.lower()):
+                word_corpus.add(w)
+
+    for w in dict_words:
+        word_corpus.add(w.lower())
+
+    word_corpus_list = list(word_corpus)
 
     # If RapidFuzz is not available, fall back to a simple heuristic
     if process is None or fuzz is None:
@@ -716,7 +732,7 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
             tokens = [t for t in re.findall(r"\w+", query) if t.strip()]
             suggested_tokens: List[str] = []
             for tkn in tokens:
-                m = difflib.get_close_matches(tkn, corpus_unique, n=1, cutoff=0.75)
+                m = difflib.get_close_matches(tkn, word_corpus_list, n=1, cutoff=0.75)
                 suggested_tokens.append(m[0] if m else tkn)
             suggestion_joined = " ".join(suggested_tokens).strip()
             if suggestion_joined and suggestion_joined.lower() != query.strip().lower():
@@ -734,23 +750,25 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
         score_cutoff=70,  # tolerate errors; tuneable
     )
 
-    # 2) Token-wise correction then join, using partial_ratio to survive missing letters
+    # 2) Token-wise correction then join, using standard ratio to account for length differences (partial_ratio breaks on single letters)
     tokens = [t for t in re.findall(r"\w+", query) if t.strip()]
     suggested_tokens: List[str] = []
     token_scores: List[float] = []
     for tkn in tokens:
+        # For very short tokens, we don't want fuzzy matching to blindly suggest longer random words
+        # but fuzz.ratio naturally handles this by penalizing length differences
         tok_match = process.extractOne(
             tkn,
-            corpus_unique,
-            scorer=fuzz.partial_ratio,
-            score_cutoff=65,
+            word_corpus_list,
+            scorer=fuzz.ratio,
+            score_cutoff=70,  # raised cutoff slightly to ensure better matches
         )
         if tok_match:
             suggested_tokens.append(tok_match[0])
             token_scores.append(float(tok_match[1]))
         else:
             suggested_tokens.append(tkn)
-            token_scores.append(50.0)
+            token_scores.append(100.0) # Assume exact match/correct word if no fuzzy match found (keeps original word)
 
     token_joined = " ".join(suggested_tokens).strip() if suggested_tokens else ""
     token_conf = sum(token_scores) / len(token_scores) if token_scores else 0.0
@@ -766,9 +784,11 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
     if token_joined and token_joined.lower() != query.strip().lower():
         # Compare combined token-based suggestion against phrase-based one using WRatio
         joined_score = fuzz.WRatio(query, token_joined) / 100.0
-        if joined_score > chosen_conf + 0.05:  # prefer better by margin
+        # If the joined token score is high (it corrected typos well), prefer it over the phrase matcher
+        # which sometimes aggressively matches a single word phrase to a user's multi-word query
+        if joined_score > chosen_conf or (chosen_suggestion and len(chosen_suggestion.split()) != len(tokens)):
             chosen_suggestion = token_joined
-            chosen_conf = joined_score
+            chosen_conf = max(chosen_conf, joined_score)
 
     # Avoid suggesting if confidence is low or suggestion equals original (case-insensitive)
     if not chosen_suggestion:
@@ -778,6 +798,7 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
     if chosen_conf < 0.7:  # tuneable threshold
         return (None, chosen_conf)
 
+    print(f"DEBUG utils.py - Suggestion for '{query}' -> '{chosen_suggestion}' (conf {chosen_conf})")
     return (chosen_suggestion, chosen_conf)
 
 
