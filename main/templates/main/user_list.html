@@ -11,9 +11,9 @@
   }
 
   .search-input {
-    background: #2a2a2a;
-    color: #fff;
-    border: 1px solid #444;
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #ced4da;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     width: 250px;
@@ -22,18 +22,19 @@
 
   .search-input:focus {
     outline: none;
-    border-color: #90caf9;
-    box-shadow: 0 0 5px #90caf9;
+    border-color: #0277bd;
+    box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
   }
 
   th {
     cursor: pointer;
     transition: color 0.2s;
+    color: #555;
   }
 
-  th.sort-asc::after { content: " ▲"; color: #90caf9; }
-  th.sort-desc::after { content: " ▼"; color: #90caf9; }
-  th:hover { color: #90caf9; }
+  th.sort-asc::after { content: " ▲"; color: #0277bd; }
+  th.sort-desc::after { content: " ▼"; color: #0277bd; }
+  th:hover { color: #0277bd; }
 
   #userTable th:nth-child(1),
   #userTable th:nth-child(2),
@@ -53,8 +54,12 @@
   }
 
   #userTable td.username {
-    color: #90caf9;
+    color: #0277bd;
     font-weight: 600;
+  }
+
+  #userTable td {
+    color: #333;
   }
 
   #userTable td.staff-status, #userTable td.actions {
@@ -64,10 +69,10 @@
     gap: 6px;
   }
 
-  #userTable tbody tr:hover { background-color: #2a2a2a; transition: background 0.2s; }
+  #userTable tbody tr:hover { background-color: #f8f9fa; transition: background 0.2s; }
 
   .highlight {
-    background-color: #90caf9;
+    background-color: #e3f2fd;
     color: #000;
     border-radius: 3px;
     padding: 0 3px;
@@ -90,27 +95,24 @@
     transition: all 0.2s ease;
 }
 
-/* EDIT button – Blue */
 .btn-edit {
-    background: #1565c0;  /* Darker blue */
+    background: #42a5f5;
     color: #fff;
 }
 .btn-edit:hover {
     background: #1e88e5;
-    box-shadow: 0 0 6px #1e88e5aa;
+    box-shadow: 0 0 6px rgba(30, 136, 229, 0.4);
 }
 
-/* DELETE button – Red */
 .btn-delete {
-    background: #c62828; /* Dark red */
+    background: #e53935;
     color: #fff;
 }
 .btn-delete:hover {
-    background: #e53935;
-    box-shadow: 0 0 6px #e53935aa;
+    background: #c62828;
+    box-shadow: 0 0 6px rgba(229, 57, 53, 0.4);
 }
 
-  /* Pagination controls */
   .pagination {
     display: flex;
     justify-content: center;
@@ -120,9 +122,9 @@
   }
 
   .pagination button {
-    background: #2a2a2a;
-    border: 1px solid #444;
-    color: #fff;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    color: #333;
     padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
@@ -130,13 +132,13 @@
   }
 
   .pagination button:hover {
-    background: #90caf9;
-    color: #000;
+    background: #e3f2fd;
+    color: #0d47a1;
   }
 
   .pagination button.active {
-    background: #90caf9;
-    color: #000;
+    background: #0277bd;
+    color: #fff;
   }
   .table-actions, .table-status {
     display: flex;
@@ -164,14 +166,17 @@
     </div>
 
     <div class="dashboard-section" style="margin-top: 2rem;">
-      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
         <div class="search-bar">
+          <button onclick="exportTableToExcel('userTable', 'User_List')" class="add-btn" style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
+            📊 Export
+          </button>
           <input type="text" id="userSearch" class="search-input" placeholder="Search users...">
         </div>
 
         <table id="userTable">
           <thead>
-            <tr style="background-color:#2a2a2a;">
+            <tr style="background-color:#f8f9fa;">
               <th>Username</th>
               <th>Email</th>
               <th>Last Login</th>
@@ -182,7 +187,7 @@
           </thead>
           <tbody>
             {% for user in users %}
-            <tr>
+            <tr style="border-bottom: 1px solid #eee;">
               <td class="username">{{ user.username }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.last_login|date:"Y-m-d H:i:s" }}</td>
@@ -190,9 +195,9 @@
               <td>
                   <div class="table-status">
                       {% if user.is_staff %}
-                          <span style="color:#4CAF50;">✔</span>
+                          <span style="color:#2e7d32;">✔</span>
                       {% else %}
-                          <span style="color:#f44336;">✖</span>
+                          <span style="color:#c62828;">✖</span>
                       {% endif %}
                   </div>
               </td>
@@ -205,7 +210,7 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" style="text-align:center; padding:1rem; color:#777;">No users found.</td>
+              <td colspan="6" style="text-align:center; padding:1rem; color:#6c757d;">No users found.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -242,7 +247,7 @@ function renderTablePage(page = 1) {
     visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage).forEach(r => r.style.display = "");
 
     renderPagination(totalPages);
-}
+  }
 
 function renderPagination(totalPages) {
     const container = document.getElementById("paginationControls");
@@ -257,10 +262,8 @@ function renderPagination(totalPages) {
         container.appendChild(btn);
     }
 
-    // Prev button
     createBtn("Prev", currentPage - 1, currentPage === 1);
 
-    // Numbered buttons
     for (let i = 1; i <= totalPages; i++) {
         if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
             createBtn(i, i, false, i === currentPage);
@@ -277,17 +280,14 @@ function renderPagination(totalPages) {
         }
     }
 
-    // Next button
     createBtn("Next", currentPage + 1, currentPage === totalPages);
 }
 
-// ===== SEARCH + HIGHLIGHT =====
 searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
 
     allRows.forEach(row => {
         row.querySelectorAll("td").forEach((td, idx) => {
-            // Skip the last column (Actions)
             if (td.classList.contains("actions") || td.querySelector(".table-actions")) return;
             if (td.classList.contains("staff-status") || td.querySelector(".table-status")) return;
             td.innerHTML = td.textContent;
@@ -300,7 +300,6 @@ searchInput.addEventListener("input", () => {
         allRows.forEach(row => {
             if (row.innerText.toLowerCase().includes(filter)) {
                 row.querySelectorAll("td").forEach((td, idx) => {
-                    // Skip the last column (Actions)
                     if (td.classList.contains("actions") || td.querySelector(".table-actions")) return;
                     if (td.classList.contains("staff-status") || td.querySelector(".table-status")) return;
 
@@ -315,7 +314,6 @@ searchInput.addEventListener("input", () => {
     renderTablePage(currentPage);
 });
 
-// ===== SORTING =====
 table.querySelectorAll("th").forEach((th, index) => {
     th.addEventListener("click", () => {
         const isAsc = !th.classList.contains("sort-asc");
@@ -338,7 +336,17 @@ table.querySelectorAll("th").forEach((th, index) => {
     });
 });
 
-// ===== INITIALIZE =====
 window.onload = () => renderTablePage(currentPage);
+</script>
+<script src="{% static 'js/xlsx.full.min.js' %}"></script>
+<script>
+function exportTableToExcel(tableID, filename) {
+    let originalTable = document.getElementById(tableID);
+    let tableClone = originalTable.cloneNode(true);
+    let rows = tableClone.querySelectorAll('tr');
+    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
+    let wb = XLSX.utils.table_to_book(tableClone, {sheet: "Sheet1"});
+    XLSX.writeFile(wb, filename + '.xlsx');
+}
 </script>
 {% endblock %}

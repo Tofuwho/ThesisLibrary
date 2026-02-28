@@ -11,9 +11,9 @@
   }
 
   .search-input {
-    background: #2a2a2a;
-    color: #fff;
-    border: 1px solid #444;
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #ced4da;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     width: 250px;
@@ -22,31 +22,32 @@
 
   .search-input:focus {
     outline: none;
-    border-color: #90caf9;
-    box-shadow: 0 0 5px #90caf9;
+    border-color: #0277bd;
+    box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
   }
 
   th {
     cursor: pointer;
     transition: color 0.2s;
+    color: #555;
   }
 
   th.sort-asc::after {
     content: " ▲";
-    color: #90caf9;
+    color: #0277bd;
   }
 
   th.sort-desc::after {
     content: " ▼";
-    color: #90caf9;
+    color: #0277bd;
   }
 
   th:hover {
-    color: #90caf9;
+    color: #0277bd;
   }
 
   #courseTable tbody tr:hover {
-    background-color: #2a2a2a;
+    background-color: #f8f9fa;
     transition: background 0.2s;
   }
 </style>
@@ -63,14 +64,14 @@
     </div>
 
     <div class="dashboard-section" style="margin-top: 2rem;">
-      <div style="background:#1f1f1f; border-radius:12px; padding:1.5rem;">
+      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
         <div class="search-bar">
           <input type="text" id="courseSearch" class="search-input" placeholder="Search courses...">
         </div>
 
         <table id="courseTable" style="width:100%; border-collapse:collapse;">
           <thead>
-            <tr style="background-color:#2a2a2a;">
+            <tr style="background-color:#f8f9fa;">
               <th style="padding:0.8rem; text-align:left;">Name</th>
               <th style="padding:0.8rem; text-align:left;">Department</th>
               <th style="padding:0.8rem; text-align:left;">Category</th>
@@ -79,15 +80,15 @@
           </thead>
           <tbody>
             {% for course in courses %}
-            <tr style="border-bottom:1px solid #333;">
-              <td style="padding:0.8rem; color:#90caf9;">{{ course.name }}</td>
-              <td style="padding:0.8rem;">{{ course.department.name }}</td>
-              <td style="padding:0.8rem;">{{ course.department.category }}</td>
-              <td style="padding:0.8rem;">{{ course.department.category }} → {{ course.department.name }}</td>
+            <tr style="border-bottom:1px solid #eee;">
+              <td style="padding:0.8rem; color:#0277bd;">{{ course.name }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ course.department.name }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ course.department.category }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ course.department.category }} → {{ course.department.name }}</td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="4" style="text-align:center; padding:1rem; color:#777;">No courses found.</td>
+              <td colspan="4" style="text-align:center; padding:1rem; color:#6c757d;">No courses found.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -98,7 +99,6 @@
 </div>
 
 <script>
-  // ===== SORTING =====
   document.querySelectorAll("#courseTable th").forEach((th, index) => {
     th.addEventListener("click", () => {
       const table = th.closest("table");
@@ -120,7 +120,6 @@
     });
   });
 
-  // ===== SEARCH =====
   const searchInput = document.getElementById("courseSearch");
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
