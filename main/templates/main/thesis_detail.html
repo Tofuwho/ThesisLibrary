@@ -8,59 +8,62 @@
     <h2 class="section-title">{{ thesis.title }}</h2>
     <p class="section-subtitle">By {{ thesis.author }} • {{ thesis.year }} • {{ thesis.thesis_type }}</p>
   </div>
-  
+
 </section>
 
 <section class="recently-added">
   <div class="container">
     <div class="thesis-card">
       <div class="thesis-cover">
-        <div class="thesis-cover-placeholder">📚</div>
+        <div class="thesis-cover-placeholder">
+          <i class="fas fa-book-open fa-3x" style="color: var(--primary-color);"></i>
+        </div>
       </div>
       <div class="thesis-info">
         <p class="thesis-meta">{{ thesis.specialization }}</p>
-        
+
         <!-- Authors and Co-Authors Section -->
         <div class="thesis-authors">
           <div class="main-author">
             <strong>Author:</strong> {{ thesis.author }}
           </div>
           {% if thesis.get_coauthor_names %}
-            <div class="co-authors">
-              <strong>Co-Authors:</strong>
-              <ul class="coauthor-list">
-                {% for coauthor in thesis.get_coauthor_names %}
-                  <li>{{ coauthor }}</li>
-                {% endfor %}
-              </ul>
-            </div>
+          <div class="co-authors">
+            <strong>Co-Authors:</strong>
+            <ul class="coauthor-list">
+              {% for coauthor in thesis.get_coauthor_names %}
+              <li>{{ coauthor }}</li>
+              {% endfor %}
+            </ul>
+          </div>
           {% endif %}
         </div>
-        
+
         <p>{{ thesis.abstract }}</p>
-        
+
         {% if thesis.file %}
-          <div class="thesis-actions">
-            {% if is_authenticated %}
-              <a href="{% url 'view_thesis' thesis.id %}" class="view-button">
-                <i class="fas fa-eye"></i> View Full Document
-              </a>
-            {% else %}
-              <div class="restricted-access">
-                <a href="{% url 'view_thesis' thesis.id %}" class="preview-button">
-                  <i class="fas fa-lock"></i> Login to View
-                </a>
-                <div class="login-required">
-                  <p class="restriction-notice">
-                    <i class="fas fa-lock"></i>
-                    Please <a href="#" class="login-link" onclick="showLoginModal('{{ request.get_full_path }}')">log in</a> to view the complete thesis.
-                  </p>
-                </div>
-              </div>
-            {% endif %}
+        <div class="thesis-actions">
+          {% if is_authenticated %}
+          <a href="{% url 'view_thesis' thesis.id %}" class="view-button">
+            <i class="fas fa-eye"></i> View Full Document
+          </a>
+          {% else %}
+          <div class="restricted-access">
+            <a href="{% url 'view_thesis' thesis.id %}" class="preview-button">
+              <i class="fas fa-lock"></i> Login to View
+            </a>
+            <div class="login-required">
+              <p class="restriction-notice">
+                <i class="fas fa-lock"></i>
+                Please <a href="#" class="login-link" onclick="showLoginModal('{{ request.get_full_path }}')">log in</a>
+                to view the complete thesis.
+              </p>
+            </div>
           </div>
+          {% endif %}
+        </div>
         {% else %}
-          <p class="no-file">No file available for this thesis.</p>
+        <p class="no-file">No file available for this thesis.</p>
         {% endif %}
       </div>
     </div>

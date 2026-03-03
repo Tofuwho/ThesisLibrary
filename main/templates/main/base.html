@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,25 +9,31 @@
     <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     {% block extra_head %}{% endblock %}
 </head>
+
 <body class="{% block body_class %}{% endblock %}">
     {% include 'includes/header.html' %}
     <main>
         {% block content %}{% endblock %}
     </main>
-    
+
     <!-- Auth Modal for all pages -->
     {% include 'includes/auth-modal.html' %}
-    
+
+    <!-- Footer -->
+    {% include 'includes/footer.html' %}
+
     <!-- Core JavaScript Modules -->
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>
-    
+
     <!-- Utility and Feature-specific JavaScript Modules -->
     <script src="{% static 'js/utils.js' %}"></script>
     <script src="{% static 'js/mobile.js' %}"></script>
-    
+
     {% block extra_scripts %}{% endblock %}
 </body>
+
 </html>

@@ -1,161 +1,148 @@
 {% extends 'main/base.html' %}
-{% block title %}Home{% endblock %}
+{% block title %}Taguig City University | Thesis Library Archiver{% endblock %}
 
 {% block content %}
 {% load static department_filters %}
 
-<section class="hero">
+<section class="hero university-hero">
     <div class="container">
-        <h2 class="section-title">The Thesis Repository</h2>
-        <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
-        <link rel="stylesheet" href="{% static 'css/style.css' %}">
-        <p class="section-subtitle">
-            Discover outstanding research from our College.<br>
-            Explore cutting-edge studies, innovative solutions, and academic excellence in the field of technology.
-        </p>
+        <div class="hero-content">
+            <span class="hero-eyebrow">Official Digital Archives</span>
+            <h1 class="hero-title">Taguig City University <br><span>Thesis Library Archiver</span></h1>
+            <p class="hero-subtitle">
+                Preserving academic excellence and innovation from the heart of Taguig City. <br>
+                Access thousands of research papers, capstone projects, and dissertations from our diverse colleges.
+            </p>
 
+            <div class="hero-search-container">
+                <form action="{% url 'categories' %}" method="GET" class="hero-search-form">
+                    <div class="search-input-group">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" name="search" placeholder="Search by title, author, or research field..."
+                            aria-label="Search TCU Archives">
+                        <button type="submit" class="search-submit">Search Archives</button>
+                    </div>
+                </form>
+            </div>
 
-        
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">5,000+</span>
+                    <span class="stat-label">Theses Archived</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number">12</span>
+                    <span class="stat-label">Colleges</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Open Access</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
 <section class="recently-added">
     <div class="container">
-        <h2 class="section-title">Latest Research Publications</h2>
-        <p class="section-subtitle">Explore the most recent academic contributions from our talented students and researchers</p>
+        <div class="section-header-flex">
+            <div>
+                <h2 class="section-title">Latest Research Publications</h2>
+                <p class="section-subtitle">The most recent contributions to the TCU academic community.</p>
+            </div>
+            <a href="{% url 'categories' %}" class="view-all-link">Browse All <i class="fas fa-arrow-right"></i></a>
+        </div>
 
         <div class="thesis-grid">
             {% for thesis in recent_theses %}
             <div class="thesis-card">
+                <div class="thesis-tag">{{ thesis.specialization }}</div>
                 <div class="thesis-cover">
                     <div class="thesis-cover-placeholder">
-                        <i class="fas fa-graduation-cap" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 10px;"></i><br>
-                        Academic Research
+                        <i class="fas fa-book-reader"></i>
                     </div>
-                </div> 
+                </div>
                 <div class="thesis-info">
                     <h3 class="thesis-title">{{ thesis.title }}</h3>
-                    <p class="thesis-author">By {{ thesis.author }}{% if thesis.co_authors %} with {{ thesis.co_authors|format_coauthors }}{% endif %}</p>
-                    <p class="thesis-meta">{{ thesis.specialization }} | {{ thesis.year }}</p>
-                    {% if thesis.file %}
-                        <a href="{% url 'view_thesis' thesis.id %}" class="thesis-view-button">
-                            <i class="fas fa-eye"></i> View
-                        </a>
-                    {% else %}
-                        <a href="{% url 'thesis_detail' thesis.id %}" class="thesis-view-button"><i class="fas fa-eye"></i> View</a>
-                    {% endif %}
+                    <p class="thesis-author">By {{ thesis.author }}{% if thesis.co_authors %} with {{
+                        thesis.co_authors|format_coauthors }}{% endif %}</p>
+                    <div class="thesis-footer">
+                        <span class="thesis-year"><i class="far fa-calendar-alt"></i> {{ thesis.year }}</span>
+                        {% if thesis.file %}
+                        <a href="{% url 'view_thesis' thesis.id %}" class="thesis-action-link">Read Paper <i
+                                class="fas fa-chevron-right"></i></a>
+                        {% else %}
+                        <a href="{% url 'thesis_detail' thesis.id %}" class="thesis-action-link">View Details <i
+                                class="fas fa-chevron-right"></i></a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             {% empty %}
-            <p>No recent theses available.</p>
-            {% endfor %}
-        </div>
-
-        <div class="pagination">
-            <a href="{% url 'categories' %}" class="pagination-button">
-                <i class="fas fa-book-open"></i> Browse All Research
-            </a>
-        </div>
-    </div>
-</section> 
-
-<section class="departments">
-    <div class="container">
-        <h2 class="section-title">Academic Departments</h2>
-        <p class="section-subtitle">Explore research across different academic disciplines and specializations</p>
-
-        <div class="department-grid">
-            {% for department in departments %}
-            <div class="department-card">
-                <div class="department-icon">
-                    {% if department.category.name|lower == 'graduate' or department.category.name|lower == 'graduate school' %}
-                        <i class="fas fa-graduation-cap"></i>
-                    {% elif 'education' in department.name|lower %}
-                        <i class="fas fa-chalkboard-teacher"></i>
-                    {% elif 'business' in department.name|lower or 'management' in department.name|lower %}
-                        <i class="fas fa-briefcase"></i>
-                    {% elif 'technology' in department.name|lower or 'computer' in department.name|lower or 'information' in department.name|lower %}
-                        <i class="fas fa-laptop-code"></i>
-                    {% elif 'engineering' in department.name|lower %}
-                        <i class="fas fa-cogs"></i>
-                    {% elif 'tourism' in department.name|lower or 'hospitality' in department.name|lower %}
-                        <i class="fas fa-plane"></i>
-                    {% elif 'criminal' in department.name|lower or 'justice' in department.name|lower %}
-                        <i class="fas fa-shield-alt"></i>
-                    {% else %}
-                        <i class="fas fa-university"></i>
-                    {% endif %}
-                </div>
-                <h3 class="department-name">{{ department.name }}</h3>
-                <div class="department-description">
-                    {% if department.category.name|lower == 'graduate' or department.category.name|lower == 'graduate school' %}
-                        Advanced research and graduate studies
-                    {% elif 'education' in department.name|lower %}
-                        Teacher education and educational leadership
-                    {% elif 'business' in department.name|lower or 'management' in department.name|lower %}
-                        Business administration and management studies
-                    {% elif 'technology' in department.name|lower or 'computer' in department.name|lower or 'information' in department.name|lower %}
-                        Information technology and computer science
-                    {% elif 'engineering' in department.name|lower %}
-                        Engineering and technology solutions
-                    {% elif 'tourism' in department.name|lower or 'hospitality' in department.name|lower %}
-                        Tourism and hospitality management
-                    {% elif 'criminal' in department.name|lower or 'justice' in department.name|lower %}
-                        Criminal justice and law enforcement
-                    {% else %}
-                        Academic excellence and research
-                    {% endif %}
-                </div>
-                <a href="{% url 'categories' %}?department={{ department.id }}" class="browse-button">
-                    <i class="fas fa-arrow-right"></i> Explore Research
-                </a>
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>No recent publications found in the archives.</p>
             </div>
-            {% empty %}
-            <p>No departments found.</p>
-            <p>No departments found.</p>
             {% endfor %}
         </div>
     </div>
 </section>
 
-<section class="resources">
+<section class="departments university-departments">
     <div class="container">
-        <h2 class="section-title">Academic Resources</h2>
-        <p class="section-subtitle">Supporting your research journey with comprehensive tools and guidance</p>
+        <div class="text-center mb-50">
+            <h2 class="section-title">University Colleges</h2>
+            <p class="section-subtitle">Explore research across our diverse academic disciplines and specializations.
+            </p>
+        </div>
 
-        <div class="resources-grid">
-            <div class="resource-card">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <i class="fas fa-file-upload" style="font-size: 3rem; color: var(--primary-color);"></i>
+        <div class="department-grid">
+            {% for department in departments %}
+            <div class="department-card-v2">
+                <div class="card-icon-wrapper">
+                    {% if 'grad' in department.category.name|lower %}<i class="fas fa-microscope"></i>
+                    {% elif 'edu' in department.name|lower %}<i class="fas fa-apple-alt"></i>
+                    {% elif 'biz' in department.name|lower or 'mgmt' in department.name|lower %}<i
+                        class="fas fa-chart-pie"></i>
+                    {% elif 'tech' in department.name|lower or 'comp' in department.name|lower %}<i
+                        class="fas fa-terminal"></i>
+                    {% elif 'eng' in department.name|lower %}<i class="fas fa-drafting-compass"></i>
+                    {% elif 'tour' in department.name|lower %}<i class="fas fa-concierge-bell"></i>
+                    {% elif 'crim' in department.name|lower %}<i class="fas fa-balance-scale"></i>
+                    {% else %}<i class="fas fa-landmark"></i>
+                    {% endif %}
                 </div>
-                <h3>Submit Your Research</h3>
-                <p>Ready to share your academic work? Our streamlined submission process makes it easy to publish your thesis and contribute to the academic community.</p>
-                <a href="#" class="resource-button">
-                    <i class="fas fa-upload"></i> Start Submission
-                </a>
+                <h3>{{ department.name }}</h3>
+                <p>
+                    {% if 'grad' in department.category.name|lower %}Advanced studies and research.
+                    {% elif 'edu' in department.name|lower %}Nurturing Filipino educators.
+                    {% elif 'biz' in department.name|lower or 'mgmt' in department.name|lower %}Excellence in
+                    leadership.
+                    {% elif 'tech' in department.name|lower or 'comp' in department.name|lower %}Innovating for the
+                    digital future.
+                    {% else %}Academic excellence and city service.
+                    {% endif %}
+                </p>
+                <a href="{% url 'categories' %}?department={{ department.id }}" class="card-link">Explore Works <i
+                        class="fas fa-long-arrow-alt-right"></i></a>
             </div>
+            {% empty %}
+            <p class="text-center text-muted">No university colleges listed yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 
-            <div class="resource-card">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <i class="fas fa-users" style="font-size: 3rem; color: var(--accent-color);"></i>
-                </div>
-                <h3>Research Support</h3>
-                <p>Get expert guidance from our faculty advisors and research specialists. We're here to help you succeed in your academic endeavors.</p>
-                <a href="#" class="resource-button">
-                    <i class="fas fa-handshake"></i> Get Support
-                </a>
-            </div>
-
-            <div class="resource-card">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <i class="fas fa-chart-line" style="font-size: 3rem; color: var(--primary-color);"></i>
-                </div>
-                <h3>Research Analytics</h3>
-                <p>Track the impact of your research with our comprehensive analytics dashboard. Monitor citations, readership, and engagement metrics.</p>
-                <a href="#" class="resource-button">
-                    <i class="fas fa-chart-bar"></i> View Analytics
-                </a>
+<section class="university-banner">
+    <div class="container">
+        <div class="banner-content">
+            <h2>Building the Future through Research</h2>
+            <p>Join the Taguig City University research community. Share your findings and inspire others.</p>
+            <div class="banner-actions">
+                <a href="{% url 'student_dashboard' %}" class="btn-primary-white">Submit My Thesis</a>
+                <a href="{% url 'about' %}" class="btn-outline-white">Learn More</a>
             </div>
         </div>
     </div>

@@ -45,11 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-        if (window.innerWidth <= 768) {
-            setupMobileModalToggles();
-        } else {
-            cleanupMobileModalToggles();
-        }
+      if (window.innerWidth <= 768) {
+        setupMobileModalToggles();
+      } else {
+        cleanupMobileModalToggles();
+      }
     }, 250);
   });
 
@@ -65,15 +65,42 @@ document.addEventListener('DOMContentLoaded', () => {
   if (loginBtn && loginModal) {
     loginBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      loginModal.classList.add('active');
-      document.body.style.overflow = 'hidden';
-      // Reset to login state
-      if (authContainer) {
-        authContainer.classList.remove('right-panel-active');
-        authContainer.classList.remove('show-verify');
-      }
+      showLoginModal();
     });
   }
+
+  /**
+   * Global function to show login modal
+   * @param {string} nextUrl - Optional URL to redirect to after successful login
+   */
+  window.showLoginModal = function (nextUrl) {
+    if (!loginModal) return;
+
+    loginModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Reset to login state
+    if (authContainer) {
+      authContainer.classList.remove('right-panel-active');
+      authContainer.classList.remove('show-verify');
+    }
+
+    // If nextUrl is provided, we can handle it (optional implementation)
+    if (nextUrl) {
+      console.log('Login required for:', nextUrl);
+      // You could set a hidden field in the login form or use a URL parameter
+    }
+  };
+
+  /**
+   * Global function to hide login modal
+   */
+  window.hideLoginModal = function () {
+    if (loginModal) {
+      loginModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  };
 
   // Handle close button clicks (closes modal)
   if (closeBtn && loginModal) {
@@ -321,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'X-CSRFToken': getCSRFToken()
           }
         });
-        
+
         let data;
         try {
           data = await response.json();
@@ -334,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           return;
         }
-        
+
         if (data.success) {
           if (messageEl) {
             messageEl.textContent = data.message || 'Password reset code has been sent to your email.';
@@ -401,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
         const data = await response.json();
-        
+
         if (data.success) {
           if (messageEl) {
             messageEl.textContent = data.message || 'Password reset successfully! You can now log in.';
@@ -447,26 +474,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const backToSignupBtn = document.getElementById('backToSignup');
 
 
-//⚠️ FIXED VERIFICATION FUNCTIONS (Verify on Right) ⚠️
-function showVerificationForm(userId) {
-  // This function now ONLY adds classes. CSS does the rest.
-  if (authContainer) {
-    // === THIS IS THE FIX ===
-    // We ADD right-panel-active to show the right panel
-    authContainer.classList.add('right-panel-active');
-    authContainer.classList.add('show-verify'); // Show the verify form
+  //⚠️ FIXED VERIFICATION FUNCTIONS (Verify on Right) ⚠️
+  function showVerificationForm(userId) {
+    // This function now ONLY adds classes. CSS does the rest.
+    if (authContainer) {
+      // === THIS IS THE FIX ===
+      // We ADD right-panel-active to show the right panel
+      authContainer.classList.add('right-panel-active');
+      authContainer.classList.add('show-verify'); // Show the verify form
+    }
+    if (verifyContainer) {
+      document.getElementById('verify-id').value = userId;
+    }
   }
-  if (verifyContainer) {
-    document.getElementById('verify-id').value = userId;
-  }
-}
 
-function hideVerificationForm() {
-  // This function now ONLY removes classes.
-  if (authContainer) {
-    authContainer.classList.remove('show-verify');
+  function hideVerificationForm() {
+    // This function now ONLY removes classes.
+    if (authContainer) {
+      authContainer.classList.remove('show-verify');
+    }
   }
-}
 
   if (backToSignupBtn) {
     backToSignupBtn.addEventListener('click', () => {
@@ -591,47 +618,47 @@ function hideVerificationForm() {
   }
 
   function setupMobileModalToggles() {
-      const signInContainer = document.querySelector('.sign-in-container');
-      const signUpContainer = document.querySelector('.sign-up-container');
-      const authContainer = document.getElementById('auth-container');
+    const signInContainer = document.querySelector('.sign-in-container');
+    const signUpContainer = document.querySelector('.sign-up-container');
+    const authContainer = document.getElementById('auth-container');
 
-      if (!signInContainer || !signUpContainer || !authContainer) return;
-      if (signInContainer.querySelector('.mobile-auth-toggle')) return; // Already exists
+    if (!signInContainer || !signUpContainer || !authContainer) return;
+    if (signInContainer.querySelector('.mobile-auth-toggle')) return; // Already exists
 
-      // Create "Don't have an account?" toggle for login form
-      const loginToggle = document.createElement('div');
-      loginToggle.className = 'mobile-auth-toggle';
-      loginToggle.innerHTML = `
+    // Create "Don't have an account?" toggle for login form
+    const loginToggle = document.createElement('div');
+    loginToggle.className = 'mobile-auth-toggle';
+    loginToggle.innerHTML = `
           <p>Don't have an account?</p>
           <button type="button" id="mobileSignUpBtn">Sign Up</button>
       `;
-      signInContainer.querySelector('form').appendChild(loginToggle);
+    signInContainer.querySelector('form').appendChild(loginToggle);
 
-      // Create "Already have an account?" toggle for signup form
-      const signupToggle = document.createElement('div');
-      signupToggle.className = 'mobile-auth-toggle';
-      signupToggle.innerHTML = `
+    // Create "Already have an account?" toggle for signup form
+    const signupToggle = document.createElement('div');
+    signupToggle.className = 'mobile-auth-toggle';
+    signupToggle.innerHTML = `
           <p>Already have an account?</p>
           <button type="button" id="mobileSignInBtn">Sign In</button>
       `;
-      signUpContainer.querySelector('form').appendChild(signupToggle);
+    signUpContainer.querySelector('form').appendChild(signupToggle);
 
-      // Add event listeners
-      const mobileSignUpBtn = document.getElementById('mobileSignUpBtn');
-      const mobileSignInBtn = document.getElementById('mobileSignInBtn');
+    // Add event listeners
+    const mobileSignUpBtn = document.getElementById('mobileSignUpBtn');
+    const mobileSignInBtn = document.getElementById('mobileSignInBtn');
 
-      if (mobileSignUpBtn) {
-          mobileSignUpBtn.addEventListener('click', (e) => {
-              e.preventDefault();
-              authContainer.classList.add('right-panel-active');
-          });
-      }
+    if (mobileSignUpBtn) {
+      mobileSignUpBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        authContainer.classList.add('right-panel-active');
+      });
+    }
 
-      if (mobileSignInBtn) {
-          mobileSignInBtn.addEventListener('click', (e) => {
-              e.preventDefault();
-              authContainer.classList.remove('right-panel-active');
-          });
-      }
+    if (mobileSignInBtn) {
+      mobileSignInBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        authContainer.classList.remove('right-panel-active');
+      });
+    }
   }
 });
