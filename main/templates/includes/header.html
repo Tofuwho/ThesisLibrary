@@ -2,8 +2,9 @@
 <header class="main-header">
     <div class="main-header-inner">
         <div class="logo-container">
-             <img src="{% static 'images/logo.svg' %}" alt="Thesis Library Logo" class="logo-image">
-             <h1>Thesis Library</h1>
+            <img src="/.gemini/antigravity/brain/25e20f43-739d-4a62-ae2b-2b2bec0ba033/tcu_thesis_library_logo_1772456296963.png"
+                alt="TCU Logo" class="logo-image">
+            <h1>TCU Thesis Library</h1>
         </div>
         <div class="header-flex-center">
             {% if not hide_nav %}
@@ -18,26 +19,26 @@
         </div>
         <div class="auth-buttons nav-right">
             {% if user.is_authenticated %}
-                {% if user.is_staff %}
-                    <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Admin Panel</a>
-                    <a href="{% url 'profile_card' %}" class="profile-card-btn">
-                        <i class="fas fa-id-card"></i>
-                        <span>Profile Card</span>
-                    </a>
-                {% else %}
-                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Submission Portal</a>
-                    <a href="{% url 'my_submissions' %}" class="dashboard-btn" style="margin-left:8px;">My Submissions</a>
-                    <a href="{% url 'profile_card' %}" class="profile-card-btn">
-                        <i class="fas fa-id-card"></i>
-                        <span>Profile Card</span>
-                    </a>
-                {% endif %}
-                <form method="POST" action="{% url 'logout' %}" style="display:inline; margin-left:10px;">
-                    {% csrf_token %}
-                    <button type="submit" class="logout-btn">Log Out</button>
-                </form>
+            {% if user.is_staff %}
+            <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Admin Panel</a>
+            <a href="{% url 'profile_card' %}" class="profile-card-btn">
+                <i class="fas fa-id-card"></i>
+                <span>Profile Card</span>
+            </a>
             {% else %}
-                <button id="loginButton" class="login-btn">Login</button>
+            <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Submission Portal</a>
+            <a href="{% url 'my_submissions' %}" class="dashboard-btn" style="margin-left:8px;">My Submissions</a>
+            <a href="{% url 'profile_card' %}" class="profile-card-btn">
+                <i class="fas fa-id-card"></i>
+                <span>Profile Card</span>
+            </a>
+            {% endif %}
+            <form method="POST" action="{% url 'logout' %}" style="display:inline; margin-left:10px;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Log Out</button>
+            </form>
+            {% else %}
+            <button id="loginButton" class="login-btn">Login</button>
             {% endif %}
         </div>
     </div>

@@ -1,61 +1,68 @@
 {% load static %}
 <footer class="main-footer">
-    <div class="footer-content">
+    <div class="footer-grid">
         <div class="footer-section">
-            <h3>Thesis Library</h3>
-            <p>Your gateway to academic research and knowledge sharing. Discover, explore, and contribute to our growing collection of academic research.</p>
+            <div class="footer-brand">
+                <img src="/.gemini/antigravity/brain/25e20f43-739d-4a62-ae2b-2b2bec0ba033/tcu_thesis_library_logo_1772456296963.png"
+                    alt="TCU Logo" class="footer-logo">
+                <h3>TCU Thesis Library</h3>
+            </div>
+            <p>The official digital repository of Taguig City University. Preserving and disseminating the academic
+                heritage and research innovations of our students and faculty.</p>
             <div class="social-links">
-                <a href="#" class="social-link">📧</a>
-                <a href="#" class="social-link">📱</a>
-                <a href="#" class="social-link">💼</a>
+                <a href="mailto:library@tcu.edu.ph" class="social-link" title="Email"><i
+                        class="fas fa-envelope"></i></a>
+                <a href="https://facebook.com/TaguigCityUniversity" class="social-link" title="Facebook"><i
+                        class="fab fa-facebook-f"></i></a>
+                <a href="{% url 'about' %}" class="social-link" title="Visit Us"><i
+                        class="fas fa-map-marker-alt"></i></a>
             </div>
         </div>
-        
+
         <div class="footer-section">
-            <h4>Quick Links</h4>
+            <h4>University Archives</h4>
             <ul>
-                <li><a href="{% url 'index' %}">Browse Theses</a></li>
-                <li><a href="{% url 'categories' %}">Categories</a></li>
-                <li><a href="{% url 'about' %}">About Us</a></li>
+                <li><a href="{% url 'index' %}">Research Home</a></li>
+                <li><a href="{% url 'categories' %}">College Archives</a></li>
+                <li><a href="{% url 'about' %}">Archiving Policy</a></li>
                 {% if user.is_authenticated %}
-                    {% if user.is_staff %}
-                        <li><a href="{% url 'admin_dashboard' %}">Admin Panel</a></li>
-                    {% else %}
-                        <li><a href="{% url 'student_dashboard' %}">Submission Portal</a></li>
-                        <li><a href="{% url 'my_submissions' %}">My Submissions</a></li>
-                    {% endif %}
+                {% if user.is_staff %}
+                <li><a href="{% url 'admin_dashboard' %}">Archivist Dashboard</a></li>
+                {% else %}
+                <li><a href="{% url 'student_dashboard' %}">Submission portal</a></li>
+                {% endif %}
                 {% endif %}
             </ul>
         </div>
-        
+
         <div class="footer-section">
-            <h4>Resources</h4>
+            <h4>Support & Help</h4>
             <ul>
-                <li><a href="#">Submission Guidelines</a></li>
-                <li><a href="#">Research Policies</a></li>
-                <li><a href="#">Academic Standards</a></li>
-                <li><a href="#">Citation Guidelines</a></li>
+                <li><a href="{% url 'about' %}">Submission Guide</a></li>
+                <li><a href="{% url 'about' %}">Copyright Info</a></li>
+                <li><a href="{% url 'about' %}">Technical Support</a></li>
+                <li><a href="{% url 'about' %}">FAQ</a></li>
             </ul>
         </div>
-        
+
         <div class="footer-section">
-            <h4>Contact Information</h4>
+            <h4>Contact TCU Library</h4>
             <div class="contact-info">
-                <p><strong>📧 Email:</strong> library@university.edu</p>
-                <p><strong>📞 Phone:</strong> (555) 123-4567</p>
-                <p><strong>📍 Address:</strong> University Library, Main Campus</p>
-                <p><strong>🕒 Hours:</strong> Mon-Fri: 8AM-6PM</p>
+                <p><i class="fas fa-envelope"></i> library@tcu.edu.ph</p>
+                <p><i class="fas fa-phone-alt"></i> (02) 835 1555</p>
+                <p><i class="fas fa-map-marker-alt"></i> Gen. Santos Ave, Central Bicutan, Taguig City, Philippines</p>
+                <p><i class="fas fa-clock"></i> Mon-Sat: 8:00 AM - 7:00 PM</p>
             </div>
         </div>
     </div>
-    
+
     <div class="footer-bottom">
         <div class="footer-bottom-content">
-            <p>&copy; {% now "Y" %} Thesis Library. All rights reserved.</p>
+            <p>&copy; {% now "Y" %} Taguig City University. All rights reserved.</p>
             <div class="footer-links">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">Accessibility</a>
+                <a href="{% url 'about' %}">Privacy</a>
+                <a href="{% url 'about' %}">Terms</a>
+                <a href="{% url 'about' %}">Accessibility</a>
             </div>
         </div>
     </div>
