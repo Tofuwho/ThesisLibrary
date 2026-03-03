@@ -1,4 +1,4 @@
-{% extends 'main/base.html' %} <!-- CATEGORIES_STAMP_123 -->
+{% extends 'main/base.html' %}
 {% load static department_filters %}
 
 {% block title %}Browse Categories - Thesis Library{% endblock %}
@@ -46,19 +46,14 @@
                         <div class="search-controls">
                             <div class="search-mode-toggle">
                                 <label class="search-mode-label">
-                                    {% if not request.GET.search_mode or request.GET.search_mode == 'normal' %}
-                                    <input type="radio" name="search_mode" value="normal" checked>
-                                    {% else %}
-                                    <input type="radio" name="search_mode" value="normal">
-                                    {% endif %}
+                                    <input type="radio" name="search_mode" value="normal" {% if not
+                                        request.GET.search_mode or request.GET.search_mode == 'normal' %}checked{% endif
+                                        %}>
                                     <span class="search-mode-text">Normal Search</span>
                                 </label>
                                 <label class="search-mode-label">
-                                    {% if request.GET.search_mode == 'deep' %}
-                                    <input type="radio" name="search_mode" value="deep" checked>
-                                    {% else %}
-                                    <input type="radio" name="search_mode" value="deep">
-                                    {% endif %}
+                                    <input type="radio" name="search_mode" value="deep" {% if
+                                        request.GET.search_mode == 'deep' %}checked{% endif %}>
                                     <span class="search-mode-text">Deep Search</span>
                                 </label>
                             </div>
@@ -79,7 +74,7 @@
                 <button class="dept-bookmark" data-dept="all" data-color="all">All</button>
                 {% for dept in departments %}
                 {% with dl=dept.name|lower %}
-                {% if dl == 'graduate' or dl == 'graduate school' %}
+                {% if dl  ==  'graduate' or dl  ==  'graduate school' %}
                 <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="graduate">Graduate</button>
                 {% elif 'education' in dl %}
                 <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="ce">CE</button>
@@ -96,7 +91,7 @@
                 {% elif 'engineering' in dl or 'technology' in dl or 'industrial' in dl %}
                 <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cet">CET</button>
                 {% else %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="coll">{{ dept.name|slice:":4"
+                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="coll">{{ dept.name|slice:':4'|upper
                     }}</button>
                 {% endif %}
                 {% endwith %}
