@@ -1,0 +1,196 @@
+<!-- Privacy and RA Modal -->
+<div id="privacyModal" class="auth-modal privacy-modal-wrapper" style="display: none;">
+    <div class="auth-container privacy-container">
+        <span id="closePrivacyModal" class="close-modal">&times;</span>
+        <div class="privacy-content">
+            <div class="privacy-icon">
+                <i class="fas fa-balance-scale"></i>
+            </div>
+            <h3 class="ra-official-title">Republic Act No. 10173</h3>
+            <h2>Data Privacy Act Agreement</h2>
+            <div class="privacy-scroll-area">
+                <p><strong>REPUBLIC ACT NO. 10173</strong>, also known as the <strong>"Data Privacy Act of
+                        2012"</strong>, is a landmark legislation in the Philippines that protects the fundamental human
+                    right of privacy of communication while ensuring the free flow of information to promote innovation
+                    and growth.</p>
+
+                <div class="privacy-highlight">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Please read and accept the terms before viewing this document.</span>
+                </div>
+
+                <p>By accessing this thesis, you agree to the following terms:</p>
+                <ul>
+                    <li><strong>Academic Use Only:</strong> You will use the information solely for academic and
+                        research purposes.</li>
+                    <li><strong>No Unauthorized Distribution:</strong> You will not distribute, publish, or use the
+                        content for commercial gain without explicit permission from the author and Taguig City
+                        University.</li>
+                    <li><strong>Confidentiality:</strong> You acknowledge that some data within these documents may be
+                        sensitive and must be handled with utmost confidentiality.</li>
+                    <li><strong>Intellectual Property:</strong> Proper citation must be observed when referencing any
+                        part of this work.</li>
+                </ul>
+                <p>Taguig City University is committed to protecting the intellectual property of its students while
+                    providing a platform for knowledge sharing. Your cooperation helps maintain the integrity of our
+                    academic archives.</p>
+            </div>
+            <div class="privacy-actions">
+                <button id="declinePrivacy" class="btn-decline">Decline</button>
+                <button id="acceptPrivacy" class="btn-accept">I Accept & Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .privacy-modal-wrapper {
+        z-index: 10001 !important;
+        /* Above regular auth modal */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+    }
+
+    .privacy-container {
+        max-width: 550px !important;
+        width: 90%;
+        height: auto !important;
+        min-height: auto !important;
+        padding: 40px;
+        border-radius: 24px;
+        background: #fff;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .privacy-content {
+        text-align: center;
+    }
+
+    .privacy-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(128, 0, 0, 0.1);
+        color: #800000;
+        font-size: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+    }
+
+    .privacy-content h2 {
+        color: #333;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+
+    .ra-official-title {
+        color: #800000;
+        font-size: 1rem;
+        font-weight: 800;
+        background: #fff3f3;
+        display: inline-block;
+        padding: 4px 15px;
+        border-radius: 50px;
+        margin-bottom: 10px;
+    }
+
+    .privacy-scroll-area {
+        text-align: left;
+        max-height: 350px;
+        overflow-y: auto;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        border: 1px solid #eee;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #555;
+    }
+
+    .privacy-highlight {
+        background: #fff3f3;
+        border-left: 4px solid #800000;
+        padding: 12px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #800000;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .privacy-scroll-area ul {
+        margin: 15px 0;
+        padding-left: 20px;
+    }
+
+    .privacy-scroll-area li {
+        margin-bottom: 10px;
+    }
+
+    .privacy-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-decline {
+        background: #eee;
+        color: #666;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-accept {
+        background: #800000;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(128, 0, 0, 0.2);
+    }
+
+    .btn-decline:hover {
+        background: #e0e0e0;
+    }
+
+    .btn-accept:hover {
+        background: #a00000;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(128, 0, 0, 0.3);
+    }
+
+    /* Scrollbar styling */
+    .privacy-scroll-area::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .privacy-scroll-area::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .privacy-scroll-area::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+    }
+
+    .privacy-scroll-area::-webkit-scrollbar-thumb:hover {
+        background: #888;
+    }
+</style>

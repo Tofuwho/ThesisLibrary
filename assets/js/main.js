@@ -23,7 +23,83 @@ document.addEventListener('DOMContentLoaded', function () {
     setupResponsiveBehavior();
     enhanceAccessibility();
     setupUserDropdown();
+    setupPrivacyAgreement();
 });
+
+/**
+ * Privacy Agreement Management
+ * Handles the RA 10173 privacy modal and user confirmation
+ */
+function setupPrivacyAgreement() {
+    const privacyModal = document.getElementById('privacyModal');
+    const acceptBtn = document.getElementById('acceptPrivacy');
+    const declineBtn = document.getElementById('declinePrivacy');
+    const closeBtn = document.getElementById('closePrivacyModal');
+
+    if (!privacyModal) return;
+
+    let pendingUrl = null;
+
+    // Intercept clicks on View buttons
+    // Home: .thesis-action-link
+    // Categories/Details: .cat-view-button, .view-button, .preview-button
+    document.body.addEventListener('click', function (e) {
+        const target = e.target.closest('.thesis-action-link, .cat-view-button, .view-button, .preview-button');
+        if (target) {
+            // Check if already accepted in this session
+            if (sessionStorage.getItem('privacyAccepted') === 'true') {
+                return; // Let the link work normally
+            }
+
+            e.preventDefault();
+            pendingUrl = target.href;
+            showPrivacyModal();
+        }
+    });
+
+    function showPrivacyModal() {
+        privacyModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent scroll
+
+        // Add animation class if not already there
+        const container = privacyModal.querySelector('.privacy-container');
+        if (container) {
+            container.style.animation = 'slideInUp 0.4s ease forwards';
+        }
+    }
+
+    function hidePrivacyModal() {
+        privacyModal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', function () {
+            sessionStorage.setItem('privacyAccepted', 'true');
+            hidePrivacyModal();
+            if (pendingUrl) {
+                window.location.href = pendingUrl;
+            }
+        });
+    }
+
+    if (declineBtn) {
+        declineBtn.addEventListener('click', function () {
+            hidePrivacyModal();
+            pendingUrl = null;
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', hidePrivacyModal);
+    }
+
+    window.addEventListener('click', function (e) {
+        if (e.target === privacyModal) {
+            hidePrivacyModal();
+        }
+    });
+}
 
 /**
  * User Dropdown Management
