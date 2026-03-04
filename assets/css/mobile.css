@@ -167,44 +167,68 @@
         width: 100%;
     }
 
-    .mobile-menu .dashboard-btn,
-    .mobile-menu .login-btn,
-    .mobile-menu .logout-btn {
+    .mobile-menu .user-dropdown {
         width: 100%;
-        padding: 12px;
+        margin-left: 0;
+    }
+
+    .mobile-menu .user-dropdown-toggle {
+        display: none !important;
+        /* Hide toggle on mobile, show items directly */
+    }
+
+    .mobile-menu .user-dropdown-menu {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        width: 100%;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+        padding: 0;
+        display: block !important;
+    }
+
+    .mobile-menu .dropdown-header {
+        padding: 0 0 10px 0;
+        margin-bottom: 15px;
+    }
+
+    .mobile-menu .dropdown-item,
+    .mobile-menu .login-btn,
+    .mobile-menu .logout-item {
+        width: 100%;
+        padding: 12px 15px;
         text-align: center;
-        border-radius: 5px;
+        border-radius: 8px;
         text-decoration: none;
-        display: block;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
         border: none;
         cursor: pointer;
         font-size: 1rem;
+        margin-bottom: 10px;
+        background-color: #f8f8f8;
+        color: #333;
     }
 
-    .mobile-menu .dashboard-btn {
-        background-color: #8b0000;
-        color: white;
-        margin-left: 0 !important;
+    .mobile-menu .dropdown-item:hover,
+    .mobile-menu .logout-item:hover {
+        background-color: #f0f0f0;
+        transform: none;
     }
 
-    .mobile-menu .login-btn {
-        background-color: #8b0000;
-        color: white;
+    .mobile-menu .logout-item {
+        color: #d32f2f;
+        background-color: #fff1f1;
+        font-weight: 700;
+        margin-top: 10px;
     }
 
-    /* Add separator line before logout button */
-    .mobile-menu form {
-        display: block !important;
-        margin: 0 !important;
-        padding-top: 15px;
-        border-top: 1px solid #e0e0e0;
-        margin-top: 15px !important;
-    }
-
-    .mobile-menu .logout-btn {
-        background-color: #8b0000;
-        color: white;
-    }
+    /* Redesign end */
 
     /* Hero overlay - full screen except header */
     .hero-overlay {

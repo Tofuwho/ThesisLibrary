@@ -22,7 +22,42 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeSearchFunctionality();
     setupResponsiveBehavior();
     enhanceAccessibility();
+    setupUserDropdown();
 });
+
+/**
+ * User Dropdown Management
+ * Handles the authenticated user dropdown menu interactions
+ */
+function setupUserDropdown() {
+    const toggle = document.getElementById('userDropdownToggle');
+    const menu = document.getElementById('userDropdownMenu');
+    const container = document.querySelector('.user-dropdown');
+
+    if (toggle && menu) {
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            container.classList.toggle('active');
+            menu.classList.toggle('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!container.contains(e.target)) {
+                container.classList.remove('active');
+                menu.classList.remove('active');
+            }
+        });
+
+        // Close dropdown on ESC key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                container.classList.remove('active');
+                menu.classList.remove('active');
+            }
+        });
+    }
+}
 
 /**
  * Navigation Management
