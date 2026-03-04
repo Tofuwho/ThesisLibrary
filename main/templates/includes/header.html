@@ -18,24 +18,47 @@
         </div>
         <div class="auth-buttons nav-right">
             {% if user.is_authenticated %}
-            {% if user.is_staff %}
-            <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Admin Panel</a>
-            <a href="{% url 'profile_card' %}" class="profile-card-btn">
-                <i class="fas fa-id-card"></i>
-                <span>Profile Card</span>
-            </a>
-            {% else %}
-            <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Submission Portal</a>
-            <a href="{% url 'my_submissions' %}" class="dashboard-btn" style="margin-left:8px;">My Submissions</a>
-            <a href="{% url 'profile_card' %}" class="profile-card-btn">
-                <i class="fas fa-id-card"></i>
-                <span>Profile Card</span>
-            </a>
-            {% endif %}
-            <form method="POST" action="{% url 'logout' %}" style="display:inline; margin-left:10px;">
-                {% csrf_token %}
-                <button type="submit" class="logout-btn">Log Out</button>
-            </form>
+            <div class="user-dropdown">
+                <button class="user-dropdown-toggle" id="userDropdownToggle">
+                    <img src="{% static 'images/profile-default.png' %}" alt="Profile" class="user-avatar-mini"
+                        onerror="this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=800000&color=fff'">
+                    <span class="user-name-text">{{ user.username }}</span>
+                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                </button>
+                <div class="user-dropdown-menu" id="userDropdownMenu">
+                    <div class="dropdown-header">
+                        <p class="dropdown-user-role">{% if user.is_staff %}Administrator{% else %}Student{% endif %}
+                        </p>
+                    </div>
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="dropdown-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Admin Panel
+                    </a>
+                    {% else %}
+                    <a href="{% url 'student_dashboard' %}" class="dropdown-item">
+                        <i class="fas fa-upload"></i>
+                        Submission Portal
+                    </a>
+                    <a href="{% url 'my_submissions' %}" class="dropdown-item">
+                        <i class="fas fa-file-alt"></i>
+                        My Submissions
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'profile_card' %}" class="dropdown-item">
+                        <i class="fas fa-id-card"></i>
+                        Profile Card
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <form method="POST" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-item">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Log Out
+                        </button>
+                    </form>
+                </div>
+            </div>
             {% else %}
             <button id="loginButton" class="login-btn">Login</button>
             {% endif %}

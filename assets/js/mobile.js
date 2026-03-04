@@ -1,6 +1,6 @@
 // Mobile JavaScript - Handles mobile menu functionality
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Only initialize mobile menu on mobile devices
     if (window.innerWidth <= 768) {
         initializeMobileMenu();
@@ -10,9 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Re-initialize on window resize
     let resizeTimer;
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
+        resizeTimer = setTimeout(function () {
             if (window.innerWidth <= 768) {
                 initializeMobileMenu();
                 removeMobileScrollAnimations();
@@ -67,7 +67,7 @@ function initializeMobileMenu() {
         if (clonedLoginBtn) {
             const originalLoginBtn = document.querySelector('#loginButton');
             if (originalLoginBtn) {
-                clonedLoginBtn.addEventListener('click', function() {
+                clonedLoginBtn.addEventListener('click', function () {
                     // This click will be caught by the listener in auth.js
                     originalLoginBtn.click();
                 });
@@ -113,13 +113,13 @@ function initializeMobileMenu() {
     });
 
     // Close menu when clicking on dashboard/auth buttons
-    const dashboardButtons = mobileMenu.querySelectorAll('.dashboard-btn');
-    dashboardButtons.forEach(button => {
+    const menuActionButtons = mobileMenu.querySelectorAll('.dashboard-btn, .dropdown-item, .logout-item');
+    menuActionButtons.forEach(button => {
         button.addEventListener('click', closeMenu);
     });
 
     // Close menu on ESC key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
             closeMenu();
         }
