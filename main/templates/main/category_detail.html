@@ -27,7 +27,8 @@
                 </div>
                 <div class="hero-search">
                     <form class="search-form" method="get">
-                        <input type="text" name="search" class="search-input" placeholder="Search in {{ category.name }}..." value="{{ request.GET.search }}">
+                        <input type="text" name="search" class="search-input"
+                            placeholder="Search in {{ category.name }}..." value="{{ request.GET.search }}">
                         <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
                     </form>
                 </div>
@@ -41,13 +42,14 @@
                         <h3>Publication Date</h3>
                         <ul class="filter-list">
                             {% for year in years %}
-                                <li>
-                                    <label>
-                                        <input type="checkbox" name="year" value="{{ year.year }}" {% if year.year|stringformat:"s" in request.GET.getlist 'year' %}checked{% endif %}>
-                                        <span>{{ year.year }}</span>
-                                        <span class="count">({{ year.count }})</span>
-                                    </label>
-                                </li>
+                            <li>
+                                <label>
+                                    <input type="checkbox" name="year" value="{{ year.year }}" {% if
+                                        year.year|stringformat:"s" in request.GET.getlist 'year' %}checked{% endif %}>
+                                    <span>{{ year.year }}</span>
+                                    <span class="count">({{ year.count }})</span>
+                                </label>
+                            </li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -56,13 +58,14 @@
                         <h3>Author</h3>
                         <ul class="filter-list">
                             {% for author in authors %}
-                                <li>
-                                    <label>
-                                        <input type="checkbox" name="author" value="{{ author.name }}" {% if author.name in request.GET.getlist 'author' %}checked{% endif %}>
-                                        <span>{{ author.name }}</span>
-                                        <span class="count">({{ author.count }})</span>
-                                    </label>
-                                </li>
+                            <li>
+                                <label>
+                                    <input type="checkbox" name="author" value="{{ author.name }}" {% if author.name in
+                                        request.GET.getlist 'author' %}checked{% endif %}>
+                                    <span>{{ author.name }}</span>
+                                    <span class="count">({{ author.count }})</span>
+                                </label>
+                            </li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -71,19 +74,22 @@
                         <h3>Publication Type</h3>
                         <ul class="filter-list">
                             {% for type in types %}
-                                <li>
-                                    <label>
-                                        <input type="checkbox" name="type" value="{{ type.name }}" {% if type.name in request.GET.getlist 'type' %}checked{% endif %}>
-                                        <span>{{ type.name }}</span>
-                                        <span class="count">({{ type.count }})</span>
-                                    </label>
-                                </li>
+                            <li>
+                                <label>
+                                    <input type="checkbox" name="type" value="{{ type.name }}" {% if type.name in
+                                        request.GET.getlist 'type' %}checked{% endif %}>
+                                    <span>{{ type.name }}</span>
+                                    <span class="count">({{ type.count }})</span>
+                                </label>
+                            </li>
                             {% endfor %}
                         </ul>
                     </div>
 
-                    <button type="submit" class="apply-filters-button"><i class="fas fa-filter"></i> Apply Filters</button>
-                    <a href="{% url 'category_detail' category.name|slugify %}" class="clear-filters-button"><i class="fas fa-times"></i> Clear All</a>
+                    <button type="submit" class="apply-filters-button"><i class="fas fa-filter"></i> Apply
+                        Filters</button>
+                    <a href="{% url 'category_detail' category.name|slugify %}" class="clear-filters-button"><i
+                            class="fas fa-times"></i> Clear All</a>
                 </form>
             </aside>
 
@@ -93,57 +99,63 @@
                     <div class="cat-sort-options">
                         <label for="sort">Sort by:</label>
                         <select name="sort" id="sort" class="cat-sort-select" onchange="updateSort(this.value)">
-                            <option value="date-desc" {% if current_sort == 'date-desc' %}selected{% endif %}>Date (Newest First)</option>
-                            <option value="date-asc" {% if current_sort == 'date-asc' %}selected{% endif %}>Date (Oldest First)</option>
-                            <option value="title-asc" {% if current_sort == 'title-asc' %}selected{% endif %}>Title (A-Z)</option>
-                            <option value="title-desc" {% if current_sort == 'title-desc' %}selected{% endif %}>Title (Z-A)</option>
-                            <option value="author-asc" {% if current_sort == 'author-asc' %}selected{% endif %}>Author (A-Z)</option>
-                            <option value="author-desc" {% if current_sort == 'author-desc' %}selected{% endif %}>Author (Z-A)</option>
+                            <option value="date-desc" {% if current_sort=='date-desc' %}selected{% endif %}>Date (Newest
+                                First)</option>
+                            <option value="date-asc" {% if current_sort=='date-asc' %}selected{% endif %}>Date (Oldest
+                                First)</option>
+                            <option value="title-asc" {% if current_sort=='title-asc' %}selected{% endif %}>Title (A-Z)
+                            </option>
+                            <option value="title-desc" {% if current_sort=='title-desc' %}selected{% endif %}>Title
+                                (Z-A)</option>
+                            <option value="author-asc" {% if current_sort=='author-asc' %}selected{% endif %}>Author
+                                (A-Z)</option>
+                            <option value="author-desc" {% if current_sort=='author-desc' %}selected{% endif %}>Author
+                                (Z-A)</option>
                         </select>
                     </div>
                 </div>
 
                 <script>
-                function updateSort(sortValue) {
-                    const url = new URL(window.location);
-                    url.searchParams.set('sort', sortValue);
-                    window.location.href = url.toString();
-                }
+                    function updateSort(sortValue) {
+                        const url = new URL(window.location);
+                        url.searchParams.set('sort', sortValue);
+                        window.location.href = url.toString();
+                    }
                 </script>
 
                 <div class="cat-thesis-list">
                     {% for thesis in theses %}
-                        <div class="cat-thesis-item">
-                            <div class="cat-thesis-item-cover">
-                                <div class="cat-thesis-cover-placeholder"><i class="fas fa-file-alt"></i></div>
+                    <div class="cat-thesis-item">
+                        <div class="cat-thesis-item-cover">
+                            <div class="cat-thesis-cover-placeholder"><i class="fas fa-file-alt"></i></div>
+                        </div>
+                        <div class="cat-thesis-item-content">
+                            <h3 class="cat-thesis-item-title">{{ thesis.title }}</h3>
+                            <p class="cat-thesis-item-author">{{ thesis.author }}</p>
+                            <div class="cat-thesis-item-meta">
+                                <span><i class="far fa-calendar-alt"></i> {{ thesis.year }}</span>
+                                <span><i class="fas fa-graduation-cap"></i> {{ thesis.thesis_type }}</span>
+                                <span><i class="fas fa-tag"></i> {{ thesis.specialization }}</span>
                             </div>
-                            <div class="cat-thesis-item-content">
-                                <h3 class="cat-thesis-item-title">{{ thesis.title }}</h3>
-                                <p class="cat-thesis-item-author">{{ thesis.author }}</p>
-                                <div class="cat-thesis-item-meta">
-                                    <span><i class="far fa-calendar-alt"></i> {{ thesis.year }}</span>
-                                    <span><i class="fas fa-graduation-cap"></i> {{ thesis.thesis_type }}</span>
-                                    <span><i class="fas fa-tag"></i> {{ thesis.specialization }}</span>
-                                </div>
-                                <p class="cat-thesis-item-abstract">{{ thesis.abstract|truncatewords:30 }}</p>
-                               <div class="cat-thesis-item-actions">
-                                    {% if thesis.file %}
-                                        <a href="{% url 'view_thesis' thesis.id %}{% if request.GET.search %}?q={{ request.GET.search|urlencode }}{% endif %}"
-                                           class="cat-view-button">
-                                            <i class="fas fa-eye"></i> View
-                                        </a>
-                                    {% else %}
-                                        <span class="no-file">No file available</span>
-                                    {% endif %}
-                                </div>
+                            <p class="cat-thesis-item-abstract">{{ thesis.abstract|truncatewords:30 }}</p>
+                            <div class="cat-thesis-item-actions">
+                                {% if thesis.file %}
+                                <a href="{% url 'view_thesis' thesis.id %}{% if request.GET.search %}?q={{ request.GET.search|urlencode }}{% endif %}"
+                                    class="cat-view-button">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                {% else %}
+                                <span class="no-file">No file available</span>
+                                {% endif %}
                             </div>
                         </div>
+                    </div>
                     {% empty %}
-                        <div class="no-results">
-                            <i class="fas fa-search"></i>
-                            <h3>No theses found</h3>
-                            <p>Try adjusting your search criteria or filters.</p>
-                        </div>
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <h3>No theses found</h3>
+                        <p>Try adjusting your search criteria or filters.</p>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
