@@ -162,54 +162,85 @@ def categories_page(request):
             pass  # handled below; we will scan after applying facet filters
         else:
             # Normal search: search metadata fields (the card)
-            exact_match_score = (
-                Case(When(title__icontains=search_query, then=Value(100)), default=Value(0), output_field=IntegerField()) +
-                Case(When(abstract__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
-                Case(When(author__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField()) +
-                Case(When(keywords__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField())
+            STOPWORDS = {
+                'a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'as', 
+                'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 
+                'did', 'but', 'if', 'then', 'else', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 
+                'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 
+                'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 
+                'should', 'now', 'thesis', 'study', 'research', 'library'
+            }
+            
+            # Annotate co-authors and other fields for searching
+            theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
+            
+            # Exact Phrase Matching (High Weight)
+            phrase_score = (
+                Case(When(title__icontains=search_query, then=Value(150)), default=Value(0), output_field=IntegerField()) +
+                Case(When(abstract__icontains=search_query, then=Value(100)), default=Value(0), output_field=IntegerField()) +
+                Case(When(author__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
+                Case(When(keywords__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
+                Case(When(coauthor_json_text__icontains=search_query, then=Value(70)), default=Value(0), output_field=IntegerField()) +
+                Case(When(department__name__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField()) +
+                Case(When(course__name__icontains=search_query, then=Value(40)), default=Value(0), output_field=IntegerField())
             )
             
+            # Token-based Matching
             tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
-            score_expr = exact_match_score
+            search_tokens = [t for t in tokens if t not in STOPWORDS or len(t) > 3]
+            if not search_tokens and tokens: search_tokens = tokens
             
+            token_score_expr = Value(0)
             try:
                 from main.nlp_utils import get_lemmas
             except Exception:
                 def get_lemmas(w): return {w}
                 
-            from django.db.models import Q
-            for token in tokens:
+            for token in search_tokens:
                 lemmas = get_lemmas(token)
                 title_q = Q(); author_q = Q(); abstract_q = Q(); keywords_q = Q()
                 research_cat_q = Q(); cat_name_q = Q(); dept_name_q = Q(); course_name_q = Q()
+                coauthor_q = Q()
                 
                 for lemma in lemmas:
-                    title_q |= Q(title__icontains=lemma)
-                    author_q |= Q(author__icontains=lemma)
-                    abstract_q |= Q(abstract__icontains=lemma)
-                    keywords_q |= Q(keywords__icontains=lemma)
+                    title_q |= Q(title__icontains=lemma); author_q |= Q(author__icontains=lemma)
+                    abstract_q |= Q(abstract__icontains=lemma); keywords_q |= Q(keywords__icontains=lemma)
                     research_cat_q |= Q(research_category__icontains=lemma)
                     cat_name_q |= Q(category__name__icontains=lemma)
                     dept_name_q |= Q(department__name__icontains=lemma)
                     course_name_q |= Q(course__name__icontains=lemma)
+                    coauthor_q |= Q(coauthor_json_text__icontains=lemma)
                 
                 token_score = (
-                    Case(When(title_q, then=Value(8)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(author_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(abstract_q, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(keywords_q, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(research_cat_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(cat_name_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(dept_name_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(course_name_q, then=Value(1)), default=Value(0), output_field=IntegerField())
+                    Case(When(title_q, then=Value(30)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(author_q, then=Value(15)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(coauthor_q, then=Value(15)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(abstract_q, then=Value(10)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(keywords_q, then=Value(10)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(research_cat_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(cat_name_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(dept_name_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                    Case(When(course_name_q, then=Value(5)), default=Value(0), output_field=IntegerField())
                 )
                 try:
                     year_int = int(token)
-                    token_score = token_score + Case(When(year=year_int, then=Value(2)), default=Value(0), output_field=IntegerField())
-                except Exception:
-                    pass
-                score_expr = score_expr + token_score
-            theses = theses.annotate(score=ExpressionWrapper(score_expr, output_field=IntegerField())).filter(score__gt=0)
+                    if 1900 < year_int < 2100:
+                        token_score += Case(When(year=year_int, then=Value(20)), default=Value(0), output_field=IntegerField())
+                except: pass
+                token_score_expr += token_score
+                
+            theses = theses.annotate(score=ExpressionWrapper(phrase_score + token_score_expr, output_field=IntegerField())).filter(score__gt=0)
+            
+            # Default sorting by score if searching
+            if not sort or sort == 'date-desc':
+                theses = theses.order_by('-score', '-year')
+            else:
+                sort_map = {
+                    'date-asc': ('year', '-score'), 'date-desc': ('-year', '-score'),
+                    'title-asc': ('title', '-score'), 'title-desc': ('-title', '-score'),
+                    'author-asc': ('author', '-score'), 'author-desc': ('-author', '-score')
+                }
+                theses = theses.order_by(*sort_map.get(sort, ('-score', '-year')))
 
     if selected_years:
         numeric_years = [int(y) for y in selected_years if str(y).isdigit()]
@@ -424,56 +455,71 @@ def category_detail(request, category_name):
     sort = request.GET.get('sort') or 'date-desc'
 
     if search_query:
-        exact_match_score = (
-            Case(When(title__icontains=search_query, then=Value(100)), default=Value(0), output_field=IntegerField()) +
-            Case(When(abstract__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
-            Case(When(author__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField()) +
-            Case(When(keywords__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField())
-        )
-        tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
-        theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
-        score_expr = exact_match_score
+        STOPWORDS = {
+            'a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'as', 
+            'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 
+            'did', 'but', 'if', 'then', 'else', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 
+            'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 
+            'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 
+            'should', 'now', 'thesis', 'study', 'research', 'library'
+        }
         
+        theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
+        
+        phrase_score = (
+            Case(When(title__icontains=search_query, then=Value(150)), default=Value(0), output_field=IntegerField()) +
+            Case(When(abstract__icontains=search_query, then=Value(100)), default=Value(0), output_field=IntegerField()) +
+            Case(When(author__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
+            Case(When(keywords__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
+            Case(When(coauthor_json_text__icontains=search_query, then=Value(70)), default=Value(0), output_field=IntegerField()) +
+            Case(When(department__name__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField()) +
+            Case(When(course__name__icontains=search_query, then=Value(40)), default=Value(0), output_field=IntegerField())
+        )
+        
+        tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
+        search_tokens = [t for t in tokens if t not in STOPWORDS or len(t) > 3]
+        if not search_tokens and tokens: search_tokens = tokens
+        
+        token_score_expr = Value(0)
         try:
             from main.nlp_utils import get_lemmas
         except Exception:
             def get_lemmas(w): return {w}
             
-        from django.db.models import Q
-        for token in tokens:
+        for token in search_tokens:
             lemmas = get_lemmas(token)
-            title_q = Q(); author_q = Q(); coauthor_q = Q(); abstract_q = Q(); keywords_q = Q()
+            title_q = Q(); author_q = Q(); abstract_q = Q(); keywords_q = Q()
             research_cat_q = Q(); cat_name_q = Q(); dept_name_q = Q(); course_name_q = Q()
+            coauthor_q = Q()
             
             for lemma in lemmas:
-                title_q |= Q(title__icontains=lemma)
-                author_q |= Q(author__icontains=lemma)
-                coauthor_q |= Q(coauthor_json_text__icontains=lemma)
-                abstract_q |= Q(abstract__icontains=lemma)
-                keywords_q |= Q(keywords__icontains=lemma)
+                title_q |= Q(title__icontains=lemma); author_q |= Q(author__icontains=lemma)
+                abstract_q |= Q(abstract__icontains=lemma); keywords_q |= Q(keywords__icontains=lemma)
                 research_cat_q |= Q(research_category__icontains=lemma)
                 cat_name_q |= Q(category__name__icontains=lemma)
                 dept_name_q |= Q(department__name__icontains=lemma)
                 course_name_q |= Q(course__name__icontains=lemma)
-                
+                coauthor_q |= Q(coauthor_json_text__icontains=lemma)
+            
             token_score = (
-                Case(When(title_q, then=Value(8)), default=Value(0), output_field=IntegerField()) +
-                Case(When(author_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                Case(When(coauthor_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                Case(When(abstract_q, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                Case(When(keywords_q, then=Value(3)), default=Value(0), output_field=IntegerField()) +
-                Case(When(research_cat_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                Case(When(cat_name_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                Case(When(dept_name_q, then=Value(2)), default=Value(0), output_field=IntegerField()) +
-                Case(When(course_name_q, then=Value(1)), default=Value(0), output_field=IntegerField())
+                Case(When(title_q, then=Value(30)), default=Value(0), output_field=IntegerField()) +
+                Case(When(author_q, then=Value(15)), default=Value(0), output_field=IntegerField()) +
+                Case(When(coauthor_q, then=Value(15)), default=Value(0), output_field=IntegerField()) +
+                Case(When(abstract_q, then=Value(10)), default=Value(0), output_field=IntegerField()) +
+                Case(When(keywords_q, then=Value(10)), default=Value(0), output_field=IntegerField()) +
+                Case(When(research_cat_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(cat_name_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(dept_name_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(course_name_q, then=Value(5)), default=Value(0), output_field=IntegerField())
             )
             try:
                 year_int = int(token)
-                token_score = token_score + Case(When(year=year_int, then=Value(2)), default=Value(0), output_field=IntegerField())
-            except Exception:
-                pass
-            score_expr = score_expr + token_score
-        theses = theses.annotate(score=ExpressionWrapper(score_expr, output_field=IntegerField())).filter(score__gt=0)
+                if 1900 < year_int < 2100:
+                    token_score += Case(When(year=year_int, then=Value(20)), default=Value(0), output_field=IntegerField())
+            except: pass
+            token_score_expr += token_score
+            
+        theses = theses.annotate(score=ExpressionWrapper(phrase_score + token_score_expr, output_field=IntegerField())).filter(score__gt=0)
 
     if selected_years:
         numeric_years = [int(y) for y in selected_years if str(y).isdigit()]
@@ -497,7 +543,15 @@ def category_detail(request, category_name):
     }
     base_order = sort_options.get(sort, ('-year', 'title'))
     if search_query:
-        theses = theses.order_by('-score', *base_order)
+        if not sort or sort == 'date-desc':
+            theses = theses.order_by('-score', '-year')
+        else:
+            sort_map = {
+                'date-asc': ('year', '-score'), 'date-desc': ('-year', '-score'),
+                'title-asc': ('title', '-score'), 'title-desc': ('-title', '-score'),
+                'author-asc': ('author', '-score'), 'author-desc': ('-author', '-score')
+            }
+            theses = theses.order_by(*sort_map.get(sort, ('-score', '-year')))
     else:
         theses = theses.order_by(*base_order)
     theses = theses.distinct()
