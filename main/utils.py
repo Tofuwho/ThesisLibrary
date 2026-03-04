@@ -773,9 +773,27 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
     token_joined = " ".join(suggested_tokens).strip() if suggested_tokens else ""
     token_conf = sum(token_scores) / len(token_scores) if token_scores else 0.0
 
-    # Decide which suggestion to use
+    # Decidide which suggestion to use
     chosen_suggestion = None
     chosen_conf = 0.0
+
+    # 3. Dedicated Acronym Mapping for Library/University (CCT -> CICT, etc.)
+    ACRONYM_MAP = {
+        'cct': 'cict',
+        'cict': 'cict',
+        'cas': 'cas',
+        'cba': 'cba',
+        'coe': 'coe',
+        'chm': 'chm',
+        'ced': 'ced',
+        'tcu': 'tcu',
+        'lib': 'library'
+    }
+    
+    # Check if query itself or tokens are in acronym map
+    query_norm = query.strip().lower()
+    if query_norm in ACRONYM_MAP:
+        return (ACRONYM_MAP[query_norm], 1.0)
 
     if best_phrase:
         chosen_suggestion = best_phrase[0]
@@ -785,7 +803,6 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
         # Compare combined token-based suggestion against phrase-based one using WRatio
         joined_score = fuzz.WRatio(query, token_joined) / 100.0
         # If the joined token score is high (it corrected typos well), prefer it over the phrase matcher
-        # which sometimes aggressively matches a single word phrase to a user's multi-word query
         if joined_score > chosen_conf or (chosen_suggestion and len(chosen_suggestion.split()) != len(tokens)):
             chosen_suggestion = token_joined
             chosen_conf = max(chosen_conf, joined_score)
@@ -795,7 +812,7 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
         return (None, 0.0)
     if chosen_suggestion.strip().lower() == query.strip().lower():
         return (None, 0.0)
-    if chosen_conf < 0.7:  # tuneable threshold
+    if chosen_conf < 0.7:
         return (None, chosen_conf)
 
     print(f"DEBUG utils.py - Suggestion for '{query}' -> '{chosen_suggestion}' (conf {chosen_conf})")
@@ -803,12 +820,7 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
 
 
 def deep_filter_theses_by_pdf(theses: List, query: str) -> List:
-    """Return only theses whose PDF contains the query.
-
-    Attaches `deep_search_results` and `deep_search_query` attributes to each
-    matched thesis for downstream rendering. This does not look at metadata
-    fields; it strictly searches PDF text content.
-    """
+    """Return theses whose PDF contains the query, sorted by frequency."""
     if not query:
         return []
 
@@ -820,5 +832,10 @@ def deep_filter_theses_by_pdf(theses: List, query: str) -> List:
         if results.get('found'):
             thesis.deep_search_results = results
             thesis.deep_search_query = query
+            # Attachment for sorting
+            thesis.match_count = results.get('total_matches', 1)
             matched.append(thesis)
+            
+    # Sort by number of matches found in PDF (most relevant first)
+    matched.sort(key=lambda x: x.match_count, reverse=True)
     return matched
