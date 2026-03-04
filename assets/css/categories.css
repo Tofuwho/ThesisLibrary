@@ -280,19 +280,30 @@
     color: var(--primary-color);
 }
 
-/* Filter Sidebar */
-.filter-sidebar {
-    width: 310px;
-    flex-shrink: 0;
+.categories-content {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
     background: var(--white);
-    border-radius: 20px;
-    padding: 30px;
-    position: sticky;
-    top: 100px;
-    max-height: calc(100vh - 140px);
-    overflow-y: auto;
+    border-radius: 30px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+    margin-top: 30px;
+    height: calc(100vh - 120px);
+    overflow: hidden;
+    position: relative;
+    z-index: 5;
+}
+
+/* Filter Sidebar Grouped */
+.filter-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    background: #fcfcfc;
+    border-right: 1px solid var(--border-color);
+    padding: 35px 25px;
+    height: 100%;
+    overflow-y: auto;
     transition: all 0.3s ease;
 }
 
@@ -480,27 +491,25 @@
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
 }
 
-/* Thesis Results - Enhanced */
+/* Thesis Results - Grouped Layout */
 .cat-thesis-results {
     flex: 1;
-    animation: slideInRight 0.8s ease forwards 0.7s;
-    opacity: 0;
-}
-
-.cat-thesis-results.no-animation {
-    opacity: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--white);
+    overflow: hidden;
+    /* Container doesn't scroll, the list inside does */
 }
 
 .cat-results-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    padding: 25px 40px;
     background: var(--white);
-    padding: 25px 35px;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 10;
 }
 
 .cat-results-header h2 {
@@ -532,6 +541,39 @@
 .cat-sort-select:focus {
     border-color: var(--primary-color);
     background: var(--white);
+}
+
+.cat-thesis-list {
+    flex: 1;
+    overflow-y: hidden;
+    padding: 30px 40px;
+    transition: overflow 0.3s ease;
+}
+
+.cat-thesis-results:hover .cat-thesis-list {
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for results list */
+.cat-thesis-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cat-thesis-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cat-thesis-list::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.cat-thesis-results:hover .cat-thesis-list::-webkit-scrollbar-thumb {
+    background: var(--primary-light);
+}
+
+.cat-thesis-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-medium) !important;
 }
 
 .cat-thesis-item {
@@ -592,18 +634,179 @@
 }
 
 .cat-thesis-item-cover {
-    width: 160px;
-    min-width: 160px;
-    background: #f8f9fa;
+    width: 200px;
+    min-width: 200px;
+    position: relative;
+    overflow: hidden;
+    background: #2c3e50;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 10px 0 15px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Spine effect */
+.cover-spine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 15px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 5;
+}
+
+.cover-design {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.15;
+    z-index: 1;
+}
+
+.cover-content {
+    position: relative;
+    z-index: 2;
+    padding: 25px 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: white;
+}
+
+.cover-badge {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-right: 1px solid var(--border-color);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.cat-thesis-item-cover i {
-    font-size: 3rem;
-    color: var(--primary-light);
+.cover-title-preview {
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    padding: 0 5px;
+}
+
+.cover-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.cover-dept-tag {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.cover-year {
+    font-size: 0.9rem;
+    font-weight: 900;
+    opacity: 0.8;
+}
+
+/* Department Themes */
+.cat-thesis-item-cover.dept-graduate {
+    background: linear-gradient(135deg, #4c1d95, #7c3aed);
+}
+
+.cat-thesis-item-cover.dept-graduate .cover-design {
+    background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
+    background-size: 15px 15px;
+}
+
+.cat-thesis-item-cover.dept-ce {
+    background: linear-gradient(135deg, #064e3b, #059669);
+}
+
+.cat-thesis-item-cover.dept-ce .cover-design {
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.05) 10px, rgba(255, 255, 255, 0.05) 20px);
+}
+
+.cat-thesis-item-cover.dept-cict {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+}
+
+.cat-thesis-item-cover.dept-cict .cover-design {
+    background: url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h40v40H0V0zm20 20l20-20H0l20 20z" fill="white" fill-opacity="0.05" fill-rule="evenodd"/></svg>');
+}
+
+.cat-thesis-item-cover.dept-cas {
+    background: linear-gradient(135deg, #78350f, #d97706);
+}
+
+.cat-thesis-item-cover.dept-cas .cover-design {
+    background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h20L0 20z" fill="white" fill-opacity="0.05" fill-rule="evenodd"/></svg>');
+}
+
+.cat-thesis-item-cover.dept-cbm {
+    background: linear-gradient(135deg, #312e81, #4f46e5);
+}
+
+.cat-thesis-item-cover.dept-cbm .cover-design {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 10px 10px;
+}
+
+.cat-thesis-item-cover.dept-ccj {
+    background: linear-gradient(135deg, #1f2937, #4b5563);
+}
+
+.cat-thesis-item-cover.dept-ccj .cover-design {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 100%;
+}
+
+.cat-thesis-item-cover.dept-chtm {
+    background: linear-gradient(135deg, #450a0a, #991b1b);
+}
+
+.cat-thesis-item-cover.dept-chtm .cover-design {
+    background-image: repeating-conic-gradient(rgba(255, 255, 255, 0.05) 0% 25%, transparent 0% 50%);
+    background-size: 20px 20px;
+}
+
+.cat-thesis-item-cover.dept-cet {
+    background: linear-gradient(135deg, #7c2d12, #ea580c);
+}
+
+.cat-thesis-item-cover.dept-cet .cover-design {
+    background: url('data:image/svg+xml,<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M0 10h10v10H0V10zM10 0h10v10H10V0z" fill="white" fill-opacity="0.05" fill-rule="evenodd"/></svg>');
+}
+
+.cat-thesis-item-cover.dept-coll {
+    background: linear-gradient(135deg, #450a0a, #800000);
+}
+
+.cat-thesis-item-cover.dept-coll .cover-design {
+    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0, transparent 70%);
+    background-size: 100px 100px;
 }
 
 .cat-thesis-cover-placeholder {
@@ -737,11 +940,12 @@
     color: var(--primary-color);
 }
 
-/* Pagination - Refined */
+/* Pagination - Integrated into Results Scroll */
 .cat-results-pagination {
     display: flex;
     justify-content: center;
-    margin-top: 50px;
+    margin-top: 20px;
+    padding-bottom: 40px;
     gap: 10px;
 }
 
@@ -1022,15 +1226,27 @@
 
     .categories-content {
         flex-direction: column;
-        gap: 32px;
+        gap: 20px;
+        height: auto;
+        border: none;
+        box-shadow: none;
+        background: transparent;
     }
 
     .filter-sidebar {
         width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        max-height: 400px;
         position: relative;
         top: 0;
-        max-height: none;
         margin-bottom: 0;
+        overflow-y: auto;
+    }
+
+    .cat-thesis-list {
+        overflow-y: visible;
+        padding: 20px;
     }
 
     .filter-section {
@@ -1094,6 +1310,45 @@
     .cat-sort-select {
         flex-grow: 1;
         margin-left: 12px;
+    }
+
+    .cat-thesis-item-cover {
+        width: 100%;
+        height: 180px;
+        min-height: 180px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .cover-spine {
+        width: 100%;
+        height: 12px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cover-content {
+        padding: 20px;
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
+        gap: 20px;
+    }
+
+    .cover-badge {
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+
+    .cover-title-preview {
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+
+    .cover-footer {
+        display: none;
+        /* Hide footer on mobile cover to save space, Info is already in content */
     }
 }
 

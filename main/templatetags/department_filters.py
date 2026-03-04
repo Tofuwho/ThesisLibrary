@@ -23,6 +23,35 @@ def department_color(value):
     return clean_name.lower()
 
 @register.filter
+def dept_theme_code(value):
+    """
+    Map department names to specific theme color codes used in the UI.
+    Returns: 'graduate', 'ce', 'cict', 'cas', 'cbm', 'ccj', 'chtm', 'cet', or 'coll'
+    """
+    if not value:
+        return 'coll'
+    
+    dl = value.lower()
+    if 'graduate' in dl:
+        return 'graduate'
+    elif 'education' in dl:
+        return 'ce'
+    elif any(word in dl for word in ['information', 'ict', 'computer']):
+        return 'cict'
+    elif any(word in dl for word in ['arts', 'sciences', 'science']):
+        return 'cas'
+    elif any(word in dl for word in ['business', 'management', 'account']):
+        return 'cbm'
+    elif any(word in dl for word in ['criminal', 'justice']):
+        return 'ccj'
+    elif any(word in dl for word in ['hospitality', 'tourism', 'hotel']):
+        return 'chtm'
+    elif any(word in dl for word in ['engineering', 'technology', 'industrial']):
+        return 'cet'
+    
+    return 'coll'
+
+@register.filter
 def department_display(value):
     """
     Convert department name to display format.
