@@ -1,4 +1,4 @@
-{% extends 'main/base.html' %} <!-- CATEGORIES_STAMP_123 -->
+{% extends 'main/base.html' %} <!-- CATEGORIES_STAMP_FIXED -->
 {% load static department_filters %}
 
 {% block title %}Browse Categories - Thesis Library{% endblock %}
@@ -142,8 +142,6 @@
                     </div>
 
                     <!-- Department-specific filter groups -->
-                    <!-- Use actual department IDs from your database -->
-
                     <!-- All departments filter group -->
                     <div class="filter-group" data-dept="all" style="display:block;">
                         <div class="filter-section">
@@ -239,8 +237,19 @@
                 <div class="cat-thesis-list">
                     {% for thesis in theses %}
                     <div class="cat-thesis-item">
-                        <div class="cat-thesis-item-cover">
-                            <i class="fas fa-file-pdf"></i>
+                        <div class="cat-thesis-item-cover dept-{{ thesis.department.name|dept_theme_code }}">
+                            <div class="cover-design"></div>
+                            <div class="cover-content">
+                                <div class="cover-badge">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <div class="cover-title-preview">{{ thesis.title }}</div>
+                                <div class="cover-footer">
+                                    <span class="cover-dept-tag">{{ thesis.department.name|department_display }}</span>
+                                    <span class="cover-year">{{ thesis.year }}</span>
+                                </div>
+                            </div>
+                            <div class="cover-spine"></div>
                         </div>
                         <div class="cat-thesis-item-content">
                             <h3 class="cat-thesis-item-title">{{ thesis.title }}</h3>
