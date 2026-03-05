@@ -1,6 +1,8 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block body_class %}admin-page{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
@@ -52,51 +54,52 @@
   th:hover {
     color: #0277bd;
   }
+
   #logTable tbody tr:hover {
-  background-color: #f8f9fa;
-  transition: background 0.2s;
+    background-color: #f8f9fa;
+    transition: background 0.2s;
   }
-.pagination {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
 
-.pagination button {
-  background: #ffffff;
-  border: 1px solid #ced4da;
-  color: #333;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s;
-}
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
-.pagination button:hover:not(:disabled) {
-  background: #e3f2fd;
-  color: #0d47a1;
-}
+  .pagination button {
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
 
-.pagination button.active {
-  background: #0277bd;
-  color: #fff;
-  pointer-events: none;
-}
+  .pagination button:hover:not(:disabled) {
+    background: #e3f2fd;
+    color: #0d47a1;
+  }
 
-.pagination span {
-  background: #fff;
-  border: 1px solid #ced4da;
-  color: #777;
-  padding: 6px 12px;
-  border-radius: 6px;
-  display: inline-block;
-  user-select: none;
-  transition: 0.2s;
-}
+  .pagination button.active {
+    background: #0277bd;
+    color: #fff;
+    pointer-events: none;
+  }
 
+  .pagination span {
+    background: #fff;
+    border: 1px solid #ced4da;
+    color: #777;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    user-select: none;
+    transition: 0.2s;
+  }
 </style>
 {% endblock %}
 
@@ -114,7 +117,8 @@
       <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
 
         <div class="search-bar">
-          <button onclick="exportTableToExcel('logTable', 'Admin_Logs')" class="add-btn" style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
+          <button onclick="exportTableToExcel('logTable', 'Admin_Logs')" class="add-btn"
+            style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
             📊 Export
           </button>
           <input type="text" id="logSearch" class="search-input" placeholder="Search logs...">
@@ -140,13 +144,17 @@
               <td style="padding:0.8rem; color:#333;">{{ entry.object_repr }}</td>
               <td style="padding:0.8rem;">
                 {% if entry.action_flag == 1 %}
-                  <span style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Addition</span>
+                <span
+                  style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Addition</span>
                 {% elif entry.action_flag == 2 %}
-                  <span style="background:#ffb300; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Change</span>
+                <span
+                  style="background:#ffb300; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Change</span>
                 {% elif entry.action_flag == 3 %}
-                  <span style="background:#e53935; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Deletion</span>
+                <span
+                  style="background:#e53935; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Deletion</span>
                 {% else %}
-                  <span style="background:#777; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Other</span>
+                <span
+                  style="background:#777; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Other</span>
                 {% endif %}
               </td>
               <td style="padding:0.8rem; color:#555; font-style:italic;">{{ entry.change_message }}</td>
@@ -188,94 +196,94 @@
   });
 
   const logTable = document.getElementById("logTable");
-const logTbody = logTable.querySelector("tbody");
-const logRows = Array.from(logTbody.querySelectorAll("tr"));
-const logSearch = document.getElementById("logSearch");
-const logRowsPerPage = 10;
-let logCurrentPage = 1;
+  const logTbody = logTable.querySelector("tbody");
+  const logRows = Array.from(logTbody.querySelectorAll("tr"));
+  const logSearch = document.getElementById("logSearch");
+  const logRowsPerPage = 10;
+  let logCurrentPage = 1;
 
-function renderLogPage(page = 1) {
-  const visibleRows = logRows.filter(r => r.dataset.visible !== "0");
-  const totalPages = Math.ceil(visibleRows.length / logRowsPerPage) || 1;
+  function renderLogPage(page = 1) {
+    const visibleRows = logRows.filter(r => r.dataset.visible !== "0");
+    const totalPages = Math.ceil(visibleRows.length / logRowsPerPage) || 1;
 
-  if (page < 1) page = 1;
-  if (page > totalPages) page = totalPages;
-  logCurrentPage = page;
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    logCurrentPage = page;
 
-  logRows.forEach(r => r.style.display = "none");
-  visibleRows.slice((page - 1) * logRowsPerPage, page * logRowsPerPage)
-             .forEach(r => r.style.display = "");
+    logRows.forEach(r => r.style.display = "none");
+    visibleRows.slice((page - 1) * logRowsPerPage, page * logRowsPerPage)
+      .forEach(r => r.style.display = "");
 
-  renderLogPagination(totalPages);
-}
-
-function renderLogPagination(totalPages) {
-  const container = document.getElementById("logPagination");
-  container.innerHTML = "";
-
-  function createBtn(label, page, disabled=false, active=false) {
-    const btn = document.createElement("button");
-    btn.innerText = label;
-    btn.disabled = disabled;
-    btn.classList.toggle("active", active);
-    if (!disabled && !active) {
-      btn.addEventListener("click", () => renderLogPage(page));
-    }
-    container.appendChild(btn);
+    renderLogPagination(totalPages);
   }
 
-  createBtn("Prev", logCurrentPage - 1, logCurrentPage === 1);
+  function renderLogPagination(totalPages) {
+    const container = document.getElementById("logPagination");
+    container.innerHTML = "";
 
-  for (let i = 1; i <= totalPages; i++) {
-    if (i === 1 || i === totalPages || (i >= logCurrentPage - 1 && i <= logCurrentPage + 1)) {
-      createBtn(i, i, false, i === logCurrentPage);
-    } else if (i === 2 && logCurrentPage > 3) {
-      const ellipsis = document.createElement("span");
-      ellipsis.innerText = "...";
-      container.appendChild(ellipsis);
-    } else if (i === totalPages - 1 && logCurrentPage < totalPages - 2) {
-      const ellipsis = document.createElement("span");
-      ellipsis.innerText = "...";
-      container.appendChild(ellipsis);
+    function createBtn(label, page, disabled = false, active = false) {
+      const btn = document.createElement("button");
+      btn.innerText = label;
+      btn.disabled = disabled;
+      btn.classList.toggle("active", active);
+      if (!disabled && !active) {
+        btn.addEventListener("click", () => renderLogPage(page));
+      }
+      container.appendChild(btn);
     }
+
+    createBtn("Prev", logCurrentPage - 1, logCurrentPage === 1);
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= logCurrentPage - 1 && i <= logCurrentPage + 1)) {
+        createBtn(i, i, false, i === logCurrentPage);
+      } else if (i === 2 && logCurrentPage > 3) {
+        const ellipsis = document.createElement("span");
+        ellipsis.innerText = "...";
+        container.appendChild(ellipsis);
+      } else if (i === totalPages - 1 && logCurrentPage < totalPages - 2) {
+        const ellipsis = document.createElement("span");
+        ellipsis.innerText = "...";
+        container.appendChild(ellipsis);
+      }
+    }
+
+    createBtn("Next", logCurrentPage + 1, logCurrentPage === totalPages);
   }
 
-  createBtn("Next", logCurrentPage + 1, logCurrentPage === totalPages);
-}
+  logSearch.addEventListener("input", () => {
+    const filter = logSearch.value.toLowerCase();
+    logRows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.dataset.visible = text.includes(filter) ? "1" : "0";
 
-logSearch.addEventListener("input", () => {
-  const filter = logSearch.value.toLowerCase();
-  logRows.forEach(row => {
-    const text = row.innerText.toLowerCase();
-    row.dataset.visible = text.includes(filter) ? "1" : "0";
+      row.querySelectorAll("td").forEach(td => td.innerHTML = td.innerText);
 
-    row.querySelectorAll("td").forEach(td => td.innerHTML = td.innerText);
+      if (filter && text.includes(filter)) {
+        row.querySelectorAll("td").forEach(td => {
+          const regex = new RegExp(`(${filter})`, "gi");
+          td.innerHTML = td.innerText.replace(regex, "<mark>$1</mark>");
+        });
+      }
+    });
 
-    if (filter && text.includes(filter)) {
-      row.querySelectorAll("td").forEach(td => {
-        const regex = new RegExp(`(${filter})`, "gi");
-        td.innerHTML = td.innerText.replace(regex, "<mark>$1</mark>");
-      });
-    }
+    renderLogPage(1);
   });
 
-  renderLogPage(1);
-});
-
-window.addEventListener("load", () => {
-  logRows.forEach(r => r.dataset.visible = "1");
-  renderLogPage();
-});
+  window.addEventListener("load", () => {
+    logRows.forEach(r => r.dataset.visible = "1");
+    renderLogPage();
+  });
 </script>
 <script src="{% static 'js/xlsx.full.min.js' %}"></script>
 <script>
-function exportTableToExcel(tableID, filename) {
+  function exportTableToExcel(tableID, filename) {
     let originalTable = document.getElementById(tableID);
     let tableClone = originalTable.cloneNode(true);
     let rows = tableClone.querySelectorAll('tr');
     rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
-    let wb = XLSX.utils.table_to_book(tableClone, {sheet: "Sheet1"});
+    let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
     XLSX.writeFile(wb, filename + '.xlsx');
-}
+  }
 </script>
 {% endblock %}

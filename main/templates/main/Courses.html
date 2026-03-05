@@ -1,6 +1,8 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block body_class %}admin-page{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
@@ -84,7 +86,8 @@
               <td style="padding:0.8rem; color:#0277bd;">{{ course.name }}</td>
               <td style="padding:0.8rem; color:#333;">{{ course.department.name }}</td>
               <td style="padding:0.8rem; color:#333;">{{ course.department.category }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ course.department.category }} → {{ course.department.name }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ course.department.category }} → {{ course.department.name }}
+              </td>
             </tr>
             {% empty %}
             <tr>

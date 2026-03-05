@@ -1,29 +1,84 @@
 <aside class="admin-sidebar">
   <div class="sidebar-header">
-    <h2>Admin Panel</h2>
+    <h2>Thesis Library</h2>
   </div>
   <nav class="sidebar-nav">
     <ul>
-      <!-- Section 1 -->
-      <li class="section-title">AUTHENTICATION AND AUTHORIZATION</li>
-      <li><a href="{% url 'admin_dashboard' %}"><i class="fas fa-user-shield"></i> Home</a></li>
-      <li><a href="{% url 'user_list' %}"><i class="fas fa-user"></i> Users</a></li>
-      <li><a href="{% url 'students_list' %}"><i class="fas fa-user-graduate"></i> Students</a></li>
-      <li><a href="{% url 'professors_list' %}"><i class="fas fa-chalkboard-teacher"></i> Professors</a></li>
+      <li class="section-title">Control Center</li>
+      <li>
+        <a href="{% url 'admin_dashboard' %}"
+          class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+          <i class="fas fa-th-large"></i> <span>Dashboard</span>
+        </a>
+      </li>
 
-      <!-- Section 2 -->
-      <li class="section-title">MAIN</li>
-      <li><a href="{% url 'admin_categories' %}"><i class="fas fa-tags"></i> Categories</a></li>
-      <li><a href="{% url 'courses_list' %}"><i class="fas fa-book"></i> Courses</a></li>
-      <li><a href="{% url 'departments_list' %}"><i class="fas fa-building"></i> Departments</a></li>
-      <li><a href="{% url 'pending_submissions' %}"><i class="fas fa-clock"></i> Pending Submissions</a></li>
-      <li><a href="{% url 'rejected_thesis_list' %}"><i class="fas fa-times-circle"></i> Rejected Theses</a></li>
-      <li><a href="{% url 'theses_list'%}"><i class="fas fa-file-alt"></i> Theses</a></li>
-        <li>
-          <a href="{% url 'admin_log_entries' %}" class="sidebar-link">
-            <i class="fas fa-scroll"></i> Log Entries
-          </a>
-        </li>
+      <li class="section-title">User Management</li>
+      <li>
+        <a href="{% url 'user_list' %}"
+          class="{% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+          <i class="fas fa-users-cog"></i> <span>Staff Users</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'students_list' %}"
+          class="{% if request.resolver_match.url_name == 'students_list' %}active{% endif %}">
+          <i class="fas fa-user-graduate"></i> <span>Students</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'professors_list' %}"
+          class="{% if request.resolver_match.url_name == 'professors_list' %}active{% endif %}">
+          <i class="fas fa-chalkboard-teacher"></i> <span>Professors</span>
+        </a>
+      </li>
+
+      <li class="section-title">Thesis Repository</li>
+      <li>
+        <a href="{% url 'pending_submissions' %}"
+          class="{% if request.resolver_match.url_name == 'pending_submissions' %}active{% endif %}">
+          <i class="fas fa-clock"></i> <span>Pending Review</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'theses_list' %}"
+          class="{% if request.resolver_match.url_name == 'theses_list' %}active{% endif %}">
+          <i class="fas fa-book"></i> <span>Approved Theses</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'rejected_thesis_list' %}"
+          class="{% if request.resolver_match.url_name == 'rejected_thesis_list' %}active{% endif %}">
+          <i class="fas fa-exclamation-circle"></i> <span>Rejected</span>
+        </a>
+      </li>
+
+      <li class="section-title">Organization</li>
+      <li>
+        <a href="{% url 'admin_categories' %}"
+          class="{% if request.resolver_match.url_name == 'admin_categories' %}active{% endif %}">
+          <i class="fas fa-layer-group"></i> <span>Categories</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'departments_list' %}"
+          class="{% if request.resolver_match.url_name == 'departments_list' %}active{% endif %}">
+          <i class="fas fa-university"></i> <span>Departments</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'courses_list' %}"
+          class="{% if request.resolver_match.url_name == 'courses_list' %}active{% endif %}">
+          <i class="fas fa-graduation-cap"></i> <span>Courses</span>
+        </a>
+      </li>
+
+      <li class="section-title">System</li>
+      <li>
+        <a href="{% url 'admin_log_entries' %}"
+          class="{% if request.resolver_match.url_name == 'admin_log_entries' %}active{% endif %}">
+          <i class="fas fa-history"></i> <span>Activity Logs</span>
+        </a>
+      </li>
     </ul>
   </nav>
 </aside>

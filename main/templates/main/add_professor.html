@@ -1,6 +1,8 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block body_class %}admin-page{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
@@ -92,7 +94,7 @@
     <div class="form-wrapper">
       <form method="POST" action="">
         {% csrf_token %}
-        
+
         <div class="form-group">
           <label>Professor ID:</label>
           <input type="text" name="professor_id" class="form-input" required>

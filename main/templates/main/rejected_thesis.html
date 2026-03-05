@@ -1,6 +1,8 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block body_class %}admin-page{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
@@ -137,8 +139,9 @@
       <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
 
         <div class="search-bar">
-          <button onclick="exportTableToExcel('rejectedTable', 'Rejected_Theses')" class="add-btn" style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
-              📊 Export
+          <button onclick="exportTableToExcel('rejectedTable', 'Rejected_Theses')" class="add-btn"
+            style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
+            📊 Export
           </button>
           <input type="text" id="searchInput" class="search-input" placeholder="Search rejected theses...">
         </div>
@@ -169,11 +172,11 @@
               <td style="padding:0.8rem; color: #333;">{{ thesis.course_display }}</td>
               <td style="padding:0.8rem; max-width:300px;">
                 {% if thesis.rejection_reason %}
-                  <span title="{{ thesis.rejection_reason }}" style="color:#e65100;">
-                    {{ thesis.rejection_reason|truncatewords:15 }}
-                  </span>
+                <span title="{{ thesis.rejection_reason }}" style="color:#e65100;">
+                  {{ thesis.rejection_reason|truncatewords:15 }}
+                </span>
                 {% else %}
-                  <span style="color:#6c757d;">No reason provided</span>
+                <span style="color:#6c757d;">No reason provided</span>
                 {% endif %}
               </td>
               <td style="padding:0.8rem; color: #333;">{{ thesis.rejected_at|date:"Y-m-d H:i" }}</td>
@@ -200,60 +203,60 @@
 </div>
 
 <script>
-const searchInput = document.getElementById('searchInput');
-const rows = document.querySelectorAll('#rejectedTable tbody tr');
+  const searchInput = document.getElementById('searchInput');
+  const rows = document.querySelectorAll('#rejectedTable tbody tr');
 
-searchInput.addEventListener('input', function() {
-  const query = this.value.toLowerCase();
+  searchInput.addEventListener('input', function () {
+    const query = this.value.toLowerCase();
 
-  rows.forEach(row => {
-    const cells = row.querySelectorAll('td');
-    let match = false;
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      let match = false;
 
-    cells.forEach(cell => {
-      if (cell.querySelector('a') || cell.querySelector('button')) return;
+      cells.forEach(cell => {
+        if (cell.querySelector('a') || cell.querySelector('button')) return;
 
-      const originalHTML = cell.getAttribute('data-original') || cell.innerHTML;
-      cell.setAttribute('data-original', originalHTML);
-      cell.innerHTML = originalHTML;
+        const originalHTML = cell.getAttribute('data-original') || cell.innerHTML;
+        cell.setAttribute('data-original', originalHTML);
+        cell.innerHTML = originalHTML;
 
-      if (query && cell.textContent.toLowerCase().includes(query)) {
-        match = true;
-        const regex = new RegExp(`(${query})`, 'gi');
-        cell.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
-      } else if (cell.textContent.toLowerCase().includes(query)) {
-        match = true;
-      }
+        if (query && cell.textContent.toLowerCase().includes(query)) {
+          match = true;
+          const regex = new RegExp(`(${query})`, 'gi');
+          cell.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
+        } else if (cell.textContent.toLowerCase().includes(query)) {
+          match = true;
+        }
+      });
+
+      row.style.display = match || query === '' ? '' : 'none';
     });
-
-    row.style.display = match || query === '' ? '' : 'none';
   });
-});
 
-document.querySelectorAll('th.sortable').forEach((header, index) => {
-  header.addEventListener('click', () => {
-    const table = header.closest('table');
-    const tbody = table.querySelector('tbody');
-    const rowsArray = Array.from(tbody.querySelectorAll('tr'));
-    const isAsc = !header.classList.contains('sorted-asc');
+  document.querySelectorAll('th.sortable').forEach((header, index) => {
+    header.addEventListener('click', () => {
+      const table = header.closest('table');
+      const tbody = table.querySelector('tbody');
+      const rowsArray = Array.from(tbody.querySelectorAll('tr'));
+      const isAsc = !header.classList.contains('sorted-asc');
 
-    table.querySelectorAll('th.sortable').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
-    header.classList.add(isAsc ? 'sorted-asc' : 'sorted-desc');
+      table.querySelectorAll('th.sortable').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
+      header.classList.add(isAsc ? 'sorted-asc' : 'sorted-desc');
 
-    rowsArray.sort((a, b) => {
-      const aText = a.children[index].innerText.trim().toLowerCase();
-      const bText = b.children[index].innerText.trim().toLowerCase();
+      rowsArray.sort((a, b) => {
+        const aText = a.children[index].innerText.trim().toLowerCase();
+        const bText = b.children[index].innerText.trim().toLowerCase();
 
-      if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
-        return isAsc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
-      }
+        if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
+          return isAsc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
+        }
 
-      return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+      });
+
+      rowsArray.forEach(row => tbody.appendChild(row));
     });
-
-    rowsArray.forEach(row => tbody.appendChild(row));
   });
-});
 
   const rejectedTable = document.getElementById('rejectedTable');
   const rejectedTbody = rejectedTable.querySelector('tbody');
@@ -262,103 +265,103 @@ document.querySelectorAll('th.sortable').forEach((header, index) => {
   const rowsPerPage = 10;
   let currentPage = 1;
 
-function renderRejectedPage(page = 1) {
-  const visibleRows = rejectedRows.filter(r => r.dataset.visible !== "0");
-  const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
+  function renderRejectedPage(page = 1) {
+    const visibleRows = rejectedRows.filter(r => r.dataset.visible !== "0");
+    const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
 
-  if (page > totalPages) page = totalPages;
-  if (page < 1) page = 1;
-  currentPage = page;
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    currentPage = page;
 
-  rejectedRows.forEach(r => r.style.display = "none");
-  visibleRows.slice((page-1)*rowsPerPage, page*rowsPerPage).forEach(r => r.style.display = "");
+    rejectedRows.forEach(r => r.style.display = "none");
+    visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage).forEach(r => r.style.display = "");
 
-  renderRejectedPagination(totalPages);
-}
-
-function renderRejectedPagination(totalPages) {
-  const container = document.getElementById('rejectedPagination');
-  container.innerHTML = "";
-
-  const createBtn = (text, disabled, clickHandler, isActive = false) => {
-    const btn = document.createElement("button");
-    btn.innerText = text;
-    btn.disabled = disabled;
-    if (isActive) btn.classList.add("active");
-    btn.addEventListener("click", clickHandler);
-    container.appendChild(btn);
-  };
-
-  createBtn("Prev", currentPage === 1, () => renderRejectedPage(currentPage - 1));
-
-  const pageNumbers = [];
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
-  } else {
-    pageNumbers.push(1);
-    if (currentPage > 4) pageNumbers.push("...");
-    for (let i = Math.max(2, currentPage-2); i <= Math.min(totalPages-1, currentPage+2); i++) pageNumbers.push(i);
-    if (currentPage < totalPages-3) pageNumbers.push("...");
-    pageNumbers.push(totalPages);
+    renderRejectedPagination(totalPages);
   }
 
-  pageNumbers.forEach(p => {
-    if (p === "...") {
-      const span = document.createElement("span");
-      span.innerText = "...";
-      span.style.padding = "6px 12px";
-      span.style.color = "#ccc";
-      container.appendChild(span);
+  function renderRejectedPagination(totalPages) {
+    const container = document.getElementById('rejectedPagination');
+    container.innerHTML = "";
+
+    const createBtn = (text, disabled, clickHandler, isActive = false) => {
+      const btn = document.createElement("button");
+      btn.innerText = text;
+      btn.disabled = disabled;
+      if (isActive) btn.classList.add("active");
+      btn.addEventListener("click", clickHandler);
+      container.appendChild(btn);
+    };
+
+    createBtn("Prev", currentPage === 1, () => renderRejectedPage(currentPage - 1));
+
+    const pageNumbers = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
     } else {
-      createBtn(p, false, () => renderRejectedPage(p), p === currentPage);
+      pageNumbers.push(1);
+      if (currentPage > 4) pageNumbers.push("...");
+      for (let i = Math.max(2, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) pageNumbers.push(i);
+      if (currentPage < totalPages - 3) pageNumbers.push("...");
+      pageNumbers.push(totalPages);
     }
-  });
 
-  createBtn("Next", currentPage === totalPages, () => renderRejectedPage(currentPage + 1));
-}
-
-rejectedSearch.addEventListener('input', () => {
-  const query = rejectedSearch.value.toLowerCase();
-  rejectedRows.forEach(row => {
-    const tds = row.querySelectorAll('td');
-    let match = false;
-
-    tds.forEach(td => {
-      if (td.querySelector('a') || td.querySelector('button')) return;
-
-      const originalHTML = td.getAttribute('data-original') || td.innerHTML;
-      td.setAttribute('data-original', originalHTML);
-      td.innerHTML = originalHTML;
-
-      if (query && td.textContent.toLowerCase().includes(query)) {
-        match = true;
-        td.innerHTML = originalHTML.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
-      } else if (td.textContent.toLowerCase().includes(query)) {
-        match = true;
+    pageNumbers.forEach(p => {
+      if (p === "...") {
+        const span = document.createElement("span");
+        span.innerText = "...";
+        span.style.padding = "6px 12px";
+        span.style.color = "#ccc";
+        container.appendChild(span);
+      } else {
+        createBtn(p, false, () => renderRejectedPage(p), p === currentPage);
       }
     });
 
-    row.dataset.visible = match || query === '' ? "1" : "0";
+    createBtn("Next", currentPage === totalPages, () => renderRejectedPage(currentPage + 1));
+  }
+
+  rejectedSearch.addEventListener('input', () => {
+    const query = rejectedSearch.value.toLowerCase();
+    rejectedRows.forEach(row => {
+      const tds = row.querySelectorAll('td');
+      let match = false;
+
+      tds.forEach(td => {
+        if (td.querySelector('a') || td.querySelector('button')) return;
+
+        const originalHTML = td.getAttribute('data-original') || td.innerHTML;
+        td.setAttribute('data-original', originalHTML);
+        td.innerHTML = originalHTML;
+
+        if (query && td.textContent.toLowerCase().includes(query)) {
+          match = true;
+          td.innerHTML = originalHTML.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
+        } else if (td.textContent.toLowerCase().includes(query)) {
+          match = true;
+        }
+      });
+
+      row.dataset.visible = match || query === '' ? "1" : "0";
+    });
+
+    currentPage = 1;
+    renderRejectedPage(currentPage);
   });
 
-  currentPage = 1;
-  renderRejectedPage(currentPage);
-});
-
-window.onload = () => {
-  rejectedRows.forEach(r => r.dataset.visible = "1");
-  renderRejectedPage();
-};
+  window.onload = () => {
+    rejectedRows.forEach(r => r.dataset.visible = "1");
+    renderRejectedPage();
+  };
 </script>
 <script src="{% static 'js/xlsx.full.min.js' %}"></script>
 <script>
-function exportTableToExcel(tableID, filename) {
+  function exportTableToExcel(tableID, filename) {
     let originalTable = document.getElementById(tableID);
     let tableClone = originalTable.cloneNode(true);
     let rows = tableClone.querySelectorAll('tr');
     rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
-    let wb = XLSX.utils.table_to_book(tableClone, {sheet: "Sheet1"});
+    let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
     XLSX.writeFile(wb, filename + '.xlsx');
-}
+  }
 </script>
 {% endblock %}

@@ -1,6 +1,8 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block body_class %}admin-page{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
@@ -65,7 +67,9 @@
     gap: 10px;
   }
 
-  .btn-approve, .btn-view, .btn-reject {
+  .btn-approve,
+  .btn-view,
+  .btn-reject {
     display: inline-block;
     width: 90px;
     text-align: center;
@@ -110,11 +114,12 @@
     transform: translateY(-2px);
     box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
   }
+
   .open-image {
-  color: #0277bd;
-  text-decoration: none;
-  transition: color 0.2s, text-decoration 0.2s;
-  cursor: pointer;
+    color: #0277bd;
+    text-decoration: none;
+    transition: color 0.2s, text-decoration 0.2s;
+    cursor: pointer;
   }
 
   .open-image:hover {
@@ -122,18 +127,34 @@
     text-decoration: underline;
     cursor: pointer;
   }
-  .pagination { display:flex; justify-content:center; gap:8px; margin-top:1rem; flex-wrap:wrap; }
-  .pagination button {
-  background:#ffffff;
-  border:1px solid #ced4da;
-  color:#333;
-  padding:6px 12px;
-  border-radius:6px;
-  cursor:pointer;
-  transition:0.2s;
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
   }
-  .pagination button:hover { background:#e3f2fd; color:#0d47a1; }
-  .pagination button.active { background:#0277bd; color:#fff; }
+
+  .pagination button {
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .pagination button:hover {
+    background: #e3f2fd;
+    color: #0d47a1;
+  }
+
+  .pagination button.active {
+    background: #0277bd;
+    color: #fff;
+  }
 </style>
 {% endblock %}
 
@@ -151,8 +172,9 @@
       <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
 
         <div class="search-bar">
-          <button onclick="exportTableToExcel('thesisTable', 'Pending_Submissions')" class="add-btn" style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
-              📊 Export
+          <button onclick="exportTableToExcel('thesisTable', 'Pending_Submissions')" class="add-btn"
+            style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
+            📊 Export
           </button>
           <input type="text" id="searchInput" class="search-input" placeholder="Search submissions...">
         </div>
@@ -185,13 +207,11 @@
               <td style="padding:0.8rem; color: #333;">{{ thesis.created_at|date:"Y-m-d" }}</td>
               <td style="padding:0.8rem;">
                 {% if thesis.approval_sheet %}
-                  <a href="#"
-                     class="open-image"
-                     data-img="{{ thesis.approval_sheet.url }}">
-                     {{ thesis.approval_sheet.name|slice:"-12:" }}
-                  </a>
+                <a href="#" class="open-image" data-img="{{ thesis.approval_sheet.url }}">
+                  {{ thesis.approval_sheet.name|slice:"-12:" }}
+                </a>
                 {% else %}
-                  <span style="color:#6c757d;">None</span>
+                <span style="color:#6c757d;">None</span>
                 {% endif %}
               </td>
               <td style="padding:0.8rem;">
@@ -212,18 +232,14 @@
         <div class="pagination" id="pagination"></div>
       </div>
     </div>
-    <div id="imageModal"
-         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
                 background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
                 justify-content:center; align-items:center; z-index:2000;">
 
-      <span id="closeModal"
-            style="position:absolute; top:20px; right:30px;
+      <span id="closeModal" style="position:absolute; top:20px; right:30px;
                    font-size:2rem; color:white; cursor:pointer;">&times;</span>
 
-      <img id="modalImage"
-           src=""
-           style="max-width:80%; max-height:80%; transition:transform 0.2s ease; cursor:grab;">
+      <img id="modalImage" src="" style="max-width:80%; max-height:80%; transition:transform 0.2s ease; cursor:grab;">
     </div>
   </main>
 </div>
@@ -405,13 +421,13 @@
 </script>
 <script src="{% static 'js/xlsx.full.min.js' %}"></script>
 <script>
-function exportTableToExcel(tableID, filename) {
+  function exportTableToExcel(tableID, filename) {
     let originalTable = document.getElementById(tableID);
     let tableClone = originalTable.cloneNode(true);
     let rows = tableClone.querySelectorAll('tr');
     rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
-    let wb = XLSX.utils.table_to_book(tableClone, {sheet: "Sheet1"});
+    let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
     XLSX.writeFile(wb, filename + '.xlsx');
-}
+  }
 </script>v
 {% endblock %}F
