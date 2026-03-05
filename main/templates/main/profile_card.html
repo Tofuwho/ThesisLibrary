@@ -1,217 +1,790 @@
 {% extends 'main/base.html' %}
-{% block title %}My Profile - Thesis Library{% endblock %}
+{% load static %}
+{% block title %}My Profile — TCU Thesis Library{% endblock %}
 
-{% block content %}
-<section class="profile-card-page">
-    <div class="container">
-        <div class="profile-card">
-            <div class="profile-card-header">
-                <div class="profile-avatar">{{ profile.initials }}</div>
-                <div class="profile-card-title">
-                    <h1>{{ profile.full_name }}</h1>
-                    <span><i class="fas fa-user-circle"></i> {{ profile.role }}</span>
-                </div>
-            </div>
+{% block extra_head %}
+<style>
+    /* ============================================================
+   PROFILE CARD PAGE
+   Supports both admin (is_admin=True) and student roles.
+   ============================================================ */
 
-            <div class="profile-card-body">
-                <div class="profile-info-block">
-                    <label>Username</label>
-                    <p>{{ profile.username }}</p>
-                </div>
-                <div class="profile-info-block">
-                    <label>Identifier</label>
-                    <p>{{ profile.identifier }}</p>
-                </div>
-                <div class="profile-info-block">
-                    <label>Email</label>
-                    <p>{{ profile.email }}</p>
-                </div>
-                <div class="profile-info-block">
-                    <label>Member Since</label>
-                    <p>{{ profile.joined|date:"F j, Y" }}</p>
-                </div>
-                <div class="profile-info-block">
-                    <label>Last Login</label>
-                    <p>
-                        {% if profile.last_login %}
-                            {{ profile.last_login|date:"F j, Y g:i A" }}
-                        {% else %}
-                            Not recorded
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-
-            <div class="profile-card-stats">
-                <div class="profile-stat">
-                    <span>Total Submissions</span>
-                    <strong>{{ profile.submission_count }}</strong>
-                </div>
-                <div class="profile-stat">
-                    <span>Most Recent Submission</span>
-                    {% if profile.recent_submission_title %}
-                        <strong>{{ profile.recent_submission_title }}</strong>
-                        <small>{{ profile.recent_submission_date|date:"M j, Y" }}</small>
-                    {% else %}
-                        <strong>None yet</strong>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="profile-card-actions">
-                {% if profile.is_admin %}
-                    <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Go to Admin Dashboard</a>
-                {% else %}
-                    <a href="{% url 'student_dashboard' %}" class="dashboard-btn">Submission Portal</a>
-                    <a href="{% url 'my_submissions' %}" class="btn btn-outline">My Submissions</a>
-                {% endif %}
-                <button type="button" id="changePasswordBtn" class="btn btn-outline" style="margin-top: 10px;">Change Password</button>
-            </div>
-            
-            <!-- Change Password Modal -->
-            <div id="changePasswordModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
-                <div style="background: #1a1a1a; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
-                    <h2 style="margin-top: 0; color: #fff;">Change Password</h2>
-                    <form id="changePasswordForm" method="POST" action="{% url 'change_password_profile' %}">
-                        {% csrf_token %}
-                        <div style="margin-bottom: 1rem;">
-                            <label for="old_password" style="display: block; margin-bottom: 0.5rem; color: #fff;">Current Password</label>
-                            <input type="password" id="old_password" name="old_password" required style="width: 100%; padding: 0.75rem; border: 1px solid #333; border-radius: 4px; background: #2a2a2a; color: #fff;">
-                        </div>
-                        <div style="margin-bottom: 1rem;">
-                            <label for="new_password" style="display: block; margin-bottom: 0.5rem; color: #fff;">New Password</label>
-                            <input type="password" id="new_password" name="new_password" required style="width: 100%; padding: 0.75rem; border: 1px solid #333; border-radius: 4px; background: #2a2a2a; color: #fff;">
-                        </div>
-                        <div style="margin-bottom: 1rem;">
-                            <label for="confirm_password" style="display: block; margin-bottom: 0.5rem; color: #fff;">Confirm New Password</label>
-                            <input type="password" id="confirm_password" name="confirm_password" required style="width: 100%; padding: 0.75rem; border: 1px solid #333; border-radius: 4px; background: #2a2a2a; color: #fff;">
-                        </div>
-                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                            <button type="button" id="cancelChangePassword" style="padding: 0.75rem 1.5rem; background: #666; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
-                            <button type="submit" style="padding: 0.75rem 1.5rem; background: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Change Password</button>
-                        </div>
-                        <p id="changePasswordMessage" style="margin-top: 1rem; color: #ff6b6b;"></p>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const changePasswordBtn = document.getElementById('changePasswordBtn');
-    const changePasswordModal = document.getElementById('changePasswordModal');
-    const cancelChangePassword = document.getElementById('cancelChangePassword');
-    const changePasswordForm = document.getElementById('changePasswordForm');
-    const changePasswordMessage = document.getElementById('changePasswordMessage');
-
-    // Open change password modal
-    if (changePasswordBtn && changePasswordModal) {
-        changePasswordBtn.addEventListener('click', function() {
-            changePasswordModal.style.display = 'flex';
-        });
+    /* Reset the base main margin so our full-bleed gradient works */
+    body.profile-page>main {
+        margin-top: 70px;
+        padding: 0;
     }
 
-    // Close change password modal
-    if (cancelChangePassword && changePasswordModal) {
-        cancelChangePassword.addEventListener('click', function() {
-            changePasswordModal.style.display = 'none';
-            changePasswordForm.reset();
-            if (changePasswordMessage) {
-                changePasswordMessage.textContent = '';
-            }
-        });
+    .profile-page-wrap {
+        min-height: calc(100vh - 70px);
+        background: linear-gradient(145deg, #f5f0f0 0%, #f8f4f4 40%, #f2efef 100%);
+        padding: 48px 20px 80px;
+        position: relative;
+        overflow: hidden;
     }
 
-    // Close modal when clicking outside
-    if (changePasswordModal) {
-        changePasswordModal.addEventListener('click', function(e) {
-            if (e.target === changePasswordModal) {
-                changePasswordModal.style.display = 'none';
-                changePasswordForm.reset();
-                if (changePasswordMessage) {
-                    changePasswordMessage.textContent = '';
-                }
-            }
-        });
+    /* Subtle background decoration */
+    .profile-page-wrap::before {
+        content: "";
+        position: absolute;
+        top: -150px;
+        right: -150px;
+        width: 450px;
+        height: 450px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(163, 29, 35, 0.06) 0%, transparent 70%);
+        pointer-events: none;
     }
 
-    // Handle form submission
-    if (changePasswordForm) {
-        changePasswordForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(changePasswordForm);
-            const submitButton = changePasswordForm.querySelector('button[type="submit"]');
-            const originalText = submitButton?.textContent;
-
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Changing...';
-            }
-
-            try {
-                const response = await fetch(changePasswordForm.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    if (changePasswordMessage) {
-                        changePasswordMessage.textContent = data.message || 'Password changed successfully!';
-                        changePasswordMessage.style.color = '#4caf50';
-                        changePasswordMessage.style.display = 'block';
-                    }
-                    // Close modal and reload after 2 seconds
-                    setTimeout(() => {
-                        changePasswordModal.style.display = 'none';
-                        window.location.reload();
-                    }, 2000);
-                } else {
-                    if (changePasswordMessage) {
-                        changePasswordMessage.textContent = data.error || 'An error occurred. Please try again.';
-                        changePasswordMessage.style.color = '#ff6b6b';
-                        changePasswordMessage.style.display = 'block';
-                    }
-                }
-            } catch (error) {
-                console.error('Change password error:', error);
-                if (changePasswordMessage) {
-                    changePasswordMessage.textContent = 'An error occurred. Please try again.';
-                    changePasswordMessage.style.color = '#ff6b6b';
-                    changePasswordMessage.style.display = 'block';
-                }
-            } finally {
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.textContent = originalText;
-                }
-            }
-        });
+    .profile-page-wrap::after {
+        content: "";
+        position: absolute;
+        bottom: -100px;
+        left: -100px;
+        width: 350px;
+        height: 350px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(163, 29, 35, 0.04) 0%, transparent 70%);
+        pointer-events: none;
     }
 
-    // Helper function to get CSRF token from cookies
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
+    .profile-container {
+        max-width: 820px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ============ THE CARD ============ */
+    .profile-card-v2 {
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(163, 29, 35, 0.08);
+        background: #ffffff;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profile-card-v2:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.14), 0 12px 32px rgba(163, 29, 35, 0.12);
+    }
+
+    /* ---- HERO HEADER ---- */
+    .profile-hero {
+        background: linear-gradient(135deg, #7b0d11 0%, #a31d23 45%, #c0333a 100%);
+        padding: 48px 40px 36px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* decorative circles behind header */
+    .profile-hero::before {
+        content: "";
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 240px;
+        height: 240px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .profile-hero::after {
+        content: "";
+        position: absolute;
+        bottom: -80px;
+        left: -40px;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .profile-hero-inner {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Avatar circle */
+    .profile-avatar-v2 {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 3px solid rgba(255, 255, 255, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        flex-shrink: 0;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        position: relative;
+    }
+
+    .profile-avatar-v2::after {
+        content: "";
+        position: absolute;
+        inset: -3px;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.6));
+        z-index: -1;
+        animation: spin-ring 6s linear infinite;
+    }
+
+    @keyframes spin-ring {
+        to {
+            transform: rotate(360deg);
         }
-        return cookieValue;
     }
-});
-</script>
+
+    .profile-hero-info {
+        flex: 1;
+    }
+
+    .profile-full-name {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin: 0 0 8px;
+        letter-spacing: -0.5px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 16px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 10px;
+    }
+
+    .role-admin {
+        background: linear-gradient(90deg, #d4af37, #f0cb5a);
+        color: #5a3e00;
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    }
+
+    .role-student {
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        backdrop-filter: blur(6px);
+    }
+
+    .role-professor {
+        background: linear-gradient(90deg, #42a5f5, #1e88e5);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(30, 136, 229, 0.35);
+    }
+
+    .profile-username-hero {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    /* University branding watermark */
+    .profile-hero-brand {
+        position: absolute;
+        bottom: 16px;
+        right: 28px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        z-index: 1;
+    }
+
+    /* ---- CARD BODY ---- */
+    .profile-body-v2 {
+        padding: 36px 40px 28px;
+    }
+
+    /* Info grid */
+    .profile-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+        margin-bottom: 28px;
+    }
+
+    .profile-info-tile {
+        background: #fafafa;
+        border: 1px solid #eee;
+        border-radius: 16px;
+        padding: 16px 18px;
+        transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .profile-info-tile:hover {
+        border-color: rgba(163, 29, 35, 0.25);
+        transform: translateY(-2px);
+    }
+
+    .profile-info-tile label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #9e9e9e;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .profile-info-tile p {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2d3436;
+        margin: 0;
+        word-break: break-word;
+    }
+
+    /* ---- STATS ---- */
+    .profile-stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin-bottom: 28px;
+    }
+
+    .profile-stat-v2 {
+        background: linear-gradient(135deg, rgba(163, 29, 35, 0.05) 0%, rgba(123, 13, 17, 0.08) 100%);
+        border: 1px solid rgba(163, 29, 35, 0.15);
+        border-radius: 18px;
+        padding: 20px 22px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .profile-stat-v2:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(163, 29, 35, 0.1);
+    }
+
+    .profile-stat-v2 .stat-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #a31d23;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .profile-stat-v2 .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #7b0d11;
+        display: block;
+        line-height: 1;
+    }
+
+    .profile-stat-v2 .stat-sub {
+        font-size: 0.82rem;
+        color: #636e72;
+        margin-top: 4px;
+        display: block;
+        font-style: italic;
+    }
+
+    /* ---- ACTIONS ---- */
+    .profile-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-top: 8px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .profile-btn-primary {
+        flex: 1 1 180px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #a31d23, #7b0d11);
+        color: #ffffff !important;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 24px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 16px rgba(163, 29, 35, 0.25);
+    }
+
+    .profile-btn-primary:hover {
+        background: linear-gradient(135deg, #c0333a, #a31d23);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(163, 29, 35, 0.35);
+    }
+
+    .profile-btn-outline {
+        flex: 1 1 180px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: transparent;
+        color: #a31d23;
+        border: 2px solid rgba(163, 29, 35, 0.3);
+        border-radius: 12px;
+        padding: 13px 24px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    .profile-btn-outline:hover {
+        background: rgba(163, 29, 35, 0.05);
+        border-color: #a31d23;
+        transform: translateY(-2px);
+    }
+
+    /* ---- CHANGE PASSWORD MODAL ---- */
+    .pw-modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(6px);
+        z-index: 20000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .pw-modal-backdrop.active {
+        display: flex;
+    }
+
+    .pw-modal {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 40px;
+        max-width: 440px;
+        width: 100%;
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
+        animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes modalIn {
+        from {
+            opacity: 0;
+            transform: scale(0.92) translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .pw-modal h2 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #2d3436;
+        margin: 0 0 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pw-modal h2 .modal-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #a31d23, #7b0d11);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1rem;
+    }
+
+    .pw-field {
+        margin-bottom: 18px;
+    }
+
+    .pw-field label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #636e72;
+        margin-bottom: 7px;
+    }
+
+    .pw-field input {
+        width: 100%;
+        padding: 13px 16px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        color: #2d3436;
+        background: #fafafa;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box;
+    }
+
+    .pw-field input:focus {
+        outline: none;
+        border-color: #a31d23;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(163, 29, 35, 0.1);
+    }
+
+    .pw-modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .pw-cancel-btn {
+        flex: 1;
+        padding: 13px;
+        background: #f5f5f5;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #636e72;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .pw-cancel-btn:hover {
+        background: #e8e8e8;
+    }
+
+    .pw-submit-btn {
+        flex: 2;
+        padding: 13px;
+        background: linear-gradient(135deg, #a31d23, #7b0d11);
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(163, 29, 35, 0.2);
+    }
+
+    .pw-submit-btn:hover {
+        background: linear-gradient(135deg, #c0333a, #a31d23);
+        box-shadow: 0 6px 18px rgba(163, 29, 35, 0.3);
+    }
+
+    .pw-submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .pw-message {
+        margin-top: 14px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        display: none;
+    }
+
+    .pw-message.success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        display: block;
+    }
+
+    .pw-message.error {
+        background: #fde8e8;
+        color: #b71c1c;
+        display: block;
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 640px) {
+        .profile-hero {
+            padding: 32px 24px 24px;
+        }
+
+        .profile-hero-inner {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-body-v2 {
+            padding: 24px 20px 20px;
+        }
+
+        .profile-full-name {
+            font-size: 1.6rem;
+        }
+
+        .profile-avatar-v2 {
+            width: 84px;
+            height: 84px;
+            font-size: 2rem;
+        }
+
+        .profile-hero-brand {
+            display: none;
+        }
+
+        .profile-actions {
+            flex-direction: column;
+        }
+
+        .profile-btn-primary,
+        .profile-btn-outline {
+            flex: unset;
+            width: 100%;
+        }
+    }
+</style>
 {% endblock %}
 
+{% block body_class %}profile-page{% endblock %}
+
+{% block content %}
+<div class="profile-page-wrap">
+    <div class="profile-container">
+
+        <div class="profile-card-v2">
+
+            <!-- ===== HERO HEADER ===== -->
+            <div class="profile-hero">
+                <div class="profile-hero-inner">
+                    <div class="profile-avatar-v2">{{ profile.initials }}</div>
+                    <div class="profile-hero-info">
+                        <h1 class="profile-full-name">{{ profile.full_name }}</h1>
+
+                        {% if profile.is_admin %}
+                        <span class="profile-role-badge role-admin">
+                            <i class="fas fa-shield-alt"></i> {{ profile.role }}
+                        </span>
+                        {% elif profile.role == "Professor" %}
+                        <span class="profile-role-badge role-professor">
+                            <i class="fas fa-chalkboard-teacher"></i> {{ profile.role }}
+                        </span>
+                        {% else %}
+                        <span class="profile-role-badge role-student">
+                            <i class="fas fa-user-graduate"></i> {{ profile.role }}
+                        </span>
+                        {% endif %}
+
+                        <div class="profile-username-hero">@{{ profile.username }}</div>
+                    </div>
+                </div>
+                <div class="profile-hero-brand">TCU Thesis Library</div>
+            </div>
+
+            <!-- ===== CARD BODY ===== -->
+            <div class="profile-body-v2">
+
+                <!-- Info tiles -->
+                <div class="profile-info-grid">
+                    <div class="profile-info-tile">
+                        <label><i class="fas fa-user" style="margin-right:5px;color:#a31d23;"></i>Username</label>
+                        <p>{{ profile.username }}</p>
+                    </div>
+                    <div class="profile-info-tile">
+                        <label><i class="fas fa-id-badge" style="margin-right:5px;color:#a31d23;"></i>
+                            {% if profile.is_admin %}Admin ID{% elif profile.role == "Professor" %}Professor ID{% else
+                            %}Student ID{% endif %}
+                        </label>
+                        <p>{{ profile.identifier }}</p>
+                    </div>
+                    <div class="profile-info-tile">
+                        <label><i class="fas fa-envelope" style="margin-right:5px;color:#a31d23;"></i>Email</label>
+                        <p>{{ profile.email }}</p>
+                    </div>
+                    <div class="profile-info-tile">
+                        <label><i class="fas fa-calendar-check" style="margin-right:5px;color:#a31d23;"></i>Member
+                            Since</label>
+                        <p>{{ profile.joined|date:"F j, Y" }}</p>
+                    </div>
+                    <div class="profile-info-tile">
+                        <label><i class="fas fa-clock" style="margin-right:5px;color:#a31d23;"></i>Last Login</label>
+                        <p>
+                            {% if profile.last_login %}
+                            {{ profile.last_login|date:"M j, Y • g:i A" }}
+                            {% else %}
+                            Not recorded
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Stats row -->
+                <div class="profile-stats-row">
+                    <div class="profile-stat-v2">
+                        <span class="stat-label"><i class="fas fa-file-alt" style="margin-right:4px;"></i>Total
+                            Submissions</span>
+                        <span class="stat-value">{{ profile.submission_count }}</span>
+                        <span class="stat-sub">All-time submissions</span>
+                    </div>
+
+                    <div class="profile-stat-v2">
+                        <span class="stat-label"><i class="fas fa-bookmark" style="margin-right:4px;"></i>Most
+                            Recent</span>
+                        {% if profile.recent_submission_title %}
+                        <span class="stat-value" style="font-size:1rem; line-height:1.3; padding-top:4px;">
+                            {{ profile.recent_submission_title|truncatewords:6 }}
+                        </span>
+                        <span class="stat-sub">{{ profile.recent_submission_date|date:"M j, Y" }}</span>
+                        {% else %}
+                        <span class="stat-value" style="font-size:1.4rem;">None yet</span>
+                        <span class="stat-sub">No submissions yet</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="profile-actions">
+                    {% if profile.is_admin %}
+                    <a href="{% url 'admin_dashboard' %}" class="profile-btn-primary">
+                        <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                    </a>
+                    {% else %}
+                    <a href="{% url 'student_dashboard' %}" class="profile-btn-primary">
+                        <i class="fas fa-upload"></i> Submission Portal
+                    </a>
+                    <a href="{% url 'my_submissions' %}" class="profile-btn-outline">
+                        <i class="fas fa-file-alt"></i> My Submissions
+                    </a>
+                    {% endif %}
+                    <button type="button" id="openChangePwBtn" class="profile-btn-outline">
+                        <i class="fas fa-lock"></i> Change Password
+                    </button>
+                </div>
+
+            </div><!-- /.profile-body-v2 -->
+        </div><!-- /.profile-card-v2 -->
+
+    </div><!-- /.profile-container -->
+</div><!-- /.profile-page-wrap -->
+
+
+<!-- ===== CHANGE PASSWORD MODAL ===== -->
+<div id="changePwModal" class="pw-modal-backdrop">
+    <div class="pw-modal">
+        <h2>
+            <span class="modal-icon"><i class="fas fa-lock"></i></span>
+            Change Password
+        </h2>
+        <form id="changePwForm" method="POST" action="{% url 'change_password_profile' %}">
+            {% csrf_token %}
+            <div class="pw-field">
+                <label for="old_password">Current Password</label>
+                <input type="password" id="old_password" name="old_password" placeholder="Enter current password"
+                    required>
+            </div>
+            <div class="pw-field">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" placeholder="Enter new password" required>
+            </div>
+            <div class="pw-field">
+                <label for="confirm_password">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Repeat new password"
+                    required>
+            </div>
+            <div class="pw-modal-actions">
+                <button type="button" id="closePwModal" class="pw-cancel-btn">Cancel</button>
+                <button type="submit" id="pwSubmitBtn" class="pw-submit-btn">
+                    <i class="fas fa-check" style="margin-right:6px;"></i>Change Password
+                </button>
+            </div>
+            <div id="pwMessage" class="pw-message"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const modal = document.getElementById('changePwModal');
+        const openBtn = document.getElementById('openChangePwBtn');
+        const closeBtn = document.getElementById('closePwModal');
+        const form = document.getElementById('changePwForm');
+        const message = document.getElementById('pwMessage');
+        const submitBtn = document.getElementById('pwSubmitBtn');
+
+        function openModal() { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            form.reset();
+            message.className = 'pw-message';
+            message.textContent = '';
+        }
+
+        openBtn?.addEventListener('click', openModal);
+        closeBtn?.addEventListener('click', closeModal);
+
+        // Close on backdrop click
+        modal?.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+
+        // Close on ESC
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+        });
+
+        // AJAX form submit
+        form?.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Changing...';
+            message.className = 'pw-message';
+            message.textContent = '';
+
+            try {
+                const resp = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.cookie.split('; ')
+                            .find(r => r.startsWith('csrftoken='))?.split('=')[1] || ''
+                    }
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    message.className = 'pw-message success';
+                    message.textContent = data.message || 'Password changed successfully!';
+                    setTimeout(() => { closeModal(); window.location.reload(); }, 2000);
+                } else {
+                    message.className = 'pw-message error';
+                    message.textContent = data.error || 'An error occurred. Please try again.';
+                }
+            } catch (err) {
+                message.className = 'pw-message error';
+                message.textContent = 'Network error. Please try again.';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check" style="margin-right:6px;"></i>Change Password';
+            }
+        });
+    })();
+</script>
+{% endblock %}
