@@ -224,7 +224,8 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="9" style="text-align:center; padding:1rem; color:#6c757d;">No pending submissions found.</td>
+              <td colspan="10" style="text-align:center; padding:1rem; color:#6c757d;">No pending submissions found.
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -429,5 +430,5 @@
     let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
     XLSX.writeFile(wb, filename + '.xlsx');
   }
-</script>v
-{% endblock %}F
+</script>
+{% endblock %}

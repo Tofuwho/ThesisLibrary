@@ -14,7 +14,7 @@
 
     {% include 'main/admin_sidebar.html' %}
 
-    <main class="admin-main">
+    <div class="admin-main">
         <div class="dashboard-header">
             <h1>Admin Control Panel</h1>
             <p>Welcome back, <strong>{{ user.username }}</strong>. Here's what's happening today.</p>
@@ -130,17 +130,19 @@
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 </div>
 
 {{ months|json_script:"months_data" }}
 {{ approved_data|json_script:"approved_data_json" }}
 {{ pending_data|json_script:"pending_data_json" }}
 {{ rejected_data|json_script:"rejected_data_json" }}
+{{ theses_by_course|json_script:"course_data_json" }}
+{{ theses_by_department|json_script:"dept_data_json" }}
 
 <script>
-    const courseData = {{ theses_by_course| safe }};
-    const deptData = {{ theses_by_department| safe }};
+    const courseData = JSON.parse(document.getElementById('course_data_json').textContent);
+    const deptData = JSON.parse(document.getElementById('dept_data_json').textContent);
 </script>
 <script src="{% static 'js/dashboard-charts.js' %}"></script>
 {% endblock %}
