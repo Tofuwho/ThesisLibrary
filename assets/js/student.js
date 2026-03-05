@@ -15,7 +15,7 @@
  * Initialize submission portal functionality when DOM is loaded
  * Sets up all form interactions, file uploads, and auto-save features
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeEventListeners();
     setupFileUploads();
     setupAutoSave();
@@ -200,35 +200,31 @@ function previousSection(sectionId) {
 
 function showSection(sectionId) {
     if (!sectionId) return;
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(section => section.classList.remove('active'));
+    const sections = document.querySelectorAll('.form-section');
+    sections.forEach(section => {
+        section.classList.remove('active');
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(10px)';
+    });
+
     const target = document.getElementById(sectionId);
     if (!target) return;
+
+    // Smooth transition
     target.classList.add('active');
+    setTimeout(() => {
+        target.style.opacity = '1';
+        target.style.transform = 'translateY(0)';
+    }, 10);
 
     // nav highlighting
-    const navItems = document.querySelectorAll('.nav-item');
+    const navItems = document.querySelectorAll('.nav-step');
     navItems.forEach(i => i.classList.remove('active'));
     const myNav = document.querySelector(`[data-section="${sectionId}"]`);
     if (myNav) myNav.classList.add('active');
 
-    updateProgressBar(sectionId);
-}
-
-/* progress bar unchanged */
-function updateProgressBar(sectionId) {
-    const progressMap = {
-        'basic-info': 20,
-        'upload': 40,
-        'supervisor': 60,
-        'thesis-details': 80,
-        'review': 100
-    };
-    const activeSection = document.querySelector('.section.active');
-    const progressFill = activeSection && activeSection.querySelector('.progress-fill');
-    if (progressFill && progressMap[sectionId] !== undefined) {
-        progressFill.style.width = progressMap[sectionId] + '%';
-    }
+    // Scroll to top of form smoothly
+    window.scrollTo({ top: 100, behavior: 'smooth' });
 }
 
 /* ---------------------------
@@ -264,7 +260,7 @@ function validateSection(sectionEl, showErrors = true) {
                 showFieldError(field, 'This field is required.');
                 // focus first invalid
                 if (sectionEl.classList.contains('active')) {
-                    try { field.focus(); } catch (e) {}
+                    try { field.focus(); } catch (e) { }
                 }
             }
         } else {
@@ -294,9 +290,9 @@ function validateSection(sectionEl, showErrors = true) {
             let index = block.getAttribute('data-index');
             // Collect inputs inside block by data-field
             const firstName = block.querySelector('[data-field="first_name"]');
-            const lastName  = block.querySelector('[data-field="last_name"]');
+            const lastName = block.querySelector('[data-field="last_name"]');
             const studentId = block.querySelector('[data-field="student_id"]');
-            const email     = block.querySelector('[data-field="email"]');
+            const email = block.querySelector('[data-field="email"]');
 
             const values = {
                 firstName: firstName?.value.trim() || '',
@@ -356,7 +352,7 @@ function isElementVisible(el) {
  * Validate current active section (legacy wrapper)
  */
 function validateCurrentSection() {
-    const activeSection = document.querySelector('.section.active');
+    const activeSection = document.querySelector('.form-section.active');
     return validateSection(activeSection, true);
 }
 
@@ -365,20 +361,20 @@ function validateCurrentSection() {
    --------------------------- */
 
 function initializeEventListeners() {
-    const navItems = document.querySelectorAll('.nav-item');
+    const navItems = document.querySelectorAll('.nav-step');
     const sectionOrder = ["basic-info", "upload", "supervisor", "thesis-details", "review"];
 
     navItems.forEach(item => {
-        item.addEventListener('click', function(e) {
+        item.addEventListener('click', function (e) {
             const sectionId = this.getAttribute('data-section');
             if (!sectionId) return;
-            const currentSectionEl = document.querySelector('.section.active');
+            const currentSectionEl = document.querySelector('.form-section.active');
             const currentIndex = sectionOrder.indexOf(currentSectionEl?.id);
             const targetIndex = sectionOrder.indexOf(sectionId);
 
             // If going forward, ensure all earlier sections (0..targetIndex-1) are valid.
             if (targetIndex > currentIndex) {
-                for (let i = 0; i < targetIndex; i++) {
+                for (let i = 0; i <= currentIndex; i++) {
                     const secId = sectionOrder[i];
                     const secEl = document.getElementById(secId);
                     if (!validateSection(secEl, false)) {
@@ -403,18 +399,20 @@ function initializeEventListeners() {
 
     // Real-time validation for static inputs
     document.querySelectorAll('input, textarea, select').forEach(input => {
-        // Skip if dynamically added later — they have own listeners
-        input.addEventListener('blur', function() {
+        input.addEventListener('blur', function () {
             if (this.hasAttribute('required') && !this.value.trim()) {
                 this.style.borderColor = '#ff4444';
+                this.classList.add('input-error');
             } else {
-                this.style.borderColor = 'var(--light-gray)';
+                this.style.borderColor = '';
+                this.classList.remove('input-error');
             }
         });
 
-        input.addEventListener('input', function() {
-            if (this.style.borderColor === 'rgb(255, 68, 68)' && this.value.trim()) {
-                this.style.borderColor = 'var(--light-gray)';
+        input.addEventListener('input', function () {
+            if (this.classList.contains('input-error') && this.value.trim()) {
+                this.style.borderColor = '';
+                this.classList.remove('input-error');
             }
             updateReviewSection();
         });
@@ -432,22 +430,22 @@ function setupFileUploads() {
 
     const fileUploads = document.querySelectorAll('.file-upload');
     fileUploads.forEach(upload => {
-        upload.addEventListener('dragover', function(e) {
+        upload.addEventListener('dragover', function (e) {
             e.preventDefault();
             this.classList.add('dragover');
         });
-        upload.addEventListener('dragleave', function(e) {
+        upload.addEventListener('dragleave', function (e) {
             e.preventDefault();
             this.classList.remove('dragover');
         });
-        upload.addEventListener('drop', function(e) {
+        upload.addEventListener('drop', function (e) {
             e.preventDefault();
             this.classList.remove('dragover');
             const fileInput = this.querySelector('input[type="file"]');
             if (!fileInput) return;
             fileInput.files = e.dataTransfer.files;
             handleFileSelection(fileInput);
-            
+
             // Auto-extract abstract if this is the thesis file upload
             if (fileInput.id === 'thesisFile' && fileInput.files && fileInput.files.length > 0) {
                 extractAbstractFromPDF(fileInput.files[0]);
@@ -459,9 +457,9 @@ function setupFileUploads() {
 function setupSingleFileUpload(inputId, listId, maxSizeMB) {
     const input = document.getElementById(inputId);
     if (!input) return;
-    input.addEventListener('change', function() {
+    input.addEventListener('change', function () {
         handleFileSelection(this, listId, maxSizeMB, false);
-        
+
         // Auto-extract abstract if this is the thesis file upload
         if (inputId === 'thesisFile' && this.files && this.files.length > 0) {
             extractAbstractFromPDF(this.files[0]);
@@ -471,7 +469,7 @@ function setupSingleFileUpload(inputId, listId, maxSizeMB) {
 function setupMultipleFileUpload(inputId, listId, maxSizeMB) {
     const input = document.getElementById(inputId);
     if (!input) return;
-    input.addEventListener('change', function() {
+    input.addEventListener('change', function () {
         handleFileSelection(this, listId, maxSizeMB, true);
     });
 }
@@ -546,19 +544,19 @@ function formatFileSize(bytes) {
 function extractAbstractFromPDF(pdfFile) {
     const abstractTextarea = document.getElementById('abstract');
     if (!abstractTextarea) return;
-    
+
     // Show loading indicator
     const originalPlaceholder = abstractTextarea.placeholder;
     abstractTextarea.placeholder = 'Extracting abstract from PDF...';
     abstractTextarea.disabled = true;
-    
+
     // Create FormData to send the file
     const formData = new FormData();
     formData.append('pdf_file', pdfFile);
-    
+
     // Get CSRF token
     const csrftoken = getCookie('csrftoken');
-    
+
     // Make API call to extract abstract
     fetch('/api/extract-abstract/', {
         method: 'POST',
@@ -567,51 +565,51 @@ function extractAbstractFromPDF(pdfFile) {
         },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        abstractTextarea.disabled = false;
-        abstractTextarea.placeholder = originalPlaceholder;
-        
-        if (data.success) {
-            let successMessages = [];
-            
-            // Populate title field if extracted
-            if (data.title) {
-                const titleInput = document.getElementById('thesisTitle');
-                if (titleInput && !titleInput.value.trim()) {
-                    titleInput.value = data.title;
-                    successMessages.push('Title extracted');
+        .then(response => response.json())
+        .then(data => {
+            abstractTextarea.disabled = false;
+            abstractTextarea.placeholder = originalPlaceholder;
+
+            if (data.success) {
+                let successMessages = [];
+
+                // Populate title field if extracted
+                if (data.title) {
+                    const titleInput = document.getElementById('thesisTitle');
+                    if (titleInput && !titleInput.value.trim()) {
+                        titleInput.value = data.title;
+                        successMessages.push('Title extracted');
+                    }
                 }
-            }
-            
-            // Populate abstract field with extracted text
-            if (data.abstract) {
-                abstractTextarea.value = data.abstract;
-                const wordCount = data.word_count || data.abstract.split(/\s+/).length;
-                successMessages.push(`Abstract extracted (${wordCount} words)`);
-            }
-            
-            // Show success message
-            if (successMessages.length > 0) {
-                showAlert(successMessages.join(' and ') + ' successfully!', 'success');
+
+                // Populate abstract field with extracted text
+                if (data.abstract) {
+                    abstractTextarea.value = data.abstract;
+                    const wordCount = data.word_count || data.abstract.split(/\s+/).length;
+                    successMessages.push(`Abstract extracted (${wordCount} words)`);
+                }
+
+                // Show success message
+                if (successMessages.length > 0) {
+                    showAlert(successMessages.join(' and ') + ' successfully!', 'success');
+                } else {
+                    showAlert('Extraction completed, but no title or abstract found. Please enter them manually.', 'info');
+                }
+
+                // Update review section if visible
+                updateReviewSection();
             } else {
-                showAlert('Extraction completed, but no title or abstract found. Please enter them manually.', 'info');
+                // Show info message if extraction failed
+                const message = data.message || 'Could not automatically extract abstract or title. Please enter them manually.';
+                showAlert(message, 'info');
             }
-            
-            // Update review section if visible
-            updateReviewSection();
-        } else {
-            // Show info message if extraction failed
-            const message = data.message || 'Could not automatically extract abstract or title. Please enter them manually.';
-            showAlert(message, 'info');
-        }
-    })
-    .catch(error => {
-        console.error('Error extracting abstract:', error);
-        abstractTextarea.disabled = false;
-        abstractTextarea.placeholder = originalPlaceholder;
-        showAlert('Error extracting abstract. Please enter it manually.', 'error');
-    });
+        })
+        .catch(error => {
+            console.error('Error extracting abstract:', error);
+            abstractTextarea.disabled = false;
+            abstractTextarea.placeholder = originalPlaceholder;
+            showAlert('Error extracting abstract. Please enter it manually.', 'error');
+        });
 }
 
 /**
@@ -644,35 +642,65 @@ function loadDepartments() {
     const academicLevelSelect = document.getElementById('academic_level');
     const departmentSelect = document.getElementById('department');
     const courseSelect = document.getElementById('course');
-    if (!academicLevelSelect || !departmentSelect) return;
+    if (!academicLevelSelect || !departmentSelect) return Promise.resolve();
+
     const academicLevelId = academicLevelSelect.value;
     departmentSelect.innerHTML = '<option value="">Select Department</option>';
     courseSelect.innerHTML = '<option value="">Select Course</option>';
-    if (!academicLevelId) { departmentSelect.disabled = true; courseSelect.disabled = true; return; }
-    departmentSelect.disabled = false; courseSelect.disabled = true;
-    fetch(`/api/departments/${academicLevelId}/`)
+
+    if (!academicLevelId) {
+        departmentSelect.disabled = true;
+        courseSelect.disabled = true;
+        return Promise.resolve();
+    }
+
+    departmentSelect.disabled = false;
+    courseSelect.disabled = true;
+
+    return fetch(`/api/departments/${academicLevelId}/`)
         .then(r => r.json())
         .then(data => {
             (data.departments || []).forEach(dept => {
                 const option = document.createElement('option');
-                option.value = dept.id; option.textContent = dept.name; departmentSelect.appendChild(option);
+                option.value = dept.id;
+                option.textContent = dept.name;
+                departmentSelect.appendChild(option);
             });
-        }).catch(e => { console.error('Error loading departments:', e); populateDepartmentsFallback(academicLevelId); });
+        })
+        .catch(e => {
+            console.error('Error loading departments:', e);
+            populateDepartmentsFallback(academicLevelId);
+        });
 }
 function loadCourses() {
     const departmentSelect = document.getElementById('department');
     const courseSelect = document.getElementById('course');
-    if (!departmentSelect || !courseSelect) return;
+    if (!departmentSelect || !courseSelect) return Promise.resolve();
+
     const departmentId = departmentSelect.value;
     courseSelect.innerHTML = '<option value="">Select Course</option>';
-    if (!departmentId) { courseSelect.disabled = true; return; }
+
+    if (!departmentId) {
+        courseSelect.disabled = true;
+        return Promise.resolve();
+    }
+
     courseSelect.disabled = false;
-    fetch(`/api/courses/${departmentId}/`)
+
+    return fetch(`/api/courses/${departmentId}/`)
         .then(r => r.json())
         .then(data => {
-            (data.courses || []).forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.name; courseSelect.appendChild(o); });
+            (data.courses || []).forEach(c => {
+                const o = document.createElement('option');
+                o.value = c.id;
+                o.textContent = c.name;
+                courseSelect.appendChild(o);
+            });
         })
-        .catch(e => { console.error('Error loading courses:', e); populateCoursesFallback(departmentId); });
+        .catch(e => {
+            console.error('Error loading courses:', e);
+            populateCoursesFallback(departmentId);
+        });
 }
 function populateDepartmentsFallback(academicLevelId) { /* same as before */ }
 function populateCoursesFallback(departmentId) { /* same as before */ }
@@ -686,10 +714,14 @@ function updateReviewSection() {
     if (!form) return;
     const formData = new FormData(form);
 
-    document.getElementById('reviewStudentName').textContent =
-        `${formData.get('firstName') || ''} ${formData.get('lastName') || ''}`.trim() || '-';
-    document.getElementById('reviewStudentId').textContent = formData.get('studentId') || '-';
-    document.getElementById('reviewSubmitterEmail').textContent = formData.get('email') || '-';
+    const updateText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text || '-';
+    };
+
+    updateText('reviewStudentName', `${formData.get('firstName') || ''} ${formData.get('lastName') || ''}`.trim());
+    updateText('reviewStudentId', formData.get('studentId'));
+    updateText('reviewSubmitterEmail', formData.get('email'));
 
     const academicLevelSelect = document.getElementById('academic_level');
     const departmentSelect = document.getElementById('department');
@@ -699,17 +731,22 @@ function updateReviewSection() {
     const departmentText = departmentSelect ? departmentSelect.options[departmentSelect.selectedIndex]?.text || '-' : '-';
     const courseText = courseSelect ? courseSelect.options[courseSelect.selectedIndex]?.text || '-' : '-';
 
-    document.getElementById('reviewAcademicLevel').textContent = academicLevelText;
-    document.getElementById('reviewDepartment').textContent = departmentText;
-    document.getElementById('reviewCourse').textContent = courseText;
-    document.getElementById('reviewYear').textContent = formData.get('year') || '-';
-    document.getElementById('reviewThesisTitle').textContent = formData.get('thesisTitle') || '-';
-    document.getElementById('reviewAbstract').textContent = formData.get('abstract') || '-';
-    document.getElementById('reviewKeywords').textContent = formData.get('keywords') || '-';
-    document.getElementById('reviewSupervisor').textContent = formData.get('supervisorName') || '-';
-    document.getElementById('reviewCoSupervisor').textContent = formData.get('coSupervisorName') || '-';
+    updateText('reviewAcademicLevel', academicLevelText);
+    updateText('reviewDepartment', departmentText);
+    updateText('reviewCourse', courseText);
+    updateText('reviewYear', formData.get('year'));
+    updateText('reviewThesisTitle', formData.get('thesisTitle'));
+    updateText('reviewAbstract', formData.get('abstract'));
+    updateText('reviewKeywords', formData.get('keywords'));
+    updateText('reviewSupervisor', formData.get('supervisorName'));
+    updateText('reviewSupervisorEmail', formData.get('supervisorEmail'));
+    const dept = formData.get('supervisorDepartment') || '';
+    const title = formData.get('supervisorTitle') || '';
+    updateText('reviewSupervisorDeptTitle', `${dept}${dept && title ? ' / ' : ''}${title}`);
+    updateText('reviewCoSupervisor', formData.get('coSupervisorName'));
+    updateText('reviewCoSupervisorEmail', formData.get('coSupervisorEmail'));
 
-    // Co-authors: prefer dynamic list container (#reviewCoAuthors). If not present, fill up to 3 fallback slots.
+    // Co-authors: prefer dynamic list container (#reviewCoAuthors).
     const reviewList = document.getElementById('reviewCoAuthors');
     const coauthorsContainer = document.getElementById('coauthors') || document.getElementById('coworkers');
     const blocks = coauthorsContainer ? Array.from(coauthorsContainer.querySelectorAll('.coauthor-block, .coworker-block')) : [];
@@ -718,27 +755,18 @@ function updateReviewSection() {
         reviewList.innerHTML = '';
         blocks.forEach((block, i) => {
             const first = block.querySelector('[data-field="first_name"]')?.value || '';
-            const last  = block.querySelector('[data-field="last_name"]')?.value || '';
-            const sid   = block.querySelector('[data-field="student_id"]')?.value || '';
+            const last = block.querySelector('[data-field="last_name"]')?.value || '';
+            const sid = block.querySelector('[data-field="student_id"]')?.value || '';
             const email = block.querySelector('[data-field="email"]')?.value || '';
             if (first || last || sid || email) {
                 const li = document.createElement('li');
-                li.textContent = `${i + 1}. ${first} ${last} (ID: ${sid || '-'}, Email: ${email || '-'})`;
+                li.style.marginBottom = '5px';
+                li.innerHTML = `<span style="color:var(--portal-primary); font-weight:700;">${i + 1}.</span> ${escapeHtml(first)} ${escapeHtml(last)} <br> <small style="opacity:0.8;">ID: ${escapeHtml(sid || '-')}, Email: ${escapeHtml(email || '-')}</small>`;
                 reviewList.appendChild(li);
             }
         });
-    } else {
-        // fallback to old reviewCoworker1/2/3 if present
-        for (let i = 0; i < 3; i++) {
-            const span = document.getElementById(`reviewCoworker${i + 1}`);
-            if (!span) continue;
-            const block = blocks[i];
-            if (!block) { span.textContent = '-'; continue; }
-            const first = block.querySelector('[data-field="first_name"]')?.value || '';
-            const last  = block.querySelector('[data-field="last_name"]')?.value || '';
-            const sid   = block.querySelector('[data-field="student_id"]')?.value || '';
-            const email = block.querySelector('[data-field="email"]')?.value || '';
-            span.textContent = (first || last || sid || email) ? `${first} ${last} (ID: ${sid || ''}, Email: ${email || ''})` : '-';
+        if (blocks.length === 0) {
+            reviewList.innerHTML = '<li style="color:var(--portal-text-light); font-style:italic;">No co-authors added</li>';
         }
     }
 }
@@ -758,14 +786,14 @@ function handleFormSubmission(e) {
     const submitBtn = document.getElementById('submitBtn');
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Submitting...';
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
     }
 
     // Full validation across all sections
     if (!validateForm()) {
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit Thesis';
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Final Submission';
         }
         return;
     }
@@ -788,10 +816,7 @@ function validateForm() {
         }
     }
 
-    // Additional checks (files, academic selection) are covered by the per-section required attributes
-    // but keep extra checks if there are edge cases:
-
-    // Check academic structure explicitly (if those fields somehow not present in required)
+    // Check academic structure explicitly
     const academicLevel = document.getElementById('academic_level')?.value || '';
     const department = document.getElementById('department')?.value || '';
     const course = document.getElementById('course')?.value || '';
@@ -813,41 +838,29 @@ function validateForm() {
    --- Autofill user data ---
    --------------------------- */
 
-/**
- * Autofill form fields with logged-in user's data
- * Only fills fields that are empty (so saved data takes precedence)
- */
 function autofillUserData() {
-    // Check if USER_DATA is available (defined in template)
     if (typeof USER_DATA === 'undefined') return;
-    
+
     const firstNameField = document.getElementById('firstName');
     const lastNameField = document.getElementById('lastName');
     const emailField = document.getElementById('email');
     const studentIdField = document.getElementById('studentId');
-    
-    // Only autofill if field is empty (preserve any saved or manually entered data)
+
     if (firstNameField && !firstNameField.value.trim() && USER_DATA.firstName) {
         firstNameField.value = USER_DATA.firstName;
     }
-    
     if (lastNameField && !lastNameField.value.trim() && USER_DATA.lastName) {
         lastNameField.value = USER_DATA.lastName;
     }
-    
     if (emailField && !emailField.value.trim() && USER_DATA.email) {
         emailField.value = USER_DATA.email;
     }
-    
     if (studentIdField && !studentIdField.value.trim() && USER_DATA.studentId) {
         studentIdField.value = USER_DATA.studentId;
     }
-    
-    // Update review section if any fields were filled
-    if ((firstNameField && firstNameField.value) || 
-        (lastNameField && lastNameField.value) || 
-        (emailField && emailField.value) || 
-        (studentIdField && studentIdField.value)) {
+
+    if ((firstNameField && firstNameField.value) || (lastNameField && lastNameField.value) ||
+        (emailField && emailField.value) || (studentIdField && studentIdField.value)) {
         updateReviewSection();
     }
 }
@@ -864,7 +877,6 @@ function setupAutoSave() {
         input.addEventListener('input', saveFormData);
         input.addEventListener('change', saveFormData);
     });
-    // Auto-save every 30s
     setInterval(saveFormData, 30000);
 }
 
@@ -874,6 +886,7 @@ function saveFormData() {
     const fd = new FormData(form);
     const data = {};
     for (let [key, value] of fd.entries()) {
+        if (value instanceof File) continue; // Skip files
         if (data[key]) {
             if (Array.isArray(data[key])) data[key].push(value);
             else data[key] = [data[key], value];
@@ -894,10 +907,9 @@ function loadSavedData() {
         const form = document.getElementById('thesisForm');
         if (!form) return;
 
-        // First: gather coauthor keys and rebuild dynamic blocks
+        // Restore dynamic blocks
         const coauthorKeys = Object.keys(data).filter(k => /^(coauthors|coworkers)\[\d+\]\[(first_name|last_name|student_id|email)\]$/.test(k));
         if (coauthorKeys.length > 0) {
-            // group by index
             const groups = {};
             coauthorKeys.forEach(k => {
                 const m = k.match(/^(?:coauthors|coworkers)\[(\d+)\]\[(.+)\]$/);
@@ -908,52 +920,67 @@ function loadSavedData() {
                 groups[idx][field] = data[k];
             });
 
-            // create blocks in sorted order (and reindex to sequential)
             const container = document.getElementById('coauthors') || document.getElementById('coworkers');
             if (container) {
-                // remove existing dynamic blocks first
                 container.innerHTML = '';
                 const sortedIndexes = Object.keys(groups).map(x => parseInt(x, 10)).sort((a, b) => a - b);
                 sortedIndexes.forEach((origIdx, newIndex) => {
                     createCoauthorBlock(container, newIndex, groups[origIdx]);
                 });
-                // Reindex to ensure sequential names (createCoauthorBlock uses the newIndex we passed)
             }
         }
 
         // Then restore other inputs
-        Object.keys(data).forEach(key => {
-            // Skip coauthors keys handled above
-            if (/^(coauthors|coworkers)\[\d+\]\[(first_name|last_name|student_id|email)\]$/.test(key)) return;
+        const staticKeys = Object.keys(data).filter(key =>
+            !/^(coauthors|coworkers)\[\d+\]\[(first_name|last_name|student_id|email)\]$/.test(key)
+        );
 
+        for (let key of staticKeys) {
             const input = form.querySelector(`[name="${key}"]`);
-            if (!input) return;
+            if (!input) continue;
+
             if (input.type === 'checkbox') {
                 input.checked = data[key] === 'on' || data[key] === true;
             } else if (input.type === 'file') {
-                // cannot restore file inputs
+                // Ignore
             } else {
                 input.value = data[key];
+
+                // Special handling for cascading selects
+                if (key === 'academic_level' && data[key]) {
+                    loadDepartments().then(() => {
+                        if (data['department']) {
+                            const deptSelect = document.getElementById('department');
+                            if (deptSelect) {
+                                deptSelect.value = data['department'];
+                                loadCourses().then(() => {
+                                    if (data['course']) {
+                                        const csSelect = document.getElementById('course');
+                                        if (csSelect) csSelect.value = data['course'];
+                                        updateReviewSection();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
             }
-        });
+        }
 
         updateReviewSection();
-        showAlert('Previous form data has been restored.', 'info');
+        if (typeof showNotification === 'function') {
+            showNotification('Restored your previous draft.', 'info', 3000);
+        }
     } catch (error) {
         console.error('Error loading saved data:', error);
     }
 }
 
 function updateSaveIndicator(saved = false) {
-    const metaChip = document.querySelector('.meta-chip .dot.success');
+    const metaChip = document.querySelector('.meta-chip');
     if (!metaChip) return;
-    if (saved) {
-        metaChip.style.backgroundColor = '#28a745';
-        metaChip.title = 'Last saved: ' + new Date().toLocaleTimeString();
-    } else {
-        metaChip.style.backgroundColor = '#ffc107';
-        metaChip.title = 'Unsaved changes';
-    }
+    const dot = metaChip.querySelector('.dot');
+    if (dot) dot.style.backgroundColor = saved ? '#22c55e' : '#f59e0b';
 }
 
 function clearSavedData() {
@@ -966,14 +993,31 @@ function clearSavedData() {
    --------------------------- */
 
 function showAlert(message, type) {
-    // remove non-info alerts
+    // Attempt to use showNotification if available in utils.js
+    if (typeof showNotification === 'function') {
+        showNotification(message, type);
+        return;
+    }
+
+    // Fallback to inline alert
     const existingAlerts = document.querySelectorAll('.alert');
-    existingAlerts.forEach(alert => {
-        if (!alert.classList.contains('alert-info')) alert.remove();
-    });
-    const activeSection = document.querySelector('.section.active') || document.body;
+    existingAlerts.forEach(alert => alert.remove());
+
+    const activeSection = document.querySelector('.form-section.active') || document.body;
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
+    alert.style.cssText = 'padding: 15px; margin-bottom: 20px; border-radius: 12px; font-weight: 600; border-left: 5px solid;';
+
+    if (type === 'error') {
+        alert.style.backgroundColor = '#fbecec';
+        alert.style.color = '#a31d23';
+        alert.style.borderColor = '#a31d23';
+    } else {
+        alert.style.backgroundColor = '#f0fdf4';
+        alert.style.color = '#15803d';
+        alert.style.borderColor = '#22c55e';
+    }
+
     alert.textContent = message;
     activeSection.insertBefore(alert, activeSection.firstChild);
     setTimeout(() => { alert.remove(); }, 5000);

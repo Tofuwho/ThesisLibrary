@@ -848,7 +848,7 @@ def change_password(request, user_id):
     return JsonResponse({"success": False, "message": "Invalid request."})
 
 def pending_submissions(request):
-    theses = Submission.objects.filter(status='Pending').order_by('-created_at')
+    theses = Submission.objects.filter(status='pending').order_by('-created_at')
     return render(request, 'main/pending_submissions.html', {'theses': theses})
 
 @login_required
@@ -1332,6 +1332,7 @@ def create_submission(request):
         errors.append('Course/Program is required')
 
     if errors:
+        print(f"Submission validation errors: {errors}")
         messages.error(request, 'Please correct the following errors: ' + ', '.join(errors))
         return redirect('student_dashboard')
 
@@ -1444,6 +1445,9 @@ def create_submission(request):
         return redirect('my_submissions')
         
     except Exception as e:
+        import traceback
+        print(f"EXCEPTION in create_submission: {str(e)}")
+        print(traceback.format_exc())
         messages.error(request, f'Error submitting thesis: {str(e)}')
         return redirect('student_dashboard')
 
