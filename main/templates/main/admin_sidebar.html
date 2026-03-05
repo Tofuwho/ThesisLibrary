@@ -81,4 +81,108 @@
       </li>
     </ul>
   </nav>
+
+  <!-- Profile Mini-Card at bottom of sidebar -->
+  <a href="{% url 'profile_card' %}" class="sidebar-profile-card">
+    <div class="sidebar-profile-avatar">
+      {{ user.username|slice:":2"|upper }}
+    </div>
+    <div class="sidebar-profile-info">
+      <strong>{{ user.username }}</strong>
+      <span>{% if user.is_staff %}Administrator{% else %}Student{% endif %}</span>
+    </div>
+    <i class="fas fa-chevron-right sidebar-profile-arrow"></i>
+  </a>
 </aside>
+
+<style>
+  .admin-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .sidebar-nav {
+    flex: 1 !important;
+    overflow-y: auto !important;
+  }
+
+  /* Profile mini-card at sidebar bottom */
+  .sidebar-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 12px 16px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, rgba(163, 29, 35, 0.07), rgba(123, 13, 17, 0.1));
+    border: 1px solid rgba(163, 29, 35, 0.15);
+    border-radius: 14px;
+    text-decoration: none !important;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  .sidebar-profile-card:hover {
+    background: linear-gradient(135deg, rgba(163, 29, 35, 0.14), rgba(123, 13, 17, 0.18));
+    transform: translateX(3px);
+    border-color: rgba(163, 29, 35, 0.35);
+  }
+
+  .sidebar-profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #a31d23, #7b0d11);
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(163, 29, 35, 0.25);
+  }
+
+  .sidebar-profile-info {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .sidebar-profile-info strong {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #2d3436;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar-profile-info span {
+    font-size: 0.75rem;
+    color: #a31d23;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .sidebar-profile-arrow {
+    font-size: 0.7rem;
+    color: #a31d23;
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+
+  /* Hide profile card text labels in collapsed (80px) sidebar mode */
+  @media (max-width: 1024px) {
+    .sidebar-profile-card {
+      justify-content: center;
+      padding: 10px;
+      margin: 0 6px 12px;
+    }
+
+    .sidebar-profile-info,
+    .sidebar-profile-arrow {
+      display: none;
+    }
+  }
+</style>
