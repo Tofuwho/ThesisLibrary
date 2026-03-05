@@ -25,9 +25,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-i+likm1gpl%k^(o6&9=huc@)6ln0ck5+trst4h-4pb4!uv*m58'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Set the DEBUG_MODE environment variable to 'False' before deploying.
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') != 'False'
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*"] if DEBUG else [
+    "localhost",
+    "127.0.0.1",
+    # Add your production domain here, e.g.: "thesis.tcu.edu.ph"
+]
 
 
 # Application definition
@@ -172,28 +177,34 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_FAILURE_VIEW = "main.views.csrf_failure"
 
+# -------------------------------------------------------
 # Email Configuration
-# IMPORTANT: To use Gmail, you need to:
-# 1. Enable 2-Factor Authentication on your Google account
-# 2. Generate an App Password: https://myaccount.google.com/apppasswords
-# 3. Use that App Password (16 characters) as EMAIL_HOST_PASSWORD
-# 4. Replace 'your-email@gmail.com' with your actual Gmail address
-
-# For development/testing - prints to console (comment out to disable)
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# For production - Gmail SMTP (uncomment and configure)
+# Credentials are read from environment variables.
+# For local dev you can set them directly here, but
+# NEVER commit real passwords to version control.
+# -------------------------------------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'your-email@gmail.com')  # Set via environment variable or replace directly
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'your-app-password')  # Set via environment variable or replace directly
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'your-email@gmail.com')  # Set via environment variable or replace directly
 
-# Verification code settings
+# Fallback to hardcoded values for local dev; override via env vars in production.
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER',     'Thesislibrarycode@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'hcbv ztml cymy omxe')
+DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL',  'Thesislibrarycode@gmail.com')
+
 VERIFICATION_CODE_EXPIRY_HOURS = 24  # Codes expire after 24 hours
 
-EMAIL_HOST_USER = 'Thesislibrarycode@gmail.com'
-EMAIL_HOST_PASSWORD = 'hcbv ztml cymy omxe'  # Your generated app password
-DEFAULT_FROM_EMAIL = 'Thesislibrarycode@gmail.com'
+# -------------------------------------------------------
+# Production security hardening (auto-enabled when DEBUG=False)
+# -------------------------------------------------------
+if not DEBUG:
+    SECURE_HSTS_SECONDS            = 31536000   # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD            = True
+    SECURE_SSL_REDIRECT            = True       # redirect all HTTP → HTTPS
+    SESSION_COOKIE_SECURE          = True
+    CSRF_COOKIE_SECURE             = True
+    SECURE_CONTENT_TYPE_NOSNIFF    = True
+    SECURE_BROWSER_XSS_FILTER      = True
+    X_FRAME_OPTIONS                = 'DENY'

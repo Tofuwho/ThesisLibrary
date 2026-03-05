@@ -83,7 +83,7 @@
 <div class="admin-layout">
   {% include 'main/admin_sidebar.html' %}
 
-  <main class="admin-main">
+  <div class="admin-main">
     <a href="{% url 'professors_list' %}" class="back-btn">← Back to Professors</a>
 
     <div class="dashboard-header">
@@ -118,6 +118,6 @@
         <button type="submit" class="submit-btn">Update Professor</button>
       </form>
     </div>
-  </main>
+  </div>
 </div>
 {% endblock %}
