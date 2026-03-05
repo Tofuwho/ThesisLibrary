@@ -103,7 +103,7 @@
             </aside>
 
             <!-- Main Form Content -->
-            <main class="portal-main">
+            <div class="portal-main">
                 <form id="thesisForm" action="{% url 'create_submission' %}" method="POST" enctype="multipart/form-data"
                     class="portal-form">
                     {% csrf_token %}
@@ -462,7 +462,7 @@
                         </div>
                     </section>
                 </form>
-            </main>
+            </div>
         </div>
     </div>
 </div>
