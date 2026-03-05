@@ -127,12 +127,12 @@
         <table id="logTable" style="width:100%; border-collapse:collapse;">
           <thead>
             <tr style="background-color:#f8f9fa;">
-              <th style="text-align:left; padding:0.8rem;">Action Time</th>
+              <th style="text-align:left; padding:0.8rem;">Timestamp</th>
               <th style="text-align:left; padding:0.8rem;">User</th>
-              <th style="text-align:left; padding:0.8rem;">Content Type</th>
-              <th style="text-align:left; padding:0.8rem;">Object</th>
-              <th style="text-align:left; padding:0.8rem;">Action</th>
-              <th style="text-align:left; padding:0.8rem;">Message</th>
+              <th style="text-align:left; padding:0.8rem;">System Module</th>
+              <th style="text-align:left; padding:0.8rem;">Specific Item</th>
+              <th style="text-align:left; padding:0.8rem;">Action Taken</th>
+              <th style="text-align:left; padding:0.8rem;">Details</th>
             </tr>
           </thead>
           <tbody>
@@ -140,21 +140,23 @@
             <tr style="border-bottom:1px solid #eee;">
               <td style="padding:0.8rem; color:#0277bd;">{{ entry.action_time|date:"M d, Y h:i a" }}</td>
               <td style="padding:0.8rem; color:#333;">{{ entry.user }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ entry.content_type }}</td>
+              <td style="padding:0.8rem; color:#333; text-transform: capitalize;">
+                {{ entry.content_type.model }}
+              </td>
               <td style="padding:0.8rem; color:#333;">{{ entry.object_repr }}</td>
               <td style="padding:0.8rem;">
                 {% if entry.action_flag == 1 %}
                 <span
-                  style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Addition</span>
+                  style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Created</span>
                 {% elif entry.action_flag == 2 %}
                 <span
-                  style="background:#ffb300; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Change</span>
+                  style="background:#ffb300; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Updated</span>
                 {% elif entry.action_flag == 3 %}
                 <span
-                  style="background:#e53935; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Deletion</span>
+                  style="background:#e53935; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Removed</span>
                 {% else %}
-                <span
-                  style="background:#777; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Other</span>
+                <span style="background:#777; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">System
+                  Task</span>
                 {% endif %}
               </td>
               <td style="padding:0.8rem; color:#555; font-style:italic;">{{ entry.change_message }}</td>
