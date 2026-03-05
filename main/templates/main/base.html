@@ -17,6 +17,34 @@
 <body class="{% block body_class %}{% endblock %}">
     {% include 'includes/header.html' %}
     <main>
+        {% if messages %}
+        <div class="messages-container"
+            style="position: fixed; top: 80px; right: 20px; z-index: 9999; max-width: 400px; width: 100%;">
+            {% for message in messages %}
+            <div class="notification notification-{{ message.tags|default:'info' }}"
+                style="margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; padding: 15px; border-radius: 10px; background: white; border-left: 5px solid {% if message.tags == 'error' %}#ef4444{% elif message.tags == 'success' %}#22c55e{% else %}#3b82f6{% endif %};">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"
+                        style="color: {% if message.tags == 'error' %}#ef4444{% elif message.tags == 'success' %}#22c55e{% else %}#3b82f6{% endif %};"></i>
+                    <span style="font-weight: 500;">{{ message }}</span>
+                </div>
+                <button onclick="this.parentElement.remove()"
+                    style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem;">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        <script>
+            // Auto-hide messages after 5 seconds
+            setTimeout(() => {
+                const containers = document.querySelectorAll('.messages-container');
+                containers.forEach(container => {
+                    container.style.transition = 'opacity 0.5s ease';
+                    container.style.opacity = '0';
+                    setTimeout(() => container.remove(), 500);
+                });
+            }, 5000);
+        </script>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 

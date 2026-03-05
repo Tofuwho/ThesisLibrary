@@ -1,11 +1,20 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Submission Portal - Thesis Library{% endblock %}
+{% block title %}Submission Portal — TCU Thesis Library{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/student.css' %}">
+<style>
+    /* Local override for body padding to handle fixed header */
+    body.portal-page>main {
+        margin-top: 70px;
+        padding: 0;
+    }
+</style>
 {% endblock %}
+
+{% block body_class %}portal-page{% endblock %}
 
 {% block extra_scripts %}
 <script src="{% static 'js/student.js' %}"></script>
@@ -21,334 +30,439 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="dashboard-header hero-box">
-        <div class="header-content">
-            <h1>Academic Research Submission Portal</h1>
-            <p>Submit your thesis and track your progress through our comprehensive academic review process. Your research journey starts here.</p>
-            <div class="header-meta">
-                <span class="meta-chip"><span class="dot status"></span>Submission Status: Draft</span>
-                <span class="meta-chip"><span class="dot success"></span>Auto-save Enabled</span>
-                <span class="meta-chip"><span class="dot info"></span>Welcome, {{ user.first_name|default:user.username }}</span>
-            </div>
-        </div>
-    </div>
+<div class="portal-wrapper">
+    <div class="portal-container">
 
-    <div class="dashboard-grid">
-        <div class="sidebar">
-            <div class="nav-item active" data-section="basic-info">
-                <div class="nav-icon">1</div>
-                Personal & Academic Information
+        <!-- Modern Hero Section -->
+        <header class="portal-hero">
+            <div class="hero-brand">
+                <img src="{% static 'img/tcu-logo.png' %}" alt="TCU Logo" class="hero-logo"
+                    onerror="this.src='https://via.placeholder.com/60'">
+                <div class="hero-text">
+                    <h1>Academic Submission Portal</h1>
+                    <p>Begin your research journey with Taguig City University</p>
+                </div>
             </div>
-            <div class="nav-item" data-section="upload">
-                <div class="nav-icon">2</div>
-                Document Upload
+            <div class="hero-status">
+                <div class="status-indicator">
+                    <span class="dot pulse"></span>
+                    <span>Ready for Submission</span>
+                </div>
+                <div class="user-welcome">
+                    Welcome, <strong>{{ user.first_name|default:user.username }}</strong>
+                </div>
             </div>
-            <div class="nav-item" data-section="supervisor">
-                <div class="nav-icon">3</div>
-                Academic Supervision
-            </div>
-            <div class="nav-item" data-section="thesis-details">
-                <div class="nav-icon">4</div>
-                Research Details & Abstract
-            </div>
-            <div class="nav-item" data-section="review">
-                <div class="nav-icon">5</div>
-                Final Review & Submission
-            </div>
-        </div>
+        </header>
 
-        <div class="main-content">
-            <form id="thesisForm" action="{% url 'create_submission' %}" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                
-                <!-- Basic Information Section -->
-                <div class="section active" id="basic-info">
-                    <h2>Personal & Academic Information</h2>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 20%"></div>
-                    </div>
+        <div class="portal-layout">
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="firstName">First Name *</label>
-                            <input type="text" id="firstName" name="firstName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="lastName">Last Name *</label>
-                            <input type="text" id="lastName" name="lastName" required>
+            <!-- Step Navigation Sidebar -->
+            <aside class="portal-sidebar">
+                <div class="sidebar-steps">
+                    <div class="nav-step active" data-section="basic-info">
+                        <div class="step-num">01</div>
+                        <div class="step-info">
+                            <span class="step-label">Step 1</span>
+                            <span class="step-title">Personal Info</span>
                         </div>
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="studentId">Student ID *</label>
-                            <input type="text" id="studentId" name="studentId" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email Address *</label>
-                            <input type="email" id="email" name="email" required>
+                    <div class="nav-step" data-section="upload">
+                        <div class="step-num">02</div>
+                        <div class="step-info">
+                            <span class="step-label">Step 2</span>
+                            <span class="step-title">Documents</span>
                         </div>
                     </div>
-
-                    <!-- Academic Structure Section -->
-                    <h3>Academic Information</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="academic_level">Academic Level *</label>
-                            <select id="academic_level" name="academic_level" required onchange="loadDepartments()">
-                                <option value="">Select Academic Level</option>
-                                {% for category in categories %}
-                                <option value="{{ category.id }}">{{ category.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="department">Department *</label>
-                            <select id="department" name="department" required onchange="loadCourses()" disabled>
-                                <option value="">Select Department</option>
-                            </select>
+                    <div class="nav-step" data-section="supervisor">
+                        <div class="step-num">03</div>
+                        <div class="step-info">
+                            <span class="step-label">Step 3</span>
+                            <span class="step-title">Supervision</span>
                         </div>
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="course">Course/Program *</label>
-                            <select id="course" name="course" required disabled>
-                                <option value="">Select Course</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="year">Year *</label>
-                            <input type="number" id="year" name="year" min="2000" max="2030" value="2025" required>
+                    <div class="nav-step" data-section="thesis-details">
+                        <div class="step-num">04</div>
+                        <div class="step-info">
+                            <span class="step-label">Step 4</span>
+                            <span class="step-title">Thesis Details</span>
                         </div>
                     </div>
-
-                    <!-- Co-Authors Section -->
-                    <h3>Co-Authors (Optional)</h3>
-                    <div id="coauthors"></div>
-                    
-                    <!-- Add button -->
-                    <div class="form-actions">
-                        <button type="button" class="btn" id="addCoAuthorBtn">+ Add Co-Author</button>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="btn" onclick="nextSection('upload')">Next</button>
+                    <div class="nav-step" data-section="review">
+                        <div class="step-num">05</div>
+                        <div class="step-info">
+                            <span class="step-label">Step 5</span>
+                            <span class="step-title">Final Review</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Thesis Details Section -->
-                <div class="section" id="thesis-details">
-                    <h2>Research Details & Abstract</h2>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 80%"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="thesisTitle">Thesis Title *</label>
-                        <input type="text" id="thesisTitle" name="thesisTitle" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="abstract">Abstract</label>
-                        <textarea id="abstract" name="abstract" placeholder="Abstract will be automatically extracted from your PDF file. You can edit it here if needed."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="keywords">Keywords *</label>
-                        <input type="text" id="keywords" name="keywords" placeholder="Enter keywords separated by commas" required>
-                    </div>
-
-                    <!-- Research category removed -->
-
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="previousSection('supervisor')">Previous</button>
-                        <button type="button" class="btn" onclick="nextSection('review')">Next</button>
-                    </div>
+                <div class="sidebar-help">
+                    <i class="fas fa-question-circle"></i>
+                    <p>Need help with your submission? Contact the library staff.</p>
                 </div>
+            </aside>
 
-                <!-- File Upload Section -->
-                <div class="section" id="upload">
-                    <h2>Document Upload</h2>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 40%"></div>
-                    </div>
+            <!-- Main Form Content -->
+            <main class="portal-main">
+                <form id="thesisForm" action="{% url 'create_submission' %}" method="POST" enctype="multipart/form-data"
+                    class="portal-form">
+                    {% csrf_token %}
 
-                    <div class="form-group">
-                        <label>Thesis Document (PDF) *</label>
-                        <div class="file-upload" onclick="document.getElementById('thesisFile').click()">
-                            <div class="upload-icon">📄</div>
-                            <h4>Click to upload or drag and drop</h4>
-                            <p>PDF files only (Max 50MB)</p>
-                            <input type="file" id="thesisFile" name="thesisFile" accept=".pdf" required>
+                    <!-- 1. Basic Info Section -->
+                    <section class="form-section active" id="basic-info">
+                        <div class="section-header">
+                            <h2>Personal & Academic Information</h2>
+                            <p>Verify your details and choose your academic program.</p>
                         </div>
-                        <div class="file-list" id="thesisFileList"></div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Approval Sheet *</label>
-                        <div class="file-upload" onclick="document.getElementById('approvalSheet').click()">
-                            <div class="upload-icon">✅</div>
-                            <h4>Click to upload approval sheet</h4>
-                            <p>PDF, JPG, JPEG, PNG files only (Max 10MB)</p>
-                            <input type="file" id="approvalSheet" name="approval_sheet" accept=".pdf,.jpg,.jpeg,.png" required>
-                        </div>
-                        <div class="file-list" id="approvalSheetList"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Supporting Documents (Optional)</label>
-                        <div class="file-upload" onclick="document.getElementById('supportingFiles').click()">
-                            <div class="upload-icon">📎</div>
-                            <h4>Click to upload additional files</h4>
-                            <p>PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, ZIP, RAR (Max 10MB each)</p>
-                            <input type="file" id="supportingFiles" name="supportingFiles[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar">
-                        </div>
-                        <div class="file-list" id="supportingFilesList"></div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="previousSection('basic-info')">Previous</button>
-                        <button type="button" class="btn" onclick="nextSection('supervisor')">Next</button>
-                    </div>
-                </div>
-
-                <!-- Supervisor Information Section -->
-                <div class="section" id="supervisor">
-                    <h2>Academic Supervision</h2>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 60%"></div>
-                    </div>
-
-                    <div class="supervisor-info">
-                        <h4>Primary Supervisor</h4>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="supervisorName">Supervisor Name *</label>
-                                <input type="text" id="supervisorName" name="supervisorName" required>
+                        <div class="section-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="firstName">First Name <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-user"></i>
+                                        <input type="text" id="firstName" name="firstName" placeholder="e.g. Juan"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Last Name <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-user"></i>
+                                        <input type="text" id="lastName" name="lastName" placeholder="e.g. Dela Cruz"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="studentId">Student ID <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-id-card"></i>
+                                        <input type="text" id="studentId" name="studentId" placeholder="202X-XXXXX"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email Address <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-envelope"></i>
+                                        <input type="email" id="email" name="email" placeholder="email@example.com"
+                                            required>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="supervisorEmail">Supervisor Email *</label>
-                                <input type="email" id="supervisorEmail" name="supervisorEmail" required>
+
+                            <hr class="form-divider">
+                            <h3>Academic Details</h3>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="academic_level">Academic Level <span class="required">*</span></label>
+                                    <select id="academic_level" name="academic_level" required
+                                        onchange="loadDepartments()">
+                                        <option value="">Select Level</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="department">Department <span class="required">*</span></label>
+                                    <select id="department" name="department" required onchange="loadCourses()"
+                                        disabled>
+                                        <option value="">Select Department</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="course">Course / program <span class="required">*</span></label>
+                                    <select id="course" name="course" required disabled>
+                                        <option value="">Select Course</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="year">Academic Year <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-calendar"></i>
+                                        <input type="number" id="year" name="year" min="2000" max="2100" value="2026"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="form-divider">
+                            <div class="co-authors-wrapper">
+                                <h3>Co-Authors <span class="optional">(Optional)</span></h3>
+                                <div id="coauthors" class="coauthors-list"></div>
+                                <button type="button" class="btn-add-secondary" id="addCoAuthorBtn">
+                                    <i class="fas fa-plus"></i> Add Co-Author
+                                </button>
                             </div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="supervisorDepartment">Department</label>
-                                <input type="text" id="supervisorDepartment" name="supervisorDepartment">
+
+                        <div class="form-footer">
+                            <div class="spacer"></div>
+                            <button type="button" class="btn-primary" onclick="nextSection('upload')">
+                                Next Step <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- 2. Document Upload Section -->
+                    <section class="form-section" id="upload">
+                        <div class="section-header">
+                            <h2>Document Upload</h2>
+                            <p>Upload your final thesis PDF and supporting files.</p>
+                        </div>
+
+                        <div class="section-body">
+                            <div class="upload-area">
+                                <label>Thesis Manuscript (PDF Only) <span class="required">*</span></label>
+                                <div class="drop-zone" onclick="document.getElementById('thesisFile').click()"
+                                    id="thesisDropZone">
+                                    <div class="drop-zone-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="drop-zone-text">
+                                        <strong>Click to upload</strong> or drag and drop manuscript
+                                        <span>Maximum file size: 50MB</span>
+                                    </div>
+                                    <input type="file" id="thesisFile" name="thesisFile" accept=".pdf" required hidden>
+                                </div>
+                                <div id="thesisFileList" class="file-preview-list"></div>
                             </div>
-                            <div class="form-group">
-                                <label for="supervisorTitle">Title/Position</label>
-                                <input type="text" id="supervisorTitle" name="supervisorTitle" placeholder="e.g., Professor, Dr., etc.">
+
+                            <div class="upload-area">
+                                <label>Approval Sheet (Signed) <span class="required">*</span></label>
+                                <div class="drop-zone small" onclick="document.getElementById('approvalSheet').click()"
+                                    id="approvalSheetDropZone">
+                                    <div class="drop-zone-icon"><i class="fas fa-check-circle"></i></div>
+                                    <div class="drop-zone-text">Upload signed approval sheet</div>
+                                    <input type="file" id="approvalSheet" name="approval_sheet"
+                                        accept=".pdf,.jpg,.jpeg,.png" required hidden>
+                                </div>
+                                <div id="approvalSheetList" class="file-preview-list"></div>
+                            </div>
+
+                            <div class="upload-area">
+                                <label>Supporting Documents <span class="optional">(Optional)</span></label>
+                                <div class="drop-zone small"
+                                    onclick="document.getElementById('supportingFiles').click()"
+                                    id="supportingDropZone">
+                                    <div class="drop-zone-icon"><i class="fas fa-paperclip"></i></div>
+                                    <div class="drop-zone-text">Upload extra files (ZIP, DOCX, etc.)</div>
+                                    <input type="file" id="supportingFiles" name="supportingFiles[]" multiple
+                                        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar" hidden>
+                                </div>
+                                <div id="supportingFilesList" class="file-preview-list"></div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="supervisor-info">
-                        <h4>Co-Supervisor (Optional)</h4>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="coSupervisorName">Co-Supervisor Name</label>
-                                <input type="text" id="coSupervisorName" name="coSupervisorName">
+                        <div class="form-footer">
+                            <button type="button" class="btn-ghost" onclick="previousSection('basic-info')">
+                                <i class="fas fa-arrow-left"></i> Previous
+                            </button>
+                            <button type="button" class="btn-primary" onclick="nextSection('supervisor')">
+                                Next Step <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- 3. Supervisor Section -->
+                    <section class="form-section" id="supervisor">
+                        <div class="section-header">
+                            <h2>Academic Supervision</h2>
+                            <p>Provide contact information for your thesis supervisors.</p>
+                        </div>
+
+                        <div class="section-body">
+                            <div class="supervisor-card primary">
+                                <div class="card-tag">Primary Supervisor</div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="supervisorName">Supervisor Name <span
+                                                class="required">*</span></label>
+                                        <input type="text" id="supervisorName" name="supervisorName"
+                                            placeholder="Full Name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="supervisorEmail">Email Address <span
+                                                class="required">*</span></label>
+                                        <input type="email" id="supervisorEmail" name="supervisorEmail"
+                                            placeholder="supervisor@tcu.edu.ph" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="supervisorDepartment">Department</label>
+                                        <input type="text" id="supervisorDepartment" name="supervisorDepartment"
+                                            placeholder="e.g. CS Department">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="supervisorTitle">Academic Title</label>
+                                        <input type="text" id="supervisorTitle" name="supervisorTitle"
+                                            placeholder="e.g. Dr., Professor">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="coSupervisorEmail">Co-Supervisor Email</label>
-                                <input type="email" id="coSupervisorEmail" name="coSupervisorEmail">
+
+                            <div class="supervisor-card">
+                                <div class="card-tag secondary">Co-Supervisor (Optional)</div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="coSupervisorName">Name</label>
+                                        <input type="text" id="coSupervisorName" name="coSupervisorName">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="coSupervisorEmail">Email</label>
+                                        <input type="email" id="coSupervisorEmail" name="coSupervisorEmail">
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="previousSection('upload')">Previous</button>
-                        <button type="button" class="btn" onclick="nextSection('thesis-details')">Next</button>
-                    </div>
-                </div>
+                        <div class="form-footer">
+                            <button type="button" class="btn-ghost" onclick="previousSection('upload')">
+                                <i class="fas fa-arrow-left"></i> Previous
+                            </button>
+                            <button type="button" class="btn-primary" onclick="nextSection('thesis-details')">
+                                Next Step <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </section>
 
-                <!-- Review & Submit Section -->
-                <div class="section" id="review">
-                    <h2>Final Review & Submission</h2>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 100%"></div>
-                    </div>
+                    <!-- 4. Thesis Details Section -->
+                    <section class="form-section" id="thesis-details">
+                        <div class="section-header">
+                            <h2>Thesis Metadata</h2>
+                            <p>Enter the specifics about your research for cataloging.</p>
+                        </div>
 
-                    <div class="alert alert-info">
-                        <strong>Review your submission carefully.</strong> Once submitted, you will not be able to make changes without contacting your supervisor.
-                    </div>
+                        <div class="section-body">
+                            <div class="form-group full-width">
+                                <label for="thesisTitle">Thesis Title <span class="required">*</span></label>
+                                <textarea id="thesisTitle" name="thesisTitle" class="title-textarea"
+                                    placeholder="Enter your full thesis title..." required></textarea>
+                            </div>
 
-                    <div class="summary-card">
-                        <h3>Submission Summary</h3>
-                        <div class="summary-item">
-                            <span><strong>Student:</strong></span>
-                            <span id="reviewStudentName">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Student ID:</strong></span>
-                            <span id="reviewStudentId">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Email:</strong></span>
-                            <span id="reviewSubmitterEmail">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Academic Level:</strong></span>
-                            <span id="reviewAcademicLevel">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Department:</strong></span>
-                            <span id="reviewDepartment">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Course/Program:</strong></span>
-                            <span id="reviewCourse">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Year:</strong></span>
-                            <span id="reviewYear">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Thesis Title:</strong></span>
-                            <span id="reviewThesisTitle">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Abstract:</strong></span>
-                            <span id="reviewAbstract">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Keywords:</strong></span>
-                            <span id="reviewKeywords">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Primary Supervisor:</strong></span>
-                            <span id="reviewSupervisor">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Co-Supervisor:</strong></span>
-                            <span id="reviewCoSupervisor">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span><strong>Co-Authors:</strong></span>
-                            <ul id="reviewCoAuthors"></ul>
-                        </div>                        
-                        <div class="summary-item">
-                            <span><strong>Status:</strong></span>
-                            <span class="status-badge status-draft">Draft</span>
-                        </div>
-                    </div>
+                            <div class="form-group full-width">
+                                <label for="abstract">Abstract</label>
+                                <div class="abstract-wrapper">
+                                    <textarea id="abstract" name="abstract" class="abstract-textarea"
+                                        placeholder="Paste your research abstract here..."></textarea>
+                                    <div class="ai-hint">
+                                        <i class="fas fa-magic"></i> Hint: Uploading your PDF will attempt to
+                                        auto-extract this for you.
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="confirmSubmission" name="confirmSubmission" required>
-                            I confirm that all information provided is accurate and complete. I understand that this submission will be reviewed by my supervisor and the academic committee.
-                        </label>
-                    </div>
+                            <div class="form-group full-width">
+                                <label for="keywords">Keywords <span class="required">*</span></label>
+                                <input type="text" id="keywords" name="keywords"
+                                    placeholder="research, technology, education, etc. (Separate by commas)" required>
+                            </div>
+                        </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="previousSection('thesis-details')">Previous</button>
-                        <button type="submit" class="btn" id="submitBtn">Submit Thesis</button>
-                    </div>
-                </div>
-            </form>
+                        <div class="form-footer">
+                            <button type="button" class="btn-ghost" onclick="previousSection('supervisor')">
+                                <i class="fas fa-arrow-left"></i> Previous
+                            </button>
+                            <button type="button" class="btn-primary" onclick="nextSection('review')">
+                                Next Step <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- 5. Review Section -->
+                    <section class="form-section" id="review">
+                        <div class="section-header">
+                            <h2>Review & Finalize</h2>
+                            <p>Please double-check all information before submitting.</p>
+                        </div>
+
+                        <div class="section-body">
+                            <div class="review-summary">
+                                <div class="review-group">
+                                    <h3>Personal Details</h3>
+                                    <div class="review-list">
+                                        <div class="review-item"><span>Submitter:</span><strong
+                                                id="reviewStudentName">-</strong></div>
+                                        <div class="review-item"><span>Student ID:</span><strong
+                                                id="reviewStudentId">-</strong></div>
+                                        <div class="review-item"><span>Email:</span><strong
+                                                id="reviewSubmitterEmail">-</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="review-group">
+                                    <h3>Academic Details</h3>
+                                    <div class="review-list">
+                                        <div class="review-item"><span>Level:</span><strong
+                                                id="reviewAcademicLevel">-</strong></div>
+                                        <div class="review-item"><span>Department:</span><strong
+                                                id="reviewDepartment">-</strong></div>
+                                        <div class="review-item"><span>Course:</span><strong
+                                                id="reviewCourse">-</strong></div>
+                                        <div class="review-item"><span>Year:</span><strong id="reviewYear">-</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="review-group">
+                                    <h3>Supervision Details</h3>
+                                    <div class="review-list">
+                                        <div class="review-item"><span>Primary Supervisor:</span><strong
+                                                id="reviewSupervisor">-</strong></div>
+                                        <div class="review-item"><span>Email:</span><strong
+                                                id="reviewSupervisorEmail">-</strong></div>
+                                        <div class="review-item"><span>Dept/Title:</span><strong
+                                                id="reviewSupervisorDeptTitle">-</strong></div>
+                                        <div class="review-item"><span>Co-Supervisor:</span><strong
+                                                id="reviewCoSupervisor">-</strong></div>
+                                        <div class="review-item"><span>Co-Sub Email:</span><strong
+                                                id="reviewCoSupervisorEmail">-</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="review-group full-width">
+                                    <h3>Thesis Content</h3>
+                                    <div class="review-list block">
+                                        <div class="review-item"><span>Full Title:</span><strong id="reviewThesisTitle"
+                                                class="text-wrap">-</strong></div>
+                                        <div class="review-item"><span>Abstract:</span><strong id="reviewAbstract"
+                                                class="text-wrap">-</strong></div>
+                                        <div class="review-item"><span>Keywords:</span><strong
+                                                id="reviewKeywords">-</strong></div>
+                                        <div class="review-item">
+                                            <span>Co-Authors:</span>
+                                            <ul id="reviewCoAuthors" class="review-sub-list"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="final-agreement">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" id="confirmSubmission" name="confirmSubmission" required>
+                                    <span class="checkmark"></span>
+                                    <span class="label-text">
+                                        I certify that this submission is my own original work and complies with
+                                        university plagiarism policies.
+                                        I understand that once submitted, this manuscript will be reviewed for
+                                        acceptance into the TCU library.
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-footer">
+                            <button type="button" class="btn-ghost" onclick="previousSection('thesis-details')">
+                                <i class="fas fa-arrow-left"></i> Previous
+                            </button>
+                            <button type="submit" class="btn-submit" id="submitBtn">
+                                <i class="fas fa-paper-plane"></i> Final Submission
+                            </button>
+                        </div>
+                    </section>
+                </form>
+            </main>
         </div>
     </div>
 </div>
