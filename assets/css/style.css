@@ -125,10 +125,12 @@ header {
   padding: 0 20px;
 }
 
-main {
+main,
+.main-content {
   flex: 1;
   margin-top: 70px;
 }
+
 
 a {
   text-decoration: none;

@@ -45,7 +45,7 @@
                             <li>
                                 <label>
                                     <input type="checkbox" name="year" value="{{ year.year }}" {% if
-                                        year.year|stringformat:"s" in request.GET.getlist 'year' %}checked{% endif %}>
+                                        year.year|stringformat:"s" in selected_years %}checked{% endif %}>
                                     <span>{{ year.year }}</span>
                                     <span class="count">({{ year.count }})</span>
                                 </label>
@@ -61,7 +61,7 @@
                             <li>
                                 <label>
                                     <input type="checkbox" name="author" value="{{ author.name }}" {% if author.name in
-                                        request.GET.getlist 'author' %}checked{% endif %}>
+                                        selected_authors %}checked{% endif %}>
                                     <span>{{ author.name }}</span>
                                     <span class="count">({{ author.count }})</span>
                                 </label>
@@ -77,7 +77,7 @@
                             <li>
                                 <label>
                                     <input type="checkbox" name="type" value="{{ type.name }}" {% if type.name in
-                                        request.GET.getlist 'type' %}checked{% endif %}>
+                                        selected_types %}checked{% endif %}>
                                     <span>{{ type.name }}</span>
                                     <span class="count">({{ type.count }})</span>
                                 </label>
