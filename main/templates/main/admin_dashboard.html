@@ -1,11 +1,12 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block body_class %}admin-page{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <script src="{% static 'js/chart.js' %}"></script>
 <script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
-
 {% endblock %}
 
 {% block content %}
@@ -16,7 +17,7 @@
     <main class="admin-main">
         <div class="dashboard-header">
             <h1>Admin Control Panel</h1>
-            <p>Welcome back, {{ user.username }}</p>
+            <p>Welcome back, <strong>{{ user.username }}</strong>. Here's what's happening today.</p>
         </div>
 
         <div class="stats-grid">
@@ -38,102 +39,108 @@
                 <div class="stat-icon">🕒</div>
                 <div class="stat-info">
                     <h2>{{ pending_submissions }}</h2>
-                    <p>Pending Submissions</p>
+                    <p>Pending Review</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">✅</div>
                 <div class="stat-info">
                     <h2>{{ approved_theses }}</h2>
-                    <p>Approved Theses</p>
+                    <p>Approved</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">🗄️</div>
                 <div class="stat-info">
                     <h2>{{ archived_theses_count }}</h2>
-                    <p>Archived Theses</p>
+                    <p>Archived</p>
                 </div>
             </div>
         </div>
+
         <div class="dashboard-section">
             <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
-                <div
-                    style="flex: 1 1 60%; background: #ffffff; border: 1px solid #eaeaea; border-radius: 12px; padding: 1rem;">
+                <div style="flex: 1 1 60%;">
                     <h2>Submission Status Trend</h2>
-                    <p style="color: #6c757d; font-size: 0.9rem;">Approved, Pending, and Rejected per month</p>
-                    <canvas id="trendChart" height="120"></canvas>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Monthly distribution of submission statuses
+                    </p>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="trendChart"></canvas>
+                    </div>
                 </div>
 
-                <div
-                    style="flex: 1 1 35%; background: #ffffff; border: 1px solid #eaeaea; border-radius: 12px; padding: 1rem;">
+                <div style="flex: 1 1 30%;">
                     <h2>Theses by Course</h2>
-                    <p style="color: #6c757d; font-size: 0.9rem;">Distribution across top courses</p>
-                    <canvas id="courseChart" height="180"></canvas>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Distribution across academic courses</p>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="courseChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="dashboard-section" style="margin-top: 2rem;">
-            <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
-
-                <div
-                    style="flex: 1 1 60%; background: #ffffff; border: 1px solid #eaeaea; border-radius: 12px; padding: 1rem;">
-                    <h2>Theses by Department</h2>
-                    <p style="color: #6c757d; font-size: 0.9rem;">Top departments by approved thesis count</p>
-                    <canvas id="departmentChart" height="120"></canvas>
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-top: 2rem;">
+            <div class="dashboard-section">
+                <h2>Theses by Department</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Top performing departments</p>
+                <div style="height: 350px;">
+                    <canvas id="departmentChart"></canvas>
                 </div>
+            </div>
 
-                <div
-                    style="flex: 1 1 35%; background: #ffffff; border: 1px solid #eaeaea; border-radius: 12px; padding: 1rem;">
-                    <h2>Recent Activity</h2>
-                    <p style="color: #6c757d; font-size: 0.9rem;">Latest thesis submissions and approvals</p>
+            <div class="dashboard-section">
+                <h2>Recent Activity</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Latest thesis submissions and system changes</p>
 
-                    <div id="recent-activity">
-                        {% for submission in recent_theses %}
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 0; border-bottom:1px solid #eee;">
-                            <div>
-                                <strong style="color:#333;">{{ submission.title }}</strong><br>
-                                <small style="color:#6c757d;">
-                                    by {{ submission.submitter }} •
-                                    {% if submission.status == 'rejected' %}
-                                    {{ submission.rejected_date|timesince }} ago
-                                    {% elif submission.approved_at %}
-                                    {{ submission.approved_at|timesince }} ago
-                                    {% else %}
-                                    awaiting approval | {{ submission.created_at|timesince }} ago
-                                    {% endif %}
-                                </small>
-                            </div>
+                <div id="recent-activity">
+                    {% for submission in recent_theses %}
+                    <div class="activity-item">
+                        <div style="flex: 1;">
+                            <strong style="color: var(--text-dark); display: block; margin-bottom: 2px;">{{
+                                submission.title }}</strong>
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">
+                                by {{ submission.submitter }} •
+                                {% if submission.status == 'rejected' %}
+                                {{ submission.rejected_date|timesince }} ago
+                                {% elif submission.approved_at %}
+                                {{ submission.approved_at|timesince }} ago
+                                {% else %}
+                                {{ submission.created_at|timesince }} ago
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div style="margin-left: 1rem;">
                             {% if submission.status == 'approved' %}
-                            <span
-                                style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:6px; font-size:0.8rem;">approved</span>
+                            <span class="status-badge status-approved">Approved</span>
                             {% elif submission.status == 'pending' %}
-                            <span
-                                style="background:#fff3e0; color:#ef6c00; padding:3px 8px; border-radius:6px; font-size:0.8rem;">pending</span>
+                            <span class="status-badge status-pending">Pending</span>
                             {% elif submission.status == 'rejected' %}
-                            <span
-                                style="background:#ffebee; color:#c62828; padding:3px 8px; border-radius:6px; font-size:0.8rem;">rejected</span>
+                            <span class="status-badge status-rejected">Rejected</span>
                             {% endif %}
                         </div>
-                        {% empty %}
-                        <p style="color:#6c757d; font-style:italic;">No recent activity found.</p>
-                        {% endfor %}
                     </div>
+                    {% empty %}
+                    <div style="text-align: center; padding: 3rem 0; color: var(--text-muted); font-style: italic;">
+                        <i class="fas fa-inbox"
+                            style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        No recent activity found.
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </main>
 </div>
-<script>
-    const courseData = {{ theses_by_course| safe }};
-    const deptData = {{ theses_by_department| safe }};
 
-</script>
 {{ months|json_script:"months_data" }}
 {{ approved_data|json_script:"approved_data_json" }}
 {{ pending_data|json_script:"pending_data_json" }}
 {{ rejected_data|json_script:"rejected_data_json" }}
+
+<script>
+    const courseData = {{ theses_by_course| safe }};
+    const deptData = {{ theses_by_department| safe }};
+</script>
 <script src="{% static 'js/dashboard-charts.js' %}"></script>
 {% endblock %}

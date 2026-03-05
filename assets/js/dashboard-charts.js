@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-  console.log(courseData); // should log array from backend
-  console.log(deptData);
+  // Global Chart Defaults
+  Chart.defaults.color = '#636e72';
+  Chart.defaults.font.family = "'Poppins', sans-serif";
 
   // ===== Submission Trend =====
   const trendCtx = document.getElementById('trendChart').getContext('2d');
 
-  // Get data from Django context
   const months = JSON.parse(document.getElementById('months_data').textContent);
   const approvedData = JSON.parse(document.getElementById('approved_data_json').textContent);
   const pendingData = JSON.parse(document.getElementById('pending_data_json').textContent);
@@ -20,72 +20,96 @@ document.addEventListener("DOMContentLoaded", function () {
         {
           label: 'Approved',
           data: approvedData,
-          borderColor: '#1A43BF',
-          backgroundColor: 'rgba(42, 97, 161, 0.2)',
-          tension: 0.3,
+          borderColor: '#1e7e34',
+          backgroundColor: 'rgba(30, 126, 52, 0.05)',
+          tension: 0.4,
           fill: true,
+          pointBackgroundColor: '#1e7e34',
+          pointRadius: 4
         },
         {
           label: 'Pending',
           data: pendingData,
-          borderColor: '#ffc107',
-          backgroundColor: 'rgba(255, 193, 7, 0.2)',
-          tension: 0.3,
+          borderColor: '#b08d00',
+          backgroundColor: 'rgba(176, 141, 0, 0.05)',
+          tension: 0.4,
           fill: true,
+          pointBackgroundColor: '#b08d00',
+          pointRadius: 4
         },
         {
           label: 'Rejected',
           data: rejectedData,
-          borderColor: '#FF0000',
-          backgroundColor: 'rgba(255, 0, 0, 0.2)',
-          tension: 0.3,
+          borderColor: '#a31d23',
+          backgroundColor: 'rgba(163, 29, 35, 0.05)',
+          tension: 0.4,
           fill: true,
+          pointBackgroundColor: '#a31d23',
+          pointRadius: 4
         },
       ],
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
-        legend: { labels: { color: '#fff' } },
+        legend: {
+          position: 'top',
+          align: 'end',
+          labels: {
+            usePointStyle: true,
+            padding: 20
+          }
+        },
       },
       scales: {
-        x: { ticks: { color: '#ccc' }, grid: { color: '#333' } },
-        y: { ticks: { color: '#ccc' }, grid: { color: '#333' } },
+        x: { grid: { display: false } },
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.05)' }
+        },
       },
     },
   });
 
-  // ✅ Prepare course chart data
+  // ===== Course Chart (Pie/Doughnut) =====
   const courseCounts = courseData.map(item => item.count);
   const courseLabels = courseData.map(item => item.course_name);
   const totalCourse = courseCounts.reduce((a, b) => a + b, 0);
 
   const courseCtx = document.getElementById('courseChart').getContext('2d');
   new Chart(courseCtx, {
-    type: 'pie',
+    type: 'doughnut',
     plugins: [ChartDataLabels],
     data: {
       labels: courseLabels,
       datasets: [{
         data: courseCounts,
-        backgroundColor: ['#3f51b5', '#7e57c2', '#e91e63', '#ff9800', '#4caf50', '#00bcd4']
+        backgroundColor: [
+          '#a31d23', '#2d3436', '#636e72', '#b2bec3', '#dfe6e9', '#000000'
+        ],
+        borderWidth: 2,
+        borderColor: '#ffffff'
       }]
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '60%',
       plugins: {
         datalabels: {
           color: '#fff',
-          formatter: value => ((value / totalCourse) * 100).toFixed(1) + '%'
+          font: { weight: 'bold' },
+          formatter: value => ((value / totalCourse) * 100).toFixed(0) + '%'
         },
         legend: {
-          position: 'right',
-          labels: { color: '#fff' }
+          display: false
         }
       }
     }
   });
 
-  // ✅ Theses by Department
+  // ===== Department Chart (Bar) =====
   const deptLabels = deptData.map(item => item.department__name);
   const deptCounts = deptData.map(item => item.count);
 
@@ -95,22 +119,30 @@ document.addEventListener("DOMContentLoaded", function () {
     data: {
       labels: deptLabels,
       datasets: [{
-        label: 'Thesis Count',
+        label: 'Approved Theses',
         data: deptCounts,
-        backgroundColor: '#8b5cf6',
-        borderRadius: 6
+        backgroundColor: 'rgba(163, 29, 35, 0.8)',
+        hoverBackgroundColor: '#a31d23',
+        borderRadius: 8,
+        barThickness: 30
       }]
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false }
       },
       scales: {
-        x: { ticks: { color: '#d1d5db' } },
-        y: { ticks: { color: '#d1d5db' } }
+        x: { grid: { display: false } },
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.05)' }
+        }
       }
     }
   });
 
 });
+
 

@@ -2,6 +2,8 @@
 {% load static %}
 {% load tz %}
 
+{% block body_class %}admin-page{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
@@ -81,52 +83,55 @@
   .admin-link:hover {
     text-decoration: underline;
   }
+
   .pagination {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
-.pagination button {
-  background: #ffffff;
-  border: 1px solid #ced4da;
-  color: #333;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s;
-}
+  .pagination button {
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
 
-.pagination button:hover:not(:disabled) {
-  background: #e3f2fd;
-  color: #0d47a1;
-}
+  .pagination button:hover:not(:disabled) {
+    background: #e3f2fd;
+    color: #0d47a1;
+  }
 
-.pagination button.active {
-  background: #0277bd;
-  color: #fff;
-  pointer-events: none;
-}
+  .pagination button.active {
+    background: #0277bd;
+    color: #fff;
+    pointer-events: none;
+  }
 
-.pagination span {
-  background: #fff;
-  border: 1px solid #ced4da;
-  color: #777;
-  padding: 6px 12px;
-  border-radius: 6px;
-  display: inline-block;
-  user-select: none;
-  transition: 0.2s;
-}
+  .pagination span {
+    background: #fff;
+    border: 1px solid #ced4da;
+    color: #777;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    user-select: none;
+    transition: 0.2s;
+  }
+
   .action-buttons {
     display: flex;
     gap: 8px;
-}
+  }
 
-.edit-btn, .delete-btn {
+  .edit-btn,
+  .delete-btn {
     padding: 0.4rem 0.8rem;
     border-radius: 6px;
     text-decoration: none;
@@ -134,23 +139,23 @@
     font-weight: 500;
     transition: 0.2s;
     color: #fff;
-}
+  }
 
-.edit-btn {
+  .edit-btn {
     background-color: #42a5f5;
-}
+  }
 
-.edit-btn:hover {
+  .edit-btn:hover {
     background-color: #1e88e5;
-}
+  }
 
-.delete-btn {
+  .delete-btn {
     background-color: #e53935;
-}
+  }
 
-.delete-btn:hover {
+  .delete-btn:hover {
     background-color: #c62828;
-}
+  }
 </style>
 {% endblock %}
 
@@ -161,7 +166,8 @@
   <main class="admin-main">
     <div class="dashboard-header">
       <h1>👨‍🏫 Professors Database</h1>
-      <p>Manage professor IDs for account registration. Professors automatically get admin privileges when they sign up.</p>
+      <p>Manage professor IDs for account registration. Professors automatically get admin privileges when they sign up.
+      </p>
     </div>
 
     <div class="dashboard-section" style="margin-top: 2rem;">
@@ -169,8 +175,9 @@
         <div class="search-bar">
           <input type="text" id="professorSearch" class="search-input" placeholder="Search professors...">
           <div class="button-group">
-            <button onclick="exportTableToExcel('professorTable', 'Professors_List')" class="add-btn" style="background: #2e7d32; cursor: pointer;">
-                📊 Export Excel
+            <button onclick="exportTableToExcel('professorTable', 'Professors_List')" class="add-btn"
+              style="background: #2e7d32; cursor: pointer;">
+              📊 Export Excel
             </button>
             <label for="importProfessorFile" class="add-btn" style="cursor:pointer;">⬆ Import</label>
             <input type="file" id="importProfessorFile" accept=".csv, .xls, .xlsx" style="display:none;">
@@ -196,18 +203,21 @@
               <td style="padding:0.8rem; color:#333;">{{ professor.first_name|default:"—" }}</td>
               <td style="padding:0.8rem; color:#333;">{{ professor.last_name|default:"—" }}</td>
               <td style="padding:0.8rem; color:#333;">{{ professor.email|default:"—" }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ professor.created_at|timezone:"Asia/Manila"|date:"M d, Y h:i A" }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ professor.created_at|timezone:"Asia/Manila"|date:"M d, Y h:i A"
+                }}</td>
               <td style="padding:0.8rem;">
-                  <div class="action-buttons">
-                    <a href="{% url 'edit_professor' professor.professor_id %}" class="edit-btn">Edit</a>
-                    <a href="{% url 'delete_professor' professor.professor_id %}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this professor?');">Delete</a>
-                  </div>
+                <div class="action-buttons">
+                  <a href="{% url 'edit_professor' professor.professor_id %}" class="edit-btn">Edit</a>
+                  <a href="{% url 'delete_professor' professor.professor_id %}" class="delete-btn"
+                    onclick="return confirm('Are you sure you want to delete this professor?');">Delete</a>
+                </div>
               </td>
             </tr>
             {% empty %}
             <tr>
               <td colspan="6" style="text-align:center; padding:2rem; color:#6c757d;">
-                No professors found. <a href="{% url 'add_professor' %}" class="admin-link" target="_blank">Add your first professor</a>
+                No professors found. <a href="{% url 'add_professor' %}" class="admin-link" target="_blank">Add your
+                  first professor</a>
               </td>
             </tr>
             {% endfor %}
@@ -222,49 +232,49 @@
 
 <script src="{% static 'js/xlsx.full.min.js' %}"></script>
 <script>
-let importedProfessors = [];
-document.querySelectorAll("#professorTable th").forEach((th, index) => {
-  th.addEventListener("click", () => {
-    const table = th.closest("table");
-    const tbody = table.querySelector("tbody");
-    const rows = Array.from(tbody.querySelectorAll("tr"));
-    const asc = !th.classList.contains("sort-asc");
+  let importedProfessors = [];
+  document.querySelectorAll("#professorTable th").forEach((th, index) => {
+    th.addEventListener("click", () => {
+      const table = th.closest("table");
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const asc = !th.classList.contains("sort-asc");
 
-    table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
-    th.classList.toggle("sort-asc", asc);
-    th.classList.toggle("sort-desc", !asc);
+      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
+      th.classList.toggle("sort-asc", asc);
+      th.classList.toggle("sort-desc", !asc);
 
-    rows.sort((a, b) => {
-      const cellA = a.children[index].innerText.trim().toLowerCase();
-      const cellB = b.children[index].innerText.trim().toLowerCase();
-      return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+      rows.sort((a, b) => {
+        const cellA = a.children[index].innerText.trim().toLowerCase();
+        const cellB = b.children[index].innerText.trim().toLowerCase();
+        return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+      });
+
+      rows.forEach(row => tbody.appendChild(row));
+      currentPage = 1;
+      paginateTable();
+    });
+  });
+
+  const searchInput = document.getElementById("professorSearch");
+  searchInput.addEventListener("input", () => {
+    const filter = searchInput.value.toLowerCase();
+    const rows = document.querySelectorAll("#professorTable tbody tr");
+
+    rows.forEach(row => {
+      row.dataset.visible = row.innerText.toLowerCase().includes(filter) ? "1" : "0";
     });
 
-    rows.forEach(row => tbody.appendChild(row));
     currentPage = 1;
     paginateTable();
   });
-});
 
-const searchInput = document.getElementById("professorSearch");
-searchInput.addEventListener("input", () => {
-  const filter = searchInput.value.toLowerCase();
-  const rows = document.querySelectorAll("#professorTable tbody tr");
+  let currentPage = 1;
+  const rowsPerPage = 16;
+  const professorTable = document.getElementById("professorTable");
+  const tbody = professorTable.querySelector("tbody");
 
-  rows.forEach(row => {
-    row.dataset.visible = row.innerText.toLowerCase().includes(filter) ? "1" : "0";
-  });
-
-  currentPage = 1;
-  paginateTable();
-});
-
-let currentPage = 1;
-const rowsPerPage = 16;
-const professorTable = document.getElementById("professorTable");
-const tbody = professorTable.querySelector("tbody");
-
-function renderProfessorPage(page = 1) {
+  function renderProfessorPage(page = 1) {
     const allRows = Array.from(tbody.querySelectorAll("tr"));
     const visibleRows = allRows.filter(r => r.dataset.visible !== "0");
     const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
@@ -274,155 +284,155 @@ function renderProfessorPage(page = 1) {
     currentPage = page;
 
     allRows.forEach(r => r.style.display = "none");
-    visibleRows.slice((page-1)*rowsPerPage, page*rowsPerPage).forEach(r => r.style.display = "");
+    visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage).forEach(r => r.style.display = "");
 
     renderProfessorPagination(totalPages);
-}
+  }
 
-function renderProfessorPagination(totalPages) {
+  function renderProfessorPagination(totalPages) {
     const container = document.getElementById("professorPagination");
     container.innerHTML = "";
 
-    function createBtn(label, page, disabled=false, active=false) {
-        const btn = document.createElement("button");
-        btn.innerText = label;
-        btn.disabled = disabled;
-        btn.classList.toggle("active", active);
-        if (!disabled && !active) btn.addEventListener("click", () => renderProfessorPage(page));
-        container.appendChild(btn);
+    function createBtn(label, page, disabled = false, active = false) {
+      const btn = document.createElement("button");
+      btn.innerText = label;
+      btn.disabled = disabled;
+      btn.classList.toggle("active", active);
+      if (!disabled && !active) btn.addEventListener("click", () => renderProfessorPage(page));
+      container.appendChild(btn);
     }
 
-    createBtn("Prev", currentPage-1, currentPage===1);
+    createBtn("Prev", currentPage - 1, currentPage === 1);
 
-    for (let i=1; i<=totalPages; i++) {
-        if (i===1 || i===totalPages || (i >= currentPage-1 && i <= currentPage+1)) {
-            createBtn(i, i, false, i===currentPage);
-        } else if (i===2 && currentPage>3) {
-            const ellipsis = document.createElement("span"); ellipsis.innerText="..."; container.appendChild(ellipsis);
-        } else if (i===totalPages-1 && currentPage<totalPages-2) {
-            const ellipsis = document.createElement("span"); ellipsis.innerText="..."; container.appendChild(ellipsis);
-        }
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+        createBtn(i, i, false, i === currentPage);
+      } else if (i === 2 && currentPage > 3) {
+        const ellipsis = document.createElement("span"); ellipsis.innerText = "..."; container.appendChild(ellipsis);
+      } else if (i === totalPages - 1 && currentPage < totalPages - 2) {
+        const ellipsis = document.createElement("span"); ellipsis.innerText = "..."; container.appendChild(ellipsis);
+      }
     }
 
-    createBtn("Next", currentPage+1, currentPage===totalPages);
-}
+    createBtn("Next", currentPage + 1, currentPage === totalPages);
+  }
 
-function updateProfessorVisibility() {
+  function updateProfessorVisibility() {
     const filter = searchInput.value.toLowerCase();
     const allRows = Array.from(tbody.querySelectorAll("tr"));
     allRows.forEach(r => {
-        r.dataset.visible = r.innerText.toLowerCase().includes(filter) ? "1" : "0";
+      r.dataset.visible = r.innerText.toLowerCase().includes(filter) ? "1" : "0";
     });
     renderProfessorPage(1);
-}
+  }
 
-searchInput.addEventListener("input", updateProfessorVisibility);
+  searchInput.addEventListener("input", updateProfessorVisibility);
 
-document.querySelectorAll("#professorTable th").forEach(th => {
+  document.querySelectorAll("#professorTable th").forEach(th => {
     th.addEventListener("click", () => setTimeout(() => renderProfessorPage(1), 10));
-});
+  });
 
-window.addEventListener("load", () => {
-    document.querySelectorAll("#professorTable tbody tr").forEach(r => r.dataset.visible="1");
+  window.addEventListener("load", () => {
+    document.querySelectorAll("#professorTable tbody tr").forEach(r => r.dataset.visible = "1");
     renderProfessorPage();
     professorTable.style.visibility = "visible";
-});
-
-document.getElementById("importProfessorFile").addEventListener("change", function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  const ext = file.name.split(".").pop().toLowerCase();
-
-  reader.onload = (e) => {
-    if (ext === "csv") processCSV(e.target.result);
-    else if (ext === "xls" || ext === "xlsx") processExcel(e.target.result, ext);
-  };
-
-  if (ext === "csv") reader.readAsText(file);
-  else reader.readAsArrayBuffer(file);
-});
-
-function mapColumns(headerRow) {
-  const map = {};
-  headerRow.forEach((h, i) => {
-    const key = h.trim().toLowerCase();
-    if (key.includes("professor")) map.professor_id = i;
-    if (key.includes("first")) map.first_name = i;
-    if (key.includes("last")) map.last_name = i;
-    if (key.includes("email")) map.email = i;
   });
-  return map;
-}
 
-function extractProfessor(row, col) {
-  const professorID = col.professor_id !== undefined ? (row[col.professor_id] || "").trim() : "";
-  const firstName = col.first_name !== undefined ? (row[col.first_name] || "").trim() : "";
-  const lastName = col.last_name !== undefined ? (row[col.last_name] || "").trim() : "";
-  const email = col.email !== undefined ? (row[col.email] || "").trim() : "";
-  if (!professorID) return null;
-  return { professor_id: professorID, first_name: firstName, last_name: lastName, email: email };
-}
+  document.getElementById("importProfessorFile").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
 
-function processCSV(text) {
-  const lines = text.split("\n").map(l => l.split(","));
-  const headers = lines[0];
-  const col = mapColumns(headers);
-  if (!Object.keys(col).length) { alert("No valid professor columns found."); return; }
-  importedProfessors = [];
-  for (let i=1; i<lines.length; i++) {
-    const prof = extractProfessor(lines[i], col);
-    if (prof) importedProfessors.push(prof);
-  }
-  saveImportedToDatabase();
-}
+    const reader = new FileReader();
+    const ext = file.name.split(".").pop().toLowerCase();
 
-function processExcel(binary) {
-  const data = new Uint8Array(binary);
-  const arr = Array.from(data).map(b => String.fromCharCode(b)).join("");
-  const workbook = XLSX.read(arr, { type:"binary" });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(sheet, { header:1 });
-  const headers = rows[0];
-  const col = mapColumns(headers);
-  if (!Object.keys(col).length) { alert("No valid professor columns found."); return; }
-  importedProfessors = [];
-  for (let i=1; i<rows.length; i++) {
-    const prof = extractProfessor(rows[i], col);
-    if (prof) importedProfessors.push(prof);
-  }
-  saveImportedToDatabase();
-}
+    reader.onload = (e) => {
+      if (ext === "csv") processCSV(e.target.result);
+      else if (ext === "xls" || ext === "xlsx") processExcel(e.target.result, ext);
+    };
 
-function saveImportedToDatabase() {
-  if (!importedProfessors.length) { alert("No valid data to import."); return; }
-  fetch("/import-professors/", {
-    method: "POST",
-    headers: { "X-CSRFToken": getCSRFToken(), "Content-Type":"application/json" },
-    body: JSON.stringify({ professors: importedProfessors })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.count>0) addProfessorsToTable(data.professors);
-    else alert("No professors were added (maybe duplicates).");
-    importedProfessors = [];
-  }).catch(err => { console.error(err); alert("Import failed."); });
-}
+    if (ext === "csv") reader.readAsText(file);
+    else reader.readAsArrayBuffer(file);
+  });
 
-function addProfessorsToTable(professors) {
-  const tbody = document.querySelector("#professorTable tbody");
-  professors.forEach(p => {
-    const tr = document.createElement("tr");
-    tr.style.borderBottom = "1px solid #eee";
-    const createdAt = new Date(p.created_at);
-    const formattedDate = createdAt.toLocaleString("en-US", {
-      timeZone: "Asia/Manila",
-      month: "short", day:"2-digit", year:"numeric",
-      hour:"2-digit", minute:"2-digit", hour12:true
+  function mapColumns(headerRow) {
+    const map = {};
+    headerRow.forEach((h, i) => {
+      const key = h.trim().toLowerCase();
+      if (key.includes("professor")) map.professor_id = i;
+      if (key.includes("first")) map.first_name = i;
+      if (key.includes("last")) map.last_name = i;
+      if (key.includes("email")) map.email = i;
     });
-    tr.dataset.visible = "1";
-    tr.innerHTML = `
+    return map;
+  }
+
+  function extractProfessor(row, col) {
+    const professorID = col.professor_id !== undefined ? (row[col.professor_id] || "").trim() : "";
+    const firstName = col.first_name !== undefined ? (row[col.first_name] || "").trim() : "";
+    const lastName = col.last_name !== undefined ? (row[col.last_name] || "").trim() : "";
+    const email = col.email !== undefined ? (row[col.email] || "").trim() : "";
+    if (!professorID) return null;
+    return { professor_id: professorID, first_name: firstName, last_name: lastName, email: email };
+  }
+
+  function processCSV(text) {
+    const lines = text.split("\n").map(l => l.split(","));
+    const headers = lines[0];
+    const col = mapColumns(headers);
+    if (!Object.keys(col).length) { alert("No valid professor columns found."); return; }
+    importedProfessors = [];
+    for (let i = 1; i < lines.length; i++) {
+      const prof = extractProfessor(lines[i], col);
+      if (prof) importedProfessors.push(prof);
+    }
+    saveImportedToDatabase();
+  }
+
+  function processExcel(binary) {
+    const data = new Uint8Array(binary);
+    const arr = Array.from(data).map(b => String.fromCharCode(b)).join("");
+    const workbook = XLSX.read(arr, { type: "binary" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    const headers = rows[0];
+    const col = mapColumns(headers);
+    if (!Object.keys(col).length) { alert("No valid professor columns found."); return; }
+    importedProfessors = [];
+    for (let i = 1; i < rows.length; i++) {
+      const prof = extractProfessor(rows[i], col);
+      if (prof) importedProfessors.push(prof);
+    }
+    saveImportedToDatabase();
+  }
+
+  function saveImportedToDatabase() {
+    if (!importedProfessors.length) { alert("No valid data to import."); return; }
+    fetch("/import-professors/", {
+      method: "POST",
+      headers: { "X-CSRFToken": getCSRFToken(), "Content-Type": "application/json" },
+      body: JSON.stringify({ professors: importedProfessors })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.count > 0) addProfessorsToTable(data.professors);
+        else alert("No professors were added (maybe duplicates).");
+        importedProfessors = [];
+      }).catch(err => { console.error(err); alert("Import failed."); });
+  }
+
+  function addProfessorsToTable(professors) {
+    const tbody = document.querySelector("#professorTable tbody");
+    professors.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid #eee";
+      const createdAt = new Date(p.created_at);
+      const formattedDate = createdAt.toLocaleString("en-US", {
+        timeZone: "Asia/Manila",
+        month: "short", day: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit", hour12: true
+      });
+      tr.dataset.visible = "1";
+      tr.innerHTML = `
       <td style="padding:0.8rem; color:#0277bd; font-weight:600;">${p.professor_id}</td>
       <td style="padding:0.8rem; color:#333;">${p.first_name || "—"}</td>
       <td style="padding:0.8rem; color:#333;">${p.last_name || "—"}</td>
@@ -432,24 +442,24 @@ function addProfessorsToTable(professors) {
         <a href="/admin/main/professor/${p.professor_id}/change/" class="admin-link" target="_blank">Edit</a>
       </td>
     `;
-    tbody.appendChild(tr);
-  });
-  paginateTable();
-}
+      tbody.appendChild(tr);
+    });
+    paginateTable();
+  }
 
-function getCSRFToken() {
-  return document.cookie.split("; ").find(row => row.startsWith("csrftoken"))?.split("=")[1];
-}
+  function getCSRFToken() {
+    return document.cookie.split("; ").find(row => row.startsWith("csrftoken"))?.split("=")[1];
+  }
 
-window.onload = () => {
-  document.querySelectorAll("#professorTable tbody tr").forEach(r => r.dataset.visible="1");
-  paginateTable();
-};
+  window.onload = () => {
+    document.querySelectorAll("#professorTable tbody tr").forEach(r => r.dataset.visible = "1");
+    paginateTable();
+  };
 </script>
 <script src="{% static 'js/xlsx.full.min.js' %}"></script>
 
 <script>
-function exportTableToExcel(tableID, filename = '') {
+  function exportTableToExcel(tableID, filename = '') {
     // 1. Clone the table to avoid messing up the UI
     let originalTable = document.getElementById(tableID);
     let tableClone = originalTable.cloneNode(true);
@@ -458,15 +468,15 @@ function exportTableToExcel(tableID, filename = '') {
     //    so buttons don't show up in the Excel file
     let rows = tableClone.querySelectorAll('tr');
     rows.forEach(row => {
-        if (row.cells.length > 0) {
-            row.deleteCell(-1); // Delete last cell
-        }
+      if (row.cells.length > 0) {
+        row.deleteCell(-1); // Delete last cell
+      }
     });
 
     // 3. Create Excel file
-    let wb = XLSX.utils.table_to_book(tableClone, {sheet: "Sheet1"});
+    let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
     let fn = filename ? filename + '.xlsx' : 'Export_Data.xlsx';
     XLSX.writeFile(wb, fn);
-}
+  }
 </script>
 {% endblock %}

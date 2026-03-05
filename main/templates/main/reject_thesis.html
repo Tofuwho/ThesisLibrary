@@ -1,6 +1,8 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block body_class %}admin-page{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
@@ -11,7 +13,7 @@
     border-radius: 12px;
     padding: 2rem;
     border: 1px solid #eaeaea;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   }
 
   .reject-form-header {
@@ -195,14 +197,11 @@
           <label for="rejection_reason">
             Rejection Reason <span style="color: #d32f2f;">*</span>
           </label>
-          <textarea
-            id="rejection_reason"
-            name="rejection_reason"
+          <textarea id="rejection_reason" name="rejection_reason"
             placeholder="Please provide a clear and detailed reason for rejecting this thesis submission. This will be visible to the submitter."
-            required
-          >{{ form.rejection_reason.value|default:'' }}</textarea>
+            required>{{ form.rejection_reason.value|default:'' }}</textarea>
           {% if form.rejection_reason.errors %}
-            <div class="error-message">{{ form.rejection_reason.errors.0 }}</div>
+          <div class="error-message">{{ form.rejection_reason.errors.0 }}</div>
           {% endif %}
           <small style="color: #6c757d; display: block; margin-top: 0.5rem;">
             This reason will be stored with the rejected thesis and may be visible to the submitter.
