@@ -172,7 +172,12 @@ def categories_page(request):
             }
             
             # Annotate co-authors and other fields for searching
-            theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
+            theses = theses.annotate(
+                coauthor_json_text=Concat(
+                    F('co_authors__first_name'), Value(' '), F('co_authors__last_name'), 
+                    output_field=CharField()
+                )
+            )
             
             # Exact Phrase Matching (High Weight)
             phrase_score = (
@@ -315,7 +320,15 @@ def categories_page(request):
             theses = theses.order_by('-score', *base_order)
         else:
             theses = theses.order_by(*base_order)
-        theses = theses.distinct()
+        
+        # Deduplicate manually, keeping the first occurrence (highest score due to order_by)
+        unique_theses = []
+        seen = set()
+        for t in theses:
+            if t.id not in seen:
+                seen.add(t.id)
+                unique_theses.append(t)
+        theses = unique_theses
 
     # If deep search is enabled, scan PDFs and keep only matches
     matched_theses = None
@@ -464,7 +477,12 @@ def category_detail(request, category_name):
             'should', 'now', 'thesis', 'study', 'research', 'library'
         }
         
-        theses = theses.annotate(coauthor_json_text=Cast('co_authors', output_field=CharField()))
+        theses = theses.annotate(
+            coauthor_json_text=Concat(
+                F('co_authors__first_name'), Value(' '), F('co_authors__last_name'), 
+                output_field=CharField()
+            )
+        )
         
         phrase_score = (
             Case(When(title__icontains=search_query, then=Value(150)), default=Value(0), output_field=IntegerField()) +
@@ -554,7 +572,14 @@ def category_detail(request, category_name):
             theses = theses.order_by(*sort_map.get(sort, ('-score', '-year')))
     else:
         theses = theses.order_by(*base_order)
-    theses = theses.distinct()
+        
+    unique_theses = []
+    seen = set()
+    for t in theses:
+        if t.id not in seen:
+            seen.add(t.id)
+            unique_theses.append(t)
+    theses = unique_theses
 
     # Sidebar
     years = Thesis.objects.filter(category=category).values('year').annotate(count=Count('id')).order_by('-year')
@@ -563,7 +588,7 @@ def category_detail(request, category_name):
                           .exclude(thesis_type__exact='').values('thesis_type')\
                           .annotate(count=Count('id')).order_by('thesis_type')
 
-    total_results = theses.count()
+    total_results = len(theses)
     context = {
         'category': category,
         'theses': theses,

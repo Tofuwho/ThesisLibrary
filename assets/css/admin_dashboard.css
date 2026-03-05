@@ -45,8 +45,13 @@ body {
   margin-right: 6px !important;
 }
 
-.dot.success { background: #28a745 !important; }
-.dot.info { background: #17a2b8 !important; }
+.dot.success {
+  background: #28a745 !important;
+}
+
+.dot.info {
+  background: #17a2b8 !important;
+}
 
 .stats-grid {
   display: grid !important;
@@ -144,7 +149,7 @@ body {
   top: 0 !important;
   height: 100vh !important;
   padding: 1rem 0 !important;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.03) !important;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.03) !important;
 }
 
 .sidebar-header {
@@ -212,10 +217,12 @@ body {
 .admin-sidebar::-webkit-scrollbar {
   width: 6px !important;
 }
+
 .admin-sidebar::-webkit-scrollbar-thumb {
   background: #ccc !important;
   border-radius: 10px !important;
 }
+
 .admin-sidebar::-webkit-scrollbar-track {
   background: #f1f1f1 !important;
 }

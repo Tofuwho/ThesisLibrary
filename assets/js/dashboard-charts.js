@@ -7,10 +7,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const trendCtx = document.getElementById('trendChart').getContext('2d');
 
   // Get data from Django context
-    const months = JSON.parse(document.getElementById('months_data').textContent);
-    const approvedData = JSON.parse(document.getElementById('approved_data_json').textContent);
-    const pendingData = JSON.parse(document.getElementById('pending_data_json').textContent);
-    const rejectedData = JSON.parse(document.getElementById('rejected_data_json').textContent);
+  const months = JSON.parse(document.getElementById('months_data').textContent);
+  const approvedData = JSON.parse(document.getElementById('approved_data_json').textContent);
+  const pendingData = JSON.parse(document.getElementById('pending_data_json').textContent);
+  const rejectedData = JSON.parse(document.getElementById('rejected_data_json').textContent);
 
   new Chart(trendCtx, {
     type: 'line',
