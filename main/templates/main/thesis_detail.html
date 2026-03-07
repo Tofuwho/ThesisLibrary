@@ -44,13 +44,23 @@
         {% if thesis.file %}
         <div class="thesis-actions">
           {% if is_authenticated %}
+          {% if can_view_full %}
           <a href="{% url 'view_thesis' thesis.id %}" class="view-button">
             <i class="fas fa-eye"></i> View Full Document
           </a>
           {% else %}
           <div class="restricted-access">
-            <a href="{% url 'view_thesis' thesis.id %}" class="preview-button">
-              <i class="fas fa-lock"></i> Login to View
+            <p class="restriction-notice">
+              <i class="fas fa-lock"></i>
+              Full document access is restricted to Administrators and Librarians.
+              You are restricted to viewing the abstract only.
+            </p>
+          </div>
+          {% endif %}
+          {% else %}
+          <div class="restricted-access">
+            <a href="#" class="preview-button" onclick="showLoginModal('{{ request.get_full_path }}')">
+              <i class="fas fa-lock"></i> Login to View Full Document
             </a>
             <div class="login-required">
               <p class="restriction-notice">

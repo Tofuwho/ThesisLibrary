@@ -179,6 +179,33 @@
   table th {
     vertical-align: middle !important;
   }
+
+  .badge-role {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .role-admin {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  .role-librarian {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+
+  .role-professor {
+    background: #f3e5f5;
+    color: #7b1fa2;
+  }
+
+  .role-student {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
 </style>
 {% endblock %}
 
@@ -208,7 +235,7 @@
               <th>Email Address</th>
               <th>Recent Access</th>
               <th>Account Created</th>
-              <th>Admin Access</th>
+              <th>Account Role</th>
               <th>Control Actions</th>
             </tr>
           </thead>
@@ -221,11 +248,9 @@
               <td>{{ user.date_joined|date:"Y-m-d H:i:s" }}</td>
               <td>
                 <div class="table-status">
-                  {% if user.is_staff %}
-                  <span style="color:#2e7d32;">✔</span>
-                  {% else %}
-                  <span style="color:#c62828;">✖</span>
-                  {% endif %}
+                  <span class="badge-role role-{{ user.profile.role }}">
+                    {{ user.profile.get_role_display }}
+                  </span>
                 </div>
               </td>
               <td>
