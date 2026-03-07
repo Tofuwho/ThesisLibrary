@@ -280,6 +280,23 @@
     color: var(--primary-color);
 }
 
+.search-mode-label.restricted-mode {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+}
+
+.search-mode-label.restricted-mode .search-mode-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-mode-label.restricted-mode i {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
 .categories-content {
     display: flex;
     gap: 0;

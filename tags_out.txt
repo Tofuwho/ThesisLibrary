@@ -1,0 +1,89 @@
+1: {% extends 'main/base.html' %}
+2: {% load static department_filters %}
+4: {% block title %}Browse Categories - Thesis Library{% endblock %}
+6: {% block extra_head %}
+7: <link rel="stylesheet" href="{% static 'css/categories.css' %}">
+8: {% endblock %}
+10: {% block extra_scripts %}
+11: <script src="{% static 'js/categories.js' %}"></script>
+12: {% endblock %}
+14: {% block content %}
+21: <img src="{% static 'images/tcu_official_logo.png' %}" alt="TCU Logo"
+32: {% if request.GET.search %}
+34: {% endif %}
+47: <input type="radio" name="search_mode" value="normal" {% if not request.GET.search_mode or request.GET.search_mode == 'normal' %}checked{% endif %}>
+50: {% if can_full_view %}
+52: <input type="radio" name="search_mode" value="deep" {% if request.GET.search_mode == 'deep' %}checked{% endif %}>
+55: {% else %}
+61: {% endif %}
+63: {% if did_you_mean %}
+70: {% endif %}
+77: {% for dept in departments %}
+78: {% with dl=dept.name|lower %}
+79: {% if dl == 'graduate' or dl == 'graduate school' %}
+81: {% elif 'education' in dl %}
+83: {% elif 'information' in dl or 'ict' in dl or 'computer' in dl %}
+85: {% elif 'arts' in dl or 'sciences' in dl or 'science' in dl %}
+87: {% elif 'business' in dl or 'management' in dl or 'account' in dl %}
+89: {% elif 'criminal' in dl or 'justice' in dl %}
+91: {% elif 'hospitality' in dl or 'tourism' in dl or 'hotel' in dl %}
+93: {% elif 'engineering' in dl or 'technology' in dl or 'industrial' in dl %}
+95: {% else %}
+98: {% endif %}
+99: {% endwith %}
+100: {% endfor %}
+113: {% for year in years %}
+121: {% endfor %}
+128: {% for author in authors %}
+136: {% endfor %}
+144: {% for category in categories %}
+152: {% endfor %}
+158: {% for type in types %}
+166: {% endfor %}
+171: {% for dept in departments %}
+175: {% if dept.courses.exists %}
+176: {% for course in dept.courses.all %}
+183: {% endfor %}
+184: {% else %}
+191: {% endif %}
+194: {% endfor %}
+211: <option value="date-desc" {% if current_sort == 'date-desc' %}selected{% endif %}>Date (Newest
+213: <option value="date-asc" {% if current_sort == 'date-asc' %}selected{% endif %}>Date (Oldest
+215: <option value="title-asc" {% if current_sort == 'title-asc' %}selected{% endif %}>Title (A-Z)
+217: <option value="title-desc" {% if current_sort == 'title-desc' %}selected{% endif %}>Title
+219: <option value="author-asc" {% if current_sort == 'author-asc' %}selected{% endif %}>Author
+221: <option value="author-desc" {% if current_sort == 'author-desc' %}selected{% endif %}>Author
+228: {% for thesis in theses %}
+252: {% if thesis.get_coauthor_names %}
+255: {% for coauthor in thesis.get_coauthor_names %}
+256: <li class="coauthor {% if forloop.counter > 3 %}hidden{% endif %}">{{ coauthor }}
+258: {% endfor %}
+260: {% if thesis.get_coauthor_names|length > 3 %}
+263: {% endif %}
+264: {% endif %}
+269: {% if thesis.department %}
+271: {% endif %}
+272: {% if thesis.course %}
+274: {% endif %}
+275: {% if thesis.specialization %}
+277: {% endif %}
+282: {% if thesis.deep_search_results %}
+290: {% if thesis.deep_search_results.matches %}
+292: {% for m in thesis.deep_search_results.matches|slice:":3" %}
+297: {% endfor %}
+299: {% else %}
+301: {% endif %}
+303: {% endif %}
+306: {% if thesis.keywords_list or thesis.research_categories_list %}
+308: {% for keyword in thesis.keywords_list %}
+310: {% endfor %}
+311: {% for category in thesis.research_categories_list %}
+313: {% endfor %}
+315: {% endif %}
+318: {% if thesis.file %}
+319: <a href="{% url 'thesis_detail' thesis.id %}" class="cat-view-button">
+322: {% else %}
+324: {% endif %}
+328: {% empty %}
+330: {% endfor %}
+336: {% endblock %}

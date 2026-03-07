@@ -111,7 +111,14 @@ def profile_card(request):
 def categories_page(request):
     theses = Thesis.objects.all()
     search_query = request.GET.get('search') or ''
+    
+    # Permission check for Deep Search
+    can_full_view = request.user.is_authenticated and hasattr(request.user, 'profile') and request.user.profile.role in [Profile.ADMIN, Profile.LIBRARIAN]
+    
     search_mode = request.GET.get('search_mode', 'normal')
+    if search_mode == 'deep' and not can_full_view:
+        search_mode = 'normal'
+        messages.warning(request, "Deep search (searching inside PDF contents) is restricted to Administrators and Librarians.")
     selected_years = request.GET.getlist('year')
     selected_descriptors = request.GET.getlist('descriptor')
     selected_authors = request.GET.getlist('author')
@@ -388,6 +395,7 @@ def categories_page(request):
         'search_mode': search_mode,
         'did_you_mean': did_you_mean,
         'effective_query': effective_query,
+        'can_full_view': can_full_view,
     }
     return render(request, 'main/categories.html', context)
 
