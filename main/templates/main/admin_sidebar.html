@@ -16,21 +16,10 @@
       <li>
         <a href="{% url 'user_list' %}"
           class="{% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
-          <i class="fas fa-users-cog"></i> <span>Admin Accounts</span>
+          <i class="fas fa-users-cog"></i> <span>All Accounts</span>
         </a>
       </li>
-      <li>
-        <a href="{% url 'students_list' %}"
-          class="{% if request.resolver_match.url_name == 'students_list' %}active{% endif %}">
-          <i class="fas fa-user-graduate"></i> <span>Student Records</span>
-        </a>
-      </li>
-      <li>
-        <a href="{% url 'professors_list' %}"
-          class="{% if request.resolver_match.url_name == 'professors_list' %}active{% endif %}">
-          <i class="fas fa-chalkboard-teacher"></i> <span>Faculty Members</span>
-        </a>
-      </li>
+
 
       <li class="section-title">Thesis Repository</li>
       <li>
@@ -89,7 +78,8 @@
     </div>
     <div class="sidebar-profile-info">
       <strong>{{ user.username }}</strong>
-      <span>{% if user.is_staff %}Administrator{% else %}Student{% endif %}</span>
+      <span>{% if user.profile.role == 'admin' %}Administrator{% elif user.profile.role == 'librarian' %}Librarian{%
+        elif user.profile.role == 'professor' %}Staff / Professor{% else %}Student{% endif %}</span>
     </div>
     <i class="fas fa-chevron-right sidebar-profile-arrow"></i>
   </a>

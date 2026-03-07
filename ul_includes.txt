@@ -1,0 +1,14 @@
+Line 534 repr: "        {% include 'main/partials/user_table.html' with users=admins table_id='table-admin' role_class='admin' avatar_class='avatar-admin' badge_class='role-admin' %}\n"
+Line 535 repr: '        <div class="pagination" id="pg-admin"></div>\n'
+
+Line 553 repr: "        {% include 'main/partials/user_table.html' with users=librarians table_id='table-librarian' role_class='librarian' avatar_class='avatar-librarian' badge_class='role-librarian' %}\n"
+Line 554 repr: '        <div class="pagination" id="pg-librarian"></div>\n'
+
+Line 573 repr: "        {% include 'main/partials/user_table.html' with users=professors table_id='table-professor' role_class='professor' avatar_class='avatar-professor' badge_class='role-professor' %}\n"
+Line 574 repr: '        <div class="pagination" id="pg-professor"></div>\n'
+
+Line 592 repr: "        {% include 'main/partials/user_table.html' with users=students table_id='table-student' role_class='student' avatar_class='avatar-student' badge_class='role-student' %}\n"
+Line 593 repr: '        <div class="pagination" id="pg-student"></div>\n'
+
+Line 614 repr: '      return allRows.filter(r => r.innerText.toLowerCase().includes(q));\n'
+Line 615 repr: '    }\n'

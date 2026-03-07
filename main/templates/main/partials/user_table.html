@@ -1,0 +1,47 @@
+{% if users %}
+<table class="user-table" id="{{ table_id }}">
+    <thead>
+        <tr>
+            <th>Account Name</th>
+            <th>Email Address</th>
+            <th>Last Login</th>
+            <th>Date Joined</th>
+            <th>Role</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr data-row>
+            <td>
+                <div class="td-username">
+                    <div class="user-avatar {{ avatar_class }}">{{ user.username|slice:":1"|upper }}</div>
+                    {{ user.username }}
+                </div>
+            </td>
+            <td>{{ user.email|default:"—" }}</td>
+            <td>{{ user.last_login|date:"M d, Y H:i"|default:"Never" }}</td>
+            <td>{{ user.date_joined|date:"M d, Y" }}</td>
+            <td>
+                <span class="badge-role {{ badge_class }}">{{ user.profile.get_role_display }}</span>
+            </td>
+            <td>
+                <div class="table-actions">
+                    <a href="{% url 'edit_user' user.id %}" class="btn-table btn-edit"><i class="fas fa-pen"></i>
+                        Edit</a>
+                    <a href="{% url 'delete_user' user.id %}" class="btn-table btn-delete"
+                        onclick="return confirm('Delete {{ user.username }}? This cannot be undone.')">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-users-slash"></i>
+    <p>No accounts found in this role.</p>
+</div>
+{% endif %}
