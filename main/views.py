@@ -865,45 +865,48 @@ def approve_thesis(request, thesis_id):
         messages.info(request, f"Submission '{submission.title}' is already approved.")
         return redirect('pending_submissions')
 
-    try:
-        submission_title = submission.title
+    if request.method == 'POST':
+        lc_classification = request.POST.get('lc_classification', '').strip()
+        
+        try:
+            submission_title = submission.title
 
-        # Approve via model method (this should create a Thesis record)
-        thesis = submission.approve(approved_by=request.user)
+            # Approve via model method (this should create a Thesis record)
+            thesis = submission.approve(approved_by=request.user, lc_classification=lc_classification)
 
-        # Remove Django’s automatic log entries
-        thesis_ct = ContentType.objects.get_for_model(thesis)
-        submission_ct = ContentType.objects.get_for_model(submission)
+            # Remove Django’s automatic log entries
+            thesis_ct = ContentType.objects.get_for_model(thesis)
+            submission_ct = ContentType.objects.get_for_model(submission)
 
-        LogEntry.objects.filter(
-            user=request.user,
-            content_type=thesis_ct,
-            object_id=thesis.id,
-            action_flag=ADDITION
-        ).delete()
+            LogEntry.objects.filter(
+                user=request.user,
+                content_type=thesis_ct,
+                object_id=thesis.id,
+                action_flag=ADDITION
+            ).delete()
 
-        LogEntry.objects.filter(
-            user=request.user,
-            content_type=submission_ct,
-            object_id=submission.id,
-            action_flag__in=[CHANGE, DELETION]
-        ).delete()
+            LogEntry.objects.filter(
+                user=request.user,
+                content_type=submission_ct,
+                object_id=submission.id,
+                action_flag__in=[CHANGE, DELETION]
+            ).delete()
 
-        # Log our own admin-style custom action
-        log_admin_action(
-            request.user,
-            thesis,
-            ADDITION,
-            f"[APPROVED] Submission '{submission_title}' and moved to Thesis table"
-        )
+            # Log our own admin-style custom action
+            log_admin_action(
+                request.user,
+                thesis,
+                ADDITION,
+                f"[APPROVED] Submission '{submission_title}' and moved to Thesis table"
+            )
 
-        messages.success(
-            request,
-            f"Submission '{submission_title}' approved successfully and moved to Thesis table."
-        )
+            messages.success(
+                request,
+                f"Submission '{submission_title}' approved successfully and moved to Thesis table."
+            )
 
-    except ValueError as e:
-        messages.error(request, f"Could not approve '{submission.title}': {str(e)}")
+        except ValueError as e:
+            messages.error(request, f"Could not approve '{submission.title}': {str(e)}")
 
     return redirect('pending_submissions')
 
