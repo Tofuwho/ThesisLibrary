@@ -159,6 +159,7 @@
         <table id="thesisTable">
           <thead>
             <tr style="background-color:#f8f9fa;">
+              <th>LC Classification</th>
               <th>Thesis Title</th>
               <th>Lead Researcher</th>
               <th>Research Team</th>
@@ -170,6 +171,7 @@
           <tbody>
             {% for thesis in theses %}
             <tr style="border-bottom: 1px solid #eee;">
+              <td style="color:#666; font-weight: 500;">{{ thesis.lc_classification|default:"—" }}</td>
               <td class="title">{{ thesis.title }}</td>
               <td style="color:#333;">{{ thesis.author }}</td>
               <td style="color:#333;">{{ thesis.co_authors|default:"—" }}</td>
@@ -179,7 +181,7 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" style="text-align:center; color:#6c757d; padding:1rem;">No theses found.</td>
+              <td colspan="7" style="text-align:center; color:#6c757d; padding:1rem;">No theses found.</td>
             </tr>
             {% endfor %}
           </tbody>

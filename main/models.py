@@ -63,6 +63,8 @@ class Thesis(models.Model):
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
 
+    lc_classification = models.CharField(max_length=100, blank=True, null=True, help_text="Library of Congress Classification")
+
     # File upload
     file = models.FileField(upload_to="thesis_files/", blank=True, null=True)
 
@@ -239,10 +241,10 @@ class Submission(models.Model):
     supervisor_title = models.CharField(max_length=100, blank=True)
     co_supervisor_name = models.CharField(max_length=150, blank=True)
     co_supervisor_email = models.EmailField(blank=True)
-
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
+    lc_classification = models.CharField(max_length=100, blank=True, null=True, help_text="Library of Congress Classification")
 
     file = models.FileField(upload_to="thesis_files/submissions/", blank=True, null=True)
 
@@ -267,7 +269,7 @@ class Submission(models.Model):
         verbose_name = "Pending Submission"
         verbose_name_plural = "Pending Submissions"
 
-    def approve(self, approved_by=None):
+    def approve(self, approved_by=None, lc_classification=None):
         """Approve submission: move data to Thesis table and delete from pending submissions."""
         if self.status != self.STATUS_PENDING:
             raise ValueError("Only pending submissions can be approved")
@@ -292,6 +294,7 @@ class Submission(models.Model):
             category=self.category,
             department=self.department,
             course=self.course,
+            lc_classification=lc_classification or self.lc_classification,
             file=self.file,
         )
 
