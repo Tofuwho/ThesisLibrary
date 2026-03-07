@@ -32,6 +32,22 @@
         </div>
 
         <div class="form-group">
+          <label for="role">Account Role</label>
+          <select id="role" name="role" required
+            style="width:100%; background:#2a2a2a; color:#fff; border:none; padding:12px; border-radius:8px; font-size:1rem;">
+            <option value="admin" {% if user.profile.role=='admin' %}selected{% endif %}>Admin</option>
+            <option value="librarian" {% if user.profile.role=='librarian' %}selected{% endif %}>Librarian</option>
+            <option value="professor" {% if user.profile.role=='professor' %}selected{% endif %}>Staff/Professor
+            </option>
+            <option value="student" {% if user.profile.role=='student' %}selected{% endif %}>Student</option>
+          </select>
+          <p style="font-size: 0.85rem; color: #888; margin-top: 5px;">
+            Note: Admins and Librarians have full view of all studies. Students and Staff/Professors are restricted to
+            abstracts.
+          </p>
+        </div>
+
+        <div class="form-group">
           <label>Password</label>
           <input type="password" value="********" disabled
             style="width:100%; background:#2a2a2a; border:none; padding:10px; border-radius:8px;">

@@ -19,6 +19,7 @@ from datetime import datetime
 from django.contrib import messages
 from django import forms
 from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department, Student, Professor, VerificationCode, PasswordResetCode
+from authapp.models import Profile
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from collections import Counter
@@ -78,11 +79,8 @@ def profile_card(request):
         professor_record.professor_id if professor_record else
         user.username
     )
-    role = "Administrator" if user.is_staff else (
-        "Professor" if professor_record else
-        "Student" if student_record else
-        "Member"
-    )
+    profile_obj, _ = Profile.objects.get_or_create(user=user)
+    role = profile_obj.get_role_display()
 
     submissions_qs = Submission.objects.filter(submitter=user)
     recent_submission = submissions_qs.order_by('-created_at').first()
@@ -94,6 +92,7 @@ def profile_card(request):
     profile = {
         "full_name": full_name,
         "role": role,
+        "role_code": profile_obj.role,
         "username": user.username,
         "identifier": identifier,
         "email": contact_email or "Not provided",
@@ -103,8 +102,8 @@ def profile_card(request):
         "recent_submission_title": recent_submission.title if recent_submission else None,
         "recent_submission_date": recent_submission.created_at if recent_submission else None,
         "initials": initials,
-        "is_admin": user.is_staff,
-        "has_dashboard": not user.is_staff,
+        "is_admin": profile_obj.role in [Profile.ADMIN, Profile.LIBRARIAN],
+        "has_dashboard": profile_obj.role not in [Profile.ADMIN, Profile.LIBRARIAN],
     }
 
     return render(request, 'main/profile_card.html', {"profile": profile})
@@ -660,7 +659,7 @@ def log_admin_action(user, obj, action_flag, message):
     )
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)  # Only allow admin/staff users
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])  # Only allow admin/librarian
 def admin_dashboard(request):
     total_theses = Thesis.objects.count()
     total_users = User.objects.count()
@@ -804,10 +803,24 @@ def edit_user(request, user_id):
         # Handle user detail updates
         username = request.POST.get('username')
         email = request.POST.get('email')
+        role = request.POST.get('role')
 
         user.username = username
         user.email = email
         user.save()
+
+        # Update profile role
+        profile, _ = Profile.objects.get_or_create(user=user)
+        if role:
+            profile.role = role
+            profile.save()
+            
+            # Synchronize is_staff for admin/librarian if needed
+            if role in [Profile.ADMIN, Profile.LIBRARIAN]:
+                user.is_staff = True
+            else:
+                user.is_staff = False
+            user.save()
 
         messages.success(request, "User details updated successfully.")
         return redirect('user_list')  # ✅ redirect here instead of reloading edit page
@@ -1019,11 +1032,15 @@ def view_thesis(request, thesis_id):
     except Thesis.DoesNotExist:
         thesis = get_object_or_404(Submission, pk=thesis_id)
 
-    # 2. Check Authentication (IPP Restriction)
+    # 2. Check Authentication & Permissions (Divide Clear)
     if not request.user.is_authenticated:
-        # Redirect to login or show restriction notice
         messages.error(request, "You must be logged in to view this document.")
-        return redirect('login')  # Or use your restricted_view_thesis_file
+        return redirect('login')
+
+    # ADMIN and LIBRARIAN have full view, others only abstract
+    if request.user.profile.role not in [Profile.ADMIN, Profile.LIBRARIAN]:
+        messages.error(request, "Full document access is restricted to Administrators and Librarians. You can only view the abstract.")
+        return redirect('thesis_detail', pk=thesis_id)
 
     # 3. Verify file exists
     if not getattr(thesis, 'file', None) or not os.path.exists(thesis.file.path):
@@ -1464,9 +1481,15 @@ def my_submissions(request):
 def thesis_detail(request, pk: int):
     thesis = get_object_or_404(Thesis, pk=pk)
     is_authenticated = request.user.is_authenticated
+    
+    can_view_full = False
+    if is_authenticated:
+        can_view_full = request.user.profile.role in [Profile.ADMIN, Profile.LIBRARIAN]
+        
     return render(request, 'main/thesis_detail.html', {
         'thesis': thesis,
-        'is_authenticated': is_authenticated
+        'is_authenticated': is_authenticated,
+        'can_view_full': can_view_full
     })
 
 
@@ -1475,10 +1498,13 @@ def view_thesis_file(request, pk):
     if not thesis.file:
         raise Http404('File not found.')
 
-    # For non-authenticated users, we'll serve a restricted version
-    # This will be handled by a separate view that creates a limited PDF
+    # For non-authenticated users, serve restricted preview
     if not request.user.is_authenticated:
         return restricted_view_thesis_file(request, pk)
+
+    # For authenticated users, check role
+    if request.user.profile.role not in [Profile.ADMIN, Profile.LIBRARIAN]:
+        return HttpResponseForbidden("Access restricted to abstract only for your account type.")
 
     response = FileResponse(thesis.file.open('rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{os.path.basename(thesis.file.name)}"'
@@ -1491,6 +1517,10 @@ def view_thesis_file_highlight(request, pk):
     if not thesis.file:
         raise Http404('File not found.')
 
+    # Check permissions
+    if request.user.is_authenticated and request.user.profile.role not in [Profile.ADMIN, Profile.LIBRARIAN]:
+        return HttpResponseForbidden("Access restricted to abstract only for your account type.")
+    
     query = (request.GET.get('q') or '').strip()
     if not query:
         # Fallback to normal viewing if no query supplied
@@ -1965,10 +1995,10 @@ def signup_view(request):
                     is_active=False  # Account is inactive until verified
                 )
                 
-                # Set user as staff if professor
+                # Set user role based on ID type
                 if professor_exists:
-                    user.is_staff = True
-                    user.save()
+                    user.profile.role = Profile.PROFESSOR
+                    user.profile.save()
                 
                 # Generate verification code
                 code = generate_verification_code()
@@ -2190,8 +2220,8 @@ def signup_view(request):
             )
             
             if professor_exists:
-                user.is_staff = True
-                user.save()
+                user.profile.role = Profile.PROFESSOR
+                user.profile.save()
             
             # Generate and automatically send verification code
             code = generate_verification_code()

@@ -577,11 +577,11 @@
                     <div class="profile-hero-info">
                         <h1 class="profile-full-name">{{ profile.full_name }}</h1>
 
-                        {% if profile.is_admin %}
+                        {% if profile.role_code == 'admin' or profile.role_code == 'librarian' %}
                         <span class="profile-role-badge role-admin">
                             <i class="fas fa-shield-alt"></i> {{ profile.role }}
                         </span>
-                        {% elif profile.role == "Professor" %}
+                        {% elif profile.role_code == 'professor' %}
                         <span class="profile-role-badge role-professor">
                             <i class="fas fa-chalkboard-teacher"></i> {{ profile.role }}
                         </span>
@@ -608,8 +608,10 @@
                     </div>
                     <div class="profile-info-tile">
                         <label><i class="fas fa-id-badge" style="margin-right:5px;color:#a31d23;"></i>
-                            {% if profile.is_admin %}Admin ID{% elif profile.role == "Professor" %}Professor ID{% else
-                            %}Student ID{% endif %}
+                            {% if profile.role_code == 'admin' %}Admin ID
+                            {% elif profile.role_code == 'librarian' %}Librarian ID
+                            {% elif profile.role_code == 'professor' %}Professor ID
+                            {% else %}Student ID{% endif %}
                         </label>
                         <p>{{ profile.identifier }}</p>
                     </div>
