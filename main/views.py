@@ -779,8 +779,21 @@ def admin_log_entries(request):
 
 @login_required
 def user_list(request):
-    users = User.objects.all().order_by('-date_joined')
-    return render(request, 'main/user_list.html', {'users': users})
+    from authapp.models import Profile
+    all_users = User.objects.select_related('profile').order_by('-date_joined')
+    admins     = all_users.filter(profile__role=Profile.ADMIN)
+    librarians = all_users.filter(profile__role=Profile.LIBRARIAN)
+    professors = all_users.filter(profile__role=Profile.PROFESSOR)
+    students   = all_users.filter(profile__role=Profile.STUDENT)
+    active_tab = request.GET.get('tab', 'admin')
+    return render(request, 'main/user_list.html', {
+        'admins':     admins,
+        'librarians': librarians,
+        'professors': professors,
+        'students':   students,
+        'active_tab': active_tab,
+        'total_count': all_users.count(),
+    })
 
 @login_required
 def delete_user(request, user_id):

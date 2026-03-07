@@ -6,19 +6,163 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
-  .search-bar {
-    margin-bottom: 1rem;
+  /* ── Role Tab Navigation ────────────────────────────── */
+  .role-tabs {
     display: flex;
-    justify-content: flex-end;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    border-bottom: 2px solid #eaeaea;
+    padding-bottom: 0;
+  }
+
+  .role-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px 10px 0 0;
+    border: 2px solid transparent;
+    border-bottom: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    background: #f4f6f9;
+    color: #555;
+    transition: all 0.2s;
+    position: relative;
+    bottom: -2px;
+  }
+
+  .role-tab:hover {
+    background: #e8edf5;
+    color: #0277bd;
+  }
+
+  .role-tab.active {
+    background: #fff;
+    border-color: #eaeaea;
+    border-bottom-color: #fff;
+    color: #0277bd;
+  }
+
+  .role-tab .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .tab-admin .tab-count {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  .tab-librarian .tab-count {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+
+  .tab-professor .tab-count {
+    background: #f3e5f5;
+    color: #7b1fa2;
+  }
+
+  .tab-student .tab-count {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .tab-admin.active {
+    border-color: #ef9a9a;
+    border-bottom-color: #fff;
+  }
+
+  .tab-librarian.active {
+    border-color: #90caf9;
+    border-bottom-color: #fff;
+  }
+
+  .tab-professor.active {
+    border-color: #ce93d8;
+    border-bottom-color: #fff;
+  }
+
+  .tab-student.active {
+    border-color: #a5d6a7;
+    border-bottom-color: #fff;
+  }
+
+  /* ── Role Icon Dot ──────────────────────────────────── */
+  .role-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dot-admin {
+    background: #e53935;
+  }
+
+  .dot-librarian {
+    background: #1e88e5;
+  }
+
+  .dot-professor {
+    background: #8e24aa;
+  }
+
+  .dot-student {
+    background: #43a047;
+  }
+
+  /* ── Table Panel ────────────────────────────────────── */
+  .tab-panel {
+    display: none;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+
+  .user-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .user-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a237e;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .search-input {
     background: #ffffff;
     color: #333;
     border: 1px solid #ced4da;
-    padding: 0.5rem 1rem;
+    padding: 0.45rem 1rem;
     border-radius: 8px;
-    width: 250px;
+    width: 240px;
     transition: 0.2s;
   }
 
@@ -28,163 +172,97 @@
     box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
   }
 
-  th {
-    cursor: pointer;
-    transition: color 0.2s;
-    color: #555;
-  }
-
-  th.sort-asc::after {
-    content: " ▲";
-    color: #0277bd;
-  }
-
-  th.sort-desc::after {
-    content: " ▼";
-    color: #0277bd;
-  }
-
-  th:hover {
-    color: #0277bd;
-  }
-
-  #userTable th:nth-child(1),
-  #userTable th:nth-child(2),
-  #userTable th:nth-child(3),
-  #userTable th:nth-child(4) {
-    text-align: left !important;
-  }
-
-  #userTable {
+  /* ── Table Styles ───────────────────────────────────── */
+  .user-table {
     width: 100%;
     border-collapse: collapse;
   }
 
-  #userTable th,
-  #userTable td {
-    padding: 0.8rem;
+  .user-table thead tr {
+    background: linear-gradient(135deg, #f8f9fa, #eef1f7);
+  }
+
+  .user-table th {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+
+  .user-table th:hover {
+    color: #0277bd;
+  }
+
+  .user-table th.sort-asc::after {
+    content: " ▲";
+    color: #0277bd;
+  }
+
+  .user-table th.sort-desc::after {
+    content: " ▼";
+    color: #0277bd;
+  }
+
+  .user-table td {
+    padding: 0.8rem 1rem;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
     vertical-align: middle;
   }
 
-  #userTable td.username {
+  .user-table tbody tr:hover {
+    background: #f8f9fa;
+  }
+
+  .td-username {
+    font-weight: 700;
     color: #0277bd;
-    font-weight: 600;
-  }
-
-  #userTable td {
-    color: #333;
-  }
-
-  #userTable td.staff-status,
-  #userTable td.actions {
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 6px;
-  }
-
-  #userTable tbody tr:hover {
-    background-color: #f8f9fa;
-    transition: background 0.2s;
-  }
-
-  .highlight {
-    background-color: #e3f2fd;
-    color: #000;
-    border-radius: 3px;
-    padding: 0 3px;
-  }
-
-  .btn-edit,
-  .btn-delete {
-    text-decoration: none;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  .btn-table {
-    text-decoration: none;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  .btn-edit {
-    background: #42a5f5;
-    color: #fff;
-  }
-
-  .btn-edit:hover {
-    background: #1e88e5;
-    box-shadow: 0 0 6px rgba(30, 136, 229, 0.4);
-  }
-
-  .btn-delete {
-    background: #e53935;
-    color: #fff;
-  }
-
-  .btn-delete:hover {
-    background: #c62828;
-    box-shadow: 0 0 6px rgba(229, 57, 53, 0.4);
-  }
-
-  .pagination {
-    display: flex;
-    justify-content: center;
     gap: 8px;
-    margin-top: 1rem;
-    flex-wrap: wrap;
   }
 
-  .pagination button {
-    background: #ffffff;
-    border: 1px solid #ced4da;
-    color: #333;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .pagination button:hover {
-    background: #e3f2fd;
-    color: #0d47a1;
-  }
-
-  .pagination button.active {
-    background: #0277bd;
-    color: #fff;
-  }
-
-  .table-actions,
-  .table-status {
+  .user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: #fff;
   }
 
-  .btn-sm {
-    padding: 2px 8px !important;
-    font-size: 0.75rem !important;
+  .avatar-admin {
+    background: linear-gradient(135deg, #e53935, #c62828);
   }
 
-  table td,
-  table th {
-    vertical-align: middle !important;
+  .avatar-librarian {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+  }
+
+  .avatar-professor {
+    background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+  }
+
+  .avatar-student {
+    background: linear-gradient(135deg, #43a047, #2e7d32);
   }
 
   .badge-role {
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
   }
 
   .role-admin {
@@ -206,6 +284,164 @@
     background: #e8f5e9;
     color: #2e7d32;
   }
+
+  .table-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-table {
+    text-decoration: none;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-edit {
+    background: #42a5f5;
+    color: #fff;
+  }
+
+  .btn-edit:hover {
+    background: #1e88e5;
+    box-shadow: 0 2px 8px rgba(30, 136, 229, 0.3);
+  }
+
+  .btn-delete {
+    background: #ef5350;
+    color: #fff;
+  }
+
+  .btn-delete:hover {
+    background: #c62828;
+    box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+  }
+
+  /* ── Pagination ─────────────────────────────────────── */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+  }
+
+  .pagination button {
+    background: #fff;
+    border: 1px solid #ced4da;
+    color: #333;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 0.85rem;
+  }
+
+  .pagination button:hover {
+    background: #e3f2fd;
+    color: #0d47a1;
+  }
+
+  .pagination button.active {
+    background: #0277bd;
+    color: #fff;
+    border-color: #0277bd;
+  }
+
+  .pagination button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  /* ── Empty State ────────────────────────────────────── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #9e9e9e;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 0.8rem;
+    opacity: 0.4;
+  }
+
+  .empty-state p {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  /* ── Header Stats ───────────────────────────────────── */
+  .user-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .user-stat-card {
+    flex: 1;
+    min-width: 130px;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .stat-icon.admin {
+    background: linear-gradient(135deg, #e53935, #c62828);
+  }
+
+  .stat-icon.librarian {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+  }
+
+  .stat-icon.professor {
+    background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+  }
+
+  .stat-icon.student {
+    background: linear-gradient(135deg, #43a047, #2e7d32);
+  }
+
+  .stat-info .stat-number {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1a237e;
+    line-height: 1;
+  }
+
+  .stat-info .stat-label {
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 2px;
+  }
+
+  .highlight {
+    background: #e3f2fd;
+    color: #000;
+    border-radius: 3px;
+    padding: 0 3px;
+  }
 </style>
 {% endblock %}
 
@@ -215,189 +451,236 @@
   <div class="admin-main">
     <div class="dashboard-header">
       <h1>👥 User Management</h1>
-      <p>Manage registered users in the system.</p>
+      <p>Manage registered users, organized by their assigned roles.</p>
     </div>
 
-    <div class="dashboard-section" style="margin-top: 2rem;">
-      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
-        <div class="search-bar">
-          <button onclick="exportTableToExcel('userTable', 'User_List')" class="add-btn"
-            style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
-            📊 Export
-          </button>
-          <input type="text" id="userSearch" class="search-input" placeholder="Search users...">
+    <!-- ── Stats Row ── -->
+    <div class="user-stats">
+      <div class="user-stat-card">
+        <div class="stat-icon admin"><i class="fas fa-user-shield"></i></div>
+        <div class="stat-info">
+          <div class="stat-number">{{ admins.count }}</div>
+          <div class="stat-label">Administrators</div>
         </div>
-
-        <table id="userTable">
-          <thead>
-            <tr style="background-color:#f8f9fa;">
-              <th>Account Name</th>
-              <th>Email Address</th>
-              <th>Recent Access</th>
-              <th>Account Created</th>
-              <th>Account Role</th>
-              <th>Control Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for user in users %}
-            <tr style="border-bottom: 1px solid #eee;">
-              <td class="username">{{ user.username }}</td>
-              <td>{{ user.email }}</td>
-              <td>{{ user.last_login|date:"Y-m-d H:i:s" }}</td>
-              <td>{{ user.date_joined|date:"Y-m-d H:i:s" }}</td>
-              <td>
-                <div class="table-status">
-                  <span class="badge-role role-{{ user.profile.role }}">
-                    {{ user.profile.get_role_display }}
-                  </span>
-                </div>
-              </td>
-              <td>
-                <div class="table-actions">
-                  <a href="{% url 'edit_user' user.id %}" class="btn-table btn-edit">Edit</a>
-                  <a href="{% url 'delete_user' user.id %}" class="btn-table btn-delete">Delete</a>
-                </div>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="6" style="text-align:center; padding:1rem; color:#6c757d;">No users found.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-        <div id="paginationControls" class="pagination"></div>
+      </div>
+      <div class="user-stat-card">
+        <div class="stat-icon librarian"><i class="fas fa-book-reader"></i></div>
+        <div class="stat-info">
+          <div class="stat-number">{{ librarians.count }}</div>
+          <div class="stat-label">Librarians</div>
+        </div>
+      </div>
+      <div class="user-stat-card">
+        <div class="stat-icon professor"><i class="fas fa-chalkboard-teacher"></i></div>
+        <div class="stat-info">
+          <div class="stat-number">{{ professors.count }}</div>
+          <div class="stat-label">Staff / Professors</div>
+        </div>
+      </div>
+      <div class="user-stat-card">
+        <div class="stat-icon student"><i class="fas fa-user-graduate"></i></div>
+        <div class="stat-info">
+          <div class="stat-number">{{ students.count }}</div>
+          <div class="stat-label">Students</div>
+        </div>
       </div>
     </div>
+
+    <!-- ── Main Panel ── -->
+    <div style="background:#fff; border:1px solid #eaeaea; border-radius:14px; padding:1.5rem;">
+
+      <!-- Role Tabs -->
+      <div class="role-tabs">
+        <a href="?tab=admin" id="tab-admin" class="role-tab tab-admin {% if active_tab == 'admin' %}active{% endif %}">
+          <span class="role-dot dot-admin"></span>
+          Administrators
+          <span class="tab-count">{{ admins.count }}</span>
+        </a>
+        <a href="?tab=librarian" id="tab-librarian"
+          class="role-tab tab-librarian {% if active_tab == 'librarian' %}active{% endif %}">
+          <span class="role-dot dot-librarian"></span>
+          Librarians
+          <span class="tab-count">{{ librarians.count }}</span>
+        </a>
+        <a href="?tab=professor" id="tab-professor"
+          class="role-tab tab-professor {% if active_tab == 'professor' %}active{% endif %}">
+          <span class="role-dot dot-professor"></span>
+          Staff / Professors
+          <span class="tab-count">{{ professors.count }}</span>
+        </a>
+        <a href="?tab=student" id="tab-student"
+          class="role-tab tab-student {% if active_tab == 'student' %}active{% endif %}">
+          <span class="role-dot dot-student"></span>
+          Students
+          <span class="tab-count">{{ students.count }}</span>
+        </a>
+      </div>
+
+      <!-- ── Admin Tab ── -->
+      <div class="tab-panel {% if active_tab == 'admin' %}active{% endif %}" id="panel-admin">
+        <div class="user-panel-header">
+          <div class="user-panel-title">
+            <span class="role-dot dot-admin"></span>
+            Administrator Accounts
+          </div>
+          <div class="search-bar">
+            <button onclick="exportTableToExcel('table-admin', 'Admins')" class="add-btn"
+              style="background:#c62828;color:#fff;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;">
+              <i class="fas fa-file-excel"></i> Export
+            </button>
+            <input type="text" class="search-input" placeholder="Search admins..." data-table="table-admin">
+          </div>
+        </div>
+        {% include 'main/partials/user_table.html' with users=admins table_id='table-admin' role_class='admin' avatar_class='avatar-admin' badge_class='role-admin' %}
+        <div class="pagination" id="pg-admin"></div>
+      </div>
+
+      <!-- ── Librarian Tab ── -->
+      <div class="tab-panel {% if active_tab == 'librarian' %}active{% endif %}" id="panel-librarian">
+        <div class="user-panel-header">
+          <div class="user-panel-title">
+            <span class="role-dot dot-librarian"></span>
+            Librarian Accounts
+          </div>
+          <div class="search-bar">
+            <button onclick="exportTableToExcel('table-librarian', 'Librarians')" class="add-btn"
+              style="background:#1565c0;color:#fff;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;">
+              <i class="fas fa-file-excel"></i> Export
+            </button>
+            <input type="text" class="search-input" placeholder="Search librarians..." data-table="table-librarian">
+          </div>
+        </div>
+        {% include 'main/partials/user_table.html' with users=librarians table_id='table-librarian' role_class='librarian' avatar_class='avatar-librarian' badge_class='role-librarian' %}
+        <div class="pagination" id="pg-librarian"></div>
+      </div>
+
+      <!-- ── Professor Tab ── -->
+      <div class="tab-panel {% if active_tab == 'professor' %}active{% endif %}" id="panel-professor">
+        <div class="user-panel-header">
+          <div class="user-panel-title">
+            <span class="role-dot dot-professor"></span>
+            Staff / Professor Accounts
+          </div>
+          <div class="search-bar">
+            <button onclick="exportTableToExcel('table-professor', 'Staff_Professors')" class="add-btn"
+              style="background:#6a1b9a;color:#fff;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;">
+              <i class="fas fa-file-excel"></i> Export
+            </button>
+            <input type="text" class="search-input" placeholder="Search staff/professors..."
+              data-table="table-professor">
+          </div>
+        </div>
+        {% include 'main/partials/user_table.html' with users=professors table_id='table-professor' role_class='professor' avatar_class='avatar-professor' badge_class='role-professor' %}
+        <div class="pagination" id="pg-professor"></div>
+      </div>
+
+      <!-- ── Student Tab ── -->
+      <div class="tab-panel {% if active_tab == 'student' %}active{% endif %}" id="panel-student">
+        <div class="user-panel-header">
+          <div class="user-panel-title">
+            <span class="role-dot dot-student"></span>
+            Student Accounts
+          </div>
+          <div class="search-bar">
+            <button onclick="exportTableToExcel('table-student', 'Students')" class="add-btn"
+              style="background:#2e7d32;color:#fff;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;">
+              <i class="fas fa-file-excel"></i> Export
+            </button>
+            <input type="text" class="search-input" placeholder="Search students..." data-table="table-student">
+          </div>
+        </div>
+        {% include 'main/partials/user_table.html' with users=students table_id='table-student' role_class='student' avatar_class='avatar-student' badge_class='role-student' %}
+        <div class="pagination" id="pg-student"></div>
+      </div>
+
+    </div><!-- /main panel -->
   </div>
 </div>
 
-<script>
-  const table = document.getElementById("userTable");
-  const tbody = table.querySelector("tbody");
-  const allRows = Array.from(tbody.querySelectorAll("tr"));
-  const searchInput = document.getElementById("userSearch");
-  const rowsPerPage = 16;
-  let currentPage = 1;
-
-  function getVisibleRows() {
-    const filter = searchInput.value.toLowerCase();
-    return allRows.filter(row => row.innerText.toLowerCase().includes(filter));
-  }
-
-  function renderTablePage(page = 1) {
-    const visibleRows = getVisibleRows();
-    const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
-
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    currentPage = page;
-
-    allRows.forEach(r => r.style.display = "none");
-    visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage).forEach(r => r.style.display = "");
-
-    renderPagination(totalPages);
-  }
-
-  function renderPagination(totalPages) {
-    const container = document.getElementById("paginationControls");
-    container.innerHTML = "";
-
-    function createBtn(label, page, disabled = false, active = false) {
-      const btn = document.createElement("button");
-      btn.innerText = label;
-      btn.disabled = disabled;
-      btn.classList.toggle("active", active);
-      if (!disabled && !active) btn.addEventListener("click", () => renderTablePage(page));
-      container.appendChild(btn);
-    }
-
-    createBtn("Prev", currentPage - 1, currentPage === 1);
-
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-        createBtn(i, i, false, i === currentPage);
-      } else if (i === 2 && currentPage > 3) {
-        const ellipsis = document.createElement("span");
-        ellipsis.innerText = "...";
-        ellipsis.style.padding = "0 6px";
-        container.appendChild(ellipsis);
-      } else if (i === totalPages - 1 && currentPage < totalPages - 2) {
-        const ellipsis = document.createElement("span");
-        ellipsis.innerText = "...";
-        ellipsis.style.padding = "0 6px";
-        container.appendChild(ellipsis);
-      }
-    }
-
-    createBtn("Next", currentPage + 1, currentPage === totalPages);
-  }
-
-  searchInput.addEventListener("input", () => {
-    const filter = searchInput.value.toLowerCase();
-
-    allRows.forEach(row => {
-      row.querySelectorAll("td").forEach((td, idx) => {
-        if (td.classList.contains("actions") || td.querySelector(".table-actions")) return;
-        if (td.classList.contains("staff-status") || td.querySelector(".table-status")) return;
-        td.innerHTML = td.textContent;
-      });
-
-      row.style.display = "";
-    });
-
-    if (filter) {
-      allRows.forEach(row => {
-        if (row.innerText.toLowerCase().includes(filter)) {
-          row.querySelectorAll("td").forEach((td, idx) => {
-            if (td.classList.contains("actions") || td.querySelector(".table-actions")) return;
-            if (td.classList.contains("staff-status") || td.querySelector(".table-status")) return;
-
-            const regex = new RegExp(`(${filter})`, "gi");
-            td.innerHTML = td.textContent.replace(regex, `<span class="highlight">$1</span>`);
-          });
-        }
-      });
-    }
-
-    currentPage = 1;
-    renderTablePage(currentPage);
-  });
-
-  table.querySelectorAll("th").forEach((th, index) => {
-    th.addEventListener("click", () => {
-      const isAsc = !th.classList.contains("sort-asc");
-      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
-      th.classList.add(isAsc ? "sort-asc" : "sort-desc");
-
-      allRows.sort((a, b) => {
-        const aText = a.children[index].innerText.trim().toLowerCase();
-        const bText = b.children[index].innerText.trim().toLowerCase();
-
-        if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
-          return isAsc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
-        }
-
-        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-      });
-
-      allRows.forEach(row => tbody.appendChild(row));
-      renderTablePage(currentPage);
-    });
-  });
-
-  window.onload = () => renderTablePage(currentPage);
-</script>
 <script src="{% static 'js/xlsx.full.min.js' %}"></script>
 <script>
+  const ROWS_PER_PAGE = 15;
+
+  function initTable(tableId, searchInput, paginationId) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    const allRows = Array.from(tbody.querySelectorAll('tr[data-row]'));
+    const pgContainer = document.getElementById(paginationId);
+    let currentPage = 1;
+
+    function getVisible() {
+      const q = searchInput ? searchInput.value.toLowerCase() : '';
+      return allRows.filter(r => r.innerText.toLowerCase().includes(q));
+    }
+
+    function render(page) {
+      const visible = getVisible();
+      const total = Math.ceil(visible.length / ROWS_PER_PAGE) || 1;
+      if (page < 1) page = 1;
+      if (page > total) page = total;
+      currentPage = page;
+
+      allRows.forEach(r => r.style.display = 'none');
+      visible.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE)
+        .forEach(r => r.style.display = '');
+
+      renderPagination(total);
+    }
+
+    function renderPagination(total) {
+      if (!pgContainer) return;
+      pgContainer.innerHTML = '';
+      if (total <= 1) return;
+
+      const mkBtn = (label, pg, disabled = false, active = false) => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.disabled = disabled;
+        if (active) b.classList.add('active');
+        if (!disabled && !active) b.onclick = () => render(pg);
+        pgContainer.appendChild(b);
+      };
+
+      mkBtn('Prev', currentPage - 1, currentPage === 1);
+      for (let i = 1; i <= total; i++) {
+        if (i === 1 || i === total || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          mkBtn(i, i, false, i === currentPage);
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          const el = document.createElement('span');
+          el.textContent = '…';
+          el.style.padding = '0 6px';
+          pgContainer.appendChild(el);
+        }
+      }
+      mkBtn('Next', currentPage + 1, currentPage === total);
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => render(1));
+    }
+
+    render(1);
+  }
+
+  // Initialise each table
+  document.querySelectorAll('.search-input').forEach(input => {
+    const tableId = input.dataset.table;
+    const pgId = 'pg-' + tableId.replace('table-', '');
+    initTable(tableId, input, pgId);
+  });
+
   function exportTableToExcel(tableID, filename) {
-    let originalTable = document.getElementById(tableID);
-    let tableClone = originalTable.cloneNode(true);
-    let rows = tableClone.querySelectorAll('tr');
-    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
-    let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
+    const orig = document.getElementById(tableID);
+    if (!orig) return;
+    const clone = orig.cloneNode(true);
+    // Show all rows in clone
+    clone.querySelectorAll('tr').forEach(r => r.style.display = '');
+    // Remove Actions column (last)
+    clone.querySelectorAll('tr').forEach(r => {
+      if (r.cells.length > 0) r.deleteCell(-1);
+    });
+    const wb = XLSX.utils.table_to_book(clone, { sheet: 'Sheet1' });
     XLSX.writeFile(wb, filename + '.xlsx');
   }
 </script>
