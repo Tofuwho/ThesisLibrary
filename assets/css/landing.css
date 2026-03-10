@@ -586,8 +586,9 @@ ul {
 
 /* When .right-panel-active AND .show-verify are active: */
 
-.auth-container.right-panel-active.show-verify .verify-container {
-  /* This tells the verify-container to move to the right
+.auth-container.right-panel-active.show-verify .verify-container,
+.auth-container.right-panel-active.show-activation .activation-container {
+  /* This tells the container to move to the right
     and become visible, just like the sign-up form.
   */
   transform: translateX(100%);
@@ -596,11 +597,18 @@ ul {
   animation: show 0.6s;
 }
 
-.auth-container.right-panel-active.show-verify .sign-up-container {
+.auth-container.right-panel-active.show-verify .sign-up-container,
+.auth-container.right-panel-active.show-activation .sign-up-container {
   /* This tells the sign-up form (which is also on the right)
     to hide.
   */
   transform: translateX(100%);
+  opacity: 0;
+  z-index: 1;
+}
+
+.activation-container {
+  left: 0;
   opacity: 0;
   z-index: 1;
 }

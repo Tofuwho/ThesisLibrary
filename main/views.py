@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from datetime import datetime
 from django.contrib import messages
 from django import forms
-from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department, Student, Professor, VerificationCode, PasswordResetCode
+from .models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department, Student, Professor, Librarian, AdminStaff, VerificationCode, PasswordResetCode
 from authapp.models import Profile
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
@@ -796,12 +796,14 @@ def user_list(request):
     })
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.delete()
     return redirect('user_list')
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def edit_user(request, user_id):
     target_user = get_object_or_404(User, id=user_id)
 
@@ -1139,6 +1141,8 @@ def students_list(request):
     students = Student.objects.all().order_by('student_id')
     return render(request, 'main/students_list.html', {'students': students})
 
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def import_students(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request"}, status=400)
@@ -1169,6 +1173,9 @@ def import_students(request):
                 created_at=timezone.now(),
             )
             created_students.append(student)
+            
+        # Ensure premade user account exists regardless
+        create_premade_user(student_id, email, first, last, Profile.STUDENT)
 
     # Prepare data to return to JS
     response_students = [
@@ -1187,6 +1194,8 @@ def import_students(request):
         "students": response_students
     })
 
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def import_professors(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request"}, status=400)
@@ -1218,6 +1227,9 @@ def import_professors(request):
                 created_at=timezone.now(),
             )
             created_professors.append(professor)
+            
+        # Ensure premade user account exists regardless
+        create_premade_user(professor_id, email, first, last, Profile.PROFESSOR)
 
     # Prepare data to return to JS
     response_professors = [
@@ -1237,7 +1249,7 @@ def import_professors(request):
     })
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def add_student(request):
     if request.method == "POST":
         student_id = request.POST.get("student_id")
@@ -1251,13 +1263,16 @@ def add_student(request):
             last_name=last_name,
             email=email,
         )
+        
+        # Create premade user account
+        create_premade_user(student_id, email, first_name, last_name, Profile.STUDENT)
 
         return redirect("students_list")
 
     return render(request, "main/add_student.html")
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def edit_student(request, student_id):
     student = get_object_or_404(Student, student_id=student_id)
     if request.method == "POST":
@@ -1269,12 +1284,16 @@ def edit_student(request, student_id):
         return redirect('students_list')
     return render(request, 'main/edit_student.html', {'student': student})
 
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def delete_student(request, student_id):
     student = get_object_or_404(Student, student_id=student_id)
     student.delete()
     messages.success(request, f"Student {student.student_id} has been deleted.")
     return redirect('students_list')  # adjust if your listing URL name is different
 
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def delete_professor(request, professor_id):
     professor = get_object_or_404(Professor, professor_id=professor_id)
     professor.delete()
@@ -1289,6 +1308,8 @@ def professors_list(request):
     return render(request, 'main/professors_list.html', {'professors': professors})
 
 
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def add_professor(request):
     if request.method == "POST":
         professor_id = request.POST.get("professor_id")
@@ -1302,11 +1323,16 @@ def add_professor(request):
             last_name=last_name,
             email=email
         )
+        
+        # Create premade user account
+        create_premade_user(professor_id, email, first_name, last_name, Profile.PROFESSOR)
         return redirect('professors_list')
 
     return render(request, 'main/add_professor.html')
 
 
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def edit_professor(request, professor_id):
     professor = get_object_or_404(Professor, professor_id=professor_id)
 
@@ -1318,6 +1344,142 @@ def edit_professor(request, professor_id):
         return redirect('professors_list')
 
     return render(request, 'main/edit_professor.html', {'professor': professor})
+
+
+# === LIBRARIAN MANAGEMENT ===
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def librarians_list(request):
+    librarians = Librarian.objects.all().order_by('librarian_id')
+    return render(request, 'main/librarians_list.html', {'librarians': librarians})
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def add_librarian(request):
+    if request.method == "POST":
+        librarian_id = request.POST.get("librarian_id")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+
+        Librarian.objects.get_or_create(
+            librarian_id=librarian_id,
+            defaults={
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': email
+            }
+        )
+        create_premade_user(librarian_id, email, first_name, last_name, Profile.LIBRARIAN)
+        return redirect('librarians_list')
+    return render(request, 'main/add_librarian.html')
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def edit_librarian(request, librarian_id):
+    librarian = get_object_or_404(Librarian, librarian_id=librarian_id)
+    if request.method == "POST":
+        librarian.first_name = request.POST.get("first_name")
+        librarian.last_name = request.POST.get("last_name")
+        librarian.email = request.POST.get("email")
+        librarian.save()
+        return redirect('librarians_list')
+    return render(request, 'main/edit_librarian.html', {'librarian': librarian})
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def delete_librarian(request, librarian_id):
+    librarian = get_object_or_404(Librarian, librarian_id=librarian_id)
+    librarian.delete()
+    messages.success(request, f"Librarian {librarian_id} deleted.")
+    return redirect('librarians_list')
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def import_librarians(request):
+    if request.method != "POST": return JsonResponse({"error": "Invalid"}, status=400)
+    try: data = json.loads(request.body)
+    except: return JsonResponse({"error": "Invalid"}, status=400)
+    items = data.get("librarians", [])
+    created = []
+    for item in items:
+        lib_id = item.get("librarian_id")
+        if lib_id:
+            obj, created_now = Librarian.objects.get_or_create(
+                librarian_id=lib_id, 
+                defaults={"first_name": item.get("first_name"), "last_name": item.get("last_name"), "email": item.get("email")}
+            )
+            if created_now:
+                created.append(obj)
+            create_premade_user(lib_id, item.get("email"), item.get("first_name"), item.get("last_name"), Profile.LIBRARIAN)
+    return JsonResponse({"count": len(created), "librarians": [{"librarian_id": l.librarian_id, "first_name": l.first_name, "last_name": l.last_name, "email": l.email, "created_at": l.created_at.isoformat()} for l in created]})
+
+
+# === ADMIN STAFF MANAGEMENT ===
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def admin_staff_list(request):
+    admins = AdminStaff.objects.all().order_by('admin_id')
+    return render(request, 'main/admin_staff_list.html', {'admins': admins})
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def add_admin_staff(request):
+    if request.method == "POST":
+        admin_id = request.POST.get("admin_id")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+
+        AdminStaff.objects.get_or_create(
+            admin_id=admin_id, 
+            defaults={'first_name': first_name, 'last_name': last_name, 'email': email}
+        )
+        create_premade_user(admin_id, email, first_name, last_name, Profile.ADMIN)
+        return redirect('admin_staff_list')
+    return render(request, 'main/add_admin_staff.html')
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def edit_admin_staff(request, admin_id):
+    admin = get_object_or_404(AdminStaff, admin_id=admin_id)
+    if request.method == "POST":
+        admin.first_name = request.POST.get("first_name")
+        admin.last_name = request.POST.get("last_name")
+        admin.email = request.POST.get("email")
+        admin.save()
+        return redirect('admin_staff_list')
+    return render(request, 'main/edit_admin_staff.html', {'admin': admin})
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def delete_admin_staff(request, admin_id):
+    admin = get_object_or_404(AdminStaff, admin_id=admin_id)
+    admin.delete()
+    messages.success(request, f"Admin Staff {admin_id} deleted.")
+    return redirect('admin_staff_list')
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def import_admin_staff(request):
+    if request.method != "POST": return JsonResponse({"error": "Invalid"}, status=400)
+    try: data = json.loads(request.body)
+    except: return JsonResponse({"error": "Invalid"}, status=400)
+    items = data.get("admins", [])
+    created = []
+    for item in items:
+        a_id = item.get("admin_id")
+        if a_id:
+            obj, created_now = AdminStaff.objects.get_or_create(
+                admin_id=a_id, 
+                defaults={"first_name": item.get("first_name"), "last_name": item.get("last_name"), "email": item.get("email")}
+            )
+            if created_now:
+                created.append(obj)
+            create_premade_user(a_id, item.get("email"), item.get("first_name"), item.get("last_name"), Profile.ADMIN)
+    return JsonResponse({"count": len(created), "admins": [{"admin_id": a.admin_id, "first_name": a.first_name, "last_name": a.last_name, "email": a.email, "created_at": a.created_at.isoformat()} for a in created]})
 
 
 @login_required
@@ -1664,6 +1826,47 @@ def generate_verification_code():
     return ''.join(random.choices(string.digits, k=6))
 
 
+def create_premade_user(username, email, first_name="", last_name="", role=Profile.STUDENT):
+    """Helper to create or update a default User account when an admin adds a record"""
+    user = User.objects.filter(username=username).first()
+    
+    if not user:
+        # Set a default password (e.g., standard for everyone)
+        default_password = f"TCULib@{username}" 
+        user = User.objects.create_user(
+            username=username,
+            email=email or "",
+            password=default_password,
+            first_name=first_name,
+            last_name=last_name,
+            is_active=False # Account stays inactive until activated via signup modal
+        )
+    
+    # Configure/Update profile
+    profile, _ = Profile.objects.get_or_create(user=user)
+    
+    # Only update role/premade status if the user hasn't successfully activated yet 
+    # OR if they are marked as premade.
+    if profile.is_premade or not user.is_active:
+        profile.role = role
+        profile.is_premade = True
+        profile.must_change_password = True
+        profile.save()
+        
+        # Ensure is_staff for admin/librarian roles
+        # Use update() to avoid triggering signals that might overwrite profile roles
+        is_staff = (role in [Profile.ADMIN, Profile.LIBRARIAN])
+        is_superuser = (role == Profile.ADMIN)
+        
+        if user.is_staff != is_staff or user.is_superuser != is_superuser:
+            User.objects.filter(id=user.id).update(
+                is_staff=is_staff,
+                is_superuser=is_superuser
+            )
+            
+    return user
+
+
 def send_verification_email(user, code):
     """Send verification code to user's email"""
     subject = 'Thesis Library - Email Verification Code'
@@ -1817,432 +2020,145 @@ def login_view(request):
     return redirect('/')
 
 
-@csrf_exempt
+@csrf_protect
 def signup_view(request):
-    """Handle signup with ID verification - checks Student/Professor DB"""
-    if request.method == 'POST':
-        if request.content_type == 'application/json':
-            try:
-                data = json.loads(request.body)
-                user_id = data.get("id") or data.get("username")  # Accept both 'id' and 'username'
-                email = data.get("email")
-                password = data.get("password")
-                
-                if not user_id or not password or not email:
-                    return JsonResponse({"success": False, "error": "ID, email, and password are required"}, status=400)
-                
-                # Check if ID exists in Student or Professor database
-                student = None
-                professor = None
-                student_exists = False
-                professor_exists = False
-                
-                try:
-                    student = Student.objects.get(student_id=user_id)
-                    student_exists = True
-                except Student.DoesNotExist:
-                    pass
-                
-                try:
-                    professor = Professor.objects.get(professor_id=user_id)
-                    professor_exists = True
-                except Professor.DoesNotExist:
-                    pass
-                
-                if not student_exists and not professor_exists:
-                    return JsonResponse({"success": False, "error": "ID not found in our database. Please contact administrator."}, status=400)
-                
-                # Get official email from Student/Professor record
-                official_email = None
-                official_email_original = None
-                if student_exists and student.email:
-                    official_email_original = student.email.strip()
-                    official_email = official_email_original.lower()
-                elif professor_exists and professor.email:
-                    official_email_original = professor.email.strip()
-                    official_email = official_email_original.lower()
-                
-                # Validate that the entered email matches the official email for this ID
-                if official_email:
-                    # If official email exists in database, user must enter the exact same email (case-insensitive)
-                    if email.strip().lower() != official_email:
-                        return JsonResponse({
-                            "success": False, 
-                            "error": f"The email you entered does not match the email on file for ID {user_id}. Please use the correct email address."
-                        }, status=400)
-                    final_email = official_email_original
-                else:
-                    # If no official email in database, use the email they entered
-                    # But check if this email is already associated with a different ID
-                    email_lower = email.strip().lower()
-                    # Check if this email is associated with another student/professor
-                    conflicting_student = Student.objects.filter(email__iexact=email_lower).exclude(student_id=user_id).first()
-                    conflicting_professor = Professor.objects.filter(email__iexact=email_lower).exclude(professor_id=user_id).first()
-                    
-                    if conflicting_student:
-                        return JsonResponse({
-                            "success": False,
-                            "error": f"This email is already associated with Student ID {conflicting_student.student_id}. Please use the correct email for your ID."
-                        }, status=400)
-                    
-                    if conflicting_professor:
-                        return JsonResponse({
-                            "success": False,
-                            "error": f"This email is already associated with Professor ID {conflicting_professor.professor_id}. Please use the correct email for your ID."
-                        }, status=400)
-                    
-                    final_email = email.strip()
-                
-                # Check if user already exists
-                existing_user = None
-                try:
-                    existing_user = User.objects.get(username=user_id)
-                except User.DoesNotExist:
-                    pass
-                
-                if existing_user:
-                    # User already exists - check if verified
-                    try:
-                        verification = VerificationCode.objects.get(user=existing_user)
-                        if verification.is_verified:
-                            # Account is already verified - tell them to log in
-                            return JsonResponse({
-                                "success": False, 
-                                "error": "An account with this ID already exists and is verified. Please log in instead."
-                            }, status=400)
-                        else:
-                            # Account exists but not verified - resend verification code
-                            # Update password if provided
-                            if password:
-                                existing_user.set_password(password)
-                                existing_user.save()
-                            
-                            # Update email if it's different
-                            if existing_user.email != final_email:
-                                existing_user.email = final_email
-                                existing_user.save()
-                            
-                            # Generate new verification code
-                            code = generate_verification_code()
-                            expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
-                            
-                            # Update or create verification code
-                            verification.code = code
-                            verification.expires_at = expires_at
-                            verification.is_verified = False
-                            verification.save()
-                            
-                            # Resend verification email
-                            email_sent = send_verification_email(existing_user, code)
-                            
-                            if email_sent:
-                                return JsonResponse({
-                                    "success": True,
-                                    "message": f"Verification code has been resent to {final_email}. Please check your email.",
-                                    "requires_verification": True,
-                                    "email_sent_to": final_email,
-                                    "resend": True
-                                })
-                            else:
-                                return JsonResponse({
-                                    "success": False,
-                                    "error": "Failed to resend verification email. Please contact support."
-                                }, status=500)
-                    except VerificationCode.DoesNotExist:
-                        # User exists but no verification code - create one
-                        code = generate_verification_code()
-                        expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
-                        VerificationCode.objects.create(
-                            user=existing_user,
-                            code=code,
-                            expires_at=expires_at
-                        )
-                        
-                        # Update password and email
-                        if password:
-                            existing_user.set_password(password)
-                        existing_user.email = final_email
-                        existing_user.is_active = False
-                        if professor_exists:
-                            existing_user.is_staff = True
-                        existing_user.save()
-                        
-                        email_sent = send_verification_email(existing_user, code)
-                        
-                        if email_sent:
-                            return JsonResponse({
-                                "success": True,
-                                "message": f"Verification code has been sent to {final_email}. Please check your email.",
-                                "requires_verification": True,
-                                "email_sent_to": final_email
-                            })
-                        else:
-                            return JsonResponse({
-                                "success": False,
-                                "error": "Failed to send verification email. Please contact support."
-                            }, status=500)
-                
-                # Check if email is already in use by a different user
-                if User.objects.filter(email=final_email).exclude(username=user_id).exists():
-                    return JsonResponse({"success": False, "error": "This email is already registered with a different account"}, status=400)
-                
-                # Create new inactive user account
-                user = User.objects.create_user(
-                    username=user_id,
-                    email=final_email,
-                    password=password,
-                    is_active=False  # Account is inactive until verified
-                )
-                
-                # Set user role based on ID type
-                if professor_exists:
-                    user.profile.role = Profile.PROFESSOR
-                    user.profile.save()
-                
-                # Generate verification code
-                code = generate_verification_code()
-                expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
-                
-                # Create verification code record
-                VerificationCode.objects.create(
-                    user=user,
-                    code=code,
-                    expires_at=expires_at
-                )
-                
-                # Automatically send verification email to the email address (from DB or entered)
-                email_sent = send_verification_email(user, code)
-                
-                if email_sent:
-                    email_message = f"Account created! Verification code has been automatically sent to {final_email}."
-                    return JsonResponse({
-                        "success": True, 
-                        "message": email_message,
-                        "requires_verification": True,
-                        "email_sent_to": final_email
-                    })
-                else:
-                    return JsonResponse({
-                        "success": False, 
-                        "error": "Account created but failed to send verification email. Please contact support."
-                    }, status=500)
+    """Handle signup with ID verification and staged activation for premade accounts."""
+    if request.method != 'POST':
+        return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
 
-            except Exception as e:
-                return JsonResponse({"success": False, "error": str(e)}, status=500)
-        else:
-            # Form POST
-            user_id = request.POST.get('id') or request.POST.get('username')
-            email = request.POST.get('email')
-            password = request.POST.get('password')
+    # 1. Extract Data
+    if request.content_type == 'application/json':
+        data = json.loads(request.body)
+        user_id = data.get("id") or data.get("username")
+        email = data.get("email")
+        password = data.get("password")
+        action = data.get("action")
+    else:
+        user_id = request.POST.get('id') or request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        action = request.POST.get('action')
+
+    if not user_id:
+        return JsonResponse({"success": False, "error": "ID is required"}, status=400)
+
+    # 2. Handle Activation Confirmation
+    if action == "activate_premade":
+        if not password:
+             return JsonResponse({"success": False, "error": "Password is required for activation"}, status=400)
+        try:
+            user = User.objects.get(username=user_id)
+            if not getattr(user.profile, 'is_premade', False):
+                 return JsonResponse({"success": False, "error": "This account is already activated or not eligible."}, status=400)
             
-            if not user_id or not email or not password:
-                errors = {'__all__': ['ID, email, and password are required']}
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return JsonResponse({'success': False, 'errors': errors})
-                else:
-                    messages.error(request, 'ID, email, and password are required.')
-                    return redirect('/')
+            user.set_password(password)
+            user.is_active = True
+            user.save()
             
-            # Check if ID exists in Student or Professor database
-            student = None
-            professor = None
-            student_exists = False
-            professor_exists = False
+            user.profile.is_premade = False
+            user.profile.must_change_password = False
+            user.profile.save()
             
-            try:
-                student = Student.objects.get(student_id=user_id)
-                student_exists = True
-            except Student.DoesNotExist:
-                pass
-            
-            try:
-                professor = Professor.objects.get(professor_id=user_id)
-                professor_exists = True
-            except Professor.DoesNotExist:
-                pass
-            
-            if not student_exists and not professor_exists:
-                errors = {'__all__': ['ID not found in our database. Please contact administrator.']}
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return JsonResponse({'success': False, 'errors': errors})
-                else:
-                    messages.error(request, 'ID not found in our database.')
-                    return redirect('/')
-            
-            # Get official email from Student/Professor record
-            official_email = None
-            official_email_original = None
-            if student_exists and student.email:
-                official_email_original = student.email.strip()
-                official_email = official_email_original.lower()
-            elif professor_exists and professor.email:
-                official_email_original = professor.email.strip()
-                official_email = official_email_original.lower()
-            
-            # Validate that the entered email matches the official email for this ID
-            if official_email:
-                # If official email exists in database, user must enter the exact same email (case-insensitive)
-                if email.strip().lower() != official_email:
-                    error_msg = f'The email you entered does not match the email on file for ID {user_id}. Please use the correct email address.'
-                    errors = {'__all__': [error_msg]}
-                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                        return JsonResponse({'success': False, 'errors': errors})
-                    else:
-                        messages.error(request, error_msg)
-                        return redirect('/')
-                final_email = official_email_original
-            else:
-                # If no official email in database, use the email they entered
-                # But check if this email is already associated with a different ID
-                email_lower = email.strip().lower()
-                # Check if this email is associated with another student/professor
-                conflicting_student = Student.objects.filter(email__iexact=email_lower).exclude(student_id=user_id).first()
-                conflicting_professor = Professor.objects.filter(email__iexact=email_lower).exclude(professor_id=user_id).first()
-                
-                if conflicting_student:
-                    error_msg = f'This email is already associated with Student ID {conflicting_student.student_id}. Please use the correct email for your ID.'
-                    errors = {'__all__': [error_msg]}
-                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                        return JsonResponse({'success': False, 'errors': errors})
-                    else:
-                        messages.error(request, error_msg)
-                        return redirect('/')
-                
-                if conflicting_professor:
-                    error_msg = f'This email is already associated with Professor ID {conflicting_professor.professor_id}. Please use the correct email for your ID.'
-                    errors = {'__all__': [error_msg]}
-                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                        return JsonResponse({'success': False, 'errors': errors})
-                    else:
-                        messages.error(request, error_msg)
-                        return redirect('/')
-                
-                final_email = email.strip()
-            
-            # Check if user already exists
-            existing_user = None
-            try:
-                existing_user = User.objects.get(username=user_id)
-            except User.DoesNotExist:
-                pass
-            
-            if existing_user:
-                # User already exists - check if verified
-                try:
-                    verification = VerificationCode.objects.get(user=existing_user)
-                    if verification.is_verified:
-                        # Account is already verified
-                        errors = {'__all__': ['An account with this ID already exists and is verified. Please log in instead.']}
-                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                            return JsonResponse({'success': False, 'errors': errors})
-                        else:
-                            messages.error(request, 'An account with this ID already exists and is verified. Please log in instead.')
-                            return redirect('/')
-                    else:
-                        # Account exists but not verified - resend verification code
-                        if password:
-                            existing_user.set_password(password)
-                            existing_user.save()
-                        
-                        if existing_user.email != final_email:
-                            existing_user.email = final_email
-                            existing_user.save()
-                        
-                        code = generate_verification_code()
-                        expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
-                        verification.code = code
-                        verification.expires_at = expires_at
-                        verification.is_verified = False
-                        verification.save()
-                        
-                        email_sent = send_verification_email(existing_user, code)
-                        email_message = f"Verification code has been resent to {final_email}. Please check your email."
-                        
-                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                            return JsonResponse({
-                                'success': True,
-                                'message': email_message,
-                                'requires_verification': True,
-                                'email_sent_to': final_email,
-                                'resend': True
-                            })
-                        else:
-                            messages.success(request, email_message)
-                            return redirect('/')
-                except VerificationCode.DoesNotExist:
-                    # User exists but no verification code - create one
-                    code = generate_verification_code()
-                    expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
-                    VerificationCode.objects.create(
-                        user=existing_user,
-                        code=code,
-                        expires_at=expires_at
-                    )
-                    
-                    if password:
-                        existing_user.set_password(password)
-                    existing_user.email = final_email
-                    existing_user.is_active = False
-                    if professor_exists:
-                        existing_user.is_staff = True
-                    existing_user.save()
-                    
-                    email_sent = send_verification_email(existing_user, code)
-                    email_message = f"Verification code has been sent to {final_email}. Please check your email."
-                    
-                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                        return JsonResponse({
-                            'success': True,
-                            'message': email_message,
-                            'requires_verification': True,
-                            'email_sent_to': final_email
-                        })
-                    else:
-                        messages.success(request, email_message)
-                        return redirect('/')
-            
-            # Check if email is already in use by a different user
-            if User.objects.filter(email=final_email).exclude(username=user_id).exists():
-                errors = {'__all__': ['This email is already registered with a different account']}
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return JsonResponse({'success': False, 'errors': errors})
-                else:
-                    messages.error(request, 'This email is already registered with a different account.')
-                    return redirect('/')
-            
-            # Create new inactive user
-            user = User.objects.create_user(
-                username=user_id,
-                email=final_email,
-                password=password,
-                is_active=False
+            # Ensure verification record exists
+            VerificationCode.objects.get_or_create(
+                user=user,
+                defaults={'code': '000000', 'expires_at': timezone.now() + timezone.timedelta(days=365), 'is_verified': True}
             )
-            
-            if professor_exists:
-                user.profile.role = Profile.PROFESSOR
-                user.profile.save()
-            
-            # Generate and automatically send verification code
-            code = generate_verification_code()
-            expires_at = timezone.now() + timezone.timedelta(hours=getattr(settings, 'VERIFICATION_CODE_EXPIRY_HOURS', 24))
-            VerificationCode.objects.create(user=user, code=code, expires_at=expires_at)
-            email_sent = send_verification_email(user, code)
-            
-            email_message = f"Account created! Verification code has been automatically sent to {final_email}."
-            
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': True, 
-                    'message': email_message,
-                    'requires_verification': True,
-                    'email_sent_to': final_email
-                })
-            else:
-                messages.success(request, email_message)
-                return redirect('/')
-    
-    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+            return JsonResponse({"success": True, "message": "Account activated successfully! You can now log in."})
+        except User.DoesNotExist:
+            return JsonResponse({"success": False, "error": "User not found."}, status=404)
 
+    # 3. Standard Signup Flow
+    # Check ID legitimacy
+    student = Student.objects.filter(student_id=user_id).first()
+    professor = Professor.objects.filter(professor_id=user_id).first()
+    librarian = Librarian.objects.filter(librarian_id=user_id).first()
+    admin_staff = AdminStaff.objects.filter(admin_id=user_id).first()
+    
+    if not any([student, professor, librarian, admin_staff]):
+        return JsonResponse({"success": False, "error": "ID not found in our database. Please contact administrator."}, status=400)
+    
+    matched_record = student or professor or librarian or admin_staff
+    official_email = (matched_record.email or "").strip().lower()
+    
+    # 4. Email Validation
+    if not email:
+        return JsonResponse({"success": False, "error": "Email is required"}, status=400)
+    
+    entered_email = email.strip().lower()
+    if official_email and entered_email != official_email:
+        return JsonResponse({"success": False, "error": f"Email mismatch. Please use the email on file for ID {user_id}."}, status=400)
+    
+    # Check email conflicts
+    conflict = User.objects.filter(email__iexact=entered_email).exclude(username=user_id).exists()
+    if conflict:
+        return JsonResponse({"success": False, "error": "This email is already associated with another account."}, status=400)
+
+    # 5. Check Existing User
+    try:
+        existing_user = User.objects.get(username=user_id)
+        if getattr(existing_user.profile, 'is_premade', False):
+            # TRANSITION TO STAGED ACTIVATION PROMPT
+            return JsonResponse({
+                "success": True,
+                "requires_activation": True,
+                "message": f"Account found for {existing_user.username}! To complete activation, please set your new password.",
+                "id": user_id,
+                "email": entered_email
+            })
+        
+        # If exists but not premade, check if verified
+        try:
+            v = VerificationCode.objects.get(user=existing_user)
+            if v.is_verified:
+                return JsonResponse({"success": False, "error": "Account already exists and is verified. Please log in."}, status=400)
+            # If not verified, we can treat as "new" or just auto-verify now
+        except VerificationCode.DoesNotExist:
+            pass
+            
+    except User.DoesNotExist:
+        # Create new user
+        if not password:
+             return JsonResponse({"success": False, "error": "Password is required for new accounts"}, status=400)
+             
+        user = User.objects.create_user(username=user_id, email=email, password=password, is_active=True)
+        
+        # Set Role
+        if professor: user.profile.role = Profile.PROFESSOR
+        elif librarian: 
+            user.profile.role = Profile.LIBRARIAN
+            user.is_staff = True
+        elif admin_staff:
+            user.profile.role = Profile.ADMIN
+            user.is_staff = True
+            user.is_superuser = True
+        user.profile.save()
+        user.save()
+        
+        VerificationCode.objects.create(user=user, code='000000', expires_at=timezone.now() + timezone.timedelta(days=365), is_verified=True)
+        
+        return JsonResponse({"success": True, "message": "Account created and activated! You can now log in."})
+
+    # Catch-all for existing unverified users reaching here
+    existing_user.is_active = True
+    if password: 
+        existing_user.set_password(password)
+    existing_user.save()
+    
+    # Ensure verification record exists
+    v, _ = VerificationCode.objects.get_or_create(
+        user=existing_user, 
+        defaults={
+            'code': '000000', 
+            'expires_at': timezone.now() + timezone.timedelta(days=365), 
+            'is_verified': True
+        }
+    )
+    if not v.is_verified:
+        v.is_verified = True
+        v.save()
+    
+    return JsonResponse({"success": True, "message": "Account activated successfully! You can now log in."})
 
 @csrf_protect
 def verify_email_view(request):

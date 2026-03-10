@@ -1,0 +1,171 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load tz %}
+
+{% block body_class %}admin-page{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+  .search-bar { margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+  .button-group { display: flex; gap: 10px; }
+  .search-input { background: #ffffff; color: #333; border: 1px solid #ced4da; padding: 0.5rem 1rem; border-radius: 8px; width: 250px; transition: 0.2s; }
+  .search-input:focus { outline: none; border-color: #0277bd; box-shadow: 0 0 5px rgba(2, 119, 189, 0.3); }
+  .add-btn { background: #43a047; color: #fff; padding: 0.5rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; transition: 0.2s; cursor: pointer; border: none; }
+  .add-btn:hover { background: #2e7d32; }
+  th { cursor: pointer; color: #555; }
+  #adminTable tbody tr:hover { background-color: #f8f9fa; }
+  .action-buttons { display: flex; gap: 8px; }
+  .edit-btn, .delete-btn { padding: 0.4rem 0.8rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem; color: #fff; }
+  .edit-btn { background-color: #42a5f5; }
+  .delete-btn { background-color: #e53935; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  {% include 'main/admin_sidebar.html' %}
+  <div class="admin-main">
+    <div class="dashboard-header">
+      <h1>🛡 Admin Staff Database</h1>
+      <p>Manage administrator IDs for account registration.</p>
+    </div>
+
+    <div class="dashboard-section" style="margin-top: 2rem;">
+      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
+        <div class="search-bar">
+          <input type="text" id="adminSearch" class="search-input" placeholder="Search admin staff...">
+          <div class="button-group">
+            <button onclick="exportTableToExcel('adminTable', 'Admins_List')" class="add-btn" style="background: #2e7d32; cursor: pointer;">
+              📊 Export Excel
+            </button>
+            {% if request.user.profile.role == 'admin' %}
+            <label for="importFile" class="add-btn" style="cursor:pointer; background: #0277bd;">⬆ Import</label>
+            <input type="file" id="importFile" accept=".csv, .xls, .xlsx" style="display:none;">
+            <a href="{% url 'add_admin_staff' %}" class="add-btn">+ Add Admin</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <table id="adminTable" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background-color:#f8f9fa;">
+              <th style="padding:0.8rem; text-align:left;">Admin ID</th>
+              <th style="padding:0.8rem; text-align:left;">First Name</th>
+              <th style="padding:0.8rem; text-align:left;">Last Name</th>
+              <th style="padding:0.8rem; text-align:left;">Email</th>
+              {% if request.user.profile.role == 'admin' %}
+              <th style="padding:0.8rem; text-align:left;">Actions</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in admins %}
+            <tr style="border-bottom:1px solid #eee;">
+              <td style="padding:0.8rem; color:#0277bd; font-weight:600;">{{ a.admin_id }}</td>
+              <td style="padding:0.8rem;">{{ a.first_name|default:"—" }}</td>
+              <td style="padding:0.8rem;">{{ a.last_name|default:"—" }}</td>
+              <td style="padding:0.8rem;">{{ a.email|default:"—" }}</td>
+              {% if request.user.profile.role == 'admin' %}
+              <td style="padding:0.8rem;">
+                <div class="action-buttons">
+                  <a href="{% url 'edit_admin_staff' a.admin_id %}" class="edit-btn">Edit</a>
+                  <a href="{% url 'delete_admin_staff' a.admin_id %}" class="delete-btn" onclick="return confirm('Delete?');">Delete</a>
+                </div>
+              </td>
+              {% endif %}
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center; padding:2rem; color:#6c757d;">No records found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/xlsx.full.min.js' %}"></script>
+<script>
+  // Export Logic
+  function exportTableToExcel(tableID, filename = 'Export') {
+    let wb = XLSX.utils.table_to_book(document.getElementById(tableID), {sheet:"Sheet1"});
+    XLSX.writeFile(wb, filename + '.xlsx');
+  }
+
+  // Import Logic
+  let importedData = [];
+  document.getElementById("importFile").addEventListener("change", function() {
+    const file = this.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    const ext = file.name.split(".").pop().toLowerCase();
+    reader.onload = (e) => {
+        if(ext === "csv") processCSV(e.target.result);
+        else if(ext === "xls" || ext === "xlsx") processExcel(e.target.result);
+    };
+    if(ext === "csv") reader.readAsText(file);
+    else reader.readAsArrayBuffer(file);
+  });
+
+  function processCSV(text) {
+    const lines = text.split("\n").map(l => l.split(","));
+    const col = mapColumns(lines[0]);
+    importedData = [];
+    for(let i=1; i<lines.length; i++) {
+        const item = extractItem(lines[i], col);
+        if(item) importedData.push(item);
+    }
+    saveToDb();
+  }
+
+  function processExcel(binary) {
+    const wb = XLSX.read(binary, {type:"array"});
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
+    const col = mapColumns(rows[0]);
+    importedData = [];
+    for(let i=1; i<rows.length; i++) {
+        const item = extractItem(rows[i], col);
+        if(item) importedData.push(item);
+    }
+    saveToDb();
+  }
+
+  function mapColumns(head) {
+    const m = {};
+    head.forEach((h, i) => {
+      const k = h.trim().toLowerCase();
+      if(k.includes("id")) m.id = i;
+      if(k.includes("first")) m.first = i;
+      if(k.includes("last")) m.last = i;
+      if(k.includes("email")) m.email = i;
+    });
+    return m;
+  }
+
+  function extractItem(row, col) {
+    const id = row[col.id]?.toString().trim();
+    if(!id) return null;
+    return { admin_id: id, first_name: row[col.first], last_name: row[col.last], email: row[col.email] };
+  }
+
+  function saveToDb() {
+    fetch("{% url 'import_admin_staff' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": "{{ csrf_token }}", "Content-Type": "application/json" },
+        body: JSON.stringify({ admins: importedData })
+    }).then(r => r.json()).then(d => {
+        alert("Imported " + d.count + " records.");
+        location.reload();
+    });
+  }
+
+  // Search Logic
+  document.getElementById("adminSearch").addEventListener("input", function() {
+    const f = this.value.toLowerCase();
+    document.querySelectorAll("#adminTable tbody tr").forEach(r => {
+        r.style.display = r.innerText.toLowerCase().includes(f) ? "" : "none";
+    });
+  });
+</script>
+{% endblock %}

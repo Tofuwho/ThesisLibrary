@@ -1,0 +1,4 @@
+admin_id,first_name,last_name,email
+ADM-3001,Super,Admin,super@admin.tc
+ADM-3002,System,Operator,sysop@admin.tc
+ADM-3003,Staff,One,staff1@admin.tc

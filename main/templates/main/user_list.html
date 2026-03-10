@@ -449,10 +449,56 @@
 <div class="admin-layout">
   {% include 'main/admin_sidebar.html' %}
   <div class="admin-main">
-    <div class="dashboard-header">
-      <h1>👥 User Management</h1>
-      <p>Manage registered users, organized by their assigned roles.</p>
+    <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h1>👥 User Management</h1>
+        <p>Manage registered users, organized by their assigned roles.</p>
+      </div>
+      {% if request.user.profile.role == 'admin' %}
+      <div class="header-actions" style="display: flex; gap: 10px;">
+        <!-- Add User Dropdown -->
+        <div class="dropdown" style="position: relative; display: inline-block;">
+          <button class="add-btn" style="background: #0277bd; color: #fff; padding: 0.6rem 1.2rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-plus"></i> Add Account
+          </button>
+          <div class="dropdown-content" style="display: none; position: absolute; right: 0; background: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1001; min-width: 220px; padding: 10px 0;">
+            <a href="{% url 'add_student' %}" style="display: block; padding: 10px 20px; text-decoration: none; color: #333; font-size: 0.9rem;">+ Add Student</a>
+            <a href="{% url 'add_professor' %}" style="display: block; padding: 10px 20px; text-decoration: none; color: #333; font-size: 0.9rem;">+ Add Staff / Professor</a>
+            <a href="{% url 'add_librarian' %}" style="display: block; padding: 10px 20px; text-decoration: none; color: #333; font-size: 0.9rem;">+ Add Librarian</a>
+            <a href="{% url 'add_admin_staff' %}" style="display: block; padding: 10px 20px; text-decoration: none; color: #333; font-size: 0.9rem;">+ Add Administrator</a>
+          </div>
+        </div>
+        
+        <!-- Import Dropdown -->
+        <div class="dropdown" style="position: relative; display: inline-block;">
+          <button class="add-btn" style="background: #2e7d32; color: #fff; padding: 0.6rem 1.2rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-file-import"></i> Bulk Import
+          </button>
+          <div class="dropdown-content" style="display: none; position: absolute; right: 0; background: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1001; min-width: 220px; padding: 10px 0;">
+            <a href="{% url 'students_list' %}" style="display: block; padding: 10px 20px; text-decoration: none; color: #333; font-size: 0.9rem;">⬆ Import Students</a>
+            <a href="{% url 'professors_list' %}" style="display: block; padding: 10px 20px; text-decoration: none; color: #333; font-size: 0.9rem;">⬆ Import Professors</a>
+            <a href="{% url 'librarians_list' %}" style="display: block; padding: 10px 20px; text-decoration: none; color: #333; font-size: 0.9rem;">⬆ Import Librarians</a>
+            <a href="{% url 'admin_staff_list' %}" style="display: block; padding: 10px 20px; text-decoration: none; color: #333; font-size: 0.9rem;">⬆ Import Admins</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
     </div>
+
+    <!-- Dropdown hover script -->
+    <script>
+      document.querySelectorAll('.dropdown').forEach(dd => {
+        const btn = dd.querySelector('button');
+        const content = dd.querySelector('.dropdown-content');
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        };
+      });
+      document.onclick = () => {
+        document.querySelectorAll('.dropdown-content').forEach(c => c.style.display = 'none');
+      };
+    </script>
 
     <!-- ── Stats Row ── -->
     <div class="user-stats">
