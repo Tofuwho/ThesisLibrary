@@ -49,6 +49,21 @@ urlpatterns = [
     path("archive-old-theses/", views.archive_old_theses, name="archive_old_theses"),
     path('students/<str:student_id>/delete/', views.delete_student, name='delete_student'),
     path('professors/<str:professor_id>/delete/', views.delete_professor, name='delete_professor'),
+    
+    # Librarian Management
+    path('librarians/', views.librarians_list, name='librarians_list'),
+    path('import-librarians/', views.import_librarians, name='import_librarians'),
+    path('add-librarian/', views.add_librarian, name='add_librarian'),
+    path('edit-librarian/<str:librarian_id>/', views.edit_librarian, name='edit_librarian'),
+    path('librarians/<str:librarian_id>/delete/', views.delete_librarian, name='delete_librarian'),
+    
+    # Admin Staff Management (Pre-registration)
+    path('admin-staff/', views.admin_staff_list, name='admin_staff_list'),
+    path('import-admin-staff/', views.import_admin_staff, name='import_admin_staff'),
+    path('add-admin-staff/', views.add_admin_staff, name='add_admin_staff'),
+    path('edit-admin-staff/<str:admin_id>/', views.edit_admin_staff, name='edit_admin_staff'),
+    path('admin-staff/<str:admin_id>/delete/', views.delete_admin_staff, name='delete_admin_staff'),
+
     path('thesis/<int:thesis_id>/view/', views.view_thesis, name='view_thesis'),
     path('thesis/<int:thesis_id>/page/<int:page_num>/', views.serve_thesis_page_image, name='serve_thesis_page_image'),
 ]

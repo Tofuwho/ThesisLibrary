@@ -1,0 +1,7 @@
+[
+  {"professor_id": "P-1001", "first_name": "Albert", "last_name": "Einstein", "email": "albert.e@university.edu"},
+  {"professor_id": "P-1002", "first_name": "Marie", "last_name": "Curie", "email": "marie.c@university.edu"},
+  {"professor_id": "P-1003", "first_name": "Isaac", "last_name": "Newton", "email": "isaac.n@university.edu"},
+  {"professor_id": "P-1004", "first_name": "Ada", "last_name": "Lovelace", "email": "ada.l@university.edu"},
+  {"professor_id": "P-1005", "first_name": "Stephen", "last_name": "Hawking", "email": "stephen.h@university.edu"}
+]

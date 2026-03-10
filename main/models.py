@@ -413,6 +413,38 @@ class Professor(models.Model):
         return f"{self.professor_id} - {self.first_name} {self.last_name}".strip() or self.professor_id
 
 
+class Librarian(models.Model):
+    """Librarian database - stores librarian IDs for verification"""
+    librarian_id = models.CharField(max_length=50, unique=True, primary_key=True)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Librarian"
+        verbose_name_plural = "Librarians"
+    
+    def __str__(self):
+        return f"{self.librarian_id} - {self.first_name} {self.last_name}".strip() or self.librarian_id
+
+
+class AdminStaff(models.Model):
+    """Admin Staff database - stores admin IDs for verification"""
+    admin_id = models.CharField(max_length=50, unique=True, primary_key=True)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Admin Staff"
+        verbose_name_plural = "Admin Staffs"
+    
+    def __str__(self):
+        return f"{self.admin_id} - {self.first_name} {self.last_name}".strip() or self.admin_id
+
+
 class VerificationCode(models.Model):
     """Stores verification codes for email verification"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='verification_code')

@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeBtn = document.getElementById('closeModal');
   const authContainer = document.getElementById('auth-container');
   const verifyContainer = document.getElementById('verifyContainer');
+  const activationContainer = document.getElementById('activationContainer');
+  const activationForm = document.getElementById('activationForm');
 
   // === 1. SETUP MOBILE-ONLY TOGGLES ===
   if (window.innerWidth <= 768) {
@@ -234,20 +236,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.success) {
           if (data.requires_verification) {
-            showVerificationForm(user_id); // <-- This now ONLY adds a class
+            showVerificationForm(user_id);
             if (signupMessage) {
               signupMessage.textContent = data.message || 'Account created! Please verify your email.';
               signupMessage.style.color = 'green';
               signupMessage.style.display = 'block';
             }
-          } else {
-            authContainer.classList.remove('right-panel-active');
+          } else if (data.requires_activation) {
+            // Show Activation Form for Premade Accounts
+            showActivationForm(data.id, data.email);
+            const activationMsg = document.getElementById('activationMessage');
+            if (activationMsg) {
+              activationMsg.textContent = data.message;
+              activationMsg.style.color = 'green';
+              activationMsg.style.display = 'block';
+            }
             if (signupMessage) {
-              signupMessage.textContent = 'Account created successfully! Please sign in.';
+              signupMessage.textContent = data.message;
               signupMessage.style.color = 'green';
               signupMessage.style.display = 'block';
             }
-            showSuccessMessage('Account created successfully! Please sign in.');
+          } else {
+            authContainer.classList.remove('right-panel-active');
+            const successMsg = data.message || 'Account created successfully! Please sign in.';
+            if (signupMessage) {
+              signupMessage.textContent = successMsg;
+              signupMessage.style.color = 'green';
+              signupMessage.style.display = 'block';
+            }
+            showSuccessMessage(successMsg);
             signupForm.reset();
           }
         } else {
@@ -493,6 +510,113 @@ document.addEventListener('DOMContentLoaded', () => {
     if (authContainer) {
       authContainer.classList.remove('show-verify');
     }
+  }
+
+  function showActivationForm(userId, email) {
+    const signUpContainer = document.querySelector('.sign-up-container');
+    if (authContainer) {
+      authContainer.classList.add('right-panel-active');
+      authContainer.classList.add('show-activation');
+    }
+    if (signUpContainer) {
+      signUpContainer.style.display = 'none';
+    }
+    if (activationContainer) {
+      activationContainer.style.display = 'block';
+      const idField = document.getElementById('activate-id');
+      if (idField) idField.value = userId;
+    }
+    if (verifyContainer) {
+      verifyContainer.style.display = 'none';
+    }
+  }
+
+  function hideActivationForm() {
+    const signUpContainer = document.querySelector('.sign-up-container');
+    if (authContainer) {
+      authContainer.classList.remove('show-activation');
+    }
+    if (signUpContainer) {
+      signUpContainer.style.display = 'flex';
+    }
+    if (activationContainer) {
+      activationContainer.style.display = 'none';
+    }
+  }
+
+  const backToSignupActivate = document.getElementById('backToSignupFromActivate');
+  if (backToSignupActivate) {
+    backToSignupActivate.addEventListener('click', () => {
+      hideActivationForm();
+    });
+  }
+
+  if (activationForm) {
+    activationForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('activate-id').value;
+      const password = document.getElementById('activate-password').value;
+      const confirm = document.getElementById('activate-confirm').value;
+      const messageEl = document.getElementById('activationMessage');
+      const submitBtn = activationForm.querySelector('button[type="submit"]');
+
+      if (password !== confirm) {
+        if (messageEl) {
+          messageEl.textContent = 'Passwords do not match.';
+          messageEl.style.display = 'block';
+        }
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Activating...';
+      }
+
+      try {
+        const response = await fetch(signupForm.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({
+            id: userId,
+            password: password,
+            action: 'activate_premade'
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          if (messageEl) {
+            messageEl.textContent = data.message;
+            messageEl.style.color = 'green';
+            messageEl.style.display = 'block';
+          }
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          if (messageEl) {
+            messageEl.textContent = data.error || 'Activation failed.';
+            messageEl.style.color = 'red';
+            messageEl.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Activation error:', error);
+        if (messageEl) {
+          messageEl.textContent = 'An error occurred during activation.';
+          messageEl.style.display = 'block';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Set Password & Activate';
+        }
+      }
+    });
   }
 
   if (backToSignupBtn) {

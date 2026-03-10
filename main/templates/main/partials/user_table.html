@@ -4,10 +4,13 @@
         <tr>
             <th>Account Name</th>
             <th>Email Address</th>
+            <th>Status</th>
             <th>Last Login</th>
             <th>Date Joined</th>
             <th>Role</th>
+            {% if request.user.profile.role == 'admin' %}
             <th>Actions</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -20,11 +23,23 @@
                 </div>
             </td>
             <td>{{ user.email|default:"—" }}</td>
+            <td>
+                {% if user.is_active %}
+                    <span class="badge-role" style="background:#e8f5e9; color:#2e7d32; padding:2px 8px; border-radius:12px; font-size:0.75rem;">Active</span>
+                {% else %}
+                    {% if user.profile.is_premade %}
+                        <span class="badge-role" style="background:#fff3e0; color:#ef6c00; padding:2px 8px; border-radius:12px; font-size:0.75rem;">Premade</span>
+                    {% else %}
+                        <span class="badge-role" style="background:#f5f5f5; color:#757575; padding:2px 8px; border-radius:12px; font-size:0.75rem;">Inactive</span>
+                    {% endif %}
+                {% endif %}
+            </td>
             <td>{{ user.last_login|date:"M d, Y H:i"|default:"Never" }}</td>
             <td>{{ user.date_joined|date:"M d, Y" }}</td>
             <td>
                 <span class="badge-role {{ badge_class }}">{{ user.profile.get_role_display }}</span>
             </td>
+            {% if request.user.profile.role == 'admin' %}
             <td>
                 <div class="table-actions">
                     <a href="{% url 'edit_user' user.id %}" class="btn-table btn-edit"><i class="fas fa-pen"></i>
@@ -35,6 +50,7 @@
                     </a>
                 </div>
             </td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
