@@ -803,50 +803,28 @@ def delete_user(request, user_id):
 
 @login_required
 def edit_user(request, user_id):
-    user = get_object_or_404(User, id=user_id)
+    target_user = get_object_or_404(User, id=user_id)
 
     if request.method == 'POST':
-        # Handle password change form
-        if 'change_password' in request.POST:
-            new_password = request.POST.get('new_password')
-            confirm_password = request.POST.get('confirm_password')
-
-
-            if new_password != confirm_password:
-                messages.error(request, "New passwords do not match.")
-                return redirect('edit_user', user_id=user.id)
-
-            user.set_password(new_password)
-            user.save()
-            messages.success(request, "Password updated successfully.")
-            return redirect('user_list')  # ✅ redirect to user list after success
-
-        # Handle user detail updates
-        username = request.POST.get('username')
-        email = request.POST.get('email')
         role = request.POST.get('role')
 
-        user.username = username
-        user.email = email
-        user.save()
-
         # Update profile role
-        profile, _ = Profile.objects.get_or_create(user=user)
+        profile, _ = Profile.objects.get_or_create(user=target_user)
         if role:
             profile.role = role
             profile.save()
-            
+
             # Synchronize is_staff for admin/librarian if needed
             if role in [Profile.ADMIN, Profile.LIBRARIAN]:
-                user.is_staff = True
+                target_user.is_staff = True
             else:
-                user.is_staff = False
-            user.save()
+                target_user.is_staff = False
+            target_user.save()
 
-        messages.success(request, "User details updated successfully.")
-        return redirect('user_list')  # ✅ redirect here instead of reloading edit page
+        messages.success(request, "User role updated successfully.")
+        return redirect('user_list')
 
-    return render(request, 'main/edit_user.html', {'user': user})
+    return render(request, 'main/edit_user.html', {'edit_user': target_user})
 
 @csrf_exempt
 def change_password(request, user_id):
