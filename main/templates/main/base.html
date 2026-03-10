@@ -101,6 +101,9 @@
     <script src="{% static 'js/utils.js' %}"></script>
     <script src="{% static 'js/mobile.js' %}"></script>
 
+    <!-- Session Manager - Handles device sleep/wake and CSRF token refresh -->
+    <script src="{% static 'js/session-manager.js' %}"></script>
+
     {% block extra_scripts %}{% endblock %}
 </body>
 

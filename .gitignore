@@ -1,24 +1,85 @@
-# Python
+# ============================================
+# PYTHON & DEVELOPMENT
+# ============================================
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
+dist/
+build/
 
 # Virtual environment
 venv/
 env/
+ENV/
+.venv
 
-# Django
+# ============================================
+# DJANGO
+# ============================================
 *.log
 *.pot
 *.sqlite3
 db.sqlite3
+*.db
+.env
+.env.local
+.env.*.local
 
-# Media & uploads
+# ============================================
+# MEDIA & UPLOADS
+# ============================================
 /media/
+/uploads/
 
-# IDE/editor
+# ============================================
+# IDE & EDITOR
+# ============================================
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# ============================================
+# TEST & DEBUG FILES (Remove these!)
+# ============================================
+audit_log.txt
+audit_results.txt
+audit_results_final.txt
+check_tags.py
+check_ul.py
+edit_user_check.txt
+fix_cats.py
+fix_edit_user.py
+full_system_test.py
+ip_check.txt
+ip_check_all.txt
+ip_info.txt
+list_users.py
+list_users_v2.py
+structure.txt
+tag_check.txt
+tag_final.txt
+tags_out.txt
+test_results.txt
+ul_includes.txt
+ul_lines.txt
+
+# ============================================
+# TEST DATA (don't commit to production)
+# ============================================
+seed_data_utf8.json
+/test_data/
+
+# ============================================
+# OS FILES
+# ============================================
+.DS_Store
+.env.example
