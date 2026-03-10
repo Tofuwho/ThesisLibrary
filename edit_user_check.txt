@@ -1,4 +1,0 @@
-Line 38: '            <option value="admin" {% if user.profile.role == \'admin\' %}selected{% endif %}>Admin</option>'
-Line 39: '            <option value="librarian" {% if user.profile.role == \'librarian\' %}selected{% endif %}>Librarian</option>'
-Line 40: '            <option value="professor" {% if user.profile.role == \'professor\' %}selected{% endif %}>Staff/Professor'
-Line 42: '            <option value="student" {% if user.profile.role == \'student\' %}selected{% endif %}>Student</option>'

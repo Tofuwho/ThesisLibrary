@@ -95,6 +95,8 @@ if os.getenv("GITHUB_ACTIONS") == "true":
             'PORT': os.getenv('MYSQL_PORT', '3306'),
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                'conn_max_age': 600,  # Close connection after 10 minutes of inactivity
+                'isolation_level': None,  # Use database default
             },
         }
     }
@@ -110,6 +112,8 @@ else:
             'PORT': '3306',
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                'conn_max_age': 600,  # Close connection after 10 minutes of inactivity to prevent timeout issues
+                'isolation_level': None,  # Use database default
             },
         }
     }
@@ -148,15 +152,21 @@ USE_I18N = True
 
 USE_TZ = False
 
-# Expire session when browser closes (non-persistent cookies)
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True  
+# Session Configuration - Allow persistence across device sleep/wake
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Allow sessions to persist even if browser isn't explicitly closed
 
-# Optional: if you want a fallback age (default = 2 weeks)
-# e.g., if browser supports session restore, cookie may persist until max age
-SESSION_COOKIE_AGE = 1209600  # 2 weeks (default)
+# Session timeout: 30 days for persistent sessions
+SESSION_COOKIE_AGE = 2592000  # 30 days
 
-# Don’t resave unless modified
-SESSION_SAVE_EVERY_REQUEST = False
+# Reset session timeout on every request to prevent expiration during device sleep issues
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Make session cookies persist (not browser-only)
+SESSION_COOKIE_PERSISTENT = True
+
+# Session security settings
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
