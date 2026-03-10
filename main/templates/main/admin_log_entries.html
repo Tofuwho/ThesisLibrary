@@ -6,6 +6,19 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 <style>
+  .dropdown-link {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+  }
+
+  .dropdown-link:hover {
+    background-color: #f1f1f1;
+  }
+
   .search-bar {
     margin-bottom: 1rem;
     display: flex;
@@ -100,6 +113,70 @@
     user-select: none;
     transition: 0.2s;
   }
+  /* ── Tab Navigation ────────────────────────────── */
+  .role-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    border-bottom: 2px solid #eaeaea;
+    padding-bottom: 0;
+  }
+
+  .role-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px 10px 0 0;
+    border: 2px solid transparent;
+    border-bottom: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: none;
+    background: #f4f6f9;
+    color: #555;
+    transition: all 0.2s;
+    position: relative;
+    bottom: -2px;
+  }
+
+  .role-tab:hover {
+    background: #e8edf5;
+    color: #0277bd;
+  }
+
+  .role-tab.active {
+    background: #fff;
+    border-color: #eaeaea;
+    border-bottom-color: #fff;
+    color: #0277bd;
+  }
+
+  .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: #eee;
+    color: #666;
+  }
+
+  .role-tab.active .tab-count {
+    background: #0277bd;
+    color: #fff;
+  }
+
+  .tab-security.active { border-color: #90caf9; border-bottom-color: #fff; }
+  .tab-user.active { border-color: #ce93d8; border-bottom-color: #fff; }
+  .tab-thesis.active { border-color: #81c784; border-bottom-color: #fff; }
+  .tab-import.active { border-color: #ffb74d; border-bottom-color: #fff; }
 </style>
 {% endblock %}
 
@@ -109,19 +186,46 @@
 
   <div class="admin-main">
     <div class="dashboard-header">
-      <h1>📜 Admin Log Entries</h1>
-      <p>All actions performed by administrators in the system.</p>
+      <h1>📜 System Audit Logs</h1>
+      <p>Organized history of all administrative actions and security events.</p>
+    </div>
+
+    <div class="role-tabs" style="margin-top: 2rem;">
+      <a href="?tab=all" class="role-tab {% if active_tab == 'all' %}active{% endif %}">
+        📜 All History <span class="tab-count">{{ all_logs.count }}</span>
+      </a>
+      <a href="?tab=security" class="role-tab tab-security {% if active_tab == 'security' %}active{% endif %}">
+        🔐 Security <span class="tab-count">{{ security_logs.count }}</span>
+      </a>
+      <a href="?tab=user" class="role-tab tab-user {% if active_tab == 'user' %}active{% endif %}">
+        👥 Users <span class="tab-count">{{ user_logs.count }}</span>
+      </a>
+      <a href="?tab=thesis" class="role-tab tab-thesis {% if active_tab == 'thesis' %}active{% endif %}">
+        📚 Thesis Repository <span class="tab-count">{{ thesis_logs.count }}</span>
+      </a>
+      <a href="?tab=import" class="role-tab tab-import {% if active_tab == 'import' %}active{% endif %}">
+        📥 Imports <span class="tab-count">{{ import_logs.count }}</span>
+      </a>
     </div>
 
     <div class="dashboard-section" style="margin-top: 2rem;">
       <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
 
-        <div class="search-bar">
-          <button onclick="exportTableToExcel('logTable', 'Admin_Logs')" class="add-btn"
-            style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
-            📊 Export
-          </button>
-          <input type="text" id="logSearch" class="search-input" placeholder="Search logs...">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="dropdown" style="position: relative; display: inline-block;">
+              <button class="add-btn" style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; font-weight:600;">
+                📊 Export Detailed Report <i class="fas fa-caret-down"></i>
+              </button>
+              <div class="dropdown-content" style="display: none; position: absolute; background-color: #ffffff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 100; border-radius: 8px; margin-top: 5px; border: 1px solid #eee; overflow: hidden;">
+                <a href="#" class="dropdown-link" onclick="exportFilteredLogs('day')">Daily Report</a>
+                <a href="#" class="dropdown-link" onclick="exportFilteredLogs('week')">Weekly Report</a>
+                <a href="#" class="dropdown-link" onclick="exportFilteredLogs('month')">Monthly Report</a>
+                <a href="#" class="dropdown-link" onclick="exportFilteredLogs('year')" style="border-bottom: none;">Annual Report</a>
+                <a href="#" onclick="exportTableToExcel('logTable', 'All_System_Logs')" style="color: #0277bd; padding: 12px 16px; text-decoration: none; display: block; background: #e3f2fd; font-weight: bold; text-align: center; border-top: 1px solid #b3e5fc;">Download All History</a>
+              </div>
+            </div>
+            <input type="text" id="logSearch" class="search-input" placeholder="Search logs...">
+          </div>
         </div>
 
         <table id="logTable" style="width:100%; border-collapse:collapse;">
@@ -136,36 +240,37 @@
             </tr>
           </thead>
           <tbody>
-            {% for entry in logs %}
-            <tr style="border-bottom:1px solid #eee;">
-              <td style="padding:0.8rem; color:#0277bd;">{{ entry.action_time|date:"M d, Y h:i a" }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ entry.user }}</td>
-              <td style="padding:0.8rem; color:#333; text-transform: capitalize;">
-                {{ entry.content_type.model }}
-              </td>
-              <td style="padding:0.8rem; color:#333;">{{ entry.object_repr }}</td>
-              <td style="padding:0.8rem;">
-                {% if entry.action_flag == 1 %}
-                <span
-                  style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Created</span>
-                {% elif entry.action_flag == 2 %}
-                <span
-                  style="background:#ffb300; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Updated</span>
-                {% elif entry.action_flag == 3 %}
-                <span
-                  style="background:#e53935; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Removed</span>
-                {% else %}
-                <span style="background:#777; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">System
-                  Task</span>
-                {% endif %}
-              </td>
-              <td style="padding:0.8rem; color:#555; font-style:italic;">{{ entry.change_message }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="6" style="text-align:center; padding:1rem; color:#6c757d;">No log entries found.</td>
-            </tr>
-            {% endfor %}
+            {% if active_tab == 'security' %}
+              {% for entry in security_logs %}
+                {% include 'main/partials/log_row.html' %}
+              {% empty %}
+                <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#6c757d;">No security records found.</td></tr>
+              {% endfor %}
+            {% elif active_tab == 'user' %}
+              {% for entry in user_logs %}
+                {% include 'main/partials/log_row.html' %}
+              {% empty %}
+                <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#6c757d;">No user management records found.</td></tr>
+              {% endfor %}
+            {% elif active_tab == 'thesis' %}
+              {% for entry in thesis_logs %}
+                {% include 'main/partials/log_row.html' %}
+              {% empty %}
+                <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#6c757d;">No repository records found.</td></tr>
+              {% endfor %}
+            {% elif active_tab == 'import' %}
+              {% for entry in import_logs %}
+                {% include 'main/partials/log_row.html' %}
+              {% empty %}
+                <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#6c757d;">No import records found.</td></tr>
+              {% endfor %}
+            {% else %}
+              {% for entry in all_logs %}
+                {% include 'main/partials/log_row.html' %}
+              {% empty %}
+                <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#6c757d;">No history records found.</td></tr>
+              {% endfor %}
+            {% endif %}
           </tbody>
         </table>
         <div class="pagination" id="logPagination"></div>
@@ -279,12 +384,66 @@
 </script>
 <script src="{% static 'js/xlsx.full.min.js' %}"></script>
 <script>
+  // Dropdown Toggle
+  document.querySelector('.dropdown .add-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    const content = this.nextElementSibling;
+    content.style.display = content.style.display === 'block' ? 'none' : 'block';
+  });
+
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.dropdown-content').forEach(d => d.style.display = 'none');
+  });
+
+  function exportFilteredLogs(period) {
+    const table = document.getElementById('logTable');
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    const now = new Date();
+    const nowSec = Math.floor(now.getTime() / 1000); // Current time in seconds
+    
+    // Create a temporary table for export
+    const tempTable = document.createElement('table');
+    const thead = table.querySelector('thead').cloneNode(true);
+    tempTable.appendChild(thead);
+    const tempTbody = document.createElement('tbody');
+    
+    rows.forEach(row => {
+      const timestampString = row.getAttribute('data-timestamp');
+      if (!timestampString) return;
+      const timestamp = parseInt(timestampString);
+      if (isNaN(timestamp)) return;
+
+      let include = false;
+      const diffSec = nowSec - timestamp;
+      const oneDay = 86400;
+
+      if (period === 'day' && diffSec <= oneDay) include = true;
+      else if (period === 'week' && diffSec <= (oneDay * 7)) include = true;
+      else if (period === 'month' && diffSec <= (oneDay * 30)) include = true;
+      else if (period === 'year' && diffSec <= (oneDay * 365)) include = true;
+
+      if (include) {
+        // Clone for export, but remove temp hidden styles from display filtering
+        const clone = row.cloneNode(true);
+        clone.style.display = ""; 
+        tempTbody.appendChild(clone);
+      }
+    });
+
+    if (tempTbody.children.length === 0) {
+      alert(`No log entries found for this ${period} period.`);
+      return;
+    }
+
+    tempTable.appendChild(tempTbody);
+    const wb = XLSX.utils.table_to_book(tempTable, { sheet: "System Logs" });
+    const dateStr = now.toISOString().split('T')[0];
+    XLSX.writeFile(wb, `System_Log_Report_${period.toUpperCase()}_${dateStr}.xlsx`);
+  }
+
   function exportTableToExcel(tableID, filename) {
     let originalTable = document.getElementById(tableID);
-    let tableClone = originalTable.cloneNode(true);
-    let rows = tableClone.querySelectorAll('tr');
-    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
-    let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
+    let wb = XLSX.utils.table_to_book(originalTable, { sheet: "System Logs" });
     XLSX.writeFile(wb, filename + '.xlsx');
   }
 </script>
