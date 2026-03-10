@@ -774,8 +774,27 @@ def admin_dashboard(request):
 
 @login_required
 def admin_log_entries(request):
-    logs = LogEntry.objects.all().select_related('user', 'content_type').order_by('-action_time')
-    return render(request, 'main/admin_log_entries.html', {'logs': logs})
+    from django.contrib.admin.models import LogEntry
+    from django.db.models import Q
+    
+    all_logs = LogEntry.objects.all().select_related('user', 'content_type').order_by('-action_time')
+    
+    # Pre-filter categories for the tabbed view
+    security_logs = all_logs.filter(Q(change_message__icontains='Login') | Q(change_message__icontains='password') | Q(change_message__icontains='reset'))
+    user_logs     = all_logs.filter(Q(change_message__icontains='role') | Q(change_message__icontains='deleted user'))
+    thesis_logs   = all_logs.filter(Q(change_message__icontains='APPROVED') | Q(change_message__icontains='Rejected') | Q(change_message__icontains='Submission') | Q(change_message__icontains='Thesis'))
+    import_logs   = all_logs.filter(change_message__icontains='BULK IMPORT')
+    
+    active_tab = request.GET.get('tab', 'all')
+    
+    return render(request, 'main/admin_log_entries.html', {
+        'all_logs':      all_logs,
+        'security_logs': security_logs,
+        'user_logs':     user_logs,
+        'thesis_logs':   thesis_logs,
+        'import_logs':   import_logs,
+        'active_tab':    active_tab
+    })
 
 @login_required
 def user_list(request):
@@ -2048,6 +2067,16 @@ def login_view(request):
                     pass
                 
                 login(request, user)
+
+                # Log successful login for security auditing
+                from django.contrib.admin.models import CHANGE
+                log_admin_action(
+                    user,
+                    user,
+                    CHANGE,
+                    f"System Login: Account {user.username} accessed the portal."
+                )
+
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     next_url = request.POST.get('next') or request.GET.get('next') or '/'
                     return JsonResponse({'success': True, 'redirect_url': next_url})
@@ -2108,6 +2137,15 @@ def signup_view(request):
                 user=user,
                 defaults={'code': '000000', 'expires_at': timezone.now() + timezone.timedelta(days=365), 'is_verified': True}
             )
+            # Log new account activation
+            from django.contrib.admin.models import ADDITION
+            log_admin_action(
+                user,
+                user,
+                ADDITION,
+                f"Account Activated: New user {user.username} has set their password and activated account."
+            )
+            
             return JsonResponse({"success": True, "message": "Account activated successfully! You can now log in."})
         except User.DoesNotExist:
             return JsonResponse({"success": False, "error": "User not found."}, status=404)
@@ -2201,7 +2239,16 @@ def signup_view(request):
     if not v.is_verified:
         v.is_verified = True
         v.save()
-    
+        
+        # Log email verification
+        from django.contrib.admin.models import CHANGE
+        log_admin_action(
+            existing_user, # Use existing_user here as it's the one being verified
+            existing_user,
+            CHANGE,
+            f"Security: User {existing_user.username} successfully verified their email address during signup."
+        )
+        
     return JsonResponse({"success": True, "message": "Account activated successfully! You can now log in."})
 
 @csrf_protect
