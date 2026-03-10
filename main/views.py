@@ -799,7 +799,17 @@ def user_list(request):
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
+    from django.contrib.admin.models import DELETION
+    username = user.username
     user.delete()
+    
+    # Log the deletion
+    log_admin_action(
+        request.user, 
+        request.user, # Use current user as anchor for deletion log
+        DELETION, 
+        f"Permanently deleted user account: {username}"
+    )
     return redirect('user_list')
 
 @login_required
@@ -822,6 +832,14 @@ def edit_user(request, user_id):
             else:
                 target_user.is_staff = False
             target_user.save()
+            
+            from django.contrib.admin.models import CHANGE
+            log_admin_action(
+                request.user,
+                target_user,
+                CHANGE,
+                f"Updated user role to: {role}"
+            )
 
         messages.success(request, "User role updated successfully.")
         return redirect('user_list')
@@ -844,8 +862,15 @@ def change_password(request, user_id):
         if request.user.is_staff:
             if new_password != confirm_password:
                 return JsonResponse({"success": False, "message": "Passwords do not match."})
+            from django.contrib.admin.models import CHANGE
             user.set_password(new_password)
             user.save()
+            log_admin_action(
+                request.user,
+                user,
+                CHANGE,
+                f"Manually reset password for user: {user.username}"
+            )
             return JsonResponse({"success": True, "message": "Password changed successfully (admin override)."})
 
         # ✅ For normal users
@@ -1177,22 +1202,17 @@ def import_students(request):
         # Ensure premade user account exists regardless
         create_premade_user(student_id, email, first, last, Profile.STUDENT)
 
-    # Prepare data to return to JS
-    response_students = [
-        {
-            "student_id": s.student_id,
-            "first_name": s.first_name,
-            "last_name": s.last_name,
-            "email": s.email,
-            "created_at": s.created_at.isoformat()
-        } for s in created_students
-    ]
+    # Log the bulk import action
+    if created_students:
+        from django.contrib.admin.models import ADDITION
+        log_admin_action(
+            request.user, 
+            request.user, # Using user as anchor for batch action
+            ADDITION, 
+            f"[BULK IMPORT] Imported {len(created_students)} new student records"
+        )
 
-    return JsonResponse({
-        "message": "Imported",
-        "count": len(created_students),
-        "students": response_students
-    })
+    return JsonResponse({"count": len(created_students), "students": response_students})
 
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
@@ -1231,22 +1251,17 @@ def import_professors(request):
         # Ensure premade user account exists regardless
         create_premade_user(professor_id, email, first, last, Profile.PROFESSOR)
 
-    # Prepare data to return to JS
-    response_professors = [
-        {
-            "professor_id": p.professor_id,
-            "first_name": p.first_name,
-            "last_name": p.last_name,
-            "email": p.email,
-            "created_at": p.created_at.isoformat()
-        } for p in created_professors
-    ]
+    # Log the bulk import action
+    if created_professors:
+        from django.contrib.admin.models import ADDITION
+        log_admin_action(
+            request.user,
+            request.user,
+            ADDITION,
+            f"[BULK IMPORT] Imported {len(created_professors)} new professor/staff records"
+        )
 
-    return JsonResponse({
-        "message": "Imported",
-        "count": len(created_professors),
-        "professors": response_professors
-    })
+    return JsonResponse({"count": len(created_professors), "professors": response_professors})
 
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
@@ -1413,6 +1428,15 @@ def import_librarians(request):
             if created_now:
                 created.append(obj)
             create_premade_user(lib_id, item.get("email"), item.get("first_name"), item.get("last_name"), Profile.LIBRARIAN)
+    # Log the bulk import action
+    if created:
+        from django.contrib.admin.models import ADDITION
+        log_admin_action(
+            request.user,
+            request.user, # Using user as anchor for batch action
+            ADDITION,
+            f"[BULK IMPORT] Imported {len(created)} new librarian records"
+        )
     return JsonResponse({"count": len(created), "librarians": [{"librarian_id": l.librarian_id, "first_name": l.first_name, "last_name": l.last_name, "email": l.email, "created_at": l.created_at.isoformat()} for l in created]})
 
 
@@ -1479,6 +1503,16 @@ def import_admin_staff(request):
             if created_now:
                 created.append(obj)
             create_premade_user(a_id, item.get("email"), item.get("first_name"), item.get("last_name"), Profile.ADMIN)
+    
+    # Log the bulk import action
+    if created:
+        from django.contrib.admin.models import ADDITION
+        log_admin_action(
+            request.user,
+            request.user, # Using user as anchor for batch action
+            ADDITION,
+            f"[BULK IMPORT] Imported {len(created)} new administrator records"
+        )
     return JsonResponse({"count": len(created), "admins": [{"admin_id": a.admin_id, "first_name": a.first_name, "last_name": a.last_name, "email": a.email, "created_at": a.created_at.isoformat()} for a in created]})
 
 
@@ -1960,6 +1994,16 @@ def login_view(request):
                         pass
                     
                     login(request, user)
+                    
+                    # Log successful login
+                    from django.contrib.admin.models import CHANGE
+                    log_admin_action(
+                        user,
+                        user,
+                        CHANGE,
+                        f"System Login: Account {user.username} accessed the portal."
+                    )
+                    
                     return JsonResponse({'success': True})
                 else:
                     return JsonResponse({'success': False, 'error': 'Invalid ID or password'}, status=400)
