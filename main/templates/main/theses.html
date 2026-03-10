@@ -166,22 +166,32 @@
               <th>Academic Year</th>
               <th>Affiliated College</th>
               <th>Degree Program</th>
+              <th style="text-align:center;">Actions</th>
             </tr>
           </thead>
           <tbody>
             {% for thesis in theses %}
             <tr style="border-bottom: 1px solid #eee;">
               <td style="color:#666; font-weight: 500;">{{ thesis.lc_classification|default:"—" }}</td>
-              <td class="title">{{ thesis.title }}</td>
+              <td class="title"><a href="{% url 'thesis_detail' thesis.id %}" style="text-decoration:none; color:inherit;">{{ thesis.title }}</a></td>
               <td style="color:#333;">{{ thesis.author }}</td>
-              <td style="color:#333;">{{ thesis.co_authors|default:"—" }}</td>
+              <td style="color:#333;">{{ thesis.get_coauthor_names|join:", "|default:"—" }}</td>
               <td style="color:#333;">{{ thesis.year|default:"—" }}</td>
               <td style="color:#333;">{{ thesis.department.name }}</td>
               <td style="color:#333;">{{ thesis.course_display }}</td>
+              <td style="padding:0.8rem; text-align:center;">
+                <div style="display:flex; gap:6px; justify-content:center;">
+                  {% if thesis.file %}
+                  <a href="{{ thesis.file.url }}" target="_blank" class="archive-btn" style="padding: 4px 12px; font-size: 0.8rem; background:#1976d2;">View</a>
+                  {% else %}
+                  <span style="color:#999; font-size:0.8rem;">No File</span>
+                  {% endif %}
+                </div>
+              </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="7" style="text-align:center; color:#6c757d; padding:1rem;">No theses found.</td>
+              <td colspan="8" style="text-align:center; color:#6c757d; padding:1rem;">No theses found.</td>
             </tr>
             {% endfor %}
           </tbody>
