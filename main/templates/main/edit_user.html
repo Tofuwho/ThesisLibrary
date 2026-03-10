@@ -14,32 +14,37 @@
   <div class="admin-main">
     <div class="edit-user-container">
       <div class="edit-user-header">
-        <h1>✏️ Edit User</h1>
+        <h1>Edit User Role</h1>
         <a href="{% url 'user_list' %}" class="back-btn">← Back to Users</a>
+      </div>
+
+      <div class="user-info-display">
+        <div class="info-row">
+          <span class="info-label">Username</span>
+          <span class="info-value">{{ edit_user.username }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <span class="info-value">{{ edit_user.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Name</span>
+          <span class="info-value">{{ edit_user.first_name }} {{ edit_user.last_name }}</span>
+        </div>
       </div>
 
       <form method="post" class="edit-user-form">
         {% csrf_token %}
 
         <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" value="{{ user.username }}" required>
-        </div>
-
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" value="{{ user.email }}" required>
-        </div>
-
-        <div class="form-group">
           <label for="role">Account Role</label>
           <select id="role" name="role" required
             style="width:100%; background:#2a2a2a; color:#fff; border:none; padding:12px; border-radius:8px; font-size:1rem;">
-            <option value="admin" {% if user.profile.role == 'admin' %}selected{% endif %}>Admin</option>
-            <option value="librarian" {% if user.profile.role == 'librarian' %}selected{% endif %}>Librarian</option>
-            <option value="professor" {% if user.profile.role == 'professor' %}selected{% endif %}>Staff/Professor
+            <option value="admin" {% if edit_user.profile.role == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="librarian" {% if edit_user.profile.role == 'librarian' %}selected{% endif %}>Librarian</option>
+            <option value="professor" {% if edit_user.profile.role == 'professor' %}selected{% endif %}>Staff/Professor
             </option>
-            <option value="student" {% if user.profile.role == 'student' %}selected{% endif %}>Student</option>
+            <option value="student" {% if edit_user.profile.role == 'student' %}selected{% endif %}>Student</option>
           </select>
           <p style="font-size: 0.85rem; color: #888; margin-top: 5px;">
             Note: Admins and Librarians have full view of all studies. Students and Staff/Professors are restricted to
@@ -47,44 +52,11 @@
           </p>
         </div>
 
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" value="********" disabled
-            style="width:100%; background:#2a2a2a; border:none; padding:10px; border-radius:8px;">
-          <button type="button" id="changePasswordBtn" class="btn-secondary" style="margin-top:10px;">Change
-            Password</button>
-        </div>
-
         <div class="form-actions">
-          <button type="submit" class="btn-save">💾 Save Changes</button>
+          <button type="submit" class="btn-save">Save Changes</button>
         </div>
       </form>
     </div>
-  </div>
-</div>
-
-<!-- Password Change Modal -->
-<div id="passwordModal" class="modal">
-  <div class="modal-content">
-    <h2>Change Password</h2>
-    <form method="post" action="{% url 'edit_user' user.id %}" class="password-form">
-      {% csrf_token %}
-      <input type="hidden" name="change_password" value="1">
-
-      <div class="form-group">
-        <label for="new_password">New Password</label>
-        <input type="password" id="new_password" name="new_password" required>
-      </div>
-      <div class="form-group">
-        <label for="confirm_password">Confirm New Password</label>
-        <input type="password" id="confirm_password" name="confirm_password" required>
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn-cancel" id="cancelModal">Cancel</button>
-        <button type="submit" class="btn-save">Save Password</button>
-      </div>
-    </form>
   </div>
 </div>
 
@@ -124,6 +96,35 @@
     background: #444;
   }
 
+  /* === User Info Display === */
+  .user-info-display {
+    background: #2a2a2a;
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .info-row {
+    display: flex;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #333;
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  .info-label {
+    font-weight: 500;
+    color: #888;
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .info-value {
+    color: #fff;
+  }
+
   /* === Form Styling === */
   .edit-user-form {
     display: flex;
@@ -136,36 +137,6 @@
     color: #bbb;
     margin-bottom: 0.3rem;
     display: block;
-  }
-
-  .form-group input {
-    width: 100%;
-    background: #2a2a2a;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px;
-    transition: 0.2s;
-  }
-
-  .form-group input:focus {
-    outline: 2px solid #6a5acd;
-    background: #333;
-  }
-
-  .btn-secondary {
-    background: #2196f3;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .btn-secondary:hover {
-    background: #42a5f5;
-    box-shadow: 0 0 8px #2196f3aa;
   }
 
   /* === Save Button === */
@@ -188,76 +159,5 @@
     box-shadow: 0 0 10px #66bb6a;
     transform: translateY(-2px);
   }
-
-  /* === Modal === */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 10;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-content {
-    background: #2b2b2b;
-    color: white;
-    border-radius: 10px;
-    padding: 2rem;
-    width: 400px;
-  }
-
-  .modal-content input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 1rem;
-    border-radius: 5px;
-    border: none;
-  }
-
-  .btn-cancel {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  .btn-cancel:hover {
-    background-color: #c0392b;
-  }
 </style>
-
-<script>
-  // Open / close modal
-  const modal = document.getElementById("passwordModal");
-  document.getElementById("changePasswordBtn").onclick = () => modal.style.display = "flex";
-  document.getElementById("cancelModal").onclick = () => modal.style.display = "none";
-  window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
-
-  // Handle password change
-  document.getElementById("passwordForm").onsubmit = async function (e) {
-    e.preventDefault();
-
-    const userId = document.getElementById("userId").value;
-    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
-
-    const formData = new FormData(this);
-    const response = await fetch(`/users/change-password/${userId}/`, {
-      method: "POST",
-      headers: { "X-CSRFToken": csrfToken },
-      body: formData
-    });
-
-    const data = await response.json();
-    alert(data.message);
-
-    if (data.success) modal.style.display = "none";
-  };
-</script>
 {% endblock %}
