@@ -42,6 +42,7 @@ def landing_page(request):
 def about_page(request):
     return render(request, 'main/about.html')
 
+@login_required
 def index_page(request):
     recent_theses = Thesis.objects.order_by('-id')[:6]
     from .models import Department
@@ -108,6 +109,7 @@ def profile_card(request):
 
     return render(request, 'main/profile_card.html', {"profile": profile})
 
+@login_required
 def categories_page(request):
     theses = Thesis.objects.all()
     search_query = request.GET.get('search') or ''
@@ -459,6 +461,7 @@ def archive_old_theses(request):
     return JsonResponse({"archived": archived_count})
 
 
+@login_required
 def category_detail(request, category_name):
     """Browse theses by specific category"""
     category = Category.objects.filter(name__iexact=category_name).first()
@@ -649,7 +652,8 @@ def student_dashboard(request):
     
     return render(request, 'main/student_dashboard.html', {
         'categories': categories,
-        'user_data': user_data
+        'user_data': user_data,
+        'user_role': request.user.profile.role if hasattr(request.user, 'profile') else 'student'
     })
 
 def log_admin_action(user, obj, action_flag, message):
@@ -1079,8 +1083,7 @@ def view_thesis(request, thesis_id):
 
     # 2. Check Authentication & Permissions (Divide Clear)
     if not request.user.is_authenticated:
-        messages.error(request, "You must be logged in to view this document.")
-        return redirect('login')
+        return redirect('index') # Or login, but usually index for guests
 
     # ADMIN and LIBRARIAN have full view, others only abstract
     if request.user.profile.role not in [Profile.ADMIN, Profile.LIBRARIAN]:
@@ -1692,6 +1695,7 @@ def my_submissions(request):
     return render(request, 'main/my_submissions.html', {'submissions': submissions})
 
 
+@login_required
 def thesis_detail(request, pk: int):
     thesis = get_object_or_404(Thesis, pk=pk)
     is_authenticated = request.user.is_authenticated
@@ -1712,9 +1716,9 @@ def view_thesis_file(request, pk):
     if not thesis.file:
         raise Http404('File not found.')
 
-    # For non-authenticated users, serve restricted preview
+    # For non-authenticated users, redirect to login
     if not request.user.is_authenticated:
-        return restricted_view_thesis_file(request, pk)
+        return redirect('index')
 
     # For authenticated users, check role
     if request.user.profile.role not in [Profile.ADMIN, Profile.LIBRARIAN]:
