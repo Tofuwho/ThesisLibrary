@@ -1185,7 +1185,20 @@ def admin_categories(request):
 @user_passes_test(lambda u: u.is_staff)
 def students_list(request):
     """List all students for admin management"""
-    students = Student.objects.all().order_by('student_id')
+    from authapp.models import Profile
+    # Explicit records
+    students = list(Student.objects.all().order_by('student_id'))
+    existing_ids = {s.student_id for s in students}
+    # Orphan accounts
+    orphans = User.objects.filter(profile__role=Profile.STUDENT).exclude(username__in=existing_ids)
+    for o in orphans:
+        students.append(Student(
+            student_id=o.username,
+            first_name=o.first_name,
+            last_name=o.last_name,
+            email=o.email,
+            created_at=o.date_joined
+        ))
     return render(request, 'main/students_list.html', {'students': students})
 
 @login_required
@@ -1341,7 +1354,20 @@ def delete_professor(request, professor_id):
 @user_passes_test(lambda u: u.is_staff)
 def professors_list(request):
     """List all professors for admin management"""
-    professors = Professor.objects.all().order_by('professor_id')
+    from authapp.models import Profile
+    # Explicit records
+    professors = list(Professor.objects.all().order_by('professor_id'))
+    existing_ids = {p.professor_id for p in professors}
+    # Orphan accounts
+    orphans = User.objects.filter(profile__role=Profile.PROFESSOR).exclude(username__in=existing_ids)
+    for o in orphans:
+        professors.append(Professor(
+            professor_id=o.username,
+            first_name=o.first_name,
+            last_name=o.last_name,
+            email=o.email,
+            created_at=o.date_joined
+        ))
     return render(request, 'main/professors_list.html', {'professors': professors})
 
 
@@ -1388,7 +1414,20 @@ def edit_professor(request, professor_id):
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def librarians_list(request):
-    librarians = Librarian.objects.all().order_by('librarian_id')
+    from authapp.models import Profile
+    # Explicit records
+    librarians = list(Librarian.objects.all().order_by('librarian_id'))
+    existing_ids = {l.librarian_id for l in librarians}
+    # Orphan accounts
+    orphans = User.objects.filter(profile__role=Profile.LIBRARIAN).exclude(username__in=existing_ids)
+    for o in orphans:
+        librarians.append(Librarian(
+            librarian_id=o.username,
+            first_name=o.first_name,
+            last_name=o.last_name,
+            email=o.email,
+            created_at=o.date_joined
+        ))
     return render(request, 'main/librarians_list.html', {'librarians': librarians})
 
 @login_required
@@ -1467,8 +1506,27 @@ def import_librarians(request):
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def admin_staff_list(request):
-    admins = AdminStaff.objects.all().order_by('admin_id')
-    return render(request, 'main/admin_staff_list.html', {'admins': admins})
+    from authapp.models import Profile
+    
+    # 1. Get explicit verification records
+    admins = list(AdminStaff.objects.all().order_by('admin_id'))
+    existing_ids = {a.admin_id for a in admins}
+    
+    # 2. Get registered accounts with ADMIN role that are missing from verification table
+    account_admins = User.objects.filter(profile__role=Profile.ADMIN).exclude(username__in=existing_ids)
+    
+    # 3. Combine them for the view
+    combined_admins = admins
+    for acc in account_admins:
+        combined_admins.append(AdminStaff(
+            admin_id=acc.username,
+            first_name=acc.first_name,
+            last_name=acc.last_name,
+            email=acc.email,
+            created_at=acc.date_joined
+        ))
+        
+    return render(request, 'main/admin_staff_list.html', {'admins': combined_admins})
 
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
