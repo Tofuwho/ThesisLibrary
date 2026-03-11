@@ -136,6 +136,12 @@ def format_coauthors(value):
         else:
             return value
 
+    # Handle Django QuerySets or Managers
+    from django.db.models.query import QuerySet
+    from django.db.models.manager import Manager
+    if isinstance(data, (QuerySet, Manager)):
+        data = list(data)
+
     names = []
     if isinstance(data, list):
         for item in data:
@@ -145,6 +151,15 @@ def format_coauthors(value):
                 full = (first + ' ' + last).strip()
                 if full:
                     names.append(full)
+            elif hasattr(item, 'first_name') and hasattr(item, 'last_name'):
+                # Handle model instances (CoAuthor objects)
+                first = (getattr(item, 'first_name', '') or '').strip()
+                last = (getattr(item, 'last_name', '') or '').strip()
+                full = (first + ' ' + last).strip()
+                if full:
+                    names.append(full)
+                elif hasattr(item, 'student_id') and item.student_id:
+                    names.append(f"Student ID: {item.student_id}")
             elif isinstance(item, str) and item.strip():
                 names.append(item.strip())
     return ', '.join(names)

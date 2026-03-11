@@ -66,8 +66,7 @@
                 </div>
                 <div class="thesis-info">
                     <h3 class="thesis-title">{{ thesis.title }}</h3>
-                    <p class="thesis-author">By {{ thesis.author }}{% if thesis.co_authors %} with {{
-                        thesis.co_authors|format_coauthors }}{% endif %}</p>
+                    <p class="thesis-author">By {{ thesis.author }}{% if thesis.co_authors.all %} with {{ thesis.co_authors|format_coauthors }}{% endif %}</p>
                     <div class="thesis-footer">
                         <span class="thesis-year"><i class="far fa-calendar-alt"></i> {{ thesis.year }}</span>
                         {% if thesis.file %}
