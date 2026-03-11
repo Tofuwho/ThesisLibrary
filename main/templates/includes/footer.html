@@ -3,10 +3,10 @@
     <div class="footer-grid">
         <div class="footer-section">
             <div class="footer-brand">
-                <div class="footer-brand-title">
-                    <img src="{% static 'images/log-tcu.jpg' %}" alt="TCU Logo" class="footer-logo">
-                    <h3>TCU Thesis Library</h3>
-                </div>
+                <a href="{% url 'landing' %}" class="footer-brand-title" style="text-decoration: none; display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <img src="{% static 'images/log-tcu.jpg' %}" alt="TCU Logo" class="footer-logo" style="width: 50px; height: 50px; border-radius: 50%;">
+                    <h3 style="margin: 0; color: #fff;">TCU Thesis Library</h3>
+                </a>
                 <p>The official digital repository of Taguig City University. Preserving and disseminating the academic
                     heritage and research innovations of our students and faculty.</p>
                 <div class="social-links">
@@ -23,15 +23,20 @@
         <div class="footer-section">
             <h4>University Archives</h4>
             <ul>
-                <li><a href="{% url 'index' %}">Research Home</a></li>
-                <li><a href="{% url 'categories' %}">College Archives</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'index' %}">Research Home</a></li>
+                    <li><a href="{% url 'categories' %}">College Archives</a></li>
+                {% else %}
+                    <li><span class="nav-link-disabled" style="cursor: not-allowed; color: #999; opacity: 0.6; pointer-events: none;" title="Please login to explore researches">Research Home</span></li>
+                    <li><span class="nav-link-disabled" style="cursor: not-allowed; color: #999; opacity: 0.6; pointer-events: none;" title="Please login to explore researches">College Archives</span></li>
+                {% endif %}
                 <li><a href="{% url 'about' %}">Archiving Policy</a></li>
                 {% if user.is_authenticated %}
-                {% if user.is_staff %}
-                <li><a href="{% url 'admin_dashboard' %}">Archivist Dashboard</a></li>
-                {% else %}
-                <li><a href="{% url 'student_dashboard' %}">Submission portal</a></li>
-                {% endif %}
+                    {% if user.profile.role == 'admin' or user.profile.role == 'librarian' %}
+                        <li><a href="{% url 'admin_dashboard' %}">Archivist Dashboard</a></li>
+                    {% else %}
+                        <li><a href="{% url 'student_dashboard' %}">Research Portal</a></li>
+                    {% endif %}
                 {% endif %}
             </ul>
         </div>
@@ -39,7 +44,7 @@
         <div class="footer-section">
             <h4>Support & Help</h4>
             <ul>
-                <li><a href="{% url 'about' %}">Submission Guide</a></li>
+                <li><a href="javascript:void(0)" id="openGuideModal">Submission Guide</a></li>
                 <li><a href="{% url 'about' %}">Copyright Info</a></li>
                 <li><a href="{% url 'about' %}">Technical Support</a></li>
                 <li><a href="{% url 'about' %}">FAQ</a></li>

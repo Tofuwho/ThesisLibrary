@@ -1,0 +1,179 @@
+{% load static %}
+<!-- Submission Guide Modal -->
+<div id="guideModal" class="custom-guide-modal">
+    <div class="modal-content-guide">
+        <span class="close-guide-modal">&times;</span>
+        <div class="guide-header">
+            <i class="fas fa-book-reader" style="font-size: 2rem; color: #003366; margin-bottom: 15px;"></i>
+            <h2>Research Submission Guide</h2>
+            <p>Step-by-step procedure for students and faculty members.</p>
+        </div>
+        <div class="guide-body">
+            <div class="guide-image-container">
+                <img src="{% static 'images/submission-guide.png' %}" alt="Submission Procedure Guide" class="guide-img">
+            </div>
+            <div class="guide-footer-info">
+                <p><i class="fas fa-info-circle"></i> Need further assistance? Visit the library office or email us at <strong>library@tcu.edu.ph</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-guide-modal {
+    display: none;
+    position: fixed;
+    z-index: 11000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content-guide {
+    background-color: #ffffff;
+    margin: 3% auto;
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 1100px;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: translateY(0);
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close-guide-modal {
+    color: #64748b;
+    float: right;
+    font-size: 32px;
+    font-weight: 300;
+    cursor: pointer;
+    position: absolute;
+    right: 25px;
+    top: 20px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.close-guide-modal:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    transform: rotate(90deg);
+}
+
+.guide-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.guide-header h2 {
+    color: #003366;
+    font-size: 2rem;
+    margin-bottom: 8px;
+    font-weight: 800;
+}
+
+.guide-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+}
+
+.guide-image-container {
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 15px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.guide-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 10px;
+}
+
+.guide-footer-info {
+    margin-top: 25px;
+    text-align: center;
+    padding: 15px;
+    background: #f0f7ff;
+    border-radius: 12px;
+    color: #003366;
+    font-size: 1rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .modal-content-guide {
+        padding: 20px;
+        margin: 10% auto;
+    }
+    .guide-header h2 {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const guideModal = document.getElementById('guideModal');
+    const closeBtn = document.querySelector('.close-guide-modal');
+    
+    // Global listener to capture clicks on "Submission Guide" links
+    document.addEventListener('click', function(e) {
+        // Match by text or ID
+        if (e.target.id === 'openGuideModal' || e.target.textContent.trim() === 'Submission Guide') {
+            const isLink = e.target.tagName === 'A';
+            if (isLink) e.preventDefault();
+            
+            if (guideModal) {
+                guideModal.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            }
+        }
+    });
+
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            guideModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target == guideModal) {
+            guideModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Escape key support
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape" && guideModal.style.display === 'block') {
+            guideModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+});
+</script>

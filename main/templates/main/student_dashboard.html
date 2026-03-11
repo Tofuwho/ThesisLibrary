@@ -24,7 +24,8 @@
         firstName: '{{ user_data.first_name|escapejs }}',
         lastName: '{{ user_data.last_name|escapejs }}',
         email: '{{ user_data.email|escapejs }}',
-        studentId: '{{ user_data.student_id|escapejs }}'
+        studentId: '{{ user_data.student_id|escapejs }}',
+        role: '{{ user_role|escapejs }}'
     };
 </script>
 {% endblock %}

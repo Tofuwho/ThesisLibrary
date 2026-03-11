@@ -1,16 +1,21 @@
 {% load static %}
 <header class="main-header">
     <div class="main-header-inner">
-        <div class="logo-container">
+        <a href="{% url 'landing' %}" class="logo-container" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
             <img src="{% static 'images/log-tcu.jpg' %}" alt="TCU Logo" class="logo-image">
-            <h1>TCU Thesis Library</h1>
-        </div>
+            <h1 style="margin: 0;">TCU Thesis Library</h1>
+        </a>
         <div class="header-flex-center">
             {% if not hide_nav %}
             <nav class="main-nav">
                 <ul>
-                    <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
-                    <li><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
+                        <li><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
+                    {% else %}
+                        <li><span class="nav-link nav-link-disabled" title="Please login to access research archives">Home</span></li>
+                        <li><span class="nav-link nav-link-disabled" title="Please login to access research archives">Categories</span></li>
+                    {% endif %}
                     <li><a href="{% url 'about' %}" class="nav-link">About</a></li>
                 </ul>
             </nav>
@@ -27,10 +32,14 @@
                 </button>
                 <div class="user-dropdown-menu" id="userDropdownMenu">
                     <div class="dropdown-header">
-                        <p class="dropdown-user-role">{% if user.is_staff %}Administrator{% else %}Student{% endif %}
+                        <p class="dropdown-user-role">
+                            {% if user.profile.role == 'admin' %}Administrator
+                            {% elif user.profile.role == 'librarian' %}Librarian
+                            {% elif user.profile.role == 'professor' %}Faculty
+                            {% else %}Student{% endif %}
                         </p>
                     </div>
-                    {% if user.is_staff %}
+                    {% if user.profile.role == 'admin' or user.profile.role == 'librarian' %}
                     <a href="{% url 'admin_dashboard' %}" class="dropdown-item">
                         <i class="fas fa-tachometer-alt"></i>
                         Admin Panel
@@ -38,7 +47,7 @@
                     {% else %}
                     <a href="{% url 'student_dashboard' %}" class="dropdown-item">
                         <i class="fas fa-upload"></i>
-                        Submission Portal
+                        {% if user.profile.role == 'professor' %}Research Portal{% else %}Submission Portal{% endif %}
                     </a>
                     <a href="{% url 'my_submissions' %}" class="dropdown-item">
                         <i class="fas fa-file-alt"></i>

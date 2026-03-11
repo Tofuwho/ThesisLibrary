@@ -10,9 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
-
 from pathlib import Path
-import os
+from dotenv import load_dotenv
+
+# Load .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,17 +24,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-i+likm1gpl%k^(o6&9=huc@)6ln0ck5+trst4h-4pb4!uv*m58'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-i+likm1gpl%k^(o6&9=huc@)6ln0ck5+trst4h-4pb4!uv*m58')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Set the DEBUG_MODE environment variable to 'False' before deploying.
+# Set the DJANGO_DEBUG environment variable to 'False' before deploying.
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') != 'False'
 
-ALLOWED_HOSTS = ["*"] if DEBUG else [
-    "localhost",
-    "127.0.0.1",
-    # Add your production domain here, e.g.: "thesis.tcu.edu.ph"
-]
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if DEBUG else os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -51,6 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -93,9 +92,9 @@ if os.getenv("GITHUB_ACTIONS") == "true":
             'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
             'HOST': os.getenv('MYSQL_HOST', '127.0.0.1'),
             'PORT': os.getenv('MYSQL_PORT', '3306'),
+            'CONN_MAX_AGE': 600,  # Close connection after 10 minutes of inactivity
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-                'conn_max_age': 600,  # Close connection after 10 minutes of inactivity
                 'isolation_level': None,  # Use database default
             },
         }
@@ -105,15 +104,15 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'thesis_library',     # your local DB name
-            'USER': 'root',               # default XAMPP user
-            'PASSWORD': '',               # root has no password by default in XAMPP
-            'HOST': '127.0.0.1',
-            'PORT': '3306',
+            'NAME': os.environ.get('DB_NAME', 'thesis_library'),
+            'USER': os.environ.get('DB_USER', 'root'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+            'PORT': os.environ.get('DB_PORT', '3306'),
+            'CONN_MAX_AGE': 600,
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-                'conn_max_age': 600,  # Close connection after 10 minutes of inactivity to prevent timeout issues
-                'isolation_level': None,  # Use database default
+                'isolation_level': None,
             },
         }
     }
@@ -174,8 +173,19 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'assets'),  # ← this lets Django serve your assets/
+    os.path.join(BASE_DIR, 'assets'),
 ]
+
+# Path where 'collectstatic' will store all files for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Optimize static files for production
+if not DEBUG:
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -198,10 +208,10 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# Fallback to hardcoded values for local dev; override via env vars in production.
-EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER',     'Thesislibrarycode@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'hcbv ztml cymy omxe')
-DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL',  'Thesislibrarycode@gmail.com')
+# Fallback to hardcoded values if env vars are missing
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
 VERIFICATION_CODE_EXPIRY_HOURS = 24  # Codes expire after 24 hours
 
@@ -218,3 +228,6 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF    = True
     SECURE_BROWSER_XSS_FILTER      = True
     X_FRAME_OPTIONS                = 'DENY'
+
+# Authentication
+LOGIN_URL = '/auth/login/'

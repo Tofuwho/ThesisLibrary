@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
     autofillUserData(); // Autofill after loading saved data (saved data takes precedence)
     setupAcademicStructure();
     setupCoAuthorManagement(); // new
+    adaptUIForRole();
 });
 
 /* ---------------------------
@@ -69,9 +70,9 @@ function createCoauthorBlock(container, index, values = {}) {
                        name="coauthors[${index}][last_name]" placeholder="Last Name" value="${escapeHtml(values.last_name || '')}">
             </div>
             <div class="form-group">
-                <label for="coauthor${index}_student_id">Co-Author Student ID</label>
+                <label for="coauthor${index}_student_id">Co-Author ID</label>
                 <input data-field="student_id" type="text" id="coauthor${index}_student_id"
-                       name="coauthors[${index}][student_id]" placeholder="Student ID" value="${escapeHtml(values.student_id || '')}">
+                       name="coauthors[${index}][student_id]" placeholder="Student/Faculty ID" value="${escapeHtml(values.student_id || '')}">
             </div>
             <div class="form-group">
                 <label for="coauthor${index}_email">Email</label>
@@ -832,6 +833,49 @@ function validateForm() {
     if (!approvalSheet) { showAlert('Please upload your approval sheet.', 'error'); allValid = false; }
 
     return allValid;
+}
+
+/**
+ * Adapt UI based on user role (Student vs Professor)
+ */
+function adaptUIForRole() {
+    if (typeof USER_DATA === 'undefined' || !USER_DATA.role) return;
+
+    if (USER_DATA.role === 'professor') {
+        const isProfessor = true;
+        
+        // 1. Update Hero Section
+        const heroTitle = document.querySelector('.hero-text h1');
+        const heroSub = document.querySelector('.hero-text p');
+        if (heroTitle) heroTitle.textContent = 'Faculty Research Portal';
+        if (heroSub) heroSub.textContent = 'Archive and preserve your professional research and studies';
+
+        // 2. Update Basic Info labels
+        const idLabel = document.querySelector('label[for="studentId"]');
+        const idInput = document.getElementById('studentId');
+        if (idLabel) idLabel.innerHTML = 'Professor / Employee ID <span class="required">*</span>';
+        if (idInput) idInput.placeholder = 'e.g. PROF-202X-XXX';
+
+        // 3. Update Review Section labels
+        const reviewIdLabel = document.querySelector('#reviewStudentId')?.previousElementSibling;
+        if (reviewIdLabel) reviewIdLabel.textContent = 'Faculty ID:';
+
+        // 4. Update Co-author labels (mostly for new ones)
+        // We'll also need to update createCoauthorBlock to check the role
+        
+        // 5. Update Agreement text
+        const agreementText = document.querySelector('.final-agreement .label-text');
+        if (agreementText) {
+            agreementText.innerHTML = `
+                I certify that this submission is my own original professional work. 
+                I understand that this study will be archived in the TCU digital library for academic reference.
+            `;
+        }
+
+        // 6. Update document labels
+        const manuscriptLabel = document.querySelector('label[for="thesisFile"]');
+        if (manuscriptLabel) manuscriptLabel.innerHTML = 'Research Manuscript / Paper (PDF) <span class="required">*</span>';
+    }
 }
 
 /* ---------------------------

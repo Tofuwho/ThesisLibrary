@@ -31,7 +31,14 @@
             {% endif %}
 
             <div class="hero-buttons">
-                <a href="{% url 'index' %}" class="cta-button">Explore Theses</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'index' %}" class="cta-button">Explore Theses</a>
+                {% else %}
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <button class="cta-button" disabled title="Login required to explore research archives">Explore Theses</button>
+                        <p style="font-size: 0.9rem; color: #ddd; margin: 0;">(Login required to explore)</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
