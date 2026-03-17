@@ -27,8 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-i+likm1gpl%k^(o6&9=huc@)6ln0ck5+trst4h-4pb4!uv*m58')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Set the DJANGO_DEBUG environment variable to 'False' before deploying.
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') != 'False'
+# Default to False for production safety. Set DJANGO_DEBUG=True for local development.
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if DEBUG else os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
@@ -216,28 +216,33 @@ DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 VERIFICATION_CODE_EXPIRY_HOURS = 24  # Codes expire after 24 hours
 
 # -------------------------------------------------------
-# Production security hardening (auto-enabled when DEBUG=False)
+# Production security hardening
 # -------------------------------------------------------
-if not DEBUG:
-    # Only enable SSL/HSTS if NOT on localhost/127.0.0.1
-    is_local = any(h in os.environ.get('ALLOWED_HOSTS', '') for h in ['localhost', '127.0.0.1'])
-    
-    SECURE_SSL_REDIRECT = (not is_local) and (os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True')
-    
-    if is_local:
-        SECURE_HSTS_SECONDS = 0
-        SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-        SECURE_HSTS_PRELOAD = False
-    else:
-        SECURE_HSTS_SECONDS            = 31536000   # 1 year
-        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-        SECURE_HSTS_PRELOAD            = True
+# Only enable SSL/HSTS if NOT on localhost/127.0.0.1
+is_local = any(h in os.environ.get('ALLOWED_HOSTS', '') for h in ['localhost', '127.0.0.1'])
 
-    SESSION_COOKIE_SECURE          = not is_local
-    CSRF_COOKIE_SECURE             = not is_local
-    SECURE_CONTENT_TYPE_NOSNIFF    = True
-    SECURE_BROWSER_XSS_FILTER      = True
-    X_FRAME_OPTIONS                = 'DENY'
+# Define all security settings unconditionally so Django's check --deploy can find them
+if DEBUG:
+    # Development settings
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+else:
+    # Production settings
+    SECURE_SSL_REDIRECT = (not is_local) and (os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True')
+    SESSION_COOKIE_SECURE = not is_local
+    CSRF_COOKIE_SECURE = not is_local
+    SECURE_HSTS_SECONDS = 0 if is_local else 31536000  # 1 year for non-local
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = not is_local
+    SECURE_HSTS_PRELOAD = not is_local
+
+# Always enable these security headers
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
 
 # Authentication
 LOGIN_URL = '/auth/login/'
