@@ -26,6 +26,8 @@ db.sqlite3
 .env
 .env.local
 .env.*.local
+/staticfiles/
+/static/
 
 # ============================================
 # MEDIA & UPLOADS
@@ -71,12 +73,20 @@ tags_out.txt
 test_results.txt
 ul_includes.txt
 ul_lines.txt
+test_debug.py
+test_debug2.py
+test_prod.py
+test_*.py
+*_test.py
+deploy_check*.txt
+prod_check_results.txt
 
 # ============================================
 # TEST DATA (don't commit to production)
 # ============================================
 seed_data_utf8.json
 /test_data/
+.env.production
 
 # ============================================
 # OS FILES
