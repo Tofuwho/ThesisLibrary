@@ -18,13 +18,8 @@ class PDFSearchEngine:
     
     def extract_text_from_pdf(self, pdf_path: str) -> str:
         """
-        Extract all text from a PDF file.
-        
-        Args:
-            pdf_path: Path to the PDF file
-            
-        Returns:
-            Extracted text content
+        Extract all text from a PDF file with page markers.
+        Example: [PG:1] Page 1 content [PG:2] Page 2 content
         """
         if not os.path.exists(pdf_path):
             return ""
@@ -35,22 +30,78 @@ class PDFSearchEngine:
         
         try:
             doc = fitz.open(pdf_path)
-            text_content = ""
+            text_chunks = []
             
             for page_num in range(doc.page_count):
                 page = doc[page_num]
-                text_content += page.get_text()
+                # Join page number with content
+                text_chunks.append(f"[PG:{page_num + 1}] {page.get_text()}")
             
             doc.close()
+            full_text = " ".join(text_chunks)
             
             # Cache the result
-            self.cache[pdf_path] = text_content
-            return text_content
+            self.cache[pdf_path] = full_text
+            return full_text
             
         except Exception as e:
             print(f"Error extracting text from {pdf_path}: {str(e)}")
             return ""
     
+    def search_in_extracted_text(self, text: str, query: str) -> Dict:
+        """Search within extracted text string and handle page markers."""
+        if not text:
+            return {"found": False, "matches": [], "context": ""}
+        
+        matches = []
+        all_context = []
+        query_lower = query.lower()
+        text_lower = text.lower()
+        query_pattern = re.escape(query_lower)
+        
+        # Pattern to find page markers
+        page_marker_pattern = r"\[PG:(\d+)\]"
+        
+        for match in re.finditer(query_pattern, text_lower):
+            start_pos = match.start()
+            end_pos = match.end()
+            
+            # Find the closest page marker BEFORE this match
+            # Search in the substring before the match
+            pre_match_text = text[:start_pos]
+            page_info = "N/A"
+            
+            # Find all markers in the text before the match and take the last one
+            markers = list(re.finditer(page_marker_pattern, pre_match_text))
+            if markers:
+                page_info = markers[-1].group(1)
+            
+            context_start = max(0, start_pos - 80)
+            context_end = min(len(text), end_pos + 80)
+            
+            # Clean up context by removing markers from display
+            context_raw = text[context_start:context_end]
+            context_clean = re.sub(page_marker_pattern, "", context_raw)
+            
+            # Highlight the match in the cleaned context
+            match_in_context = context_clean.lower().find(query_lower)
+            highlighted_context = self._highlight_match(context_clean, query, 0, match_in_context)
+            
+            matches.append({
+                "page": page_info,
+                "position": start_pos,
+                "context": highlighted_context,
+                "match_text": text[start_pos:end_pos]
+            })
+            all_context.append(highlighted_context)
+            
+        return {
+            "found": len(matches) > 0,
+            "matches": matches[:10], # Limit matches for performance
+            "context": " ... ".join(all_context[:3]),
+            "total_matches": len(matches)
+        }
+
     def search_in_pdf(self, pdf_path: str, query: str) -> Dict:
         """
         Search for a query within a PDF file and return detailed results.
