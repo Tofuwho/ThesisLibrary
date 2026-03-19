@@ -639,6 +639,22 @@
     transform: translateY(-2px);
 }
 
+/* Dirty state - Highlight button when filters have changed but haven't been applied */
+.apply-filters-button.dirty {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #d00 100%);
+    box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+}
+
+.apply-filters-button.pulse {
+    animation: filter-pulse 2s infinite cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes filter-pulse {
+    0% { transform: scale(1); box-shadow: 0 4px 15px var(--primary-light); }
+    50% { transform: scale(1.05); box-shadow: 0 12px 35px var(--primary-medium); }
+    100% { transform: scale(1); box-shadow: 0 4px 15px var(--primary-light); }
+}
+
 .clear-filters-button {
     background: #f8f9fa;
     color: var(--text-secondary);
@@ -1502,4 +1518,98 @@
 
 [data-theme="dark"] .filter-list li label:hover {
     background: #333;
+}
+
+/* Pagination Styling */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 40px;
+    background: var(--white);
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+    z-index: 10;
+}
+
+.pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.page-link:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.page-link.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white);
+    box-shadow: 0 8px 20px var(--primary-light);
+}
+
+.page-link.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    background: #f8f9fa;
+}
+
+.page-link i {
+    font-size: 0.8rem;
+}
+
+.page-info {
+    margin-right: 20px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Dark Mode Pagination */
+[data-theme="dark"] .pagination-container {
+    background: #1a1a1a;
+    border-color: #333;
+}
+
+[data-theme="dark"] .page-link {
+    background: #252525;
+    border-color: #333;
+    color: #aaa;
+}
+
+[data-theme="dark"] .page-link:hover {
+    border-color: var(--primary-color);
+    color: #fff;
+    background: #333;
+}
+
+[data-theme="dark"] .page-link.active {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+[data-theme="dark"] .page-link.disabled {
+    background: #151515;
+    color: #555;
 }

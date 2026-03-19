@@ -380,10 +380,17 @@ def categories_page(request):
     types = Thesis.objects.exclude(thesis_type__isnull=True).exclude(thesis_type__exact='')\
                           .values('thesis_type').annotate(count=Count('id')).order_by('thesis_type')
 
-    # Compute total after deep filtering (list vs QuerySet)
+    # Compute total after deep filtering before pagination
     total_results = len(theses) if isinstance(theses, list) else theses.count()
+
+    # Apply Pagination
+    page_number = request.GET.get('page') or 1
+    paginator = Paginator(theses, 16) # 16 items per page
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'theses': theses,
+        'theses': page_obj,
+        'page_obj': page_obj,
         'categories': categories,
         'years': [{'year': y['year'], 'count': y['count']} for y in years],
         'authors': [{'name': a['author'], 'count': a['count']} for a in authors],
