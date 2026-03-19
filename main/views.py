@@ -164,90 +164,88 @@ def categories_page(request):
 
     # Filtering by search
     if search_query:
-        if search_mode == 'deep':
-            # Deep search: only by PDF contents
-            # Apply non-search filters first to limit the set before PDF scanning
-            pass  # handled below; we will scan after applying facet filters
-        else:
-            # Normal search: search metadata fields (the card)
-            STOPWORDS = {
-                'a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'as', 
-                'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 
-                'did', 'but', 'if', 'then', 'else', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 
-                'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 
-                'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 
-                'should', 'now', 'thesis', 'study', 'research', 'library'
-            }
-            
-            # Annotate co-authors and other fields for searching
-            theses = theses.annotate(
-                coauthor_json_text=Concat(
-                    F('co_authors__first_name'), Value(' '), F('co_authors__last_name'), 
-                    output_field=CharField()
-                )
+        # Common scoring logic for metadata (applied to both normal and deep)
+        STOPWORDS = {
+            'a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'as', 
+            'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 
+            'did', 'but', 'if', 'then', 'else', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 
+            'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 
+            'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 
+            'should', 'now', 'thesis', 'study', 'research', 'library'
+        }
+        
+        # Annotate co-authors and other fields for searching
+        theses = theses.annotate(
+            coauthor_json_text=Concat(
+                F('co_authors__first_name'), Value(' '), F('co_authors__last_name'), 
+                output_field=CharField()
             )
+        )
+        
+        # Exact Phrase Matching (High Weight)
+        phrase_score = (
+            Case(When(title__icontains=search_query, then=Value(150)), default=Value(0), output_field=IntegerField()) +
+            Case(When(abstract__icontains=search_query, then=Value(100)), default=Value(0), output_field=IntegerField()) +
+            Case(When(author__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
+            Case(When(keywords__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
+            Case(When(coauthor_json_text__icontains=search_query, then=Value(70)), default=Value(0), output_field=IntegerField()) +
+            Case(When(department__name__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField()) +
+            Case(When(course__name__icontains=search_query, then=Value(40)), default=Value(0), output_field=IntegerField())
+        )
+        
+        # Token-based Matching
+        tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
+        search_tokens = [t for t in tokens if t not in STOPWORDS or len(t) > 3]
+        if not search_tokens and tokens: search_tokens = tokens
+        
+        token_score_expr = Value(0)
+        try:
+            from main.nlp_utils import get_lemmas
+        except Exception:
+            def get_lemmas(w): return {w}
             
-            # Exact Phrase Matching (High Weight)
-            phrase_score = (
-                Case(When(title__icontains=search_query, then=Value(150)), default=Value(0), output_field=IntegerField()) +
-                Case(When(abstract__icontains=search_query, then=Value(100)), default=Value(0), output_field=IntegerField()) +
-                Case(When(author__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
-                Case(When(keywords__icontains=search_query, then=Value(80)), default=Value(0), output_field=IntegerField()) +
-                Case(When(coauthor_json_text__icontains=search_query, then=Value(70)), default=Value(0), output_field=IntegerField()) +
-                Case(When(department__name__icontains=search_query, then=Value(50)), default=Value(0), output_field=IntegerField()) +
-                Case(When(course__name__icontains=search_query, then=Value(40)), default=Value(0), output_field=IntegerField())
+        for token in search_tokens:
+            lemmas = get_lemmas(token)
+            title_q = Q(); author_q = Q(); abstract_q = Q(); keywords_q = Q()
+            research_cat_q = Q(); cat_name_q = Q(); dept_name_q = Q(); course_name_q = Q()
+            coauthor_q = Q()
+            
+            for lemma in lemmas:
+                title_q |= Q(title__icontains=lemma); author_q |= Q(author__icontains=lemma)
+                abstract_q |= Q(abstract__icontains=lemma); keywords_q |= Q(keywords__icontains=lemma)
+                research_cat_q |= Q(research_category__icontains=lemma)
+                cat_name_q |= Q(category__name__icontains=lemma)
+                dept_name_q |= Q(department__name__icontains=lemma)
+                course_name_q |= Q(course__name__icontains=lemma)
+                coauthor_q |= Q(coauthor_json_text__icontains=lemma)
+            
+            token_score = (
+                Case(When(title_q, then=Value(30)), default=Value(0), output_field=IntegerField()) +
+                Case(When(author_q, then=Value(15)), default=Value(0), output_field=IntegerField()) +
+                Case(When(coauthor_q, then=Value(15)), default=Value(0), output_field=IntegerField()) +
+                Case(When(abstract_q, then=Value(10)), default=Value(0), output_field=IntegerField()) +
+                Case(When(keywords_q, then=Value(10)), default=Value(0), output_field=IntegerField()) +
+                Case(When(research_cat_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(cat_name_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(dept_name_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
+                Case(When(course_name_q, then=Value(5)), default=Value(0), output_field=IntegerField())
             )
-            
-            # Token-based Matching
-            tokens = [t.lower() for t in re.findall(r"\w+", search_query) if t.strip()]
-            search_tokens = [t for t in tokens if t not in STOPWORDS or len(t) > 3]
-            if not search_tokens and tokens: search_tokens = tokens
-            
-            token_score_expr = Value(0)
             try:
-                from main.nlp_utils import get_lemmas
-            except Exception:
-                def get_lemmas(w): return {w}
-                
-            for token in search_tokens:
-                lemmas = get_lemmas(token)
-                title_q = Q(); author_q = Q(); abstract_q = Q(); keywords_q = Q()
-                research_cat_q = Q(); cat_name_q = Q(); dept_name_q = Q(); course_name_q = Q()
-                coauthor_q = Q()
-                
-                for lemma in lemmas:
-                    title_q |= Q(title__icontains=lemma); author_q |= Q(author__icontains=lemma)
-                    abstract_q |= Q(abstract__icontains=lemma); keywords_q |= Q(keywords__icontains=lemma)
-                    research_cat_q |= Q(research_category__icontains=lemma)
-                    cat_name_q |= Q(category__name__icontains=lemma)
-                    dept_name_q |= Q(department__name__icontains=lemma)
-                    course_name_q |= Q(course__name__icontains=lemma)
-                    coauthor_q |= Q(coauthor_json_text__icontains=lemma)
-                
-                token_score = (
-                    Case(When(title_q, then=Value(30)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(author_q, then=Value(15)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(coauthor_q, then=Value(15)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(abstract_q, then=Value(10)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(keywords_q, then=Value(10)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(research_cat_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(cat_name_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(dept_name_q, then=Value(5)), default=Value(0), output_field=IntegerField()) +
-                    Case(When(course_name_q, then=Value(5)), default=Value(0), output_field=IntegerField())
-                )
-                try:
-                    year_int = int(token)
-                    if 1900 < year_int < 2100:
-                        token_score += Case(When(year=year_int, then=Value(20)), default=Value(0), output_field=IntegerField())
-                except: pass
-                token_score_expr += token_score
-                
-            theses = theses.annotate(score=ExpressionWrapper(phrase_score + token_score_expr, output_field=IntegerField())).filter(score__gt=0)
+                year_int = int(token)
+                if 1900 < year_int < 2100:
+                    token_score += Case(When(year=year_int, then=Value(20)), default=Value(0), output_field=IntegerField())
+            except: pass
+            token_score_expr += token_score
+        
+        theses = theses.annotate(score=ExpressionWrapper(phrase_score + token_score_expr, output_field=IntegerField()))
+        
+        if search_mode != 'deep':
+            theses = theses.filter(score__gt=0)
             
-            # Default sorting by score if searching
-            if not sort or sort == 'date-desc':
-                theses = theses.order_by('-score', '-year')
-            else:
+        # Default sorting by score if searching
+        if not sort or sort == 'date-desc':
+            theses = theses.order_by('-score', '-year')
+        else:
                 sort_map = {
                     'date-asc': ('year', '-score'), 'date-desc': ('-year', '-score'),
                     'title-asc': ('title', '-score'), 'title-desc': ('-title', '-score'),
@@ -317,41 +315,62 @@ def categories_page(request):
     base_order = sort_options.get(sort, ('-year', 'title'))
 
     # Apply deep search after facet filters, before final ordering
+    # Final Sorting and Deep Search Processing
     if search_query and search_mode == 'deep':
-        # Convert to list before scanning PDFs
-        theses_list = list(theses)
-        theses = deep_filter_theses_by_pdf(theses_list, effective_query)
-        # In deep mode we keep list semantics; no .order_by on list
+        from .utils import pdf_search_engine
+        
+        # 1. First, apply database-level deep filters (FAST)
+        # Separate into indexed (full_text exists) and legacy (no index yet)
+        indexed_theses = theses.exclude(full_text__isnull=True).exclude(full_text__exact='').filter(full_text__icontains=effective_query)
+        legacy_theses = theses.filter(Q(full_text__isnull=True) | Q(full_text__exact=''))
+        
+        # 2. Re-apply global sorting to both QuerySets
+        if search_query:
+            indexed_theses = indexed_theses.order_by('-score', *base_order)
+            legacy_theses = legacy_theses.order_by('-score', *base_order)
+        else:
+            indexed_theses = indexed_theses.order_by(*base_order)
+            legacy_theses = legacy_theses.order_by(*base_order)
+            
+        final_matched_list = []
+        seen_ids = set()
+        
+        # 3. Process indexed theses (Fast snippet extraction)
+        for t in indexed_theses:
+            if t.id not in seen_ids:
+                res = pdf_search_engine.search_in_extracted_text(t.full_text, effective_query)
+                if res.get('found'):
+                    t.deep_search_results = res
+                    t.deep_search_query = effective_query
+                    final_matched_list.append(t)
+                    seen_ids.add(t.id)
+        
+        # 4. Process legacy theses (Slow PDF fallback for un-indexed records)
+        for t in legacy_theses:
+            if t.id not in seen_ids and t.file:
+                res = search_in_thesis_pdf(t, effective_query)
+                if res.get('found'):
+                    t.deep_search_results = res
+                    t.deep_search_query = effective_query
+                    final_matched_list.append(t)
+                    seen_ids.add(t.id) if t.id else None
+        
+        theses = final_matched_list
     else:
-        # Order by relevance score first if searching, then chosen sort
+        # Standard Search Mode / Facet Mode
         if search_query:
             theses = theses.order_by('-score', *base_order)
         else:
             theses = theses.order_by(*base_order)
-        
-        # Deduplicate manually, keeping the first occurrence (highest score due to order_by)
-        unique_theses = []
-        seen = set()
+            
+        # De-duplicate while maintaining order
+        unique_results = []
+        seen_ids = set()
         for t in theses:
-            if t.id not in seen:
-                seen.add(t.id)
-                unique_theses.append(t)
-        theses = unique_theses
-
-    # If deep search is enabled, scan PDFs and keep only matches
-    matched_theses = None
-    if search_query and search_mode == 'deep':
-        matched_theses_list = []
-        for thesis in theses:
-            # Skip if there is no file
-            if not thesis.file:
-                continue
-            deep_search_results = search_in_thesis_pdf(thesis, effective_query)
-            if deep_search_results.get('found'):
-                thesis.deep_search_results = deep_search_results
-                thesis.deep_search_query = effective_query
-                matched_theses_list.append(thesis)
-        theses = matched_theses_list
+            if t.id not in seen_ids:
+                unique_results.append(t)
+                seen_ids.add(t.id)
+        theses = unique_results
 
     # --- Prepare keywords and research categories lists ---
     for thesis in theses:

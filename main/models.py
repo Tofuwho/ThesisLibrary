@@ -67,6 +67,7 @@ class Thesis(models.Model):
 
     # File upload
     file = models.FileField(upload_to="thesis_files/", blank=True, null=True)
+    full_text = models.TextField(blank=True, null=True, help_text="Stored full text of the PDF for deep search indexing")
 
     def __str__(self):
         return f"{self.title} ({self.year})"
@@ -274,6 +275,9 @@ class Submission(models.Model):
         if self.status != self.STATUS_PENDING:
             raise ValueError("Only pending submissions can be approved")
 
+        from .utils import extract_thesis_text
+        extracted_text = extract_thesis_text(self) if self.file else ""
+
         # Create Thesis record
         thesis = Thesis.objects.create(
             title=self.title,
@@ -296,6 +300,7 @@ class Submission(models.Model):
             course=self.course,
             lc_classification=lc_classification or self.lc_classification,
             file=self.file,
+            full_text=extracted_text,
         )
 
         # Copy relational co-authors into Thesis
