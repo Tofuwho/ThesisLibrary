@@ -157,8 +157,8 @@ def categories_page(request):
             suggestion, confidence = suggest_query_correction(search_query, corpus)
             if suggestion and suggestion.strip().lower() != search_query.strip().lower():
                 did_you_mean = suggestion
-                if search_mode == 'deep':
-                    effective_query = suggestion
+                # NOTE: We no longer auto-override effective_query here to avoid inaccurate results.
+                # The user can click the suggestion if they intended to.
         except Exception:
             did_you_mean = None
 
@@ -299,7 +299,8 @@ def categories_page(request):
             suggestion_pdf, conf_pdf = suggest_query_correction(search_query, pdf_tokens)
             if suggestion_pdf and suggestion_pdf.strip().lower() != search_query.strip().lower():
                 did_you_mean = suggestion_pdf
-                effective_query = suggestion_pdf
+                # NOTE: In Deep Search, we keep the original literal query as the primary effective query.
+                # Auto-overriding causes valid words to be missed if the preview sample was too small.
         except Exception:
             pass
 

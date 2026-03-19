@@ -789,7 +789,31 @@ def suggest_query_correction(query: str, candidates: List[str]) -> Tuple[Optiona
     tokens = [t for t in re.findall(r"\w+", query) if t.strip()]
     suggested_tokens: List[str] = []
     token_scores: List[float] = []
+    
+    try:
+        from main.nlp_utils import get_lemmas
+    except ImportError:
+        def get_lemmas(w): return {w.lower()}
+
     for tkn in tokens:
+        tkn_lc = tkn.lower()
+        # If the word or ANY of its lemmatized forms are in the corpus/dictionary, it's correct.
+        # This prevents "developed" from being "corrected" to "undevelop" if "develop" is in the dict.
+        is_known = False
+        if tkn_lc in word_corpus:
+            is_known = True
+        else:
+            # Check lemmas (e.g., "developed" -> "develop")
+            for lemma in get_lemmas(tkn_lc):
+                if lemma in word_corpus:
+                    is_known = True
+                    break
+        
+        if is_known:
+            suggested_tokens.append(tkn)
+            token_scores.append(100.0)
+            continue
+
         # For very short tokens, we don't want fuzzy matching to blindly suggest longer random words
         # but fuzz.ratio naturally handles this by penalizing length differences
         tok_match = process.extractOne(
