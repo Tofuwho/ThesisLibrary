@@ -148,6 +148,8 @@ function handleDepartmentSwitch(button) {
     // Update the hidden input value
     if (departmentInput) {
         departmentInput.value = departmentId;
+        // Trigger change event to notify that filters have changed (marks button as dirty)
+        filterForm.dispatchEvent(new Event('change'));
     }
     
     // Update visual state
@@ -159,11 +161,8 @@ function handleDepartmentSwitch(button) {
     // Show/hide appropriate filter groups
     updateFilterGroupVisibility(departmentId);
     
-    // Submit the form to apply the filter
-    const filterForm = document.getElementById('filter-form');
-    if (filterForm) {
-        filterForm.submit();
-    }
+    // We no longer auto-submit when department changes to allow the user
+    // to combine multiple filters before searching
 }
 
 /**
@@ -244,19 +243,20 @@ function updateFilterGroupVisibility(departmentId) {
  */
 function initializeFilterForm() {
     const filterForm = document.getElementById('filter-form');
-    
-    if (filterForm) {
-        // Handle checkbox changes for immediate filtering
-        const checkboxes = filterForm.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                // Auto-submit form when filters change
-                setTimeout(() => {
-                    filterForm.submit();
-                }, 100);
-            });
-        });
-    }
+    if (!filterForm) return;
+
+    const applyButton = filterForm.querySelector('.apply-filters-button');
+    if (!applyButton) return;
+
+    // Add listener for all inputs to mark the button as dirty (needs application)
+    filterForm.addEventListener('change', () => {
+        applyButton.classList.add('dirty');
+        
+        // Add a subtle animation/pulsing effect
+        if (!applyButton.classList.contains('pulse')) {
+            applyButton.classList.add('pulse');
+        }
+    });
 }
 
 /**

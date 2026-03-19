@@ -106,6 +106,9 @@
                 <form method="get" id="filter-form">
                     <input type="hidden" name="department" id="department-input"
                         value="{{ request.GET.department|default:'all' }}">
+                    <input type="hidden" name="search" value="{{ request.GET.search|default:'' }}">
+                    <input type="hidden" name="search_mode" value="{{ request.GET.search_mode|default:'normal' }}">
+                    <input type="hidden" name="sort" value="{{ request.GET.sort|default:'date-desc' }}">
 
                     <div class="filter-section">
                         <h3>Publication Date</h3>
@@ -329,6 +332,45 @@
                     <p>No theses found.</p>
                     {% endfor %}
                 </div>
+
+                {% if page_obj.paginator.num_pages > 1 %}
+                <div class="pagination-container">
+                    <div class="page-info">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </div>
+                    <div class="pagination">
+                        {% if page_obj.has_previous %}
+                        <a href="?{% url_replace page=1 %}" class="page-link" title="First Page">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?{% url_replace page=page_obj.previous_page_number %}" class="page-link" title="Previous Page">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                        {% else %}
+                        <span class="page-link disabled"><i class="fas fa-angle-left"></i></span>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <span class="page-link active">{{ num }}</span>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?{% url_replace page=num %}" class="page-link">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <a href="?{% url_replace page=page_obj.next_page_number %}" class="page-link" title="Next Page">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?{% url_replace page=page_obj.paginator.num_pages %}" class="page-link" title="Last Page">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                        {% else %}
+                        <span class="page-link disabled"><i class="fas fa-angle-right"></i></span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

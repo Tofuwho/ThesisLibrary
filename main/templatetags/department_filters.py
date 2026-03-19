@@ -163,3 +163,14 @@ def format_coauthors(value):
             elif isinstance(item, str) and item.strip():
                 names.append(item.strip())
     return ', '.join(names)
+
+@register.simple_tag(takes_context=True)
+def url_replace(context, **kwargs):
+    """
+    Helper tag to replace or add parameters to the current URL query string.
+    Used for pagination to preserve existing filters.
+    """
+    query = context['request'].GET.copy()
+    for kwarg, value in kwargs.items():
+        query[kwarg] = value
+    return query.urlencode()
