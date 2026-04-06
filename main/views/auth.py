@@ -55,6 +55,8 @@ def send_password_reset_email(user, code):
 @csrf_protect
 def login_view(request):
     if request.method == 'POST':
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        
         if request.content_type == 'application/json':
             data = json.loads(request.body)
             uid, pwd = data.get('username'), data.get('password')
@@ -62,7 +64,8 @@ def login_view(request):
             if user:
                 if not user.is_active: return JsonResponse({'success': False, 'error': 'Account inactive.'}, status=400)
                 try:
-                    if not VerificationCode.objects.get(user=user).is_verified: return JsonResponse({'success': False, 'error': 'Not verified.'}, status=400)
+                    if hasattr(user, 'verificationcode') and not user.verificationcode.is_verified:
+                        return JsonResponse({'success': False, 'error': 'Not verified.'}, status=400)
                 except VerificationCode.DoesNotExist: pass
                 login(request, user)
                 return JsonResponse({'success': True})
@@ -72,7 +75,13 @@ def login_view(request):
             user = authenticate(request, username=uid, password=pwd)
             if user and user.is_active:
                 login(request, user)
+                if is_ajax:
+                    return JsonResponse({'success': True, 'redirect_url': request.POST.get('next') or '/'})
                 return redirect(request.POST.get('next') or '/')
+            
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': {'__all__': ['Invalid ID or password.']}}, status=400)
+            
             messages.error(request, 'Invalid ID or password.')
     return redirect('/')
 
