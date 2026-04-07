@@ -139,7 +139,13 @@ def format_coauthors(value):
     # Handle Django QuerySets or Managers
     from django.db.models.query import QuerySet
     from django.db.models.manager import Manager
-    if isinstance(data, (QuerySet, Manager)):
+
+    # Managers are not iterable themselves, they need .all()
+    if isinstance(data, Manager):
+        data = data.all()
+
+    # QuerySets are iterable, convert to list for consistency in following loop
+    if isinstance(data, QuerySet):
         data = list(data)
 
     names = []
