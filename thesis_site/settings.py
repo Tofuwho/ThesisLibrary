@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'main.middleware.ratelimit.RateLimitMiddleware',  # Rate limiting should be early
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -116,6 +117,14 @@ else:
             },
         }
     }
+
+# Cache settings for rate limiting
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 
 
 
@@ -246,3 +255,9 @@ X_FRAME_OPTIONS = 'DENY'
 
 # Authentication
 LOGIN_URL = '/auth/login/'
+
+# Rate Limiting Settings
+RATELIMIT_GENERAL_LIMIT = 100
+RATELIMIT_GENERAL_PERIOD = 60
+RATELIMIT_LOGIN_LIMIT = 5
+RATELIMIT_LOGIN_PERIOD = 900  # 15 minutes
