@@ -133,6 +133,14 @@ def admin_log_entries(request):
     })
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
+def password_reset_requests(request):
+    """View active password reset codes for offline assistance."""
+    from ..models import PasswordResetCode
+    active_codes = PasswordResetCode.objects.filter(is_used=False, expires_at__gt=timezone.now()).select_related('user').order_by('-created_at')
+    return render(request, 'main/admin_reset_codes.html', {'active_codes': active_codes})
+
+@login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def user_list(request):
     all_users = User.objects.select_related('profile').order_by('-date_joined')

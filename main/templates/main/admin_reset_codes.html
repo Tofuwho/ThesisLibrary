@@ -1,0 +1,107 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block body_class %}admin-page{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+    .reset-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .reset-table th {
+        background: #f8f9fa;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+    .reset-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+        color: #2d3436;
+    }
+    .code-badge {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #a31d23;
+        background: #fff5f5;
+        padding: 4px 12px;
+        border-radius: 6px;
+        border: 1px dashed #a31d23;
+    }
+    .offline-notice {
+        background: #e7f3ff;
+        color: #00529b;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-left: 5px solid #00529b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'main/admin_sidebar.html' %}
+
+    <div class="admin-main">
+        <div class="dashboard-header">
+            <h1>Password Reset Requests</h1>
+            <p>Assisting users in an offline LAN environment.</p>
+        </div>
+
+        <div class="offline-notice">
+            <i class="fas fa-info-circle"></i>
+            <span>Since this system is running on a local network, students must visit the library counter to retrieve their codes. Please verify their physical ID before providing the code below.</span>
+        </div>
+
+        <div class="dashboard-section">
+            <h2>Active Reset Codes</h2>
+            <table class="reset-table">
+                <thead>
+                    <tr>
+                        <th>Student/User</th>
+                        <th>User ID</th>
+                        <th>Email (Reference)</th>
+                        <th>Generated Code</th>
+                        <th>Requested At</th>
+                        <th>Expires</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for code in active_codes %}
+                    <tr>
+                        <td><strong>{{ code.user.get_full_name|default:code.user.username }}</strong></td>
+                        <td><code>{{ code.user.username }}</code></td>
+                        <td>{{ code.user.email }}</td>
+                        <td><span class="code-badge">{{ code.code }}</span></td>
+                        <td>{{ code.created_at|date:"M d, Y H:i" }}</td>
+                        <td><span style="color: {% if code.is_expired %}#d63031{% else %}#27ae60{% endif %};">
+                            {{ code.expires_at|timeuntil }} left
+                        </span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 3rem; color: #999; font-style: italic;">
+                            No active reset requests found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

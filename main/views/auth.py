@@ -148,7 +148,11 @@ def forgot_password(request):
             PasswordResetCode.objects.create(user=user, code=code, expires_at=timezone.now()+timezone.timedelta(hours=1))
             send_password_reset_email(user, code)
         except: pass
-        return JsonResponse({'success': True})
+        # In offline LAN, we inform the user to visit the Librarian
+        return JsonResponse({
+            'success': True, 
+            'message': 'Reset request recorded. Please visit the library counter with your ID to receive your 6-digit reset code.'
+        })
     return redirect('/')
 
 @csrf_protect
