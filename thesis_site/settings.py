@@ -24,7 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-i+likm1gpl%k^(o6&9=huc@)6ln0ck5+trst4h-4pb4!uv*m58')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY and not DEBUG:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured("The SECRET_KEY environment variable is not set and is required in production.")
+elif not SECRET_KEY:
+    SECRET_KEY = 'django-insecure-dev-fallback-key-replace-in-production'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Default to False for production safety. Set DJANGO_DEBUG=True for local development.
@@ -89,8 +94,8 @@ if os.getenv("GITHUB_ACTIONS") == "true":
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': os.getenv('MYSQL_DATABASE', 'thesis_library'),
-            'USER': os.getenv('MYSQL_USER', 'root'),
-            'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
+            'USER': os.getenv('MYSQL_USER'),
+            'PASSWORD': os.getenv('MYSQL_PASSWORD'),
             'HOST': os.getenv('MYSQL_HOST', '127.0.0.1'),
             'PORT': os.getenv('MYSQL_PORT', '3306'),
             'CONN_MAX_AGE': 600,  # Close connection after 10 minutes of inactivity
@@ -106,8 +111,8 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': os.environ.get('DB_NAME', 'thesis_library'),
-            'USER': os.environ.get('DB_USER', 'root'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'USER': os.environ.get('DB_USER'),
+            'PASSWORD': os.environ.get('DB_PASSWORD'),
             'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
             'PORT': os.environ.get('DB_PORT', '3306'),
             'CONN_MAX_AGE': 600,

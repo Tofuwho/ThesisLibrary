@@ -22,8 +22,9 @@ def generate_verification_code():
 def create_premade_user(username, email, first_name="", last_name="", role=Profile.STUDENT):
     user = User.objects.filter(username=username).first()
     if not user:
-        default_password = f"TCULib@{username}" 
-        user = User.objects.create_user(username=username, email=email or "", password=default_password, first_name=first_name, last_name=last_name, is_active=False)
+        from django.utils.crypto import get_random_string
+        temporary_password = get_random_string(32)
+        user = User.objects.create_user(username=username, email=email or "", password=temporary_password, first_name=first_name, last_name=last_name, is_active=False)
     profile, _ = Profile.objects.get_or_create(user=user)
     if profile.is_premade or not user.is_active:
         profile.role = role
