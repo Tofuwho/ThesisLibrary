@@ -93,11 +93,11 @@ if os.getenv("GITHUB_ACTIONS") == "true":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('MYSQL_DATABASE', 'thesis_library'),
+            'NAME': os.getenv('MYSQL_DATABASE'),
             'USER': os.getenv('MYSQL_USER'),
             'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-            'HOST': os.getenv('MYSQL_HOST', '127.0.0.1'),
-            'PORT': os.getenv('MYSQL_PORT', '3306'),
+            'HOST': os.getenv('MYSQL_HOST'),
+            'PORT': os.getenv('MYSQL_PORT'),
             'CONN_MAX_AGE': 600,  # Close connection after 10 minutes of inactivity
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -110,11 +110,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ.get('DB_NAME', 'thesis_library'),
+            'NAME': os.environ.get('DB_NAME'),
             'USER': os.environ.get('DB_USER'),
             'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-            'PORT': os.environ.get('DB_PORT', '3306'),
+            'HOST': os.environ.get('DB_HOST'),
+            'PORT': os.environ.get('DB_PORT'),
             'CONN_MAX_AGE': 600,
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -246,12 +246,14 @@ if DEBUG:
     SECURE_HSTS_PRELOAD = False
 else:
     # Production settings
-    SECURE_SSL_REDIRECT = (not is_local) and (os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True')
-    SESSION_COOKIE_SECURE = not is_local
-    CSRF_COOKIE_SECURE = not is_local
-    SECURE_HSTS_SECONDS = 0 if is_local else 31536000  # 1 year for non-local
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = not is_local
-    SECURE_HSTS_PRELOAD = not is_local
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
 
 # Always enable these security headers
 SECURE_CONTENT_TYPE_NOSNIFF = True

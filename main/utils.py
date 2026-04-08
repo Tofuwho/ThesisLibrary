@@ -90,13 +90,14 @@ class PDFSearchEngine:
             return {"found": False}
 
     def _h(self, ctx, q, cs, ms):
+        from django.utils.html import escape
         mp = ms - cs
         ql = q.lower()
         mi = ctx.lower().find(ql, mp)
         if mi != -1:
-            res = ctx[:mi] + f"<mark>{ctx[mi:mi+len(q)]}</mark>" + ctx[mi+len(q):]
+            res = escape(ctx[:mi]) + f"<mark>{escape(ctx[mi:mi+len(q)])}</mark>" + escape(ctx[mi+len(q):])
             return res
-        return ctx
+        return escape(ctx)
 
     def get_pdf_preview(self, p, max_p=3):
         if not os.path.exists(p):

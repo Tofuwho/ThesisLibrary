@@ -119,6 +119,7 @@ def admin_dashboard(request):
     return render(request, 'main/admin_dashboard.html', context)
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def admin_log_entries(request):
     all_logs = LogEntry.objects.all().select_related('user', 'content_type').order_by('-action_time')
     security_logs = all_logs.filter(Q(change_message__icontains='Login') | Q(change_message__icontains='password') | Q(change_message__icontains='reset'))
@@ -132,6 +133,7 @@ def admin_log_entries(request):
     })
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def user_list(request):
     all_users = User.objects.select_related('profile').order_by('-date_joined')
     admins     = all_users.filter(profile__role=Profile.ADMIN)
@@ -170,6 +172,8 @@ def edit_user(request, user_id):
         return redirect('user_list')
     return render(request, 'main/edit_user.html', {'edit_user': target_user})
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def pending_submissions(request):
     theses = Submission.objects.filter(status='pending').order_by('-created_at')
     return render(request, 'main/pending_submissions.html', {'theses': theses})
@@ -194,8 +198,9 @@ def approve_thesis(request, thesis_id):
             messages.error(request, f"Could not approve '{submission.title}': {str(e)}")
     return redirect('pending_submissions')
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def reject_thesis(request, thesis_id):
-    if not request.user.is_staff: return HttpResponseForbidden("Not authorized")
     submission = get_object_or_404(Submission, id=thesis_id)
     if request.method == 'POST':
         if submission.status == Submission.STATUS_REJECTED: return redirect('pending_submissions')
@@ -243,6 +248,8 @@ def courses_list(request):
     courses = Course.objects.select_related('department').all()
     return render(request, 'main/courses.html', {'courses': courses})
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def admin_categories(request):
     categories = Category.objects.all()
     category_data = []
@@ -254,6 +261,8 @@ def admin_categories(request):
         })
     return render(request, 'main/admin_categories.html', {'categories': category_data})
 
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def archive_old_theses(request):
     if request.method != "POST": return JsonResponse({"error": "Invalid"}, status=400)
     system_user = User.objects.filter(is_superuser=True).first()

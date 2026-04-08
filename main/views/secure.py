@@ -32,6 +32,8 @@ def view_thesis(request, thesis_id):
 
 @login_required
 def serve_thesis_page_image(request, thesis_id, page_num):
+    if request.user.profile.role not in [Profile.ADMIN, Profile.LIBRARIAN]:
+        return HttpResponseForbidden("Not authorized to view full document.")
     try:
         try: thesis = Thesis.objects.get(pk=thesis_id)
         except: thesis = get_object_or_404(Submission, pk=thesis_id)
@@ -71,6 +73,7 @@ def view_thesis_file_highlight(request, pk):
 def download_thesis_file(request, pk):
     return HttpResponseForbidden("Downloading is prohibited.")
 
+@login_required
 def restricted_view_thesis_file(request, pk):
     thesis = get_object_or_404(Thesis, pk=pk)
     if not thesis.file: raise Http404()

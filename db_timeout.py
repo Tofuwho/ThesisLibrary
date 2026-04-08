@@ -9,10 +9,10 @@ load_dotenv()
 try:
     print("Connecting with timeout...")
     db = MySQLdb.connect(
-        host=os.getenv("DB_HOST", "127.0.0.1"),
-        user=os.getenv("DB_USER", "root"),
-        passwd=os.getenv("DB_PASSWORD", ""),
-        db=os.getenv("DB_NAME", "thesis_library"),
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        passwd=os.getenv("DB_PASSWORD"),
+        db=os.getenv("DB_NAME"),
         port=int(os.getenv("DB_PORT", 3306)),
         connect_timeout=5
     )
