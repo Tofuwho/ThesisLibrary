@@ -37,6 +37,16 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if DEBUG else os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Trusted Origins for Local LAN/Offline environments
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost',
+    'http://127.0.0.1',
+]
+# Add local network ranges (192.168.x.x, 10.x.x.x, etc.)
+for i in range(256):
+    CSRF_TRUSTED_ORIGINS.append(f'http://192.168.{i}.*')
+    CSRF_TRUSTED_ORIGINS.append(f'http://10.{i}.*')
+
 
 # Application definition
 
@@ -235,25 +245,23 @@ VERIFICATION_CODE_EXPIRY_HOURS = 24  # Codes expire after 24 hours
 # Only enable SSL/HSTS if NOT on localhost/127.0.0.1
 is_local = any(h in os.environ.get('ALLOWED_HOSTS', '') for h in ['localhost', '127.0.0.1'])
 
-# Define all security settings unconditionally so Django's check --deploy can find them
-if DEBUG:
-    # Development settings
-    SECURE_SSL_REDIRECT = False
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_HSTS_SECONDS = 0
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-    SECURE_HSTS_PRELOAD = False
-else:
-    # Production settings
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+# Always disable strict security cookies for local LAN/Offline deployment
+# Unless the user explicitly forces them via environment variables
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False') == 'True'
+CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False') == 'True'
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
+
+if not DEBUG:
+    # Production stays hardened if explicitly told to be
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
+else:
+    # Development/Local LAN
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 
 # Always enable these security headers
 SECURE_CONTENT_TYPE_NOSNIFF = True

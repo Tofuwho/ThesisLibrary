@@ -29,11 +29,11 @@
             </div>
         </div>
 
-        <!-- 2. SIGNUP FORM -->
+        <!-- 2. SIGNUP FORM (Identification Only) -->
         <div class="auth-form-box" id="signupBox">
             <div class="auth-header">
                 <h2>Create Account</h2>
-                <p>Join the scholarly community</p>
+                <p>Enter your ID and email to start activation</p>
             </div>
             <form id="signupForm" action="{% url 'signup' %}" method="POST">
                 {% csrf_token %}
@@ -43,10 +43,7 @@
                 <label for="signup-email">Email Address</label>
                 <input type="email" id="signup-email" name="email" placeholder="email@example.com" required />
 
-                <label for="signup-password">Password</label>
-                <input type="password" id="signup-password" name="password" placeholder="••••••••" required />
-
-                <button type="submit">Create Account</button>
+                <button type="submit">Verify Identity</button>
                 <p id="signupMessage" class="error-msg"></p>
             </form>
             <div class="auth-footer">
@@ -100,38 +97,41 @@
             </form>
         </div>
 
-        <!-- 5. VERIFY ACCOUNT -->
+        <!-- 5. VERIFY ACCOUNT (Enter Librarian Code) -->
         <div class="auth-form-box" id="verifyBox">
             <div class="auth-header">
-                <h2>Verify Account</h2>
-                <p>Enter the code provided by the librarian</p>
+                <h2>Verify Identity</h2>
+                <p>Visit the library counter to retrieve your 6-digit activation code.</p>
             </div>
             <form id="verifyForm" action="{% url 'verify_email' %}" method="POST">
                 {% csrf_token %}
                 <input type="hidden" id="verify-id" name="id" />
-                <label for="verify-code">Verification Code</label>
+                <label for="verify-code">6-Digit Activation Code</label>
                 <input type="text" id="verify-code" name="code" placeholder="000000" required maxlength="6" />
 
-                <button type="submit">Verify & Activate</button>
+                <button type="submit">Verify Code</button>
                 <button type="button" class="switch-form btn-secondary" data-target="signupBox">Back to Signup</button>
                 <p id="verifyMessage" class="error-msg"></p>
             </form>
         </div>
 
-        <!-- 6. ACTIVATE PREMADE ACCOUNT -->
+        <!-- 6. ACTIVATE ACCOUNT (Set Final Password) -->
         <div class="auth-form-box" id="activateBox">
             <div class="auth-header">
                 <h2>Set Password</h2>
-                <p>Please set a strong password for your new account</p>
+                <p>Verification successful. Please set your account password.</p>
             </div>
-            <form id="activationForm">
+            <form id="activationForm" action="{% url 'activate_account' %}" method="POST">
                 {% csrf_token %}
                 <input type="hidden" id="activate-id" name="id" />
+                <input type="hidden" id="activate-code" name="code" />
+                <input type="hidden" name="form_action" value="activate_premade" />
+                
                 <label for="activate-password">New Password</label>
-                <input type="password" id="activate-password" placeholder="••••••••" required />
+                <input type="password" id="activate-password" name="password" placeholder="••••••••" required />
 
                 <label for="activate-confirm">Confirm Password</label>
-                <input type="password" id="activate-confirm" placeholder="••••••••" required />
+                <input type="password" id="activate-confirm" name="confirm_password" placeholder="••••••••" required />
 
                 <button type="submit">Activate Account</button>
                 <p id="activationMessage" class="error-msg"></p>

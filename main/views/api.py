@@ -30,4 +30,6 @@ def api_extract_abstract(request):
     except Exception as e: return JsonResponse({'error': str(e)}, status=500)
 
 def csrf_failure(request, reason=""):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+        return JsonResponse({'success': False, 'error': 'Session expired or security block. Please reload the page and try again.'}, status=403)
     return render(request, "errors/csrf_failure.html", status=403)

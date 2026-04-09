@@ -100,8 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const originalText = submitBtn.textContent;
             const payload = {
                 id: document.getElementById('signup-id').value,
-                email: document.getElementById('signup-email').value,
-                password: document.getElementById('signup-password').value
+                email: document.getElementById('signup-email').value
             };
 
             submitBtn.disabled = true;
@@ -113,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify(payload),
                     headers: { 
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest', 
                         'X-CSRFToken': getCSRFToken() 
                     }
@@ -120,14 +120,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 if (data.success) {
                     if (data.requires_verification) {
-                        document.getElementById('verify-id').value = payload.id;
+                        document.getElementById('verify-id').value = data.id;
                         switchForm('verifyBox');
-                    } else if (data.requires_activation) {
-                        document.getElementById('activate-id').value = data.id;
-                        switchForm('activateBox');
                     } else {
                         switchForm('loginBox');
-                        alert('Account created! You can now log in.');
+                        alert('Account exists. Please log in.');
                     }
                 } else {
                     displayFormError('signupMessage', data.errors || { '__all__': [data.error] });
@@ -214,16 +211,80 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(verifyForm.action, {
                     method: 'POST',
                     body: JSON.stringify({ id, code }),
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() }
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken() 
+                    }
                 });
                 const data = await response.json();
                 if (data.success) {
-                    switchForm('loginBox');
-                    alert('Verified! Please log in.');
+                    if (data.requires_password_setup) {
+                        document.getElementById('activate-id').value = data.id;
+                        document.getElementById('activate-code').value = data.code;
+                        switchForm('activateBox');
+                    } else {
+                        switchForm('loginBox');
+                        alert('Verified! Please log in.');
+                    }
                 } else {
                     displayFormError('verifyMessage', { '__all__': [data.error] });
                 }
-            } catch (err) {}
+            } catch (err) { }
+        });
+    }
+
+    // === ACTIVATE ACCOUNT (Final step) ===
+    const activationForm = document.getElementById('activationForm');
+    if (activationForm) {
+        activationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pwd = document.getElementById('activate-password').value;
+            const confirm = document.getElementById('activate-confirm').value;
+
+            if (pwd !== confirm) {
+                displayFormError('activationMessage', { '__all__': ['Passwords do not match.'] });
+                return;
+            }
+
+            const payload = {
+                id: document.getElementById('activate-id').value,
+                code: document.getElementById('activate-code').value,
+                password: pwd
+            };
+
+            const submitBtn = activationForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+
+            try {
+                const actionUrl = activationForm.getAttribute('action');
+                const response = await fetch(actionUrl, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    switchForm('loginBox');
+                    alert('Account activated! You can now log in.');
+                } else {
+                    const errorMsg = data.error || (data.errors ? Object.values(data.errors).flat()[0] : 'Activation failed');
+                    displayFormError('activationMessage', { '__all__': [errorMsg] });
+                }
+            } catch (err) {
+                console.error('Activation Error:', err);
+                displayFormError('activationMessage', { '__all__': ['Network error. Please check your connection.'] });
+            } finally {
+                submitBtn.disabled = false;
+            }
         });
     }
 

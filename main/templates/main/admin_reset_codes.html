@@ -68,14 +68,56 @@
         </div>
 
         <div class="dashboard-section">
-            <h2>Active Reset Codes</h2>
+            <h2 style="display: flex; align-items: center; gap: 10px; margin-top: 30px;">
+                <i class="fas fa-user-plus" style="color: #27ae60;"></i> Account Activation Codes
+            </h2>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">For new students/staff who are setting up their accounts for the first time.</p>
             <table class="reset-table">
                 <thead>
                     <tr>
-                        <th>Student/User</th>
+                        <th>User</th>
                         <th>User ID</th>
                         <th>Email (Reference)</th>
-                        <th>Generated Code</th>
+                        <th>Activation Code</th>
+                        <th>Started At</th>
+                        <th>Expires</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in active_activations %}
+                    <tr>
+                        <td><strong>{{ item.user.get_full_name|default:item.user.username }}</strong></td>
+                        <td><code>{{ item.user.username }}</code></td>
+                        <td>{{ item.user.email }}</td>
+                        <td><span class="code-badge" style="color: #27ae60; background: #f0fff4; border-color: #27ae60;">{{ item.code }}</span></td>
+                        <td>{{ item.created_at|date:"M d, Y H:i" }}</td>
+                        <td><span style="color: {% if item.is_expired %}#d63031{% else %}#27ae60{% endif %};">
+                            {{ item.expires_at|timeuntil }} left
+                        </span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999; font-style: italic;">
+                            No active activation requests found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="dashboard-section" style="margin-top: 50px;">
+            <h2 style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-undo-alt" style="color: #a31d23;"></i> Password Reset Codes
+            </h2>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">For existing users who forgot their passwords.</p>
+            <table class="reset-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>User ID</th>
+                        <th>Email (Reference)</th>
+                        <th>Reset Code</th>
                         <th>Requested At</th>
                         <th>Expires</th>
                     </tr>
@@ -94,7 +136,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 3rem; color: #999; font-style: italic;">
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999; font-style: italic;">
                             No active reset requests found.
                         </td>
                     </tr>

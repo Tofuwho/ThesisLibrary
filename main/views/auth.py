@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 
 from ..models import Student, Professor, Librarian, AdminStaff, VerificationCode, PasswordResetCode
 from authapp.models import Profile
@@ -58,14 +58,14 @@ def login_view(request):
     if request.method == 'POST':
         is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
         
-        if request.content_type == 'application/json':
+        if 'application/json' in request.content_type:
             data = json.loads(request.body)
             uid, pwd = data.get('username'), data.get('password')
             user = authenticate(request, username=uid, password=pwd)
             if user:
                 if not user.is_active: return JsonResponse({'success': False, 'error': 'Account inactive.'}, status=400)
                 try:
-                    if hasattr(user, 'verificationcode') and not user.verificationcode.is_verified:
+                    if hasattr(user, 'verification_code') and not user.verification_code.is_verified:
                         return JsonResponse({'success': False, 'error': 'Not verified.'}, status=400)
                 except VerificationCode.DoesNotExist: pass
                 login(request, user)
@@ -86,22 +86,19 @@ def login_view(request):
             messages.error(request, 'Invalid ID or password.')
     return redirect('/')
 
-@csrf_protect
+@csrf_exempt
 def signup_view(request):
     if request.method != 'POST': return JsonResponse({"success": False}, status=405)
-    data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
+    if request.content_type and 'application/json' in request.content_type:
+        try: data = json.loads(request.body)
+        except: data = {}
+    else:
+        data = request.POST
+    
     uid, email, pwd, action = data.get("id") or data.get("username"), data.get("email"), data.get("password"), data.get("action")
     if not uid: return JsonResponse({"success": False, "error": "ID required"}, status=400)
 
-    if action == "activate_premade":
-        try:
-            user = User.objects.get(username=uid)
-            user.set_password(pwd); user.is_active = True; user.save()
-            user.profile.is_premade = False; user.profile.save()
-            VerificationCode.objects.get_or_create(user=user, defaults={'code':'000000','expires_at':timezone.now()+timezone.timedelta(days=365),'is_verified':True})
-            return JsonResponse({"success": True})
-        except User.DoesNotExist: return JsonResponse({"success": False}, status=404)
-
+    # Proceed to identification/verification logic...
     student = Student.objects.filter(student_id=uid).first()
     professor = Professor.objects.filter(professor_id=uid).first()
     librarian = Librarian.objects.filter(librarian_id=uid).first()
@@ -110,30 +107,47 @@ def signup_view(request):
     
     try:
         user = User.objects.get(username=uid)
-        if getattr(user.profile, 'is_premade', False):
-            return JsonResponse({"success": True, "requires_activation": True, "id": uid, "email": email})
+        if getattr(user.profile, 'is_premade', False) or not user.is_active:
+            # Generate a fresh 6-digit code for Librarian to give to student
+            code = generate_verification_code()
+            v, _ = VerificationCode.objects.get_or_create(user=user, defaults={'expires_at': timezone.now() + timezone.timedelta(days=1), 'code': code})
+            v.code = code; v.is_verified = False; v.expires_at = timezone.now() + timezone.timedelta(days=1); v.save()
+            return JsonResponse({"success": True, "requires_verification": True, "id": uid, "email": email})
     except User.DoesNotExist:
-        user = User.objects.create_user(username=uid, email=email, password=pwd, is_active=True)
+        # Check if ID exists in records but no user yet
+        if not any([student, professor, librarian, admin_staff]): 
+             return JsonResponse({"success": False, "error": "ID not found in records"}, status=404)
+        
+        # User doesn't exist yet, create as premade (inactive) and require verification
+        user = create_premade_user(uid, email, role=Profile.STUDENT)
         if professor: user.profile.role = Profile.PROFESSOR
         elif librarian: user.profile.role = Profile.LIBRARIAN; user.is_staff = True
         elif admin_staff: user.profile.role = Profile.ADMIN; user.is_staff = True; user.is_superuser = True
-        user.profile.save(); user.save()
-        VerificationCode.objects.create(user=user, code='000000', expires_at=timezone.now()+timezone.timedelta(days=365), is_verified=True)
-        return JsonResponse({"success": True})
-    return JsonResponse({"success": True})
+        user.profile.save()
+        
+        code = generate_verification_code()
+        VerificationCode.objects.create(user=user, code=code, expires_at=timezone.now()+timezone.timedelta(days=1))
+        return JsonResponse({"success": True, "requires_verification": True, "id": uid})
 
-@csrf_protect
+    return JsonResponse({"success": False, "error": "Account already exists and is active."}, status=400)
+
+@csrf_exempt
 def verify_email_view(request):
     if request.method == 'POST':
-        data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
+        if request.content_type and 'application/json' in request.content_type:
+            try: data = json.loads(request.body)
+            except: data = {}
+        else: data = request.POST
         uid, code = data.get('id') or data.get('username'), data.get('code')
         try:
             user = User.objects.get(username=uid)
             v = VerificationCode.objects.get(user=user)
             if v.code == code and not v.is_expired():
-                v.is_verified = True; v.save(); user.is_active = True; user.save()
-                return JsonResponse({'success': True})
-        except: pass
+                # Don't activate yet! Just confirm code is good so they can set password.
+                return JsonResponse({'success': True, 'requires_password_setup': True, 'id': uid, 'code': code})
+            return JsonResponse({'success': False, 'error': 'Invalid or expired code'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': "Incorrect ID or code."}, status=400)
     return JsonResponse({'success': False}, status=400)
 
 @csrf_protect
@@ -190,3 +204,62 @@ def change_password_profile(request):
             request.user.set_password(new); request.user.save()
             return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
+
+@csrf_exempt
+def activate_premade_account(request):
+    """Final step of activation: user sets their password."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    if request.method != 'POST': 
+        return JsonResponse({"success": False}, status=405)
+    
+    try:
+        # Determine data source safely
+        if request.content_type and 'application/json' in request.content_type:
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
+        else:
+            data = request.POST
+        
+        uid = data.get("id") or data.get("username")
+        pwd = data.get("password")
+        code = data.get("code")
+        
+        logger.warning(f"[ACTIVATION DEBUG] Attempting activation for uid={uid}, code={code}")
+        
+        if not uid or not pwd or not code:
+            return JsonResponse({"success": False, "error": "Missing required fields (id, password, code)."}, status=400)
+        
+        user = User.objects.get(username=uid)
+        v = VerificationCode.objects.filter(user=user, code=code).first()
+        
+        if not v:
+            return JsonResponse({"success": False, "error": "Invalid verification code"}, status=400)
+        
+        if v.is_expired():
+            return JsonResponse({"success": False, "error": "Verification code has expired"}, status=400)
+        
+        # Success path
+        user.set_password(pwd)
+        user.is_active = True
+        user.save()
+        
+        p, _ = Profile.objects.get_or_create(user=user)
+        p.is_premade = False
+        p.must_change_password = False
+        p.save()
+        
+        v.is_verified = True
+        v.save()
+        
+        logger.warning(f"[ACTIVATION SUCCESS] Account activated for {uid}")
+        return JsonResponse({"success": True})
+
+    except User.DoesNotExist:
+        return JsonResponse({"success": False, "error": f"User '{uid}' not found"}, status=400)
+    except Exception as e:
+        logger.error(f"[ACTIVATION ERROR] {type(e).__name__}: {e}", exc_info=True)
+        return JsonResponse({"success": False, "error": f"Internal server error: {str(e)}"}, status=500)
