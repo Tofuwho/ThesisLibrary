@@ -144,12 +144,11 @@ function initializeDepartmentButtons() {
 function handleDepartmentSwitch(button) {
     const departmentId = button.getAttribute('data-dept');
     const departmentInput = document.getElementById('department-input');
+    const filterForm = document.getElementById('filter-form');
     
     // Update the hidden input value
     if (departmentInput) {
         departmentInput.value = departmentId;
-        // Trigger change event to notify that filters have changed (marks button as dirty)
-        filterForm.dispatchEvent(new Event('change'));
     }
     
     // Update visual state
@@ -161,8 +160,11 @@ function handleDepartmentSwitch(button) {
     // Show/hide appropriate filter groups
     updateFilterGroupVisibility(departmentId);
     
-    // We no longer auto-submit when department changes to allow the user
-    // to combine multiple filters before searching
+    // Auto-submit when department changes to trigger immediate filtering
+    // as requested by the user. Sidebar filters still require manual Apply.
+    if (filterForm) {
+        filterForm.submit();
+    }
 }
 
 /**
