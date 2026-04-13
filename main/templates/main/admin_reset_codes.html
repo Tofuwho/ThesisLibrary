@@ -49,6 +49,8 @@
         gap: 12px;
         border-left: 5px solid #00529b;
     }
+    .status-expired { color: #d63031; }
+    .status-active { color: #27ae60; }
 </style>
 {% endblock %}
 
@@ -91,7 +93,7 @@
                         <td>{{ item.user.email }}</td>
                         <td><span class="code-badge" style="color: #27ae60; background: #f0fff4; border-color: #27ae60;">{{ item.code }}</span></td>
                         <td>{{ item.created_at|date:"M d, Y H:i" }}</td>
-                        <td><span style="color: {% if item.is_expired %}#d63031{% else %}#27ae60{% endif %};">
+                        <td><span class="{% if item.is_expired %}status-expired{% else %}status-active{% endif %}">
                             {{ item.expires_at|timeuntil }} left
                         </span></td>
                     </tr>
@@ -130,7 +132,7 @@
                         <td>{{ code.user.email }}</td>
                         <td><span class="code-badge">{{ code.code }}</span></td>
                         <td>{{ code.created_at|date:"M d, Y H:i" }}</td>
-                        <td><span style="color: {% if code.is_expired %}#d63031{% else %}#27ae60{% endif %};">
+                        <td><span class="{% if code.is_expired %}status-expired{% else %}status-active{% endif %}">
                             {{ code.expires_at|timeuntil }} left
                         </span></td>
                     </tr>
