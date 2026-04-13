@@ -97,8 +97,7 @@
                     {% for submission in recent_theses %}
                     <div class="activity-item">
                         <div style="flex: 1;">
-                            <strong style="color: var(--text-dark); display: block; margin-bottom: 2px;">{{
-                                submission.title }}</strong>
+                            <strong style="color: var(--text-dark); display: block; margin-bottom: 2px;">{{ submission.title }}</strong>
                             <span style="color: var(--text-muted); font-size: 0.8rem;">
                                 by {{ submission.submitter }} •
                                 {% if submission.status == 'rejected' %}
