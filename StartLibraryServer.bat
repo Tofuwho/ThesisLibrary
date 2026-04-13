@@ -27,6 +27,10 @@ if defined IP (
     echo [WARNING] Could not detect LAN IP. Using Localhost.
 )
 
+:: Sync IP to .env file
+echo Syncing IP to .env...
+python update_env_ip.py %IP%
+
 echo.
 echo ====================================================
 echo SYSTEM IS NOW LIVE!

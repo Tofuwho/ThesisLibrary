@@ -35,14 +35,40 @@ elif not SECRET_KEY:
 # Default to False for production safety. Set DJANGO_DEBUG=True for local development.
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if DEBUG else os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
 # Trusted Origins for Local LAN/Offline environments
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost',
     'http://127.0.0.1',
 ]
-# Add local network ranges (192.168.x.x, 10.x.x.x, etc.)
+
+# Move host detection here so it can be used for both ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS
+import socket
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0.1) # low timeout for offline
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return None
+
+local_ip = get_local_ip()
+
+if DEBUG:
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+else:
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
+if local_ip and local_ip not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(local_ip)
+
+# Add local network ranges and detected dynamic IP to CSRF_TRUSTED_ORIGINS
+if local_ip:
+    CSRF_TRUSTED_ORIGINS.append(f'http://{local_ip}')
+    CSRF_TRUSTED_ORIGINS.append(f'http://{local_ip}:8000')
+
 for i in range(256):
     CSRF_TRUSTED_ORIGINS.append(f'http://192.168.{i}.*')
     CSRF_TRUSTED_ORIGINS.append(f'http://10.{i}.*')
