@@ -27,6 +27,7 @@ urlpatterns = [
     path('api/extract-abstract/', views.api_extract_abstract, name='api_extract_abstract'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-logs/', views.admin_log_entries, name='admin_log_entries'),
+    path('admin-logs/export/', views.export_system_logs, name='export_system_logs'),
     path('management/reset-requests/', views.password_reset_requests, name='password_reset_requests'),
     path('users/', views.user_list, name='user_list'),
     path('users/delete/<int:user_id>/', views.delete_user, name='delete_user'),

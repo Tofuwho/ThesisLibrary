@@ -217,11 +217,11 @@
                 📊 Export Detailed Report <i class="fas fa-caret-down"></i>
               </button>
               <div class="dropdown-content" style="display: none; position: absolute; background-color: #ffffff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 100; border-radius: 8px; margin-top: 5px; border: 1px solid #eee; overflow: hidden;">
-                <a href="#" class="dropdown-link" onclick="exportFilteredLogs('day')">Daily Report</a>
-                <a href="#" class="dropdown-link" onclick="exportFilteredLogs('week')">Weekly Report</a>
-                <a href="#" class="dropdown-link" onclick="exportFilteredLogs('month')">Monthly Report</a>
-                <a href="#" class="dropdown-link" onclick="exportFilteredLogs('year')" style="border-bottom: none;">Annual Report</a>
-                <a href="#" onclick="exportTableToExcel('logTable', 'All_System_Logs')" style="color: #0277bd; padding: 12px 16px; text-decoration: none; display: block; background: #e3f2fd; font-weight: bold; text-align: center; border-top: 1px solid #b3e5fc;">Download All History</a>
+                <a href="{% url 'export_system_logs' %}?period=day&tab={{ active_tab }}" class="dropdown-link">Daily Report</a>
+                <a href="{% url 'export_system_logs' %}?period=week&tab={{ active_tab }}" class="dropdown-link">Weekly Report</a>
+                <a href="{% url 'export_system_logs' %}?period=month&tab={{ active_tab }}" class="dropdown-link">Monthly Report</a>
+                <a href="{% url 'export_system_logs' %}?period=year&tab={{ active_tab }}" class="dropdown-link" style="border-bottom: none;">Annual Report</a>
+                <a href="{% url 'export_system_logs' %}?period=all&tab={{ active_tab }}" style="color: #0277bd; padding: 12px 16px; text-decoration: none; display: block; background: #e3f2fd; font-weight: bold; text-align: center; border-top: 1px solid #b3e5fc;">Download Section History</a>
               </div>
             </div>
             <input type="text" id="logSearch" class="search-input" placeholder="Search logs...">
@@ -235,7 +235,7 @@
               <th style="text-align:left; padding:0.8rem;">User</th>
               <th style="text-align:left; padding:0.8rem;">System Module</th>
               <th style="text-align:left; padding:0.8rem;">Specific Item</th>
-              <th style="text-align:left; padding:0.8rem;">Action Taken</th>
+              <th style="text-align:left; padding:0.8rem; width:160px;">Action Taken</th>
               <th style="text-align:left; padding:0.8rem;">Details</th>
             </tr>
           </thead>
@@ -382,7 +382,6 @@
     renderLogPage();
   });
 </script>
-<script src="{% static 'js/xlsx.full.min.js' %}"></script>
 <script>
   // Dropdown Toggle
   document.querySelector('.dropdown .add-btn').addEventListener('click', function(e) {
@@ -394,57 +393,5 @@
   document.addEventListener('click', function() {
     document.querySelectorAll('.dropdown-content').forEach(d => d.style.display = 'none');
   });
-
-  function exportFilteredLogs(period) {
-    const table = document.getElementById('logTable');
-    const rows = Array.from(table.querySelectorAll('tbody tr'));
-    const now = new Date();
-    const nowSec = Math.floor(now.getTime() / 1000); // Current time in seconds
-    
-    // Create a temporary table for export
-    const tempTable = document.createElement('table');
-    const thead = table.querySelector('thead').cloneNode(true);
-    tempTable.appendChild(thead);
-    const tempTbody = document.createElement('tbody');
-    
-    rows.forEach(row => {
-      const timestampString = row.getAttribute('data-timestamp');
-      if (!timestampString) return;
-      const timestamp = parseInt(timestampString);
-      if (isNaN(timestamp)) return;
-
-      let include = false;
-      const diffSec = nowSec - timestamp;
-      const oneDay = 86400;
-
-      if (period === 'day' && diffSec <= oneDay) include = true;
-      else if (period === 'week' && diffSec <= (oneDay * 7)) include = true;
-      else if (period === 'month' && diffSec <= (oneDay * 30)) include = true;
-      else if (period === 'year' && diffSec <= (oneDay * 365)) include = true;
-
-      if (include) {
-        // Clone for export, but remove temp hidden styles from display filtering
-        const clone = row.cloneNode(true);
-        clone.style.display = ""; 
-        tempTbody.appendChild(clone);
-      }
-    });
-
-    if (tempTbody.children.length === 0) {
-      alert(`No log entries found for this ${period} period.`);
-      return;
-    }
-
-    tempTable.appendChild(tempTbody);
-    const wb = XLSX.utils.table_to_book(tempTable, { sheet: "System Logs" });
-    const dateStr = now.toISOString().split('T')[0];
-    XLSX.writeFile(wb, `System_Log_Report_${period.toUpperCase()}_${dateStr}.xlsx`);
-  }
-
-  function exportTableToExcel(tableID, filename) {
-    let originalTable = document.getElementById(tableID);
-    let wb = XLSX.utils.table_to_book(originalTable, { sheet: "System Logs" });
-    XLSX.writeFile(wb, filename + '.xlsx');
-  }
 </script>
 {% endblock %}

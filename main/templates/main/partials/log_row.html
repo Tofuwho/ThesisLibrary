@@ -6,15 +6,17 @@
   </td>
   <td style="padding:0.8rem; color:#333;">{{ entry.object_repr }}</td>
   <td style="padding:0.8rem;">
-    {% if entry.action_flag == 1 %}
-    <span style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Created</span>
-    {% elif entry.action_flag == 2 %}
-    <span style="background:#ffb300; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Updated</span>
-    {% elif entry.action_flag == 3 %}
-    <span style="background:#e53935; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">Removed</span>
+    {% if entry.refined_action == "Thesis Approved" or "Created" in entry.refined_action %}
+    <span style="background:#4caf50; color:#fff; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold; white-space:nowrap; display:inline-block;">{{ entry.refined_action }}</span>
+    {% elif "Updated" in entry.refined_action or "Assignment" in entry.refined_action or "Edit" in entry.refined_action %}
+    <span style="background:#ffb300; color:#fff; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold; white-space:nowrap; display:inline-block;">{{ entry.refined_action }}</span>
+    {% elif "Rejected" in entry.refined_action or "Delete" in entry.refined_action or "Removal" in entry.refined_action or "Account Deletion" in entry.refined_action %}
+    <span style="background:#e53935; color:#fff; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold; white-space:nowrap; display:inline-block;">{{ entry.refined_action }}</span>
+    {% elif "Security" in entry.refined_action or "Alert" in entry.refined_action %}
+    <span style="background:#0d47a1; color:#fff; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold; white-space:nowrap; display:inline-block;">{{ entry.refined_action }}</span>
     {% else %}
-    <span style="background:#777; color:#fff; padding:4px 8px; border-radius:6px; font-size:0.8rem;">System Task</span>
+    <span style="background:#78909c; color:#fff; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold; white-space:nowrap; display:inline-block;">{{ entry.refined_action }}</span>
     {% endif %}
   </td>
-  <td style="padding:0.8rem; color:#555; font-style:italic;">{{ entry.change_message }}</td>
+  <td style="padding:0.8rem; color:#555; font-style:italic; font-size:0.9rem;">{{ entry.refined_details }}</td>
 </tr>
