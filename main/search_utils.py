@@ -173,7 +173,7 @@ def perform_thesis_search(
     Returns: (results, did_you_mean)
     """
     filters = filters or {}
-    theses = Thesis.objects.all()
+    theses = Thesis.objects.filter(is_archived=False)
     did_you_mean = None
     
     # 1. Handle Query Suggestion

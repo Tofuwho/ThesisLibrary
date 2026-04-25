@@ -22,7 +22,7 @@ def about_page(request):
 
 @login_required
 def index_page(request):
-    recent_theses = Thesis.objects.order_by('-id')[:6]
+    recent_theses = Thesis.objects.filter(is_archived=False).order_by('-id')[:6]
     departments = Department.objects.all().order_by('name')[:8]
     return render(request, 'main/index.html', {
         'recent_theses': recent_theses,

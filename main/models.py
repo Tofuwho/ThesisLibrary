@@ -64,6 +64,7 @@ class Thesis(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
 
     lc_classification = models.CharField(max_length=100, blank=True, null=True, help_text="Library of Congress Classification")
+    is_archived = models.BooleanField(default=False, help_text="Hides the study from public search but preserves all metadata")
 
     # File upload
     file = models.FileField(upload_to="thesis_files/", blank=True, null=True)

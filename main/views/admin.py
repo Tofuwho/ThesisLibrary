@@ -286,7 +286,7 @@ def reject_thesis(request, thesis_id):
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def theses_list(request):
-    theses = Thesis.objects.all()
+    theses = Thesis.objects.filter(is_archived=False)
     for thesis in theses:
         thesis.course_display = str(thesis.course).split('-')[0].strip() if thesis.course else "N/A"
     return render(request, 'main/theses.html', {'theses': theses})
@@ -333,8 +333,9 @@ def archive_old_theses(request):
     old_theses = Thesis.objects.filter(year__lte=cutoff_year)
     archived_count = 0
     for thesis in old_theses:
-        thesis.co_authors.all().delete()
-        Submission.objects.filter(title=thesis.title, author=thesis.author, year=thesis.year, status=Submission.STATUS_APPROVED).delete()
+        # We no longer delete co-authors or the record itself to preserve metadata like LC Classification
+        # Submission.objects.filter(title=thesis.title, author=thesis.author, year=thesis.year, status=Submission.STATUS_APPROVED).delete()
+        
         if thesis.file and thesis.file.name:
             old_path = thesis.file.path
             archive_dir = os.path.join(settings.MEDIA_ROOT, "thesis_files", "Archived")
@@ -344,10 +345,11 @@ def archive_old_theses(request):
             if os.path.exists(old_path):
                 shutil.move(old_path, new_path)
                 thesis.file.name = f"thesis_files/Archived/{filename}"
-                thesis.save()
-                archived_count += 1
-        log_admin_action(system_user, thesis, DELETION, "Archived thesis older than 10 years")
-        thesis.delete()
+        
+        thesis.is_archived = True
+        thesis.save()
+        archived_count += 1
+        log_admin_action(system_user, thesis, CHANGE, "Archived thesis (Metadata preserved)")
     return JsonResponse({"archived": archived_count})
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
