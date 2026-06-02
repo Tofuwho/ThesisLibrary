@@ -5,10 +5,26 @@ echo         THESIS LIBRARY SYSTEM - START UP
 echo ----------------------------------------------------
 echo.
 echo Checking for Python...
-python --version >nul 2>&1
-if %errorlevel% neq 0 (
+
+set PYTHON_CMD=
+py --version >nul 2>&1
+if %errorlevel% equ 0 (
+    set PYTHON_CMD=py
+    echo [INFO] Found Python Launcher (py)
+) else (
+    python --version >nul 2>&1
+    if %errorlevel% equ 0 (
+        set PYTHON_CMD=python
+        echo [INFO] Found Python (python)
+    )
+)
+
+if not defined PYTHON_CMD (
     echo [ERROR] Python is not installed or not in PATH!
     echo Please install Python from python.org before running this.
+    echo.
+    echo TIP: If Python is installed, search "App execution aliases" in Windows Settings
+    echo and toggle OFF the aliases for "python.exe" and "python3.exe".
     pause
     exit
 )
@@ -29,7 +45,7 @@ if defined IP (
 
 :: Sync IP to .env file
 echo Syncing IP to .env...
-python update_env_ip.py %IP%
+%PYTHON_CMD% update_env_ip.py %IP%
 
 echo.
 echo ====================================================
@@ -43,7 +59,7 @@ echo ====================================================
 echo.
 
 :: Start the Django server
-python manage.py runserver 0.0.0.0:8000
+%PYTHON_CMD% manage.py runserver 0.0.0.0:8000
 
 if %errorlevel% neq 0 (
     echo.
@@ -51,3 +67,4 @@ if %errorlevel% neq 0 (
     echo Check if MySQL (XAMPP) is running!
     pause
 )
+
