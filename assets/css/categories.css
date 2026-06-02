@@ -1613,3 +1613,19 @@
     background: #151515;
     color: #555;
 }
+
+/* AJAX Loading transitions */
+.cat-thesis-results,
+.filter-sidebar,
+.hero-meta {
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+    will-change: opacity, transform;
+}
+
+.cat-thesis-results.ajax-loading,
+.filter-sidebar.ajax-loading,
+.hero-meta.ajax-loading {
+    opacity: 0.25;
+    pointer-events: none;
+    transform: translateY(15px);
+}

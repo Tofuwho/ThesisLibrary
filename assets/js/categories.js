@@ -19,6 +19,35 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFilterForm();
     initializeFilterGroups();
     restoreFilterState();
+    initializeLocalLinks();
+    rebindCoauthors();
+    
+    // Intercept search form submit for AJAX loading
+    const searchForm = document.getElementById('search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(searchForm);
+            const params = new URLSearchParams(window.location.search);
+            
+            for (const [key, value] of formData.entries()) {
+                params.set(key, value);
+            }
+            
+            const deptInput = document.getElementById('department-input');
+            if (deptInput) {
+                params.set('department', deptInput.value);
+            } else {
+                params.delete('department');
+            }
+            
+            params.delete('page'); // Reset to first page of results
+            
+            const actionUrl = window.location.pathname + '?' + params.toString();
+            loadFilteredResults(actionUrl);
+        });
+    }
+
     // Apply theme for initial department
     const urlParams = new URLSearchParams(window.location.search);
     const currentDepartment = urlParams.get('department') || 'all';
@@ -26,6 +55,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Optimize animations: only animate categories on first visit, and only animate results when searching
     optimizeAnimations();
+});
+
+// Handle browser Back/Forward navigation using AJAX
+window.addEventListener('popstate', function() {
+    loadFilteredResults(window.location.href, false);
 });
 
 /**
@@ -160,10 +194,20 @@ function handleDepartmentSwitch(button) {
     // Show/hide appropriate filter groups
     updateFilterGroupVisibility(departmentId);
     
-    // Auto-submit when department changes to trigger immediate filtering
-    // as requested by the user. Sidebar filters still require manual Apply.
+    // Trigger submission dynamically via AJAX instead of full page submit
     if (filterForm) {
-        filterForm.submit();
+        if (typeof filterForm.requestSubmit === 'function') {
+            filterForm.requestSubmit();
+        } else {
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            filterForm.dispatchEvent(submitEvent);
+        }
+    } else {
+        const params = new URLSearchParams(window.location.search);
+        params.set('department', departmentId);
+        params.delete('page'); // Reset page
+        const actionUrl = window.location.pathname + '?' + params.toString();
+        loadFilteredResults(actionUrl);
     }
 }
 
@@ -248,16 +292,44 @@ function initializeFilterForm() {
     if (!filterForm) return;
 
     const applyButton = filterForm.querySelector('.apply-filters-button');
-    if (!applyButton) return;
 
     // Add listener for all inputs to mark the button as dirty (needs application)
     filterForm.addEventListener('change', () => {
-        applyButton.classList.add('dirty');
-        
-        // Add a subtle animation/pulsing effect
-        if (!applyButton.classList.contains('pulse')) {
-            applyButton.classList.add('pulse');
+        if (applyButton) {
+            applyButton.classList.add('dirty');
+            if (!applyButton.classList.contains('pulse')) {
+                applyButton.classList.add('pulse');
+            }
         }
+    });
+
+    // Intercept filter form submit for AJAX load
+    filterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(filterForm);
+        const params = new URLSearchParams();
+        
+        for (const [key, value] of formData.entries()) {
+            if (value) {
+                params.append(key, value);
+            }
+        }
+
+        // Preserve search queries from current URL if they aren't in the filter form
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        if (currentUrlParams.has('search') && !params.has('search')) {
+            params.set('search', currentUrlParams.get('search'));
+        }
+        if (currentUrlParams.has('search_mode') && !params.has('search_mode')) {
+            params.set('search_mode', currentUrlParams.get('search_mode'));
+        }
+
+        // Reset page to 1 on filter submit
+        params.delete('page');
+
+        const actionUrl = window.location.pathname + '?' + params.toString();
+        loadFilteredResults(actionUrl);
     });
 }
 
@@ -299,9 +371,15 @@ function restoreFilterState() {
  * Removes all URL parameters and resets form
  */
 function clearAllFilters() {
-    const url = new URL(window.location);
+    const form = document.getElementById('filter-form');
+    if (form) {
+        form.reset();
+        const deptInput = document.getElementById('department-input');
+        if (deptInput) deptInput.value = 'all';
+    }
+    const url = new URL(window.location.href, window.location.origin);
     url.search = '';
-    window.location.href = url.toString();
+    loadFilteredResults(url.toString());
 }
 
 /**
@@ -310,9 +388,125 @@ function clearAllFilters() {
  * @param {string} sortValue - The sort value to apply
  */
 function updateSort(sortValue) {
-    const url = new URL(window.location);
+    const url = new URL(window.location.href, window.location.origin);
     url.searchParams.set('sort', sortValue);
-    window.location.href = url.toString();
+    loadFilteredResults(url.toString());
+}
+
+/**
+ * Load filtered results asynchronously (AJAX)
+ */
+function loadFilteredResults(url, pushToHistory = true) {
+    const resultsContainer = document.querySelector('.cat-thesis-results');
+    const sidebarContainer = document.querySelector('.filter-sidebar');
+    const heroMetaContainer = document.querySelector('.hero-meta');
+
+    // Add loading class to start transitions
+    if (resultsContainer) resultsContainer.classList.add('ajax-loading');
+    if (sidebarContainer) sidebarContainer.classList.add('ajax-loading');
+    if (heroMetaContainer) heroMetaContainer.classList.add('ajax-loading');
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.text();
+        })
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // Update document title
+            document.title = doc.title;
+
+            // Replace HTML content of target sections
+            if (resultsContainer && doc.querySelector('.cat-thesis-results')) {
+                resultsContainer.innerHTML = doc.querySelector('.cat-thesis-results').innerHTML;
+            }
+            if (sidebarContainer && doc.querySelector('.filter-sidebar')) {
+                sidebarContainer.innerHTML = doc.querySelector('.filter-sidebar').innerHTML;
+            }
+            if (heroMetaContainer && doc.querySelector('.hero-meta')) {
+                heroMetaContainer.innerHTML = doc.querySelector('.hero-meta').innerHTML;
+            }
+
+            // Rebind all event listeners and UI components on the new DOM structure
+            initializeFilterForm();
+            initializeFilterGroups();
+            initializeLocalLinks();
+            rebindCoauthors();
+
+            // Sync the active class and colors on the category bookmark buttons
+            const newUrlParams = new URLSearchParams(new URL(url, window.location.origin).search);
+            const currentDept = newUrlParams.get('department') || 'all';
+            
+            const allButtons = document.querySelectorAll('.dept-bookmark');
+            allButtons.forEach(button => {
+                const buttonDept = button.getAttribute('data-dept') || 'all';
+                if (buttonDept === currentDept) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+
+            // Apply correct department color theme
+            applyDepartmentThemeFromId(currentDept);
+
+            // Update browser URL
+            if (pushToHistory) {
+                history.pushState(null, '', url);
+            }
+
+            // Trigger entry animation and remove loading state
+            setTimeout(() => {
+                if (resultsContainer) resultsContainer.classList.remove('ajax-loading');
+                if (sidebarContainer) sidebarContainer.classList.remove('ajax-loading');
+                if (heroMetaContainer) heroMetaContainer.classList.remove('ajax-loading');
+                
+                // Re-run search/subsequent-visit animations
+                optimizeAnimations();
+            }, 50);
+        })
+        .catch(error => {
+            console.error('AJAX Load Error, falling back to full page load:', error);
+            if (pushToHistory) {
+                window.location.href = url;
+            } else {
+                window.location.reload();
+            }
+        });
+}
+
+function initializeLocalLinks() {
+    // Pagination links
+    const paginationLinks = document.querySelectorAll('.pagination a, .page-link');
+    paginationLinks.forEach(link => {
+        if (link.dataset.ajaxBound) return;
+        link.dataset.ajaxBound = "true";
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetUrl = this.getAttribute('href');
+            if (targetUrl) {
+                const fullUrl = new URL(targetUrl, window.location.href).toString();
+                loadFilteredResults(fullUrl);
+            }
+        });
+    });
+
+    // "Did you mean" links
+    const didYouMeanLinks = document.querySelectorAll('.deep-search-info a');
+    didYouMeanLinks.forEach(link => {
+        if (link.dataset.ajaxBound) return;
+        link.dataset.ajaxBound = "true";
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetUrl = this.getAttribute('href');
+            if (targetUrl) {
+                const fullUrl = new URL(targetUrl, window.location.href).toString();
+                loadFilteredResults(fullUrl);
+            }
+        });
+    });
 }
 
 // Make functions globally available for inline onclick handlers
@@ -433,20 +627,24 @@ function setDeptClass(colorKey) {
  * Co-Author List Expand/Collapse
  * Handles showing all co-authors when "+N more" is clicked
  */
-document.addEventListener('DOMContentLoaded', function() {
+function rebindCoauthors() {
     const moreLinks = document.querySelectorAll('.more-coauthors');
-
     moreLinks.forEach(link => {
+        if (link.dataset.bound) return;
+        link.dataset.bound = "true";
+        
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            const coauthorList = this.previousElementSibling; // assumes <ul> is before link
-            coauthorList.querySelectorAll('li.hidden').forEach(li => {
-                li.classList.remove('hidden');
-            });
-            this.remove(); // remove "+N more" link after expanding
+            const coauthorList = this.previousElementSibling;
+            if (coauthorList) {
+                coauthorList.querySelectorAll('li.hidden').forEach(li => {
+                    li.classList.remove('hidden');
+                });
+            }
+            this.remove();
         });
     });
-});
+}
 
 /**
  * Enhanced clearAllFilters
@@ -462,8 +660,8 @@ function clearAllFilters() {
         if (deptInput) deptInput.value = 'all';
     }
 
-    // Reload without query params
-    const url = new URL(window.location);
+    const url = new URL(window.location.href, window.location.origin);
     url.search = '';
-    window.location.href = url.toString();
+    loadFilteredResults(url.toString());
 }
+
