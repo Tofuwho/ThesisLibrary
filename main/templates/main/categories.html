@@ -92,6 +92,8 @@
                 <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="chtm">CHTM</button>
                 {% elif 'engineering' in dl or 'technology' in dl or 'industrial' in dl %}
                 <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cet">CET</button>
+                {% elif 'public policy' in dl or 'governance' in dl or 'ippg' in dl %}
+                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="ippg">IPPG</button>
                 {% else %}
                 <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="coll">{{ dept.name|slice:":4"
                     }}</button>

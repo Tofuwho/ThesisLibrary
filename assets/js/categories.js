@@ -536,6 +536,7 @@ function applyDepartmentThemeFromId(deptId) {
         cee: 'ce',
         cet: 'cet',
         chtm: 'chtm',
+        ippg: 'ippg',
         coll: 'coll',
         cols: 'cols',
         colb: 'colb',

@@ -228,7 +228,7 @@ def suggest_query_correction(q, cs):
     qt = [t.lower() for t in re.findall(r"\w+", q) if t.strip()]
     if not qt:
         return (None, 0.0)
-    AMAP = {"cct": "cict", "cict": "cict", "cas": "cas", "cba": "cbah", "coe": "coe", "chm": "chm", "ced": "ced", "tcu": "tcu", "lib": "library"}
+    AMAP = {"cct": "cict", "cict": "cict", "cas": "cas", "cba": "cbah", "coe": "coe", "chm": "chm", "ced": "ced", "tcu": "tcu", "lib": "library", "ippg": "ippg"}
     if qn in AMAP:
         return (AMAP[qn], 1.0)
     try:

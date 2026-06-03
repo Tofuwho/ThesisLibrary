@@ -48,6 +48,8 @@ def dept_theme_code(value):
         return 'chtm'
     elif any(word in dl for word in ['engineering', 'technology', 'industrial']):
         return 'cet'
+    elif any(word in dl for word in ['public policy', 'governance', 'ippg']):
+        return 'ippg'
     
     return 'coll'
 

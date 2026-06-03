@@ -1284,6 +1284,7 @@ ul {
 .department-card-v2.dept-ccj { --dept-color: #ef4444; --dept-color-light: rgba(239, 68, 68, 0.1); }
 .department-card-v2.dept-chtm { --dept-color: #0d9488; --dept-color-light: rgba(13, 148, 136, 0.1); }
 .department-card-v2.dept-cet { --dept-color: #4b5563; --dept-color-light: rgba(75, 85, 99, 0.1); }
+.department-card-v2.dept-ippg { --dept-color: #0369a1; --dept-color-light: rgba(3, 105, 161, 0.1); }
 .department-card-v2.dept-coll { --dept-color: var(--primary-color); --dept-color-light: var(--primary-light); }
 
 .department-card-v2::before {
