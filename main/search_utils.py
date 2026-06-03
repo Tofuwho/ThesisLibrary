@@ -232,6 +232,15 @@ def perform_thesis_search(
         theses = theses.filter(course__id__in=filters['courses'])
     if filters.get('category_obj'):
         theses = theses.filter(category=filters['category_obj'])
+    if filters.get('research_categories'):
+        rc_q = Q()
+        for rc in filters['research_categories']:
+            rc_q |= Q(research_category__icontains=rc)
+        theses = theses.filter(rc_q)
+    if filters.get('specializations'):
+        theses = theses.filter(specialization__in=filters['specializations'])
+    if filters.get('supervisors'):
+        theses = theses.filter(supervisor_name__in=filters['supervisors'])
 
     # 6. Handle Deep Search and Serialization
     if query and mode == 'deep':

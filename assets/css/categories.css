@@ -1628,4 +1628,31 @@
     opacity: 0.25;
     pointer-events: none;
     transform: translateY(15px);
+}
+
+/* Scrollable Filter Lists for long lists like Authors, Supervisors, Specializations */
+.scrollable-filter-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 5px;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 0, 0, 0.2) transparent;
+}
+
+.scrollable-filter-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scrollable-filter-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollable-filter-list::-webkit-scrollbar-thumb {
+    background: rgba(139, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.scrollable-filter-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 0, 0, 0.4);
 }

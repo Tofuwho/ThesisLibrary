@@ -127,7 +127,7 @@
 
                     <div class="filter-section">
                         <h3>Author</h3>
-                        <ul class="filter-list">
+                        <ul class="filter-list scrollable-filter-list">
                             {% for author in authors %}
                             <li>
                                 <label>
@@ -143,7 +143,7 @@
                     <div class="filter-group" data-dept="all" style="display:block;">
                         <div class="filter-section">
                             <h3>Descriptor</h3>
-                            <ul class="filter-list">
+                            <ul class="filter-list scrollable-filter-list">
                                 {% for category in categories %}
                                 <li>
                                     <label>
@@ -157,7 +157,7 @@
                         </div>
                         <div class="filter-section">
                             <h3>Publication Type</h3>
-                            <ul class="filter-list">
+                            <ul class="filter-list scrollable-filter-list">
                                 {% for type in types %}
                                 <li>
                                     <label>
@@ -171,10 +171,62 @@
                         </div>
                     </div>
 
+                    <!-- Global System filters -->
+                    {% if research_categories %}
+                    <div class="filter-section">
+                        <h3>Research Category</h3>
+                        <ul class="filter-list scrollable-filter-list">
+                            {% for rc in research_categories %}
+                            <li>
+                                <label>
+                                    <input type="checkbox" name="research_category" value="{{ rc.name }}">
+                                    <span>{{ rc.name }}</span>
+                                    <span class="count">({{ rc.count|default:0 }})</span>
+                                </label>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {% if specializations %}
+                    <div class="filter-section">
+                        <h3>Specialization</h3>
+                        <ul class="filter-list scrollable-filter-list">
+                            {% for spec in specializations %}
+                            <li>
+                                <label>
+                                    <input type="checkbox" name="specialization" value="{{ spec.name }}">
+                                    <span>{{ spec.name }}</span>
+                                    <span class="count">({{ spec.count|default:0 }})</span>
+                                </label>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {% if supervisors %}
+                    <div class="filter-section">
+                        <h3>Supervisor / Advisor</h3>
+                        <ul class="filter-list scrollable-filter-list">
+                            {% for sup in supervisors %}
+                            <li>
+                                <label>
+                                    <input type="checkbox" name="supervisor" value="{{ sup.name }}">
+                                    <span>{{ sup.name }}</span>
+                                    <span class="count">({{ sup.count|default:0 }})</span>
+                                </label>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
                     {% for dept in departments %}
                     <div class="filter-group" data-dept="{{ dept.id }}" style="display:none;">
                         <h3>{{ dept.name }} Courses</h3>
-                        <ul class="filter-list">
+                        <ul class="filter-list scrollable-filter-list">
                             {% if dept.courses.exists %}
                             {% for course in dept.courses.all %}
                             <li>

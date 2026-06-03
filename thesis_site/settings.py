@@ -151,7 +151,7 @@ else:
             'PASSWORD': os.environ.get('DB_PASSWORD'),
             'HOST': os.environ.get('DB_HOST'),
             'PORT': os.environ.get('DB_PORT'),
-            'CONN_MAX_AGE': 600,
+            'CONN_MAX_AGE': 0,  # Disable persistent connections locally to avoid stale connections
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
                 'isolation_level': None,

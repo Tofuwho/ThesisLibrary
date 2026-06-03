@@ -46,7 +46,10 @@ def categories_page(request):
         'authors': request.GET.getlist('author'),
         'types': request.GET.getlist('type'),
         'department': request.GET.get('department'),
-        'courses': [int(c) for c in request.GET.getlist('course') if c.isdigit()]
+        'courses': [int(c) for c in request.GET.getlist('course') if c.isdigit()],
+        'research_categories': request.GET.getlist('research_category'),
+        'specializations': request.GET.getlist('specialization'),
+        'supervisors': request.GET.getlist('supervisor')
     }
 
     theses, did_you_mean = perform_thesis_search(
@@ -66,11 +69,35 @@ def categories_page(request):
     else:
         courses = Course.objects.none()
 
-    years = Thesis.objects.values('year').annotate(count=Count('id')).order_by('-year')
-    categories = Category.objects.annotate(count=Count('thesis')).order_by('name')
-    authors = Thesis.objects.values('author').annotate(count=Count('id')).order_by('author')
-    types = Thesis.objects.exclude(thesis_type__isnull=True).exclude(thesis_type__exact='')\
+    # Retrieve unique filtering options and active counts
+    years = Thesis.objects.filter(is_archived=False).values('year').annotate(count=Count('id')).order_by('-year')
+    categories = Category.objects.filter(thesis__is_archived=False).distinct().annotate(count=Count('thesis')).order_by('name')
+    authors = Thesis.objects.filter(is_archived=False).values('author').annotate(count=Count('id')).order_by('author')
+    types = Thesis.objects.filter(is_archived=False).exclude(thesis_type__isnull=True).exclude(thesis_type__exact='')\
                           .values('thesis_type').annotate(count=Count('id')).order_by('thesis_type')
+
+    # Research Categories (comma-separated extraction)
+    raw_research_cats = Thesis.objects.filter(is_archived=False).exclude(research_category__isnull=True)\
+                                      .exclude(research_category__exact='').values_list('research_category', flat=True).distinct()
+    research_cats_set = set()
+    for rc in raw_research_cats:
+        for val in rc.split(','):
+            val_clean = val.strip()
+            if val_clean:
+                research_cats_set.add(val_clean)
+    
+    research_categories_list = []
+    for rc in sorted(research_cats_set):
+        count = Thesis.objects.filter(research_category__icontains=rc, is_archived=False).count()
+        research_categories_list.append({'name': rc, 'count': count})
+
+    # Specializations
+    specializations = Thesis.objects.filter(is_archived=False).exclude(specialization__isnull=True).exclude(specialization__exact='')\
+                                    .values('specialization').annotate(count=Count('id')).order_by('specialization')
+
+    # Supervisors
+    supervisors = Thesis.objects.filter(is_archived=False).exclude(supervisor_name__isnull=True).exclude(supervisor_name__exact='')\
+                                .values('supervisor_name').annotate(count=Count('id')).order_by('supervisor_name')
 
     total_results = len(theses)
     page_number = request.GET.get('page') or 1
@@ -84,6 +111,9 @@ def categories_page(request):
         'years': [{'year': y['year'], 'count': y['count']} for y in years],
         'authors': [{'name': a['author'], 'count': a['count']} for a in authors],
         'types': [{'name': t['thesis_type'], 'count': t['count']} for t in types],
+        'research_categories': research_categories_list,
+        'specializations': [{'name': s['specialization'], 'count': s['count']} for s in specializations],
+        'supervisors': [{'name': sup['supervisor_name'], 'count': sup['count']} for sup in supervisors],
         'total_results': total_results,
         'current_sort': sort,
         'selected_department': filters['department'],
