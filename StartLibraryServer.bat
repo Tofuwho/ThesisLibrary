@@ -4,18 +4,22 @@ echo ----------------------------------------------------
 echo         THESIS LIBRARY SYSTEM - START UP
 echo ----------------------------------------------------
 echo.
+
+:: Ensure the script runs in the directory where it is located
+cd /d "%~dp0"
+
 echo Checking for Python...
 
 set PYTHON_CMD=
 py --version >nul 2>&1
 if %errorlevel% equ 0 (
     set PYTHON_CMD=py
-    echo [INFO] Found Python Launcher (py)
+    echo [INFO] Found Python Launcher [py]
 ) else (
     python --version >nul 2>&1
     if %errorlevel% equ 0 (
         set PYTHON_CMD=python
-        echo [INFO] Found Python (python)
+        echo [INFO] Found Python [python]
     )
 )
 
@@ -26,26 +30,30 @@ if not defined PYTHON_CMD (
     echo TIP: If Python is installed, search "App execution aliases" in Windows Settings
     echo and toggle OFF the aliases for "python.exe" and "python3.exe".
     pause
-    exit
+    exit /b 1
 )
 
-:: Auto-detect the local IPv4 address
+:: Sync IP to .env file and detect IP robustly
 echo Detecting System IP...
-for /f "tokens=2 delims=:" %%a in ('ipconfig ^| find "IPv4 Address"') do (
-    set IP=%%a
-)
+for /f "tokens=*" %%i in ('%PYTHON_CMD% update_env_ip.py') do set IP=%%i
 
-:: Trim leading space
-if defined IP (
-    set IP=%IP:~1%
-) else (
+if not defined IP (
     set IP=127.0.0.1
-    echo [WARNING] Could not detect LAN IP. Using Localhost.
 )
 
-:: Sync IP to .env file
-echo Syncing IP to .env...
-%PYTHON_CMD% update_env_ip.py %IP%
+:: Check if MySQL (MariaDB) is running
+echo Checking database connection...
+%PYTHON_CMD% db_timeout.py
+if %errorlevel% neq 0 (
+    echo.
+    echo ====================================================
+    echo [CRITICAL ERROR] MySQL [XAMPP] is NOT running!
+    echo Please open the XAMPP Control Panel and start MySQL.
+    echo ====================================================
+    echo.
+    pause
+    exit /b 1
+)
 
 echo.
 echo ====================================================
@@ -54,7 +62,7 @@ echo.
 echo Main IP Address: %IP%
 echo Clients can connect at: http://%IP%:8000
 echo.
-echo (KEEP THIS WINDOW OPEN WHILE SYSTEM IS IN USE)
+echo [KEEP THIS WINDOW OPEN WHILE SYSTEM IS IN USE]
 echo ====================================================
 echo.
 
@@ -64,7 +72,5 @@ echo.
 if %errorlevel% neq 0 (
     echo.
     echo [CRITICAL ERROR] The server failed to start.
-    echo Check if MySQL (XAMPP) is running!
     pause
 )
-
