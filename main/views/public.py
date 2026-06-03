@@ -24,9 +24,24 @@ def about_page(request):
 def index_page(request):
     recent_theses = Thesis.objects.filter(is_archived=False).order_by('-id')[:6]
     departments = Department.objects.all().order_by('name')[:8]
+    
+    # Calculate live stats
+    total_theses_count = Thesis.objects.filter(is_archived=False).count()
+    total_theses = f"{total_theses_count:,}"
+    total_colleges = Department.objects.count()
+    
+    if total_theses_count > 0:
+        open_access_count = Thesis.objects.filter(is_archived=False).exclude(file='').exclude(file__isnull=True).count()
+        open_access_percent = int((open_access_count / total_theses_count) * 100)
+    else:
+        open_access_percent = 100
+
     return render(request, 'main/index.html', {
         'recent_theses': recent_theses,
         'departments': departments,
+        'total_theses': total_theses,
+        'total_colleges': total_colleges,
+        'open_access_percent': open_access_percent,
     })
 
 @login_required
