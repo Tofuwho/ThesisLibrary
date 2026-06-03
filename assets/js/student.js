@@ -110,8 +110,8 @@ function createCoauthorBlock(container, index, values = {}) {
             // show immediate feedback on blur for empty required-like co-author logic handled on validate
             if (inp.type === 'email' && inp.value.trim()) {
                 // quick format check
-                if (!/^[\w.%+-]+@gmail\.com$/i.test(inp.value.trim())) {
-                    showFieldError(inp, 'Please enter a valid Gmail address.');
+                if (!/^[\w.%+-]+@(gmail\.com|tcu\.edu\.ph)$/i.test(inp.value.trim())) {
+                    showFieldError(inp, 'Please enter a valid Gmail or TCU Institutional email address (@tcu.edu.ph).');
                 }
             }
         });
@@ -272,9 +272,9 @@ function validateSection(sectionEl, showErrors = true) {
         // email extra check
         if (!isEmpty && field.type === 'email') {
             const val = field.value.trim();
-            if (val && !/^[\w.%+-]+@gmail\.com$/i.test(val)) {
+            if (val && !/^[\w.%+-]+@(gmail\.com|tcu\.edu\.ph)$/i.test(val)) {
                 valid = false;
-                if (showErrors) showFieldError(field, 'Please enter a valid Gmail address.');
+                if (showErrors) showFieldError(field, 'Please enter a valid Gmail or TCU Institutional email address (@tcu.edu.ph).');
             } else if (showErrors) {
                 // clear email error if it exists and now correct
                 clearFieldError(field);
@@ -324,9 +324,9 @@ function validateSection(sectionEl, showErrors = true) {
                 if (!values.email) {
                     valid = false;
                     if (showErrors) showFieldError(email, 'Email is required when adding a co-author.');
-                } else if (values.email && !/^[\w.%+-]+@gmail\.com$/i.test(values.email)) {
+                } else if (values.email && !/^[\w.%+-]+@(gmail\.com|tcu\.edu\.ph)$/i.test(values.email)) {
                     valid = false;
-                    if (showErrors) showFieldError(email, 'Please enter a valid Gmail address for co-author.');
+                    if (showErrors) showFieldError(email, 'Please enter a valid Gmail or TCU Institutional email address for co-author.');
                 } else if (showErrors) clearFieldError(email);
             } else {
                 // If nothing filled in this coauthor block, clear any previous errors

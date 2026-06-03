@@ -17,7 +17,7 @@
 {% block body_class %}portal-page{% endblock %}
 
 {% block extra_scripts %}
-<script src="{% static 'js/student.js' %}"></script>
+<script src="{% static 'js/student.js' %}?v=1.0.1"></script>
 <script>
     // User data for autofill
     const USER_DATA = {
@@ -37,8 +37,7 @@
         <!-- Modern Hero Section -->
         <header class="portal-hero">
             <div class="hero-brand">
-                <img src="{% static 'img/tcu-logo.png' %}" alt="TCU Logo" class="hero-logo"
-                    onerror="this.src='https://via.placeholder.com/60'">
+                <img src="{% static 'images/tcu_official_logo.png' %}" alt="TCU Logo" class="hero-logo">
                 <div class="hero-text">
                     <h1>Academic Submission Portal</h1>
                     <p>Begin your research journey with Taguig City University</p>

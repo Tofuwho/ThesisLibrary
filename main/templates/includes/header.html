@@ -25,8 +25,7 @@
             {% if user.is_authenticated %}
             <div class="user-dropdown">
                 <button class="user-dropdown-toggle" id="userDropdownToggle">
-                    <img src="{% static 'images/profile-default.png' %}" alt="Profile" class="user-avatar-mini"
-                        onerror="this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=800000&color=fff'">
+                    <i class="fas fa-user-circle user-avatar-mini" style="font-size: 28px; color: var(--primary-color); display: flex; align-items: center; justify-content: center; background: var(--bg-primary);"></i>
                     <span class="user-name-text">{{ user.username }}</span>
                     <i class="fas fa-chevron-down dropdown-arrow"></i>
                 </button>
