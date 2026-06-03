@@ -99,7 +99,7 @@
 
         <div class="department-grid">
             {% for department in departments %}
-            <div class="department-card-v2">
+            <div class="department-card-v2 dept-{{ department.name|dept_theme_code }}">
                 <div class="card-icon-wrapper">
                     {% if 'grad' in department.category.name|lower %}<i class="fas fa-microscope"></i>
                     {% elif 'edu' in department.name|lower %}<i class="fas fa-apple-alt"></i>

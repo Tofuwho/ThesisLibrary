@@ -1,33 +1,34 @@
 /* CSS Variables */
 :root {
-  --primary-color: #8B0000;
-  /* Deep Maroon */
-  --primary-medium: #5C0000;
+  --primary-color: #800000;
+  /* TCU Maroon */
+  --primary-medium: #500000;
   /* Darker maroon */
-  --primary-light: rgba(139, 0, 0, 0.1);
-  --primary-dark: #4A0000;
-  /* Even darker maroon */
-  --accent-color: #B22222;
-  /* Fire Brick for accents */
-  --accent-light: rgba(178, 34, 34, 0.1);
-  --luxury-gold: #D4AF37;
-  /* Luxury Gold */
-  --luxury-gold-light: rgba(212, 175, 55, 0.1);
-  --luxury-gold-medium: rgba(212, 175, 55, 0.3);
-  --luxury-gold-dark: #B8860B;
-  /* Dark Goldenrod */
+  --primary-light: rgba(128, 0, 0, 0.1);
+  --primary-dark: #400000;
+  --accent-color: #A51C30;
+  /* Secondary Red */
+  --accent-light: rgba(165, 28, 48, 0.1);
+  --luxury-gold: #C5B358;
+  /* Gold Foil */
+  --luxury-gold-light: rgba(197, 179, 88, 0.1);
+  --luxury-gold-medium: rgba(197, 179, 88, 0.3);
+  --luxury-gold-dark: #8B7500;
   --premium-yellow: #FFD700;
-  /* Premium Gold */
   --premium-yellow-light: rgba(255, 215, 0, 0.1);
+  --tcu-gradient: linear-gradient(135deg, #600000 0%, #800000 50%, #C5B358 100%);
+  --gold-gradient: linear-gradient(135deg, #C5B358 0%, #E5C158 50%, #B8860B 100%);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(197, 179, 88, 0.25);
   --white: #ffffff;
   --light-gray: #f8f9fa;
   --medium-gray: #6c757d;
   --dark-gray: #2C2C2C;
-  --transition: all 0.3s ease;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
-  --shadow-accent: 0 4px 15px rgba(139, 0, 0, 0.2);
-  --shadow-luxury: 0 4px 20px rgba(212, 175, 55, 0.3);
+  --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.12);
+  --shadow-accent: 0 8px 25px rgba(128, 0, 0, 0.15);
+  --shadow-luxury: 0 4px 20px rgba(197, 179, 88, 0.3);
 }
 
 /* General Styles */
@@ -61,14 +62,18 @@ ul {
 
 /* Landing Header Styles - Consistent with Main Header */
 .landing-header {
-  background: #fff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.85)) !important;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03) !important;
+  border-bottom: 2px solid var(--glass-border, rgba(197, 179, 88, 0.25)) !important;
   position: fixed;
   width: 100%;
   top: 0;
   left: 0;
   z-index: 100;
   padding: 0;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .landing-header-inner {
@@ -89,17 +94,24 @@ ul {
 }
 
 .landing-header .logo-image {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
+  border-radius: 50%;
+  border: 2px solid var(--luxury-gold, #C5B358);
+  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.2);
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), border-color 0.3s ease;
+}
+
+.landing-header .logo-image:hover {
+  transform: rotate(10deg) scale(1.08);
+  border-color: var(--primary-color, #800000);
 }
 
 .landing-header .logo-container h1 {
   font-size: 1.7rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: var(--primary-color, #800000);
   letter-spacing: 1px;
 }
 

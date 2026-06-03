@@ -4,10 +4,10 @@
    ============================================================ */
 
 :root {
-    --portal-primary: #a31d23;
-    --portal-primary-dark: #7b0d11;
-    --portal-primary-light: #fbecec;
-    --portal-gold: #d4af37;
+    --portal-primary: #800000;
+    --portal-primary-dark: #500000;
+    --portal-primary-light: rgba(128, 0, 0, 0.08);
+    --portal-gold: #C5B358;
     --portal-bg: #f8f9fa;
     --portal-card-bg: #ffffff;
     --portal-text: #2d3436;
@@ -50,7 +50,7 @@
     justify-content: space-between;
     align-items: center;
     color: white;
-    box-shadow: 0 15px 40px rgba(163, 29, 35, 0.2);
+    box-shadow: 0 15px 40px rgba(128, 0, 0, 0.2);
     position: relative;
     overflow: hidden;
 }
@@ -177,7 +177,7 @@
 .nav-step.active {
     background: var(--portal-primary);
     color: white;
-    box-shadow: 0 10px 20px rgba(163, 29, 35, 0.15);
+    box-shadow: 0 10px 20px rgba(128, 0, 0, 0.15);
 }
 
 .step-num {
@@ -548,7 +548,7 @@ h3 {
 }
 
 .remove-file {
-    background: #fbecec;
+    background: var(--portal-primary-light);
     color: var(--portal-primary);
     border: none;
     width: 28px;
@@ -573,8 +573,8 @@ h3 {
 }
 
 .supervisor-card.primary {
-    border-color: rgba(163, 29, 35, 0.2);
-    box-shadow: 0 8px 20px rgba(163, 29, 35, 0.04);
+    border-color: rgba(128, 0, 0, 0.2);
+    box-shadow: 0 8px 20px rgba(128, 0, 0, 0.04);
 }
 
 .card-tag {
@@ -679,9 +679,9 @@ h3 {
 .final-agreement {
     margin-top: 30px;
     padding: 20px;
-    background: #fbecec;
+    background: var(--portal-primary-light);
     border-radius: 14px;
-    border: 1px solid rgba(163, 29, 35, 0.1);
+    border: 1px solid rgba(128, 0, 0, 0.1);
 }
 
 /* Custom Checkbox */
@@ -789,24 +789,24 @@ h3 {
 .btn-primary {
     background: var(--portal-primary);
     color: white;
-    box-shadow: 0 4px 12px rgba(163, 29, 35, 0.15);
+    box-shadow: 0 4px 12px rgba(128, 0, 0, 0.15);
 }
 
 .btn-primary:hover {
     background: var(--portal-primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(163, 29, 35, 0.25);
+    box-shadow: 0 8px 20px rgba(128, 0, 0, 0.25);
 }
 
 .btn-submit {
     background: linear-gradient(135deg, var(--portal-primary) 0%, var(--portal-gold) 100%);
     color: white;
-    box-shadow: 0 4px 14px rgba(163, 29, 35, 0.2);
+    box-shadow: 0 4px 14px rgba(128, 0, 0, 0.2);
 }
 
 .btn-submit:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 24px rgba(163, 29, 35, 0.3);
+    box-shadow: 0 8px 24px rgba(128, 0, 0, 0.3);
 }
 
 .btn-ghost {

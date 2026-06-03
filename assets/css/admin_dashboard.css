@@ -1,7 +1,7 @@
 :root {
   /* TCU Inspired Palette */
-  --primary-red: #a31d23;
-  --secondary-red: #800000;
+  --primary-red: #800000;
+  --secondary-red: #500000;
   --bg-light: #f8f9fa;
   --text-dark: #2d3436;
   --text-muted: #636e72;
@@ -129,7 +129,7 @@ body.admin-page footer {
 }
 
 .sidebar-nav a:hover {
-  background: rgba(163, 29, 35, 0.05) !important;
+  background: rgba(128, 0, 0, 0.05) !important;
   color: var(--primary-red) !important;
   transform: translateX(5px) !important;
 }
@@ -141,7 +141,7 @@ body.admin-page footer {
 .sidebar-nav a.active {
   background: var(--primary-red) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(163, 29, 35, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.2) !important;
 }
 
 .sidebar-nav a.active i {
@@ -317,7 +317,7 @@ canvas {
 
 .status-rejected {
   background: #ffe6e6 !important;
-  color: #a31d23 !important;
+  color: #800000 !important;
 }
 
 /* ============================================================
