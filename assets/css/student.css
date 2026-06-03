@@ -767,39 +767,46 @@ h3 {
 .btn-submit,
 .btn-ghost,
 .btn-add-secondary {
-    padding: 14px 28px;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    border: none;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-body);
     font-size: 0.95rem;
+    font-weight: 600;
+    padding: 10px 22px;
+    height: 44px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-sizing: border-box;
+    text-decoration: none;
 }
 
 .btn-primary {
     background: var(--portal-primary);
     color: white;
-    box-shadow: 0 8px 16px rgba(163, 29, 35, 0.2);
+    box-shadow: 0 4px 12px rgba(163, 29, 35, 0.15);
 }
 
 .btn-primary:hover {
     background: var(--portal-primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(163, 29, 35, 0.3);
-}
-
-.btn-submit {
-    background: linear-gradient(135deg, #a31d23 0%, #d4af37 100%);
-    color: white;
     box-shadow: 0 8px 20px rgba(163, 29, 35, 0.25);
 }
 
+.btn-submit {
+    background: linear-gradient(135deg, var(--portal-primary) 0%, var(--portal-gold) 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(163, 29, 35, 0.2);
+}
+
 .btn-submit:hover {
-    transform: scale(1.02) translateY(-2px);
-    box-shadow: 0 12px 30px rgba(163, 29, 35, 0.35);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(163, 29, 35, 0.3);
 }
 
 .btn-ghost {
@@ -809,17 +816,17 @@ h3 {
 }
 
 .btn-ghost:hover {
-    background: var(--portal-bg);
-    border-color: #636e72;
-    color: var(--portal-text);
+    background: var(--portal-primary-light);
+    border-color: var(--portal-primary);
+    color: var(--portal-primary);
 }
 
 .btn-add-secondary {
     background: #fff;
     color: var(--portal-primary);
     border: 2px solid var(--portal-primary);
-    padding: 10px 20px;
-    font-size: 0.85rem;
+    padding: 8px 18px;
+    font-size: 0.9rem;
 }
 
 .btn-add-secondary:hover {

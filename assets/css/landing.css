@@ -128,33 +128,7 @@ ul {
   /* make it align like the anchor */
 }
 
-.landing-header .dashboard-btn,
-.landing-header .logout-btn,
-.landing-header .login-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  padding: 8px 20px;
-  height: 40px;
-  min-width: 120px;
-  border-radius: 5px;
-  border: 1.5px solid var(--primary-color);
-  background: transparent;
-  color: var(--primary-color);
-  font-weight: 600;
-  margin-left: 10px;
-  cursor: pointer;
-  transition: none;
-  /* no hover animation */
-}
-
-.landing-header .dashboard-btn:hover,
-.landing-header .logout-btn:hover,
-.landing-header .login-btn:hover {
-  background: var(--primary-light);
-  color: var(--primary-dark);
-}
+/* Landing header buttons now inherit from style.css */
 
 .landing-header .user-welcome {
   font-size: 1rem;
@@ -615,31 +589,7 @@ ul {
     .auth-form-box { padding: 60px 20px 40px; }
 }
 
-.dashboard-btn,
-.logout-btn,
-.login-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  padding: 8px 20px;
-  height: 40px;
-  min-width: 150px;
-  box-sizing: border-box;
-  border-radius: 5px;
-  border: 1px solid var(--primary-color);
-  background: transparent;
-  color: var(--primary-color);
-  font-weight: 600;
-  transition: background-color 0.3s;
-  margin-left: 10px;
-}
-
-.dashboard-btn:hover,
-.logout-btn:hover,
-.login-btn:hover {
-  background-color: var(--primary-light);
-}
+/* Header buttons now inherit from style.css */
 
 /* Override global button styles for search buttons */
 .search-button {
