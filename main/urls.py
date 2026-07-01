@@ -69,6 +69,7 @@ urlpatterns = [
 
     path('thesis/<int:thesis_id>/view/', views.view_thesis, name='view_thesis'),
     path('thesis/<int:thesis_id>/page/<int:page_num>/', views.serve_thesis_page_image, name='serve_thesis_page_image'),
+    path('thesis/<int:pk>/restricted/', views.restricted_view_thesis_file, name='restricted_view_thesis_file'),
 ]
 
 if settings.DEBUG:

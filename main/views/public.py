@@ -184,6 +184,18 @@ def category_detail(request, category_name):
     }
     return render(request, 'main/category_detail.html', context)
 
+def get_initials(name):
+    if not name:
+        return ""
+    import re
+    cleaned_name = re.sub(r'^(Dr\.|Prof\.|Mr\.|Ms\.|Mrs\.)\s+', '', name, flags=re.IGNORECASE)
+    parts = cleaned_name.split()
+    if len(parts) >= 2:
+        return (parts[0][0] + parts[-1][0]).upper()
+    elif len(parts) == 1:
+        return parts[0][:2].upper()
+    return ""
+
 @login_required
 def thesis_detail(request, pk: int):
     thesis = get_object_or_404(Thesis, pk=pk)
@@ -193,8 +205,50 @@ def thesis_detail(request, pk: int):
     if is_authenticated:
         can_view_full = request.user.profile.role in [Profile.ADMIN, Profile.LIBRARIAN]
         
+    # Extra data for the new layout
+    keywords_list = [k.strip() for k in (thesis.keywords or "").split(',') if k.strip()]
+    
+    coauthor_list = thesis.get_coauthor_names()
+    coauthors_str = ""
+    if coauthor_list:
+        if len(coauthor_list) == 1:
+            coauthors_str = coauthor_list[0]
+        elif len(coauthor_list) == 2:
+            coauthors_str = f"{coauthor_list[0]} and {coauthor_list[1]}"
+        else:
+            coauthors_str = ", ".join(coauthor_list[:-1]) + f", and {coauthor_list[-1]}"
+            
+    supervisor_initials = get_initials(thesis.supervisor_name)
+    co_supervisor_initials = get_initials(thesis.co_supervisor_name)
+    
+    import os
+    filename = os.path.basename(thesis.file.name) if thesis.file else "manuscript.pdf"
+    
+    restricted_page_count = 1
+    if thesis.file:
+        try:
+            import fitz
+            doc = fitz.open(thesis.file.path)
+            original_page_count = doc.page_count
+            doc.close()
+            restricted_page_count = min(3, original_page_count)
+        except Exception:
+            try:
+                from PyPDF2 import PdfReader
+                pdf_reader = PdfReader(thesis.file.open('rb'))
+                original_page_count = len(pdf_reader.pages)
+                restricted_page_count = min(3, original_page_count)
+            except Exception:
+                restricted_page_count = 3
+                
     return render(request, 'main/thesis_detail.html', {
         'thesis': thesis,
         'is_authenticated': is_authenticated,
-        'can_view_full': can_view_full
+        'can_view_full': can_view_full,
+        'keywords_list': keywords_list,
+        'coauthors': coauthors_str,
+        'supervisor_initials': supervisor_initials,
+        'co_supervisor_initials': co_supervisor_initials,
+        'filename': filename,
+        'restricted_page_count': restricted_page_count,
     })
