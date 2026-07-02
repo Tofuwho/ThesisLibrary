@@ -10,6 +10,20 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+import sys
+
+# Django-Python 3.14 compatibility monkeypatch for tests
+try:
+    if sys.version_info >= (3, 14):
+        from django.template.context import BaseContext
+        def base_context_copy(self):
+            dup = object.__new__(self.__class__)
+            dup.__dict__.update(self.__dict__)
+            dup.dicts = [d.copy() for d in self.dicts]
+            return dup
+        BaseContext.__copy__ = base_context_copy
+except Exception:
+    pass
 from pathlib import Path
 from dotenv import load_dotenv
 
