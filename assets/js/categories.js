@@ -550,11 +550,19 @@ function applyDepartmentThemeFromId(deptId) {
 }
 
 function pickAccentColor(colorKey) {
-    // Curated palette for known keys; fallback uses deterministic HSL from key
+    // Curated palette for known Taguig City University colleges
     const palette = {
-        all: '#6B7280',        // gray-500
-        graduate: '#7C3AED',   // violet-600
-        ce: '#059669',         // emerald-600
+        all: '#800000',        // TCU Maroon (heritage color)
+        graduate: '#7C3AED',   // Purple/Violet
+        ce: '#10B981',         // Emerald Green (Education)
+        cict: '#0284C7',       // Sky Blue (ICT/Tech)
+        cas: '#F59E0B',        // Amber (Arts & Sciences)
+        cbm: '#4F46E5',        // Indigo (Business & Management)
+        ccj: '#4B5563',        // Slate/Charcoal (Criminal Justice)
+        chtm: '#EF4444',       // Ruby Red (Hospitality & Tourism)
+        cet: '#F97316',        // Orange/Rust (Engineering & Tech)
+        ippg: '#0D9488',       // Teal (Public Policy & Governance)
+        coll: '#800000',       // Maroon
     };
     if (palette[colorKey]) return palette[colorKey];
     return stringToColor(colorKey);
@@ -584,8 +592,32 @@ function hslToHex(h, s, l) {
 
 function hexToRgb(hex) {
     const res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (!res) return { r: 107, g: 114, b: 128 };
+    if (!res) return { r: 128, g: 0, b: 0 };
     return { r: parseInt(res[1], 16), g: parseInt(res[2], 16), b: parseInt(res[3], 16) };
+}
+
+function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+        h = s = 0; // achromatic
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return {
+        h: Math.round(h * 360),
+        s: Math.round(s * 100),
+        l: Math.round(l * 100)
+    };
 }
 
 function luminance({ r, g, b }) {
@@ -610,6 +642,13 @@ function setDeptThemeVars(accentHex) {
     root.style.setProperty('--dept-bg-soft', softBg);
     root.style.setProperty('--dept-bg-soft-dark', softBgDark);
     root.style.setProperty('--dept-border', border);
+    
+    // Set RGB and HSL custom variables on the root for advanced styles
+    root.style.setProperty('--dept-accent-rgb', `${r}, ${g}, ${b}`);
+    const { h, s, l } = rgbToHsl(r, g, b);
+    root.style.setProperty('--dept-accent-h', h);
+    root.style.setProperty('--dept-accent-s', `${s}%`);
+    root.style.setProperty('--dept-accent-l', `${l}%`);
 }
 
 function setDeptClass(colorKey) {

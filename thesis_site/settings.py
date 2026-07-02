@@ -292,7 +292,7 @@ else:
 # Always enable these security headers
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # Authentication
 LOGIN_URL = '/auth/login/'

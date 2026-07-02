@@ -1,0 +1,15 @@
+{% load department_filters %}
+<div class="department-bookmarks" id="deptRibbonInner">
+    <button class="dept-bookmark {% if not selected_department or selected_department == 'all' %}active{% endif %}" data-dept="all" data-color="all">
+        <span class="dept-dot"></span>
+        All
+    </button>
+    {% for dept in departments %}
+    {% with color=dept.name|dept_theme_code %}
+    <button class="dept-bookmark {% if selected_department == dept.id|stringformat:'i' %}active{% endif %}" data-dept="{{ dept.id }}" data-color="{{ color }}">
+        <span class="dept-dot"></span>
+        {{ dept.name|department_display }}
+    </button>
+    {% endwith %}
+    {% endfor %}
+</div>

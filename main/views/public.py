@@ -57,7 +57,7 @@ def categories_page(request):
     sort = request.GET.get('sort') or 'date-desc'
     filters = {
         'years': [int(y) for y in request.GET.getlist('year') if y.isdigit()],
-        'descriptors': request.GET.getlist('descriptor'),
+        'descriptors': request.GET.getlist('category') or request.GET.getlist('descriptor'),
         'authors': request.GET.getlist('author'),
         'types': request.GET.getlist('type'),
         'department': request.GET.get('department'),

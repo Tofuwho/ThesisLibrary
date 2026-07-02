@@ -554,6 +554,18 @@
         margin-right: 0 !important;
     }
 
+    .thesis-card {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+    }
+
+    .thesis-cover {
+        width: 100% !important;
+        height: 140px !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-color) !important;
+    }
+
     /* SECTION HEADERS */
     .section-title {
         font-size: 1.8rem !important;

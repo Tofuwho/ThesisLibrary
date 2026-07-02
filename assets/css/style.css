@@ -1068,17 +1068,20 @@ ul {
 }
 
 .thesis-card {
+  display: grid;
+  grid-template-columns: 120px 1fr;
   background-color: var(--card-bg);
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: var(--shadow);
   transition: var(--transition);
   position: relative;
   border: 1px solid var(--border-color);
+  height: 220px;
 }
 
 .thesis-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-hover);
   border-color: var(--primary-color);
 }
@@ -1088,11 +1091,11 @@ ul {
   position: absolute;
   top: 0;
   left: 0;
-  width: 5px;
+  width: 4px;
   height: 0;
   background: linear-gradient(180deg, var(--primary-color), var(--accent-color));
   transition: height 0.4s ease;
-  border-radius: 0 0 3px 0;
+  z-index: 10;
 }
 
 .thesis-card:hover::before {
@@ -1100,18 +1103,19 @@ ul {
 }
 
 .thesis-cover {
-  height: 200px;
+  width: 120px;
+  height: 100%;
   background-image: url('/static/images/thesis-cover-default.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: var(--light-gray);
-  /* Fallback color if image doesn't load */
+  background-color: var(--primary-color);
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-right: 1px solid var(--border-color);
 }
 
 .thesis-cover::before {
@@ -1121,7 +1125,7 @@ ul {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, rgba(139, 0, 0, 0.05) 50%, transparent 70%);
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.15) 50%, transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1131,13 +1135,35 @@ ul {
 }
 
 .thesis-cover-placeholder {
-  display: none;
-  /* Hide placeholder text/icon when using image */
+  display: flex;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.5rem;
+  z-index: 2;
+}
+
+.thesis-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(197, 179, 88, 0.1);
+  color: var(--luxury-gold-dark);
+  border: 1px solid rgba(197, 179, 88, 0.3);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  z-index: 5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .thesis-info {
-  padding: 25px;
+  padding: 20px;
   background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 }
 
 .thesis-title {
@@ -1257,15 +1283,15 @@ ul {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 24px;
-  padding: 45px 35px;
+  padding: 40px 30px;
   text-align: center;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -1273,19 +1299,20 @@ ul {
   /* Brand color variables default to TCU Maroon */
   --dept-color: var(--primary-color);
   --dept-color-light: var(--primary-light);
+  --dept-color-rgb: 128, 0, 0;
 }
 
 /* College-Specific Theme Mappings */
-.department-card-v2.dept-graduate { --dept-color: #7c3aed; --dept-color-light: rgba(124, 58, 237, 0.1); }
-.department-card-v2.dept-ce { --dept-color: #059669; --dept-color-light: rgba(5, 150, 105, 0.1); }
-.department-card-v2.dept-cict { --dept-color: #3b82f6; --dept-color-light: rgba(59, 130, 246, 0.1); }
-.department-card-v2.dept-cas { --dept-color: #d97706; --dept-color-light: rgba(217, 119, 6, 0.1); }
-.department-card-v2.dept-cbm { --dept-color: #f59e0b; --dept-color-light: rgba(245, 158, 11, 0.1); }
-.department-card-v2.dept-ccj { --dept-color: #ef4444; --dept-color-light: rgba(239, 68, 68, 0.1); }
-.department-card-v2.dept-chtm { --dept-color: #0d9488; --dept-color-light: rgba(13, 148, 136, 0.1); }
-.department-card-v2.dept-cet { --dept-color: #4b5563; --dept-color-light: rgba(75, 85, 99, 0.1); }
-.department-card-v2.dept-ippg { --dept-color: #0369a1; --dept-color-light: rgba(3, 105, 161, 0.1); }
-.department-card-v2.dept-coll { --dept-color: var(--primary-color); --dept-color-light: var(--primary-light); }
+.department-card-v2.dept-graduate { --dept-color: #7c3aed; --dept-color-light: rgba(124, 58, 237, 0.08); --dept-color-rgb: 124, 58, 237; }
+.department-card-v2.dept-ce { --dept-color: #10b981; --dept-color-light: rgba(16, 185, 129, 0.08); --dept-color-rgb: 16, 185, 129; }
+.department-card-v2.dept-cict { --dept-color: #0284c7; --dept-color-light: rgba(2, 132, 199, 0.08); --dept-color-rgb: 2, 132, 199; }
+.department-card-v2.dept-cas { --dept-color: #f59e0b; --dept-color-light: rgba(245, 158, 11, 0.08); --dept-color-rgb: 245, 158, 11; }
+.department-card-v2.dept-cbm { --dept-color: #4f46e5; --dept-color-light: rgba(79, 70, 229, 0.08); --dept-color-rgb: 79, 70, 229; }
+.department-card-v2.dept-ccj { --dept-color: #4b5563; --dept-color-light: rgba(75, 85, 99, 0.08); --dept-color-rgb: 75, 85, 99; }
+.department-card-v2.dept-chtm { --dept-color: #ef4444; --dept-color-light: rgba(239, 68, 68, 0.08); --dept-color-rgb: 239, 68, 68; }
+.department-card-v2.dept-cet { --dept-color: #f97316; --dept-color-light: rgba(249, 115, 22, 0.08); --dept-color-rgb: 249, 115, 22; }
+.department-card-v2.dept-ippg { --dept-color: #0d9488; --dept-color-light: rgba(13, 148, 136, 0.08); --dept-color-rgb: 13, 148, 136; }
+.department-card-v2.dept-coll { --dept-color: var(--primary-color); --dept-color-light: var(--primary-light); --dept-color-rgb: 128, 0, 0; }
 
 .department-card-v2::before {
   content: '';
@@ -1301,9 +1328,9 @@ ul {
 }
 
 .department-card-v2:hover {
-  transform: translateY(-15px);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
-  border-color: var(--dept-color-light) !important;
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(var(--dept-color-rgb), 0.15);
+  border-color: rgba(var(--dept-color-rgb), 0.35) !important;
 }
 
 .department-card-v2:hover::before {

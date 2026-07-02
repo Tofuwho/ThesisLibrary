@@ -4,427 +4,50 @@
 {% block title %}Browse Categories - Theses Library{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/categories.css' %}?v=1.1">
+<link rel="stylesheet" href="{% static 'css/categories.css' %}?v=2.0">
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="{% static 'js/categories.js' %}?v=1.1"></script>
+<script src="{% static 'js/categories.js' %}?v=2.0"></script>
 {% endblock %}
 
 {% block content %}
 <div class="categories-main">
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
     <div class="container">
         <div class="categories-hero">
-            <div class="hero-content">
-                <div class="academic-header">
-                    <div class="university-crest">
-                        <img src="{% static 'images/tcu_official_logo.png' %}" alt="TCU Logo"
-                            style="width: 100%; height: 100%; object-fit: contain;">
-                    </div>
-                    <div class="academic-title">
-                        <h1>Browse Categories</h1>
-                        <div class="academic-subtitle">Theses Library</div>
-                    </div>
-                </div>
-                <p>Explore our vast collection of academic theses by category and refine with powerful filters</p>
-                <div class="hero-meta">
-                    <span class="hero-chip"><span class="dot info"></span>Results: {{ total_results }}</span>
-                    {% if request.GET.search %}
-                    <span class="hero-chip"><span class="dot status"></span>Search: "{{ request.GET.search }}"</span>
-                    {% endif %}
-                </div>
-                <div class="hero-search">
-                    <form class="search-form" method="get" id="search-form">
-                        <input type="hidden" name="department" value="{{ request.GET.department|default:'all' }}">
-                        <div class="search-input-row">
-                            <input type="text" name="search" class="search-input"
-                                placeholder="Search by title, author, keyword..." value="{{ request.GET.search }}">
-                            <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
-                        </div>
-                        <div class="search-controls">
-                            <div class="search-mode-toggle">
-                                <label class="search-mode-label">
-                                    <input type="radio" name="search_mode" value="normal" {% if not request.GET.search_mode or request.GET.search_mode == 'normal' %}checked{% endif %}>
-                                    <span class="search-mode-text">Normal Search</span>
-                                </label>
-                                {% if can_full_view %}
-                                <label class="search-mode-label">
-                                    <input type="radio" name="search_mode" value="deep" {% if request.GET.search_mode == 'deep' %}checked{% endif %}>
-                                    <span class="search-mode-text">Deep Search</span>
-                                </label>
-                                {% else %}
-                                <label class="search-mode-label restricted-mode"
-                                    title="Deep search is restricted to Administrators and Librarians">
-                                    <input type="radio" name="search_mode" value="deep" disabled>
-                                    <span class="search-mode-text"><i class="fas fa-lock"></i> Deep Search</span>
-                                </label>
-                                {% endif %}
-                            </div>
-                            {% if did_you_mean %}
-                            <div class="deep-search-info">
-                                <i class="fas fa-magic"></i>
-                                <span>Did you mean</span>
-                                <a href="?search={{ did_you_mean|urlencode }}&search_mode={{ request.GET.search_mode|default:'normal' }}"
-                                    style="font-weight:600;">"{{ did_you_mean }}"</a>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="department-bookmarks">
-                <button class="dept-bookmark" data-dept="all" data-color="all">All</button>
-                {% for dept in departments %}
-                {% with dl=dept.name|lower %}
-                {% if dl == 'graduate' or dl == 'graduate school' %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="graduate">Graduate</button>
-                {% elif 'education' in dl %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="ce">CE</button>
-                {% elif 'information' in dl or 'ict' in dl or 'computer' in dl %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cict">CICT</button>
-                {% elif 'arts' in dl or 'sciences' in dl or 'science' in dl %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cas">CAS</button>
-                {% elif 'business' in dl or 'management' in dl or 'account' in dl %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cbm">CBM</button>
-                {% elif 'criminal' in dl or 'justice' in dl %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="ccj">CCJ</button>
-                {% elif 'hospitality' in dl or 'tourism' in dl or 'hotel' in dl %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="chtm">CHTM</button>
-                {% elif 'engineering' in dl or 'technology' in dl or 'industrial' in dl %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="cet">CET</button>
-                {% elif 'public policy' in dl or 'governance' in dl or 'ippg' in dl %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="ippg">IPPG</button>
-                {% else %}
-                <button class="dept-bookmark" data-dept="{{ dept.id }}" data-color="coll">{{ dept.name|slice:":4"
-                    }}</button>
-                {% endif %}
-                {% endwith %}
-                {% endfor %}
-            </div>
+            <!-- Lego Block 1: Categories Hero Section -->
+            {% include 'main/partials/categories_hero.html' %}
+            
+            <!-- Lego Block 2: Department Bookmarks Bar -->
+            {% include 'main/partials/department_bookmarks.html' %}
         </div>
 
         <div class="categories-content">
-            <aside class="filter-sidebar">
-                <form method="get" id="filter-form">
-                    <input type="hidden" name="department" id="department-input"
-                        value="{{ request.GET.department|default:'all' }}">
-                    <input type="hidden" name="search" value="{{ request.GET.search|default:'' }}">
-                    <input type="hidden" name="search_mode" value="{{ request.GET.search_mode|default:'normal' }}">
-                    <input type="hidden" name="sort" value="{{ request.GET.sort|default:'date-desc' }}">
-
-                    <div class="filter-section">
-                        <h3>Publication Date</h3>
-                        <ul class="filter-list">
-                            {% for year in years %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" name="year" value="{{ year.year }}">
-                                    <span>{{ year.year }}</span>
-                                    <span class="count">({{ year.count }})</span>
-                                </label>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <div class="filter-section">
-                        <h3>Author</h3>
-                        <ul class="filter-list scrollable-filter-list">
-                            {% for author in authors %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" name="author" value="{{ author.name }}">
-                                    <span>{{ author.name }}</span>
-                                    <span class="count">({{ author.count|default:0 }})</span>
-                                </label>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <div class="filter-group" data-dept="all" style="display:block;">
-                        <div class="filter-section">
-                            <h3>Descriptor</h3>
-                            <ul class="filter-list scrollable-filter-list">
-                                {% for category in categories %}
-                                <li>
-                                    <label>
-                                        <input type="checkbox" name="descriptor" value="{{ category.name }}">
-                                        <span>{{ category.name }}</span>
-                                        <span class="count">({{ category.count|default:0 }})</span>
-                                    </label>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        <div class="filter-section">
-                            <h3>Publication Type</h3>
-                            <ul class="filter-list scrollable-filter-list">
-                                {% for type in types %}
-                                <li>
-                                    <label>
-                                        <input type="checkbox" name="type" value="{{ type.name }}">
-                                        <span>{{ type.name }}</span>
-                                        <span class="count">({{ type.count|default:0 }})</span>
-                                    </label>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Global System filters -->
-                    {% if research_categories %}
-                    <div class="filter-section">
-                        <h3>Research Category</h3>
-                        <ul class="filter-list scrollable-filter-list">
-                            {% for rc in research_categories %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" name="research_category" value="{{ rc.name }}">
-                                    <span>{{ rc.name }}</span>
-                                    <span class="count">({{ rc.count|default:0 }})</span>
-                                </label>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-
-                    {% if specializations %}
-                    <div class="filter-section">
-                        <h3>Specialization</h3>
-                        <ul class="filter-list scrollable-filter-list">
-                            {% for spec in specializations %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" name="specialization" value="{{ spec.name }}">
-                                    <span>{{ spec.name }}</span>
-                                    <span class="count">({{ spec.count|default:0 }})</span>
-                                </label>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-
-                    {% if supervisors %}
-                    <div class="filter-section">
-                        <h3>Supervisor / Advisor</h3>
-                        <ul class="filter-list scrollable-filter-list">
-                            {% for sup in supervisors %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" name="supervisor" value="{{ sup.name }}">
-                                    <span>{{ sup.name }}</span>
-                                    <span class="count">({{ sup.count|default:0 }})</span>
-                                </label>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-
-                    {% for dept in departments %}
-                    <div class="filter-group" data-dept="{{ dept.id }}" style="display:none;">
-                        <h3>{{ dept.name }} Courses</h3>
-                        <ul class="filter-list scrollable-filter-list">
-                            {% if dept.courses.exists %}
-                            {% for course in dept.courses.all %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" name="course" value="{{ course.id }}">
-                                    <span>{{ course.name }}</span>
-                                </label>
-                            </li>
-                            {% endfor %}
-                            {% else %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" name="course" value="general">
-                                    <span>General</span>
-                                </label>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                    {% endfor %}
-
-                    <button type="submit" class="apply-filters-button">
-                        <i class="fas fa-filter"></i> Apply Filters
-                    </button>
-                    <a href="#" onclick="clearAllFilters(); return false;" class="clear-filters-button">
-                        <i class="fas fa-times"></i> Clear All
-                    </a>
-                </form>
-            </aside>
+            <!-- Lego Block 3: Filter Sidebar -->
+            {% include 'main/partials/filter_sidebar.html' %}
 
             <div class="cat-thesis-results">
-                <div class="cat-results-header">
-                    <h2>Results <span class="cat-results-count">({{ total_results }})</span></h2>
-                    <div class="cat-sort-options">
-                        <label for="sort">Sort by:</label>
-                        <select name="sort" id="sort" class="cat-sort-select" onchange="updateSort(this.value)">
-                            <option value="date-desc" {% if current_sort == 'date-desc' %}selected{% endif %}>Date (Newest
-                                First)</option>
-                            <option value="date-asc" {% if current_sort == 'date-asc' %}selected{% endif %}>Date (Oldest
-                                First)</option>
-                            <option value="title-asc" {% if current_sort == 'title-asc' %}selected{% endif %}>Title (A-Z)
-                            </option>
-                            <option value="title-desc" {% if current_sort == 'title-desc' %}selected{% endif %}>Title
-                                (Z-A)</option>
-                            <option value="author-asc" {% if current_sort == 'author-asc' %}selected{% endif %}>Author
-                                (A-Z)</option>
-                            <option value="author-desc" {% if current_sort == 'author-desc' %}selected{% endif %}>Author
-                                (Z-A)</option>
-                        </select>
-                    </div>
-                </div>
+                <!-- Lego Block 4: Results Header -->
+                {% include 'main/partials/results_header.html' %}
 
+                <!-- Results List -->
                 <div class="cat-thesis-list">
                     {% for thesis in theses %}
-                    <div class="cat-thesis-item">
-                        <div class="cat-thesis-item-cover dept-{{ thesis.department.name|dept_theme_code }}">
-                            <div class="cover-design"></div>
-                            <div class="cover-content">
-                                <div class="cover-badge">
-                                    <i class="fas fa-university"></i>
-                                </div>
-                                <div class="cover-title-preview">{{ thesis.title }}</div>
-                                <div class="cover-footer">
-                                    <span class="cover-dept-tag">{{ thesis.department.name|department_display }}</span>
-                                    <span class="cover-year">{{ thesis.year }}</span>
-                                </div>
-                            </div>
-                            <div class="cover-spine"></div>
-                        </div>
-                        <div class="cat-thesis-item-content">
-                            <h3 class="cat-thesis-item-title">{{ thesis.title }}</h3>
-
-                            <div class="cat-thesis-item-authors">
-                                <span class="author-label">Author:</span>
-                                <ul class="coauthor-list">
-                                    <li class="main-author">{{ thesis.author }}</li>
-                                </ul>
-                                {% if thesis.get_coauthor_names %}
-                                <span class="author-label">Co-Authors:</span>
-                                <ul class="coauthor-list">
-                                    {% for coauthor in thesis.get_coauthor_names %}
-                                    <li class="coauthor {% if forloop.counter > 3 %}hidden{% endif %}">{{ coauthor }}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                {% if thesis.get_coauthor_names|length > 3 %}
-                                <a href="#" class="more-coauthors">+{{ thesis.get_coauthor_names|length|add:"-3" }}
-                                    more</a>
-                                {% endif %}
-                                {% endif %}
-                            </div>
-
-                            <div class="cat-thesis-item-meta">
-                                <span><i class="far fa-calendar-alt"></i> {{ thesis.year }}</span>
-                                {% if thesis.department %}
-                                <span><i class="fas fa-building"></i> {{ thesis.department.name }}</span>
-                                {% endif %}
-                                {% if thesis.course %}
-                                <span><i class="fas fa-book"></i> {{ thesis.course.name }}</span>
-                                {% endif %}
-                                {% if thesis.specialization %}
-                                <span><i class="fas fa-tag"></i> {{ thesis.specialization }}</span>
-                                {% endif %}
-                            </div>
-
-                            <div class="cat-thesis-item-abstract-container">
-                                <p class="cat-thesis-item-abstract">{{ thesis.abstract|truncatewords:30 }}</p>
-                                {% if thesis.deep_search_results %}
-                                <div class="deep-search-results">
-                                    <div class="deep-search-header">
-                                        <i class="fas fa-file-pdf"></i>
-                                        <span class="deep-search-title">Found in PDF:</span>
-                                        <span class="deep-search-count">{{ thesis.deep_search_results.total_matches }}
-                                            match{{ thesis.deep_search_results.total_matches|pluralize }}</span>
-                                    </div>
-                                    {% if thesis.deep_search_results.matches %}
-                                    <ul class="deep-search-snippets">
-                                        {% for m in thesis.deep_search_results.matches|slice:":3" %}
-                                        <li>
-                                            <span class="deep-search-page">Page {{ m.page }}</span>
-                                            <span class="deep-search-snippet">{{ m.context|safe }}</span>
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                    {% else %}
-                                    <div class="deep-search-context">{{ thesis.deep_search_results.context|safe }}</div>
-                                    {% endif %}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            {% if thesis.keywords_list or thesis.research_categories_list %}
-                            <div class="cat-thesis-item-tags">
-                                {% for keyword in thesis.keywords_list %}
-                                <span class="chip keyword-chip">{{ keyword }}</span>
-                                {% endfor %}
-                                {% for category in thesis.research_categories_list %}
-                                <span class="chip category-chip">{{ category }}</span>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-
-                            <div class="cat-thesis-item-actions">
-                                {% if thesis.file %}
-                                <a href="{% url 'thesis_detail' thesis.id %}" class="cat-view-button">
-                                    <i class="fas fa-eye"></i> View
-                                </a>
-                                {% else %}
-                                <span class="no-file">No file available</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+                        <!-- Lego Block 5: Thesis Card -->
+                        {% include 'main/partials/thesis_card.html' with thesis=thesis %}
                     {% empty %}
-                    <p>No theses found.</p>
+                        <div class="no-results" style="grid-column: 1 / -1; width: 100%; text-align: center; padding: 60px 20px;">
+                            <i class="fas fa-search-minus" style="font-size: 3.5rem; color: var(--dept-accent); margin-bottom: 20px; display: block;"></i>
+                            <h3 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 8px;">No Research Papers Found</h3>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">Try adjusting your search queries or resetting filter checkbox parameters.</p>
+                        </div>
                     {% endfor %}
                 </div>
 
-                {% if page_obj.paginator.num_pages > 1 %}
-                <div class="pagination-container">
-                    <div class="page-info">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                    </div>
-                    <div class="pagination">
-                        {% if page_obj.has_previous %}
-                        <a href="?{% url_replace page=1 %}" class="page-link" title="First Page">
-                            <i class="fas fa-angle-double-left"></i>
-                        </a>
-                        <a href="?{% url_replace page=page_obj.previous_page_number %}" class="page-link" title="Previous Page">
-                            <i class="fas fa-angle-left"></i>
-                        </a>
-                        {% else %}
-                        <span class="page-link disabled"><i class="fas fa-angle-left"></i></span>
-                        {% endif %}
-
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                            <span class="page-link active">{{ num }}</span>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                            <a href="?{% url_replace page=num %}" class="page-link">{{ num }}</a>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if page_obj.has_next %}
-                        <a href="?{% url_replace page=page_obj.next_page_number %}" class="page-link" title="Next Page">
-                            <i class="fas fa-angle-right"></i>
-                        </a>
-                        <a href="?{% url_replace page=page_obj.paginator.num_pages %}" class="page-link" title="Last Page">
-                            <i class="fas fa-angle-double-right"></i>
-                        </a>
-                        {% else %}
-                        <span class="page-link disabled"><i class="fas fa-angle-right"></i></span>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endif %}
+                <!-- Lego Block 6: Pagination -->
+                {% include 'main/partials/pagination.html' %}
             </div>
         </div>
     </div>

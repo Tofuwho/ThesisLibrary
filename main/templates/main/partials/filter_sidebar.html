@@ -1,0 +1,152 @@
+<aside class="filter-sidebar">
+    <div class="sidebar-header">
+        <h2>Filters</h2>
+        <button type="button" class="clear-filters-btn" onclick="clearAllFilters();"><i class="fas fa-undo"></i> Reset</button>
+    </div>
+    <form id="filter-form" method="get">
+        <input type="hidden" name="search" value="{{ request.GET.search }}">
+        <input type="hidden" name="sort" value="{{ current_sort }}">
+        <input type="hidden" name="department" id="department-input" value="{{ request.GET.department|default:'all' }}">
+        <input type="hidden" name="search_mode" value="{{ request.GET.search_mode|default:'normal' }}">
+
+        <!-- Publication Date Filter -->
+        <div class="filter-section">
+            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
+                Publication Date <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
+            </h3>
+            <ul class="filter-list scrollable-filter">
+                {% for year in years %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="year" value="{{ year.year }}"
+                            {% if year.year|stringformat:"i" in request.GET.year or year.year in filters.years %}checked{% endif %}>
+                        <span>{{ year.year }}</span>
+                        <span class="count">{{ year.count }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="filter-section">
+            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
+                Category <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
+            </h3>
+            <ul class="filter-list scrollable-filter">
+                {% for cat_item in categories %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="category" value="{{ cat_item.name }}"
+                            {% if cat_item.name in request.GET.category or cat_item.name in request.GET.descriptor %}checked{% endif %}>
+                        <span>{{ cat_item.name }}</span>
+                        <span class="count">{{ cat_item.count|default:0 }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Authors Filter -->
+        <div class="filter-section">
+            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
+                Author <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
+            </h3>
+            <ul class="filter-list scrollable-filter">
+                {% for author in authors %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="author" value="{{ author.author }}"
+                            {% if author.author in request.GET.author %}checked{% endif %}>
+                        <span>{{ author.author }}</span>
+                        <span class="count">{{ author.count }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Publication Type Filter -->
+        <div class="filter-section">
+            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
+                Type <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
+            </h3>
+            <ul class="filter-list">
+                {% for type in types %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="type" value="{{ type.thesis_type }}"
+                            {% if type.thesis_type in request.GET.type %}checked{% endif %}>
+                        <span>{{ type.thesis_type }}</span>
+                        <span class="count">{{ type.count }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Specialization Filter -->
+        <div class="filter-section">
+            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
+                Specialization <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
+            </h3>
+            <ul class="filter-list scrollable-filter">
+                {% for spec in specializations %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="specialization" value="{{ spec.specialization }}"
+                            {% if spec.specialization in request.GET.specialization %}checked{% endif %}>
+                        <span>{{ spec.specialization }}</span>
+                        <span class="count">{{ spec.count }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Supervisor Filter -->
+        <div class="filter-section">
+            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
+                Supervisor <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
+            </h3>
+            <ul class="filter-list scrollable-filter">
+                {% for sup in supervisors %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="supervisor" value="{{ sup.supervisor_name }}"
+                            {% if sup.supervisor_name in request.GET.supervisor %}checked{% endif %}>
+                        <span>{{ sup.supervisor_name }}</span>
+                        <span class="count">{{ sup.count }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Department Courses Filter (Dynamic via selected department) -->
+        <div class="filter-section dynamic-courses-section"
+            style="{% if not selected_department or selected_department == 'all' %}display: none;{% endif %}">
+            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
+                Program Courses <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
+            </h3>
+            <ul class="filter-list scrollable-filter" id="dynamic-courses-list">
+                {% for course in courses %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="course" value="{{ course.id }}"
+                            {% if course.id|stringformat:"i" in request.GET.course %}checked{% endif %}>
+                        <span>{{ course.code }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <button type="submit" class="apply-filters-button">
+            <i class="fas fa-filter"></i> Apply Filters
+        </button>
+        <a href="#" onclick="clearAllFilters(); return false;" class="clear-filters-button">
+            <i class="fas fa-times"></i> Clear All
+        </a>
+    </form>
+</aside>

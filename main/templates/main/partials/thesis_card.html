@@ -1,0 +1,99 @@
+{% load department_filters %}
+<div class="cat-thesis-item" data-dept="{{ thesis.department.id }}" onclick="window.location.href='{% url 'thesis_detail' thesis.id %}'" style="cursor: pointer;">
+    <!-- Left Column: Department Panel (30%) -->
+    <div class="cat-thesis-item-cover dept-{{ thesis.department.name|dept_theme_code }}">
+        <div class="cover-spine"></div>
+        <div class="cover-content">
+            <div class="cover-badge">
+                {% if 'grad' in thesis.department.name|lower %}<i class="fas fa-microscope"></i>
+                {% elif 'edu' in thesis.department.name|lower %}<i class="fas fa-apple-alt"></i>
+                {% elif 'biz' in thesis.department.name|lower or 'mgmt' in thesis.department.name|lower or 'account' in thesis.department.name|lower %}<i class="fas fa-chart-pie"></i>
+                {% elif 'tech' in thesis.department.name|lower or 'comp' in thesis.department.name|lower or 'ict' in thesis.department.name|lower %}<i class="fas fa-terminal"></i>
+                {% elif 'eng' in thesis.department.name|lower %}<i class="fas fa-drafting-compass"></i>
+                {% elif 'tour' in thesis.department.name|lower or 'hospitality' in thesis.department.name|lower %}<i class="fas fa-concierge-bell"></i>
+                {% elif 'crim' in thesis.department.name|lower or 'justice' in thesis.department.name|lower %}<i class="fas fa-balance-scale"></i>
+                {% else %}<i class="fas fa-landmark"></i>
+                {% endif %}
+            </div>
+            <div class="cover-year-badge">{{ thesis.year }}</div>
+        </div>
+        <div class="cover-footer-dept">
+            {{ thesis.department.name|department_display }}
+        </div>
+    </div>
+
+    <!-- Right Column: Scholarly details (70%) -->
+    <div class="cat-thesis-item-content">
+        <!-- Title & Authors -->
+        <div class="cat-thesis-item-header">
+            <h3 class="cat-thesis-item-title">
+                <a href="{% url 'thesis_detail' thesis.id %}" onclick="event.stopPropagation();">{{ thesis.title }}</a>
+            </h3>
+            <div class="cat-thesis-item-author">
+                <span class="author-label"><i class="fas fa-user-friends"></i> Authors:</span>
+                <div class="authors-pill-list">
+                    <span class="author-pill lead-author">{{ thesis.author }}</span>
+                    {% if thesis.get_coauthor_names %}
+                        {% for coauthor in thesis.get_coauthor_names %}
+                            <span class="author-pill {% if forloop.counter > 2 %}hidden{% endif %}">{{ coauthor }}</span>
+                        {% endfor %}
+                        {% if thesis.get_coauthor_names|length > 2 %}
+                            <span class="author-pill-more">+{{ thesis.get_coauthor_names|length|add:"-2" }}</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Abstract & Snippets -->
+        <div class="cat-thesis-item-body">
+            <p class="cat-thesis-item-abstract">{{ thesis.abstract|truncatewords:28 }}</p>
+
+            <!-- Deep Search matches if found -->
+            {% if thesis.deep_search_results %}
+            <div class="deep-search-matches" onclick="event.stopPropagation();">
+                <div class="matches-header">
+                    <i class="fas fa-search-plus"></i> Found {{ thesis.deep_search_results.total_matches }} match{{ thesis.deep_search_results.total_matches|pluralize:"es" }} in document content:
+                </div>
+                <div class="matches-list">
+                    {% for m in thesis.deep_search_results.matches|slice:":1" %}
+                    <div class="match-item">
+                        <span class="match-page">Page {{ m.page }}:</span>
+                        <span class="match-context">... {{ m.context|safe }} ...</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Keywords list -->
+            {% if thesis.keywords_list %}
+            <div class="thesis-keywords-box" style="margin-top: 8px;">
+                {% for keyword in thesis.keywords_list %}
+                <span class="keyword-tag">#{{ keyword }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer / Metadata row & button -->
+        <div class="cat-thesis-item-footer">
+            <div class="card-meta-badges">
+                <span class="meta-badge" title="College"><i class="fas fa-university"></i> {{ thesis.department.name|department_display }}</span>
+                {% if thesis.course %}
+                <span class="meta-badge" title="Course"><i class="fas fa-graduation-cap"></i> {{ thesis.course.code }}</span>
+                {% endif %}
+                {% if thesis.specialization %}
+                <span class="meta-badge" title="Specialization"><i class="fas fa-bookmark"></i> {{ thesis.specialization }}</span>
+                {% endif %}
+            </div>
+            <div class="card-action-btn-wrapper">
+                {% if thesis.file %}
+                <a href="{% url 'thesis_detail' thesis.id %}" class="read-btn" onclick="event.stopPropagation();">Read Thesis <i class="fas fa-chevron-right"></i></a>
+                {% else %}
+                <a href="{% url 'thesis_detail' thesis.id %}" class="read-btn secondary-btn" onclick="event.stopPropagation();">View Details <i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
