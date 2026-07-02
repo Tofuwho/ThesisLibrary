@@ -112,6 +112,11 @@ jobs:
       - name: Run migrations
         run: python manage.py migrate
 
+      - name: Prepare static files
+        run: |
+          mkdir -p staticfiles
+          python manage.py collectstatic --noinput
+
       - name: Run tests
         run: |
           echo "Testcase: '${{ matrix.testcase }}'"

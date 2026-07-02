@@ -81,6 +81,8 @@ jobs:
       MYSQL_PASSWORD: root
       MYSQL_DATABASE: thesis_library
       MYSQL_PORT: 3306
+      SECRET_KEY: 'ci-insecure-key-for-test-suite-that-is-long-enough-to-be-secure'
+      PYTHONPATH: ${{ github.workspace }}
 
     steps:
       - name: Checkout code
@@ -110,5 +112,12 @@ jobs:
       - name: Run migrations
         run: python manage.py migrate
 
+      - name: Prepare static files
+        run: |
+          mkdir -p staticfiles
+          python manage.py collectstatic --noinput
+
       - name: Run tests
-        run: python manage.py test ${{ matrix.testcase }}
+        run: |
+          echo "Testcase: '${{ matrix.testcase }}'"
+          python -u manage.py test "${{ matrix.testcase }}" --verbosity 2
