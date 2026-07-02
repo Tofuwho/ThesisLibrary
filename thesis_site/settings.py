@@ -232,6 +232,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Optimize static files for production
 if not DEBUG:
     STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
