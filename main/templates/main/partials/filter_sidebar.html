@@ -12,7 +12,7 @@
         <!-- Publication Date Filter -->
         <div class="filter-section">
             <h3 onclick="this.parentElement.classList.toggle('collapsed')">
-                Publication Date <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
+                Publication Year <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
             </h3>
             <ul class="filter-list scrollable-filter">
                 {% for year in years %}
@@ -47,63 +47,6 @@
             </ul>
         </div>
 
-        <!-- Publication Type Filter -->
-        <div class="filter-section">
-            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
-                Type <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
-            </h3>
-            <ul class="filter-list">
-                {% for type in types %}
-                <li>
-                    <label>
-                        <input type="checkbox" name="type" value="{{ type.name }}"
-                            {% if type.name in request.GET.type %}checked{% endif %}>
-                        <span>{{ type.name }}</span>
-                        <span class="count">{{ type.count }}</span>
-                    </label>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Specialization Filter -->
-        <div class="filter-section">
-            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
-                Specialization <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
-            </h3>
-            <ul class="filter-list scrollable-filter">
-                {% for spec in specializations %}
-                <li>
-                    <label>
-                        <input type="checkbox" name="specialization" value="{{ spec.name }}"
-                            {% if spec.name in request.GET.specialization %}checked{% endif %}>
-                        <span>{{ spec.name }}</span>
-                        <span class="count">{{ spec.count }}</span>
-                    </label>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Research Category Filter -->
-        <div class="filter-section">
-            <h3 onclick="this.parentElement.classList.toggle('collapsed')">
-                Research Category <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
-            </h3>
-            <ul class="filter-list">
-                {% for rc in research_categories %}
-                <li>
-                    <label>
-                        <input type="checkbox" name="research_category" value="{{ rc.name }}"
-                            {% if rc.name in request.GET.research_category %}checked{% endif %}>
-                        <span>{{ rc.name }}</span>
-                        <span class="count">{{ rc.count }}</span>
-                    </label>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
         <!-- Department Courses Filter (Dynamic via selected department) -->
         <div class="filter-section dynamic-courses-section"
             style="{% if not selected_department or selected_department == 'all' %}display: none;{% endif %}">
@@ -116,7 +59,7 @@
                     <label>
                         <input type="checkbox" name="course" value="{{ course.id }}"
                             {% if course.id|stringformat:"i" in request.GET.course %}checked{% endif %}>
-                        <span>{{ course.code }}</span>
+                        <span>{{ course.name }}</span>
                     </label>
                 </li>
                 {% endfor %}
