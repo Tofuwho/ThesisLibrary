@@ -38,7 +38,34 @@
     min-height: 100vh;
     font-family: 'Plus Jakarta Sans', sans-serif;
     color: var(--text-primary);
+    position: relative;
+    overflow-x: hidden;
     transition: background var(--transition-theme);
+}
+
+/* Warm ambient glowing spheres for a cozy library atmosphere */
+.categories-main::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 12% 18%, var(--dept-glow) 0%, transparent 45%),
+        radial-gradient(circle at 88% 82%, rgba(197, 179, 88, 0.05) 0%, transparent 48%);
+    pointer-events: none;
+    z-index: 0;
+    transition: background var(--transition-theme);
+}
+
+/* Cozy Academic Paper Dot Grid Pattern on whitespace */
+.categories-main::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(rgba(197, 179, 88, 0.06) 1.2px, transparent 1.2px);
+    background-size: 26px 26px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.8;
 }
 
 /* ==========================================================================
