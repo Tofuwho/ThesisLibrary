@@ -243,8 +243,8 @@ STATICFILES_DIRS = [
 # Path where 'collectstatic' will store all files for production
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Optimize static files for production
-if not DEBUG:
+# Optimize static files for production (disabled during tests to avoid manifest entry issues)
+if not DEBUG and 'test' not in sys.argv:
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
