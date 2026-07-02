@@ -60,8 +60,7 @@
               <td style="padding:0.8rem; color:#333;">{{ student.first_name|default:"—" }}</td>
               <td style="padding:0.8rem; color:#333;">{{ student.last_name|default:"—" }}</td>
               <td style="padding:0.8rem; color:#333;">{{ student.email|default:"—" }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ student.created_at|timezone:"Asia/Manila"|date:"M d, Y h:i A"
-                }}</td>
+              <td style="padding:0.8rem; color:#333;">{{ student.created_at|timezone:"Asia/Manila"|date:"M d, Y h:i A" }}</td>
               {% if request.user.profile.role == 'admin' %}
               <td style="padding:0.8rem;">
                 <div class="action-buttons">
