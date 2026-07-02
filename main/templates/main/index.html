@@ -1,8 +1,12 @@
 {% extends 'main/base.html' %}
+{% load static department_filters %}
 {% block title %}Taguig City University | Theses Library Archiver{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/categories.css' %}?v=2.0">
+{% endblock %}
+
 {% block content %}
-{% load static department_filters %}
 
 <section class="hero university-hero">
     <div class="container">
@@ -55,32 +59,11 @@
             <a href="{% url 'categories' %}" class="view-all-link">Browse All <i class="fas fa-arrow-right"></i></a>
         </div>
 
-        <div class="thesis-grid">
+        <div class="cat-thesis-list">
             {% for thesis in recent_theses %}
-            <div class="thesis-card">
-                <div class="thesis-tag">{{ thesis.specialization }}</div>
-                <div class="thesis-cover">
-                    <div class="thesis-cover-placeholder">
-                        <i class="fas fa-book-reader"></i>
-                    </div>
-                </div>
-                <div class="thesis-info">
-                    <h3 class="thesis-title">{{ thesis.title }}</h3>
-                    <p class="thesis-author">By {{ thesis.author }}{% if thesis.co_authors.all %} with {{ thesis.co_authors|format_coauthors }}{% endif %}</p>
-                    <div class="thesis-footer">
-                        <span class="thesis-year"><i class="far fa-calendar-alt"></i> {{ thesis.year }}</span>
-                        {% if thesis.file %}
-                        <a href="{% url 'view_thesis' thesis.id %}" class="thesis-action-link">Read Paper <i
-                                class="fas fa-chevron-right"></i></a>
-                        {% else %}
-                        <a href="{% url 'thesis_detail' thesis.id %}" class="thesis-action-link">View Details <i
-                                class="fas fa-chevron-right"></i></a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+                {% include 'main/partials/thesis_card.html' with thesis=thesis %}
             {% empty %}
-            <div class="empty-state">
+            <div class="empty-state" style="grid-column: 1 / -1; width: 100%;">
                 <i class="fas fa-folder-open"></i>
                 <p>No recent publications found in the archives.</p>
             </div>
