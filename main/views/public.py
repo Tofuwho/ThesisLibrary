@@ -116,7 +116,7 @@ def categories_page(request):
 
     total_results = len(theses)
     page_number = request.GET.get('page') or 1
-    paginator = Paginator(theses, 16)
+    paginator = Paginator(theses, 6)
     page_obj = paginator.get_page(page_number)
 
     context = {
