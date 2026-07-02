@@ -81,6 +81,7 @@ jobs:
       MYSQL_PASSWORD: root
       MYSQL_DATABASE: thesis_library
       MYSQL_PORT: 3306
+      SECRET_KEY: 'ci-insecure-key-for-test-suite-that-is-long-enough-to-be-secure'
 
     steps:
       - name: Checkout code
