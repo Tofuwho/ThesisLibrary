@@ -284,8 +284,14 @@ class Updated_Test(TestCase):
             department=self.department,
             course=self.course
         )
-        # Attach fake file
-        fake_pdf = SimpleUploadedFile("test.pdf", b"Fake PDF content", content_type="application/pdf")
+        # Generate a valid minimal PDF using PyPDF2
+        import io
+        from PyPDF2 import PdfWriter
+        writer = PdfWriter()
+        writer.add_blank_page(width=72, height=72)
+        buf = io.BytesIO()
+        writer.write(buf)
+        fake_pdf = SimpleUploadedFile("test.pdf", buf.getvalue(), content_type="application/pdf")
         self.thesis = Thesis.objects.create(
             title='Library System',
             author='Miguel Villar',
@@ -305,14 +311,14 @@ class Updated_Test(TestCase):
 
     def test_tc020_restricted_view_guest(self):
         """TC020: Restricted thesis preview for guest"""
-        response = self.client.get(reverse('thesis_view_file', args=[self.thesis.id]))
-        self.assertIn(response.status_code, [200, 500])
+        response = self.client.get(reverse('restricted_view_thesis_file', args=[self.thesis.id]))
+        self.assertEqual(response.status_code, 302)
 
     def test_tc021_view_full_thesis_authenticated(self):
         """TC021: Full thesis view for logged user"""
         self.client.login(username='testuser', password='12345')
-        response = self.client.get(reverse('thesis_view_file', args=[self.thesis.id]))
-        self.assertIn(response.status_code, [200, 404])
+        response = self.client.get(reverse('restricted_view_thesis_file', args=[self.thesis.id]))
+        self.assertEqual(response.status_code, 200)
 
     def test_tc022_download_disabled(self):
         """TC022: Download endpoint returns forbidden"""
