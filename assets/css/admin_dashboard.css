@@ -1,56 +1,55 @@
+/* ============================================================
+   ADMIN DASHBOARD — Cozy Premium Academic Theme
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
 :root {
   /* TCU Inspired Palette */
   --primary-red: #800000;
-  --secondary-red: #500000;
-  --bg-light: #f8f9fa;
-  --text-dark: #2d3436;
-  --text-muted: #636e72;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.4);
-  --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  --secondary-red: #5b0000;
+  --bg-light: #f8fafc;
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.02);
   --sidebar-width: 280px;
   --header-height: 70px;
-  --accent-color: #f3f0ff;
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --accent-color: #f8fafc;
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --tcu-gold: #c5b358;
 }
 
 body {
   background-color: var(--bg-light) !important;
   color: var(--text-dark) !important;
-  font-family: 'Poppins', 'Inter', sans-serif !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
   margin: 0;
   overflow-x: hidden;
 }
 
 /* ============================================================
-   ADMIN PAGE – neutralise base.html defaults so the sidebar
-   + main area fill the full viewport below the fixed header.
+   ADMIN PAGE LAYOUT (base.html modifications)
    ============================================================ */
 body.admin-page {
   overflow: hidden;
 }
 
-/* The <main> wrapper inserted by base.html normally has
-   margin-top:70px from style.css. We keep that top margin
-   but remove any extra padding, and make it fill the rest. */
-body.admin-page>main {
+body.admin-page .main-content {
   margin-top: var(--header-height) !important;
   padding: 0 !important;
-  height: calc(100vh - var(--header-height));
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  height: calc(100vh - var(--header-height)) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-/* Hide the site footer on admin pages */
 body.admin-page .main-footer,
 body.admin-page footer {
   display: none !important;
 }
 
-/* ============================================================
-   ADMIN LAYOUT  (flex row: sidebar | main)
-   ============================================================ */
 .admin-layout {
   display: flex !important;
   height: 100% !important;
@@ -60,42 +59,54 @@ body.admin-page footer {
   overflow: hidden;
 }
 
-/* --- SIDEBAR --- */
+/* ============================================================
+   ADMIN SIDEBAR
+   ============================================================ */
 .admin-sidebar {
   width: var(--sidebar-width) !important;
   background: #ffffff !important;
   border-right: 1px solid rgba(0, 0, 0, 0.05) !important;
   display: flex !important;
   flex-direction: column !important;
-  /* Fixed so it doesn't participate in the scroll of admin-main */
   position: fixed !important;
   top: var(--header-height) !important;
   left: 0 !important;
   bottom: 0 !important;
   height: calc(100vh - var(--header-height)) !important;
-  padding: 1.5rem 0 !important;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.03) !important;
+  padding: 1.5rem 0 0 !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02) !important;
   z-index: 900 !important;
   overflow-y: auto !important;
 }
 
+.admin-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+}
+
 .sidebar-header {
   padding: 0 1.5rem 1.5rem !important;
-  margin-bottom: 1rem !important;
-  border-bottom: 1px solid #f0f0f0 !important;
+  margin-bottom: 0.5rem !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
 }
 
 .sidebar-header h2 {
-  font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  color: var(--secondary-red) !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+  color: var(--primary-red) !important;
   letter-spacing: -0.5px !important;
   margin: 0 !important;
+  text-transform: uppercase;
 }
 
 .section-title {
-  padding: 1.5rem 1.5rem 0.5rem !important;
-  font-size: 0.7rem !important;
+  padding: 1.2rem 1.5rem 0.4rem !important;
+  font-size: 0.68rem !important;
   text-transform: uppercase !important;
   color: var(--text-muted) !important;
   font-weight: 800 !important;
@@ -112,26 +123,27 @@ body.admin-page footer {
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
-  color: #555 !important;
+  color: #475569 !important;
   text-decoration: none !important;
-  padding: 0.8rem 1.5rem !important;
-  margin: 0.2rem 1rem !important;
-  border-radius: 10px !important;
+  padding: 0.75rem 1.25rem !important;
+  margin: 0.15rem 0.75rem !important;
+  border-radius: 12px !important;
   transition: var(--transition) !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
 }
 
 .sidebar-nav a i {
-  font-size: 1.1rem !important;
-  width: 24px !important;
+  font-size: 1rem !important;
+  width: 20px !important;
   text-align: center !important;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .sidebar-nav a:hover {
   background: rgba(128, 0, 0, 0.05) !important;
   color: var(--primary-red) !important;
-  transform: translateX(5px) !important;
+  transform: translateX(4px) !important;
 }
 
 .sidebar-nav a:hover i {
@@ -139,18 +151,19 @@ body.admin-page footer {
 }
 
 .sidebar-nav a.active {
-  background: var(--primary-red) !important;
+  background: linear-gradient(135deg, #a31d23 0%, #7b0d11 100%) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(163, 29, 35, 0.18) !important;
 }
 
 .sidebar-nav a.active i {
   opacity: 1;
 }
 
-/* --- MAIN CONTENT AREA --- */
+/* ============================================================
+   MAIN CONTENT AREA (Cozy Layout Overlay)
+   ============================================================ */
 .admin-main {
-  /* Push content to the right of the fixed sidebar */
   margin-left: var(--sidebar-width) !important;
   flex: 1 !important;
   padding: 2.5rem !important;
@@ -159,169 +172,402 @@ body.admin-page footer {
   max-width: calc(100vw - var(--sidebar-width)) !important;
   box-sizing: border-box !important;
   background: var(--bg-light) !important;
+  position: relative;
+}
+
+/* Cozy dot grid in admin workspace */
+.admin-main::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  margin-left: var(--sidebar-width);
+  background-image: radial-gradient(rgba(197, 179, 88, 0.06) 1.2px, transparent 1.2px);
+  background-size: 26px 26px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.8;
+}
+
+/* Cozy ambient glows on admin panel */
+.admin-main::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  margin-left: var(--sidebar-width);
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(128, 0, 0, 0.03) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(197, 179, 88, 0.04) 0%, transparent 48%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Force inner layouts to stack above the glows */
+.admin-main > * {
+  position: relative;
+  z-index: 1;
 }
 
 .dashboard-header {
-  margin-bottom: 2.5rem !important;
+  margin-bottom: 2rem !important;
   text-align: left !important;
 }
 
 .dashboard-header h1 {
-  font-size: 2.2rem !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 2rem !important;
   font-weight: 800 !important;
   color: var(--text-dark) !important;
-  margin: 0 0 0.5rem 0 !important;
-  letter-spacing: -1px !important;
+  margin: 0 0 0.4rem 0 !important;
+  letter-spacing: -0.5px !important;
 }
 
 .dashboard-header p {
   color: var(--text-muted) !important;
-  font-size: 1.1rem !important;
+  font-size: 1rem !important;
+  margin: 0;
 }
 
-/* --- STAT CARDS --- */
+/* ============================================================
+   BENTO STAT CARDS
+   ============================================================ */
 .stats-grid {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-  gap: 1.5rem !important;
-  margin-bottom: 3rem !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  gap: 1.25rem !important;
+  margin-bottom: 2rem !important;
 }
 
 .stat-card {
   background: var(--glass-bg) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid var(--glass-border) !important;
-  border-radius: 20px !important;
-  padding: 2rem 1.5rem !important;
-  text-align: center !important;
+  border-radius: 18px !important;
+  padding: 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  text-align: left !important;
   transition: var(--transition) !important;
   box-shadow: var(--card-shadow) !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-.stat-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: var(--primary-red);
-  opacity: 0;
-  transition: var(--transition);
 }
 
 .stat-card:hover {
-  transform: translateY(-8px) scale(1.02) !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1) !important;
-}
-
-.stat-card:hover::before {
-  opacity: 1;
+  transform: translateY(-5px) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(163, 29, 35, 0.15) !important;
 }
 
 .stat-icon {
-  font-size: 2.5rem !important;
-  margin-bottom: 1rem !important;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 12px !important;
+  font-size: 1.4rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  background: rgba(163, 29, 35, 0.08) !important;
+  color: #a31d23 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Stagger icon colors for modern look */
+.stats-grid .stat-card:nth-child(2) .stat-icon {
+  background: rgba(59, 130, 246, 0.08) !important;
+  color: #3b82f6 !important;
+}
+.stats-grid .stat-card:nth-child(3) .stat-icon {
+  background: rgba(245, 158, 11, 0.08) !important;
+  color: #f59e0b !important;
+}
+.stats-grid .stat-card:nth-child(4) .stat-icon {
+  background: rgba(16, 185, 129, 0.08) !important;
+  color: #10b981 !important;
+}
+.stats-grid .stat-card:nth-child(5) .stat-icon {
+  background: rgba(139, 92, 246, 0.08) !important;
+  color: #8b5cf6 !important;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .stat-info h2 {
-  font-size: 2.2rem !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1.8rem !important;
   font-weight: 800 !important;
   color: var(--text-dark) !important;
   margin: 0 !important;
-  letter-spacing: -1px !important;
+  letter-spacing: -0.5px !important;
+  line-height: 1.1;
 }
 
 .stat-info p {
   color: var(--text-muted) !important;
-  font-size: 0.9rem !important;
-  font-weight: 600 !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
-  margin-top: 0.5rem !important;
+  margin: 0 !important;
 }
 
-/* --- DASHBOARD SECTIONS & CHARTS --- */
+/* ============================================================
+   BENTO SECTIONS & CHARTS
+   ============================================================ */
 .dashboard-section {
   background: #ffffff !important;
-  border-radius: 24px !important;
+  border-radius: 18px !important;
   padding: 2rem !important;
   box-shadow: var(--card-shadow) !important;
-  border: 1px solid rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
   margin-bottom: 2rem !important;
 }
 
 .dashboard-section h2 {
-  font-size: 1.25rem !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1.2rem !important;
   font-weight: 700 !important;
   color: var(--text-dark) !important;
-  margin-bottom: 0.5rem !important;
+  margin: 0 0 0.25rem 0 !important;
 }
 
 .dashboard-section p {
   margin-bottom: 1.5rem !important;
+  color: var(--text-muted) !important;
 }
 
 canvas {
-  margin-top: 1rem !important;
+  margin-top: 0.5rem !important;
 }
 
-/* --- RECENT ACTIVITY LIST --- */
+/* ============================================================
+   RECENT ACTIVITY LIST
+   ============================================================ */
 #recent-activity {
   background: transparent !important;
   border: none !important;
   max-height: 400px !important;
   overflow-y: auto !important;
-  padding-right: 10px !important;
+  padding-right: 6px !important;
+}
+
+#recent-activity::-webkit-scrollbar {
+  width: 4px;
+}
+
+#recent-activity::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
 }
 
 .activity-item {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  padding: 1rem !important;
-  margin-bottom: 0.8rem !important;
-  background: #fcfcfc !important;
+  padding: 0.9rem 1.1rem !important;
+  margin-bottom: 0.75rem !important;
+  background: #f8fafc !important;
   border-radius: 12px !important;
-  border: 1px solid #f0f0f0 !important;
+  border: 1px solid rgba(0, 0, 0, 0.03) !important;
   transition: var(--transition) !important;
 }
 
 .activity-item:hover {
-  background: #f8f9fa !important;
-  border-color: var(--primary-red) !important;
-  transform: translateX(5px) !important;
+  background: #ffffff !important;
+  border-color: rgba(163, 29, 35, 0.15) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
+  transform: translateX(4px) !important;
 }
 
 .status-badge {
-  padding: 4px 12px !important;
-  border-radius: 20px !important;
-  font-size: 0.75rem !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 0.7rem !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
+  letter-spacing: 0.5px;
 }
 
 .status-approved {
-  background: #e6ffed !important;
-  color: #1e7e34 !important;
+  background: rgba(16, 185, 129, 0.08) !important;
+  color: #059669 !important;
 }
 
 .status-pending {
-  background: #fff8e6 !important;
-  color: #b08d00 !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+  color: #d97706 !important;
 }
 
 .status-rejected {
-  background: #ffe6e6 !important;
-  color: #800000 !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #dc2626 !important;
 }
 
 /* ============================================================
-   RESPONSIVE
+   ADMIN TABLES (Minimalist Bento Style)
+   ============================================================ */
+.admin-table-container {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: var(--card-shadow) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  overflow: hidden !important;
+  margin-top: 1.5rem !important;
+  position: relative;
+  z-index: 1;
+}
+
+.admin-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  text-align: left !important;
+  font-size: 0.85rem !important;
+}
+
+.admin-table th {
+  background: #f8fafc !important;
+  color: var(--text-muted) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.5px !important;
+  padding: 1rem 1.25rem !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.admin-table td {
+  padding: 1rem 1.25rem !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
+  color: var(--text-dark) !important;
+  vertical-align: middle !important;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none !important;
+}
+
+.admin-table tbody tr {
+  transition: background 0.2s ease !important;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(163, 29, 35, 0.015) !important;
+}
+
+/* ============================================================
+   FORMS, SEARCH & INPUTS
+   ============================================================ */
+.search-box-container {
+  margin-bottom: 1.5rem !important;
+  position: relative !important;
+}
+
+.admin-search-input {
+  width: 100% !important;
+  max-width: 380px !important;
+  padding: 10px 14px 10px 38px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  font-size: 0.85rem !important;
+  outline: none !important;
+  transition: var(--transition) !important;
+}
+
+.admin-search-input:focus {
+  border-color: var(--primary-red) !important;
+  box-shadow: 0 0 0 3px rgba(163, 29, 35, 0.08) !important;
+}
+
+.search-box-container i {
+  position: absolute !important;
+  left: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.88rem !important;
+}
+
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  font-size: 0.85rem !important;
+  color: var(--text-dark) !important;
+  outline: none !important;
+  box-sizing: border-box;
+  transition: var(--transition) !important;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary-red) !important;
+  box-shadow: 0 0 0 3px rgba(163, 29, 35, 0.08) !important;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn-admin-primary {
+  background: linear-gradient(135deg, #a31d23 0%, #7b0d11 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 10px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 12px rgba(163, 29, 35, 0.15) !important;
+  transition: var(--transition) !important;
+  text-decoration: none !important;
+}
+
+.btn-admin-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(163, 29, 35, 0.25) !important;
+}
+
+.btn-admin-secondary {
+  background: #ffffff !important;
+  color: var(--text-dark) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  padding: 9px 18px !important;
+  border-radius: 10px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: var(--transition) !important;
+  text-decoration: none !important;
+}
+
+.btn-admin-secondary:hover {
+  background: #f8fafc !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
    ============================================================ */
 @media (max-width: 1024px) {
   :root {
@@ -344,6 +590,11 @@ canvas {
   .sidebar-nav a i {
     width: auto !important;
   }
+
+  .admin-main::after,
+  .admin-main::before {
+    margin-left: var(--sidebar-width);
+  }
 }
 
 @media (max-width: 768px) {
@@ -351,7 +602,7 @@ canvas {
     overflow: auto !important;
   }
 
-  body.admin-page>main {
+  body.admin-page .main-content {
     height: auto !important;
     overflow: visible !important;
   }
@@ -377,8 +628,20 @@ canvas {
   .admin-main {
     margin-left: 0 !important;
     max-width: 100% !important;
-    padding: 1.25rem !important;
+    padding: 1.5rem !important;
     height: auto !important;
     overflow-y: visible !important;
   }
+
+  .admin-main::after,
+  .admin-main::before {
+    margin-left: 0 !important;
+  }
+}
+
+.highlight {
+  background-color: #fef08a !important; /* Soft yellow highlight */
+  color: #854d0e !important;
+  border-radius: 4px !important;
+  padding: 0 4px !important;
 }

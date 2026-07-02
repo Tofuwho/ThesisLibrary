@@ -4,131 +4,7 @@
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
-<style>
-  .search-bar {
-    flex: 1;
-    display: flex;
-  }
-
-  .search-input {
-    background: #ffffff;
-    color: #333;
-    border: 1px solid #ced4da;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    width: 100%;
-    transition: 0.2s;
-  }
-
-  .search-input:focus {
-    outline: none;
-    border-color: #0277bd;
-    box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  th,
-  td {
-    padding: 0.8rem;
-    vertical-align: middle;
-  }
-
-  th {
-    cursor: pointer;
-    transition: color 0.2s;
-    text-align: left;
-    color: #555;
-  }
-
-  th.sort-asc::after {
-    content: " ▲";
-    color: #0277bd;
-  }
-
-  th.sort-desc::after {
-    content: " ▼";
-    color: #0277bd;
-  }
-
-  th:hover {
-    color: #0277bd;
-  }
-
-  tbody tr:hover {
-    background-color: #f8f9fa;
-    transition: background 0.2s;
-  }
-
-  td.title {
-    color: #0277bd;
-    font-weight: 600;
-  }
-
-  .highlight {
-    background-color: #e3f2fd;
-    color: #000;
-    border-radius: 3px;
-    padding: 0 3px;
-  }
-
-  .pagination {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .pagination button {
-    background: #ffffff;
-    border: 1px solid #ced4da;
-    color: #333;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .pagination button:hover {
-    background: #e3f2fd;
-    color: #0d47a1;
-  }
-
-  .pagination button.active {
-    background: #0277bd;
-    color: #fff;
-  }
-
-  .top-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .archive-btn {
-    background: #0277bd;
-    color: #fff;
-    padding: 0.6rem 1rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: 0.2s;
-  }
-
-  .archive-btn:hover {
-    background: #01579b;
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.0">
 {% endblock %}
 
 {% block content %}
@@ -140,23 +16,25 @@
       <p>All theses that have been approved and added to the archive.</p>
     </div>
 
-    <div class="dashboard-section" style="margin-top:2rem;">
-      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
-
-        <div class="top-controls">
-          <div class="search-bar">
-            <button onclick="exportTableToExcel('thesisTable', 'Approved_Theses')" class="archive-btn"
-              style="background: #2e7d32;">
-              📊 Export
+    <div class="admin-table-container">
+      <div style="padding: 1.5rem 1.5rem 0;">
+        <div class="top-controls" style="margin-bottom: 0;">
+          <div style="display: flex; gap: 10px; align-items: center; flex: 1;">
+            <div class="search-box-container" style="flex: 1; max-width: 320px; margin-bottom: 0 !important;">
+              <i class="fas fa-search"></i>
+              <input type="text" id="thesisSearch" class="admin-search-input" placeholder="Search approved library...">
+            </div>
+            <button onclick="exportTableToExcel('thesisTable', 'Approved_Theses')" class="btn-admin-secondary">
+              <i class="fas fa-file-excel" style="color: #2e7d32;"></i> Export
             </button>
-            <input type="text" id="thesisSearch" class="search-input" placeholder="Search theses...">
           </div>
 
-          <button id="archiveBtn" class="archive-btn">
-            Archive Old Theses (10+ Years)
+          <button id="archiveBtn" class="btn-admin-primary">
+            <i class="fas fa-archive"></i> Archive Old Theses (10+ Years)
           </button>
         </div>
-        <table id="thesisTable">
+      </div>
+      <table id="thesisTable" class="admin-table">
           <thead>
             <tr style="background-color:#f8f9fa;">
               <th>LC Classification</th>
@@ -199,7 +77,6 @@
 
         <div class="pagination" id="pagination"></div>
       </div>
-    </div>
   </div>
 </div>
 
