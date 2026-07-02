@@ -112,10 +112,8 @@ jobs:
       - name: Run migrations
         run: python manage.py migrate
 
-      - name: Prepare static files
-        run: |
-          mkdir -p staticfiles
-          python manage.py collectstatic --noinput
+      - name: Create staticfiles directory
+        run: mkdir -p staticfiles
 
       - name: Run tests
         run: |
