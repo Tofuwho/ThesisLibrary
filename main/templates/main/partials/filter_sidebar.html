@@ -39,7 +39,7 @@
                     <label>
                         <input type="checkbox" name="category" value="{{ cat_item.name }}"
                             {% if cat_item.name in request.GET.category or cat_item.name in request.GET.descriptor %}checked{% endif %}>
-                        <span>{{ cat_item.name }}</span>
+                        <span>{% if cat_item.name == 'Graduate School' %}Graduate{% else %}{{ cat_item.name }}{% endif %}</span>
                         <span class="count">{{ cat_item.count|default:0 }}</span>
                     </label>
                 </li>
@@ -69,8 +69,5 @@
         <button type="submit" class="apply-filters-button">
             <i class="fas fa-filter"></i> Apply Filters
         </button>
-        <a href="#" onclick="clearAllFilters(); return false;" class="clear-filters-button">
-            <i class="fas fa-times"></i> Clear All
-        </a>
     </form>
 </aside>

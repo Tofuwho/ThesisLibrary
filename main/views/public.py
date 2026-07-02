@@ -86,7 +86,7 @@ def categories_page(request):
 
     # Retrieve unique filtering options and active counts
     years = Thesis.objects.filter(is_archived=False).values('year').annotate(count=Count('id')).order_by('-year')
-    categories = Category.objects.filter(thesis__is_archived=False).distinct().annotate(count=Count('thesis')).order_by('name')
+    categories = Category.objects.all().annotate(count=Count('thesis', filter=Q(thesis__is_archived=False))).order_by('name')
     authors = Thesis.objects.filter(is_archived=False).values('author').annotate(count=Count('id')).order_by('author')
     types = Thesis.objects.filter(is_archived=False).exclude(thesis_type__isnull=True).exclude(thesis_type__exact='')\
                           .values('thesis_type').annotate(count=Count('id')).order_by('thesis_type')
