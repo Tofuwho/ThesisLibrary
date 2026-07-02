@@ -32,19 +32,64 @@ class AuthTestCase(TestCase):
 
     def test_tc002_signup_valid(self):
         """TC002: Validate signup using valid credentials"""
+        from main.models import Student, VerificationCode
+        
+        # Create department and course first
+        cat = Category.objects.create(name="Undergraduate")
+        dept = Department.objects.create(name="CICT", category=cat)
+        course = Course.objects.create(name="BSCS", department=dept)
+        
+        # Create student in records
+        Student.objects.create(
+            student_id="Student02",
+            first_name="Student",
+            last_name="Two"
+        )
+
+        # Step 1: Initiate signup (identification)
         response = self.client.post(reverse("signup"), {
             "username": "Student02",
-            "email": "student02@gmail.com",
-            "password1": "SecurePass123!",
-            "password2": "SecurePass123!",
+            "email": "student02@gmail.com"
         })
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(username="Student02").exists())
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content.decode(), {
+            "success": True,
+            "requires_verification": True,
+            "id": "Student02"
+        })
+
+        # Check that inactive user was created
+        self.assertTrue(User.objects.filter(username="Student02", is_active=False).exists())
+        user = User.objects.get(username="Student02")
+
+        # Step 2: Retrieve the generated verification code
+        v_code = VerificationCode.objects.get(user=user).code
+
+        # Step 3: Activate the account with password
+        response = self.client.post(reverse("activate_account"), {
+            "username": "Student02",
+            "code": v_code,
+            "password": "SecurePass123!"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content.decode(), {
+            "success": True
+        })
+
+        # Verify that the user is now active and the profile is updated
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+        self.assertFalse(user.profile.is_premade)
 
 
 class SearchFilterTestCase(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user(
+            username="student_search",
+            password="password_search"
+        )
+        self.client.login(username="student_search", password="password_search")
         self.cat = Category.objects.create(name="Undergraduate")
         self.dept = Department.objects.create(name="CICT", category=self.cat)
         self.course = Course.objects.create(name="BSCS", department=self.dept)
@@ -254,6 +299,7 @@ class Updated_Test(TestCase):
 
     def test_tc019_deep_search_mode(self):
         """TC019: Deep search mode"""
+        self.client.login(username='testuser', password='12345')
         response = self.client.get(reverse('categories'), {'search': 'Library', 'search_mode': 'deep'})
         self.assertEqual(response.status_code, 200)
 
