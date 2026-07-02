@@ -645,3 +645,172 @@ textarea:focus {
   border-radius: 4px !important;
   padding: 0 4px !important;
 }
+
+/* --- ROLE NAVIGATION TABS --- */
+.role-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 0px;
+  position: relative;
+}
+
+.role-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px 12px 0 0;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  border-bottom: none;
+  transition: var(--transition);
+  position: relative;
+  top: 1px;
+}
+
+.role-tab:hover {
+  background: rgba(163, 29, 35, 0.03);
+  color: var(--primary-red);
+}
+
+.role-tab.active {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.05) rgba(0, 0, 0, 0.05) transparent;
+  color: var(--primary-red);
+}
+
+.role-tab .tab-count {
+  font-size: 0.68rem;
+  font-weight: 800;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-muted);
+  padding: 1px 6px;
+  border-radius: 6px;
+  margin-left: 4px;
+}
+
+.role-tab.active .tab-count {
+  background: rgba(163, 29, 35, 0.08);
+  color: var(--primary-red);
+}
+
+.role-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-admin { background: #ef4444; }
+.dot-librarian { background: #3b82f6; }
+.dot-professor { background: #8b5cf6; }
+.dot-student { background: #10b981; }
+
+/* --- ADMIN DROPDOWNS --- */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  border-radius: 12px !important;
+  z-index: 1001;
+  min-width: 220px;
+  padding: 8px 0 !important;
+  margin-top: 5px;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 10px 20px !important;
+  text-decoration: none !important;
+  color: var(--text-dark) !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  transition: var(--transition) !important;
+}
+
+.dropdown-content a:hover {
+  background: rgba(163, 29, 35, 0.05) !important;
+  color: var(--primary-red) !important;
+}
+
+/* --- TABLE ROW AVATARS & DETAILS --- */
+.td-username {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-weight: 700 !important;
+  color: var(--text-dark) !important;
+}
+
+.user-avatar {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 800 !important;
+  font-size: 0.8rem !important;
+  color: #ffffff !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.avatar-admin { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important; }
+.avatar-librarian { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important; }
+.avatar-professor { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important; }
+.avatar-student { background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important; }
+
+/* --- TABLE ACTIONS --- */
+.btn-edit {
+  background: rgba(59, 130, 246, 0.08) !important;
+  color: #3b82f6 !important;
+  border: 1px solid rgba(59, 130, 246, 0.15) !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  transition: var(--transition) !important;
+}
+
+.btn-edit:hover {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25) !important;
+}
+
+.btn-delete {
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #dc2626 !important;
+  border: 1px solid rgba(239, 68, 68, 0.15) !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  transition: var(--transition) !important;
+}
+
+.btn-delete:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25) !important;
+}

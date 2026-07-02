@@ -850,3 +850,7 @@ body .department-bookmarks .dept-bookmark.active {
     opacity: 0.6;
     pointer-events: none;
 }
+
+.hidden-filter {
+    display: none !important;
+}

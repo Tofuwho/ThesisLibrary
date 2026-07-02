@@ -48,8 +48,7 @@
         </div>
 
         <!-- Department Courses Filter (Dynamic via selected department) -->
-        <div class="filter-section dynamic-courses-section"
-            style="{% if not selected_department or selected_department == 'all' %}display: none;{% endif %}">
+        <div class="filter-section dynamic-courses-section {% if not selected_department or selected_department == 'all' %}hidden-filter{% endif %}">
             <h3 onclick="this.parentElement.classList.toggle('collapsed')">
                 Program Courses <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto; font-size: 0.65rem;"></i>
             </h3>

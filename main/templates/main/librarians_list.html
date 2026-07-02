@@ -5,21 +5,7 @@
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
-<style>
-  .search-bar { margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-  .button-group { display: flex; gap: 10px; }
-  .search-input { background: #ffffff; color: #333; border: 1px solid #ced4da; padding: 0.5rem 1rem; border-radius: 8px; width: 250px; transition: 0.2s; }
-  .search-input:focus { outline: none; border-color: #0277bd; box-shadow: 0 0 5px rgba(2, 119, 189, 0.3); }
-  .add-btn { background: #0277bd; color: #fff; padding: 0.5rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; transition: 0.2s; cursor: pointer; border: none; }
-  .add-btn:hover { background: #01579b; }
-  th { cursor: pointer; color: #555; }
-  #librarianTable tbody tr:hover { background-color: #f8f9fa; }
-  .action-buttons { display: flex; gap: 8px; }
-  .edit-btn, .delete-btn { padding: 0.4rem 0.8rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem; color: #fff; }
-  .edit-btn { background-color: #42a5f5; }
-  .delete-btn { background-color: #e53935; }
-</style>
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.0">
 {% endblock %}
 
 {% block content %}
@@ -31,23 +17,29 @@
       <p>Manage librarian IDs for account registration.</p>
     </div>
 
-    <div class="dashboard-section" style="margin-top: 2rem;">
-      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
-        <div class="search-bar">
-          <input type="text" id="libSearch" class="search-input" placeholder="Search librarians...">
-          <div class="button-group">
-            <button onclick="exportTableToExcel('librarianTable', 'Librarians_List')" class="add-btn" style="background: #2e7d32; cursor: pointer;">
-              📊 Export Excel
+    <div class="admin-table-container">
+      <div style="padding: 1.5rem 1.5rem 0;">
+        <div class="top-controls" style="margin-bottom: 0;">
+          <div style="display: flex; gap: 10px; align-items: center; flex: 1;">
+            <div class="search-box-container" style="flex: 1; max-width: 320px; margin-bottom: 0 !important;">
+              <i class="fas fa-search"></i>
+              <input type="text" id="libSearch" class="admin-search-input" placeholder="Search librarians...">
+            </div>
+            <button onclick="exportTableToExcel('librarianTable', 'Librarians_List')" class="btn-admin-secondary">
+              <i class="fas fa-file-excel" style="color: #2e7d32;"></i> Export
             </button>
+          </div>
+          <div class="button-group">
             {% if request.user.profile.role == 'admin' %}
-            <label for="importFile" class="add-btn" style="cursor:pointer;">⬆ Import</label>
+            <label for="importFile" class="btn-admin-secondary" style="cursor:pointer;"><i class="fas fa-file-import"></i> Bulk Import</label>
             <input type="file" id="importFile" accept=".csv, .xls, .xlsx" style="display:none;">
-            <a href="{% url 'add_librarian' %}" class="add-btn">+ Add Librarian</a>
+            <a href="{% url 'add_librarian' %}" class="btn-admin-primary"><i class="fas fa-plus"></i> Add Librarian</a>
             {% endif %}
           </div>
         </div>
+      </div>
 
-        <table id="librarianTable" style="width:100%; border-collapse:collapse;">
+      <table id="librarianTable" class="admin-table">
           <thead>
             <tr style="background-color:#f8f9fa;">
               <th style="padding:0.8rem; text-align:left;">Librarian ID</th>
@@ -69,8 +61,8 @@
               {% if request.user.profile.role == 'admin' %}
               <td style="padding:0.8rem;">
                 <div class="action-buttons">
-                  <a href="{% url 'edit_librarian' lib.librarian_id %}" class="edit-btn">Edit</a>
-                  <a href="{% url 'delete_librarian' lib.librarian_id %}" class="delete-btn" onclick="return confirm('Delete?');">Delete</a>
+                  <a href="{% url 'edit_librarian' lib.librarian_id %}" class="btn-edit"><i class="fas fa-pen"></i> Edit</a>
+                  <a href="{% url 'delete_librarian' lib.librarian_id %}" class="btn-delete" onclick="return confirm('Delete?');"><i class="fas fa-trash"></i> Delete</a>
                 </div>
               </td>
               {% endif %}
@@ -81,7 +73,6 @@
           </tbody>
         </table>
       </div>
-    </div>
   </div>
 </div>
 

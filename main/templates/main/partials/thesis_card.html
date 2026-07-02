@@ -1,5 +1,5 @@
 {% load department_filters %}
-<div class="cat-thesis-item" data-dept="{{ thesis.department.id }}" onclick="window.location.href='{% url 'thesis_detail' thesis.id %}'" style="cursor: pointer;">
+<div class="cat-thesis-item" data-dept="{{ thesis.department.id }}" data-url="{% url 'thesis_detail' thesis.id %}" onclick="window.location.href=this.dataset.url;" style="cursor: pointer;">
     <!-- Left Column: Department Panel (30%) -->
     <div class="cat-thesis-item-cover dept-{{ thesis.department.name|dept_theme_code }}">
         <div class="cover-spine"></div>
