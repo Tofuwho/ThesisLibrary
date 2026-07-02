@@ -23,6 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+# SECURITY WARNING: don't run with debug turned on in production!
+# Default to False for production safety. Set DJANGO_DEBUG=True for local development.
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY and not DEBUG:
@@ -30,10 +34,6 @@ if not SECRET_KEY and not DEBUG:
     raise ImproperlyConfigured("The SECRET_KEY environment variable is not set and is required in production.")
 elif not SECRET_KEY:
     SECRET_KEY = 'django-insecure-dev-fallback-key-replace-in-production'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# Default to False for production safety. Set DJANGO_DEBUG=True for local development.
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 # Trusted Origins for Local LAN/Offline environments
 CSRF_TRUSTED_ORIGINS = [
