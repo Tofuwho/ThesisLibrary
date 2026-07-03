@@ -980,6 +980,35 @@ class LibrarianPermissionsTestCase(TestCase):
         # Verify the student user is NOT deleted
         self.assertTrue(User.objects.filter(id=self.student_user.id).exists())
 
+    def test_librarian_import_allowed(self):
+        """Verify that a Librarian can perform bulk imports of student records."""
+        self.client.login(username="Librarian01", password="libpassword")
+        
+        import json
+        payload = {
+            "students": [
+                {
+                    "student_id": "StudentImport01",
+                    "first_name": "Imported",
+                    "last_name": "Student",
+                    "email": "imported@tcu.edu.ph"
+                }
+            ]
+        }
+        response = self.client.post(
+            reverse("import_students"),
+            data=json.dumps(payload),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["count"], 1)
+        
+        # Verify the student and user record were created
+        from main.models import Student
+        self.assertTrue(Student.objects.filter(student_id="StudentImport01").exists())
+        self.assertTrue(User.objects.filter(username="StudentImport01").exists())
+
+
 
 
 

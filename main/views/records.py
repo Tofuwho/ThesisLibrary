@@ -23,7 +23,7 @@ def students_list(request):
     return render(request, 'main/students_list.html', {'students': students})
 
 @login_required
-@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])
 def import_students(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid"}, status=400)
@@ -162,7 +162,7 @@ def edit_professor(request, professor_id):
     return render(request, 'main/edit_professor.html', {'professor': professor})
 
 @login_required
-@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])
 def import_professors(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid"}, status=400)
@@ -249,7 +249,7 @@ def delete_librarian(request, librarian_id):
     return redirect('librarians_list')
 
 @login_required
-@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])
 def import_librarians(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid"}, status=400)
@@ -334,7 +334,7 @@ def delete_admin_staff(request, admin_id):
     return redirect('admin_staff_list')
 
 @login_required
-@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])
 def import_admin_staff(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid"}, status=400)

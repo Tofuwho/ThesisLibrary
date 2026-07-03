@@ -32,10 +32,12 @@
             </button>
           </div>
           <div class="button-group">
-            {% if request.user.profile.role == 'admin' %}
+            {% if request.user.profile.role == 'admin' or request.user.profile.role == 'librarian' %}
             <button onclick="openImportModal()" class="btn-admin-secondary">
               <i class="fas fa-file-import"></i> Bulk Import
             </button>
+            {% endif %}
+            {% if request.user.profile.role == 'admin' %}
             <a href="{% url 'add_professor' %}" class="btn-admin-primary"><i class="fas fa-plus"></i> Add Professor</a>
             {% endif %}
           </div>

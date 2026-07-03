@@ -16,9 +16,10 @@
         <h1>👥 User Management</h1>
         <p>Manage registered users, organized by their assigned roles.</p>
       </div>
-      {% if request.user.profile.role == 'admin' %}
+      {% if request.user.profile.role == 'admin' or request.user.profile.role == 'librarian' %}
       <div class="header-actions" style="display: flex; gap: 10px;">
         <!-- Add User Dropdown -->
+        {% if request.user.profile.role == 'admin' %}
         <div class="dropdown" style="position: relative; display: inline-block;">
           <button class="btn-admin-primary">
             <i class="fas fa-plus"></i> Add Account
@@ -30,6 +31,7 @@
             <a href="{% url 'add_admin_staff' %}">+ Add Administrator</a>
           </div>
         </div>
+        {% endif %}
         
         <!-- Import Dropdown -->
         <div class="dropdown" style="position: relative; display: inline-block;">
