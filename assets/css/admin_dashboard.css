@@ -1012,9 +1012,27 @@ textarea:focus {
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
-  height: fit-content;
   position: sticky;
   top: 20px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.org-form-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.org-form-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.org-form-card::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+}
+
+.org-form-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(163, 29, 35, 0.2);
 }
 
 .org-form-card h3 {
@@ -1363,4 +1381,33 @@ textarea:focus {
 
 .org-modal-btn-cancel:hover {
   background: #e9ecef;
+}
+
+/* Dynamic Fit for Smaller Screen Heights / Devices */
+@media (max-height: 850px) {
+  .org-form-card {
+    top: 10px;
+    max-height: calc(100vh - 170px);
+    padding: 1.15rem;
+  }
+  .org-form-card h3 {
+    margin-bottom: 0.85rem;
+    font-size: 1.1rem;
+  }
+  .org-form-group {
+    margin-bottom: 0.85rem;
+  }
+  .org-form-label {
+    margin-bottom: 4px;
+    font-size: 0.7rem;
+  }
+  .org-form-input,
+  .org-form-select {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
+  .org-form-btn {
+    padding: 9px;
+    font-size: 0.82rem;
+  }
 }
