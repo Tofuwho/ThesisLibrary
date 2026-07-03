@@ -570,8 +570,38 @@
       }
     ];
     const worksheet = XLSX.utils.json_to_sheet(data);
+    
+    // Set proper column widths to improve visual structure and readability
+    worksheet['!cols'] = [
+      { wch: 18 }, // Student ID
+      { wch: 18 }, // First Name
+      { wch: 18 }, // Last Name
+      { wch: 30 }  // Email
+    ];
+
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Students Template");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Import Template");
+
+    // Add visual Instructions sheet for helper documentation
+    const instructions = [
+      ["STUDENTS BULK IMPORT TEMPLATE GUIDELINES"],
+      [""],
+      ["1. Use the 'Import Template' sheet tab to enter your student accounts."],
+      ["2. DO NOT change or rename the column header names in Row 1."],
+      ["3. Field requirements:"],
+      ["   - Student ID: Must be unique. Recommended format: YYYY-XXXX (e.g. 2026-0001)."],
+      ["   - First Name: Required field. Cannot be empty."],
+      ["   - Last Name: Required field. Cannot be empty."],
+      ["   - Email: Required field. Must be a valid and unique email address."],
+      ["4. Keep the 'Import Template' as the first tab in the workbook when saving."],
+      ["5. Supported file formats: Excel (.xlsx, .xls) and CSV (.csv)."],
+      [""],
+      ["For help, please contact the University Library system administrator."]
+    ];
+    const instWorksheet = XLSX.utils.aoa_to_sheet(instructions);
+    instWorksheet['!cols'] = [{ wch: 80 }];
+    XLSX.utils.book_append_sheet(workbook, instWorksheet, "Instructions & Guidelines");
+
     XLSX.writeFile(workbook, "Students_Import_Template.xlsx");
   }
 </script>
