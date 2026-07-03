@@ -183,15 +183,80 @@ ul {
 .hero-section {
   height: 85vh;
   min-height: 600px;
-  background: linear-gradient(135deg, rgba(139, 0, 0, 0.8) 0%, rgba(178, 34, 34, 0.7) 100%), url('../images/hero-bg.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+  background: radial-gradient(circle at 50% 50%, #2b0406 0%, #0d0102 100%);
   position: relative;
   margin-top: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.hero-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+.hero-spotlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  
+  /* High-end spotlight mask reveal */
+  -webkit-mask-image: radial-gradient(circle 200px at var(--mouse-x, 50%) var(--mouse-y, 50%), black 25%, transparent 100%);
+  mask-image: radial-gradient(circle 200px at var(--mouse-x, 50%) var(--mouse-y, 50%), black 25%, transparent 100%);
+}
+
+.hero-section:hover .hero-spotlight {
+  opacity: 0.35;
+}
+
+.hero-glow-1 {
+  position: absolute;
+  top: -15%;
+  left: -15%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+  z-index: 2;
+  animation: floatGlow1 22s infinite alternate ease-in-out;
+  pointer-events: none;
+}
+
+.hero-glow-2 {
+  position: absolute;
+  bottom: -15%;
+  right: -15%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(163, 29, 35, 0.22) 0%, rgba(0, 0, 0, 0) 70%);
+  z-index: 2;
+  animation: floatGlow2 28s infinite alternate ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes floatGlow1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(10%, 15%) scale(1.15); }
+}
+
+@keyframes floatGlow2 {
+  0% { transform: translate(0, 0) scale(1.1); }
+  100% { transform: translate(-10%, -12%) scale(0.9); }
 }
 
 .hero-overlay {
@@ -200,7 +265,8 @@ ul {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.3);
+  background: radial-gradient(circle at center, rgba(13, 1, 2, 0.15) 0%, rgba(13, 1, 2, 0.6) 100%);
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -209,21 +275,38 @@ ul {
 
 .hero-section .hero-content {
   max-width: 800px;
-  padding: 20px;
+  padding: 30px;
   color: #fff;
+  z-index: 4;
 }
 
 .hero-content h1 {
-  font-size: 3.5rem;
+  font-size: 3.8rem;
   margin-bottom: 25px;
   font-weight: 800;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
   letter-spacing: 1px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .hero-content p {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   margin-bottom: 30px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .welcome-message {
