@@ -4,7 +4,7 @@
 {% block title %}About | Taguig - Theses Library{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/about.css' %}">
+<link rel="stylesheet" href="{% static 'css/about.css' %}?v={% now 'U' %}">
 {% endblock %}
 
 {% block content %}

@@ -35,7 +35,7 @@
     letter-spacing: 3px;
     color: var(--luxury-gold);
     margin-bottom: 20px;
-    animation: fadeInDown 0.8s ease-out;
+    animation: fadeInDown 0.8s ease-out both;
 }
 
 .university-about-hero h1 {
@@ -43,7 +43,7 @@
     font-weight: 800;
     margin-bottom: 25px;
     font-family: var(--font-heading);
-    animation: slideInDown 0.8s ease-out;
+    animation: slideInDown 0.8s ease-out both;
 }
 
 .university-about-hero .hero-subtitle {
