@@ -1,11 +1,12 @@
-import traceback
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.utils import timezone
 
-from ..models import Thesis, Category, Submission, Student, Professor, Department, Course, SubmissionCoAuthor
+from ..models import (
+    Category, Submission, Student, Professor,
+    Department, Course, SubmissionCoAuthor
+)
 from authapp.models import Profile
 from ..utils import extract_title_from_pdf, extract_abstract_from_pdf
 
@@ -40,7 +41,7 @@ def profile_card(request):
     role = profile_obj.get_role_display()
 
     submissions_qs = Submission.objects.filter(submitter=user)
-    recent_submission = submissions_qs.order_by('-created_at').first()
+
 
     initials = ''.join([part[0] for part in full_name.split() if part])[:2].upper()
     if not initials:
@@ -107,11 +108,15 @@ def profile_card(request):
 
 @login_required
 def student_dashboard(request):
-    if not hasattr(request.user, 'profile') or request.user.profile.role != Profile.STUDENT:
+    if (not hasattr(request.user, 'profile') or
+            request.user.profile.role != Profile.STUDENT):
         role = request.user.profile.role if hasattr(request.user, 'profile') else None
         if role in [Profile.ADMIN, Profile.LIBRARIAN]:
             return redirect('pending_submissions')
-        messages.error(request, "Access denied. Only student accounts can access the thesis submission portal.")
+        messages.error(
+            request,
+            "Access denied. Only student accounts can access the thesis submission portal."
+        )
         return redirect('/')
         
     categories = Category.objects.all().order_by('name')
@@ -153,11 +158,15 @@ def student_dashboard(request):
 @login_required
 @require_POST
 def create_submission(request):
-    if not hasattr(request.user, 'profile') or request.user.profile.role != Profile.STUDENT:
+    if (not hasattr(request.user, 'profile') or
+            request.user.profile.role != Profile.STUDENT):
         role = request.user.profile.role if hasattr(request.user, 'profile') else None
         if role in [Profile.ADMIN, Profile.LIBRARIAN]:
             return redirect('pending_submissions')
-        messages.error(request, "Access denied. Only student accounts can submit theses.")
+        messages.error(
+            request,
+            "Access denied. Only student accounts can submit theses."
+        )
         return redirect('/')
 
     title = request.POST.get('thesisTitle') or request.POST.get('title')
@@ -173,12 +182,18 @@ def create_submission(request):
     approval_sheet = request.FILES.get('approval_sheet')
 
     errors = []
-    if not title: errors.append('Title is required')
-    if not thesis_file: errors.append('Thesis PDF is required')
-    if not approval_sheet: errors.append('Approval sheet is required')
-    if not academic_level_id: errors.append('Academic Level is required')
-    if not department_id: errors.append('Department is required')
-    if not course_id: errors.append('Course/Program is required')
+    if not title:
+        errors.append('Title is required')
+    if not thesis_file:
+        errors.append('Thesis PDF is required')
+    if not approval_sheet:
+        errors.append('Approval sheet is required')
+    if not academic_level_id:
+        errors.append('Academic Level is required')
+    if not department_id:
+        errors.append('Department is required')
+    if not course_id:
+        errors.append('Course/Program is required')
 
     if errors:
         messages.error(request, 'Please correct the following errors: ' + ', '.join(errors))
@@ -200,7 +215,8 @@ def create_submission(request):
             last = request.POST.get(f'coauthors[{i}][last_name]', '').strip()
             sid = request.POST.get(f'coauthors[{i}][student_id]', '').strip()
             email = request.POST.get(f'coauthors[{i}][email]', '').strip()
-            if not any([first, last, sid, email]): break
+            if not any([first, last, sid, email]):
+                break
             co_authors_data.append({'first_name': first, 'last_name': last, 'student_id': sid, 'email': email})
             i += 1
 
@@ -215,20 +231,27 @@ def create_submission(request):
             if thesis_file:
                 try:
                     extracted_title = extract_title_from_pdf(thesis_file)
-                    if extracted_title: title = extracted_title
-                except Exception: pass
+                    if extracted_title:
+                        title = extracted_title
+                except Exception:
+                    pass
         
         if not abstract or abstract.strip() == '':
             if thesis_file:
                 try:
                     extracted_abstract = extract_abstract_from_pdf(thesis_file)
-                    if extracted_abstract: abstract = extracted_abstract
-                except Exception: pass
+                    if extracted_abstract:
+                        abstract = extracted_abstract
+                except Exception:
+                    pass
 
         submission = Submission.objects.create(
             submitter=request.user,
             title=title.strip(),
-            author=f"{request.POST.get('firstName', '').strip()} {request.POST.get('lastName', '').strip()}".strip(),
+            author=(
+                f"{request.POST.get('firstName', '').strip()} "
+                f"{request.POST.get('lastName', '').strip()}"
+            ).strip(),
             year=int(year) if year and str(year).isdigit() else None,
             abstract=abstract,
             keywords=keywords,
@@ -265,11 +288,15 @@ def create_submission(request):
 
 @login_required
 def my_submissions(request):
-    if not hasattr(request.user, 'profile') or request.user.profile.role != Profile.STUDENT:
+    if (not hasattr(request.user, 'profile') or
+            request.user.profile.role != Profile.STUDENT):
         role = request.user.profile.role if hasattr(request.user, 'profile') else None
         if role in [Profile.ADMIN, Profile.LIBRARIAN]:
             return redirect('pending_submissions')
-        messages.error(request, "Access denied. Only student accounts can view submissions.")
+        messages.error(
+            request,
+            "Access denied. Only student accounts can view submissions."
+        )
         return redirect('/')
 
     submissions = Submission.objects.filter(submitter=request.user)

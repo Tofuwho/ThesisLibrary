@@ -1,9 +1,6 @@
+# ruff: noqa: F403, F405, E402
 from django.contrib.admin import AdminSite
-from django.contrib.admin.views.main import ChangeList
-from django.template.response import TemplateResponse
 from django.contrib.admin.models import LogEntry
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User, Group
 from .admin import *

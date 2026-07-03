@@ -25,9 +25,12 @@ def students_list(request):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def import_students(request):
-    if request.method != "POST": return JsonResponse({"error": "Invalid"}, status=400)
-    try: data = json.loads(request.body)
-    except: return JsonResponse({"error": "Invalid"}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid"}, status=400)
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"error": "Invalid"}, status=400)
     students_data = data.get("students", [])
     created = []
     for s in students_data:
@@ -36,7 +39,8 @@ def import_students(request):
             student = Student.objects.create(student_id=sid, first_name=s.get("first_name"), last_name=s.get("last_name"), email=s.get("email"), created_at=timezone.now())
             created.append(student)
         create_premade_user(sid, s.get("email"), s.get("first_name"), s.get("last_name"), Profile.STUDENT)
-    if created: log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} student records")
+    if created:
+        log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} student records")
     return JsonResponse({"count": len(created)})
 
 @login_required
@@ -108,9 +112,12 @@ def edit_professor(request, professor_id):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def import_professors(request):
-    if request.method != "POST": return JsonResponse({"error": "Invalid"}, status=400)
-    try: data = json.loads(request.body)
-    except: return JsonResponse({"error": "Invalid"}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid"}, status=400)
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"error": "Invalid"}, status=400)
     items = data.get("professors", [])
     created = []
     for p in items:
@@ -119,14 +126,15 @@ def import_professors(request):
             professor = Professor.objects.create(professor_id=pid, first_name=p.get("first_name"), last_name=p.get("last_name"), email=p.get("email"), created_at=timezone.now())
             created.append(professor)
         create_premade_user(pid, p.get("email"), p.get("first_name"), p.get("last_name"), Profile.PROFESSOR)
-    if created: log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} professor records")
+    if created:
+        log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} professor records")
     return JsonResponse({"count": len(created)})
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def librarians_list(request):
     librarians = list(Librarian.objects.all().order_by('librarian_id'))
-    existing_ids = {l.librarian_id for l in librarians}
+    existing_ids = {lib.librarian_id for lib in librarians}
     orphans = User.objects.filter(profile__role=Profile.LIBRARIAN).exclude(username__in=existing_ids)
     for o in orphans:
         librarians.append(Librarian(librarian_id=o.username, first_name=o.first_name, last_name=o.last_name, email=o.email, created_at=o.date_joined))
@@ -163,18 +171,23 @@ def delete_librarian(request, librarian_id):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def import_librarians(request):
-    if request.method != "POST": return JsonResponse({"error": "Invalid"}, status=400)
-    try: data = json.loads(request.body)
-    except: return JsonResponse({"error": "Invalid"}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid"}, status=400)
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"error": "Invalid"}, status=400)
     items = data.get("librarians", [])
     created = []
     for i in items:
         lid = i.get("librarian_id")
         if lid:
             obj, c = Librarian.objects.get_or_create(librarian_id=lid, defaults={"first_name": i.get("first_name"), "last_name": i.get("last_name"), "email": i.get("email")})
-            if c: created.append(obj)
+            if c:
+                created.append(obj)
             create_premade_user(lid, i.get("email"), i.get("first_name"), i.get("last_name"), Profile.LIBRARIAN)
-    if created: log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} librarian records")
+    if created:
+        log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} librarian records")
     return JsonResponse({"count": len(created)})
 
 @login_required
@@ -218,16 +231,21 @@ def delete_admin_staff(request, admin_id):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def import_admin_staff(request):
-    if request.method != "POST": return JsonResponse({"error": "Invalid"}, status=400)
-    try: data = json.loads(request.body)
-    except: return JsonResponse({"error": "Invalid"}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid"}, status=400)
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"error": "Invalid"}, status=400)
     items = data.get("admins", [])
     created = []
     for i in items:
         aid = i.get("admin_id")
         if aid:
             obj, c = AdminStaff.objects.get_or_create(admin_id=aid, defaults={"first_name": i.get("first_name"), "last_name": i.get("last_name"), "email": i.get("email")})
-            if c: created.append(obj)
+            if c:
+                created.append(obj)
             create_premade_user(aid, i.get("email"), i.get("first_name"), i.get("last_name"), Profile.ADMIN)
-    if created: log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} admin records")
+    if created:
+        log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} admin records")
     return JsonResponse({"count": len(created)})

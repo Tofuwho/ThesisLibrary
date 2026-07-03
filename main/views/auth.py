@@ -2,10 +2,9 @@ import json
 import random
 import string
 from django.shortcuts import redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.admin.models import ADDITION, CHANGE
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
@@ -43,7 +42,8 @@ def send_verification_email(user, code):
     try:
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
         return True
-    except: return False
+    except Exception:
+        return False
 
 def send_password_reset_email(user, code):
     subject = 'Thesis Library - Password Reset Code'
@@ -51,7 +51,8 @@ def send_password_reset_email(user, code):
     try:
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
         return True
-    except: return False
+    except Exception:
+        return False
 
 @csrf_protect
 def login_view(request):
@@ -63,11 +64,13 @@ def login_view(request):
             uid, pwd = data.get('username'), data.get('password')
             user = authenticate(request, username=uid, password=pwd)
             if user:
-                if not user.is_active: return JsonResponse({'success': False, 'error': 'Account inactive.'}, status=400)
+                if not user.is_active:
+                    return JsonResponse({'success': False, 'error': 'Account inactive.'}, status=400)
                 try:
                     if hasattr(user, 'verification_code') and not user.verification_code.is_verified:
                         return JsonResponse({'success': False, 'error': 'Not verified.'}, status=400)
-                except VerificationCode.DoesNotExist: pass
+                except VerificationCode.DoesNotExist:
+                    pass
                 login(request, user)
                 return JsonResponse({'success': True})
             return JsonResponse({'success': False, 'error': 'Invalid credentials'}, status=400)
@@ -88,22 +91,27 @@ def login_view(request):
 
 @csrf_exempt
 def signup_view(request):
-    if request.method != 'POST': return JsonResponse({"success": False}, status=405)
+    if request.method != 'POST':
+        return JsonResponse({"success": False}, status=405)
     if request.content_type and 'application/json' in request.content_type:
-        try: data = json.loads(request.body)
-        except: data = {}
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            data = {}
     else:
         data = request.POST
     
-    uid, email, pwd, action = data.get("id") or data.get("username"), data.get("email"), data.get("password"), data.get("action")
-    if not uid: return JsonResponse({"success": False, "error": "ID required"}, status=400)
+    uid, email = data.get("id") or data.get("username"), data.get("email")
+    if not uid:
+        return JsonResponse({"success": False, "error": "ID required"}, status=400)
 
     # Proceed to identification/verification logic...
     student = Student.objects.filter(student_id=uid).first()
     professor = Professor.objects.filter(professor_id=uid).first()
     librarian = Librarian.objects.filter(librarian_id=uid).first()
     admin_staff = AdminStaff.objects.filter(admin_id=uid).first()
-    if not any([student, professor, librarian, admin_staff]): return JsonResponse({"success": False, "error": "ID not found"}, status=400)
+    if not any([student, professor, librarian, admin_staff]):
+        return JsonResponse({"success": False, "error": "ID not found"}, status=400)
     
     try:
         user = User.objects.get(username=uid)
@@ -111,18 +119,27 @@ def signup_view(request):
             # Generate a fresh 6-digit code for Librarian to give to student
             code = generate_verification_code()
             v, _ = VerificationCode.objects.get_or_create(user=user, defaults={'expires_at': timezone.now() + timezone.timedelta(days=1), 'code': code})
-            v.code = code; v.is_verified = False; v.expires_at = timezone.now() + timezone.timedelta(days=1); v.save()
+            v.code = code
+            v.is_verified = False
+            v.expires_at = timezone.now() + timezone.timedelta(days=1)
+            v.save()
             return JsonResponse({"success": True, "requires_verification": True, "id": uid, "email": email})
     except User.DoesNotExist:
         # Check if ID exists in records but no user yet
-        if not any([student, professor, librarian, admin_staff]): 
-             return JsonResponse({"success": False, "error": "ID not found in records"}, status=404)
+        if not any([student, professor, librarian, admin_staff]):
+            return JsonResponse({"success": False, "error": "ID not found in records"}, status=404)
         
         # User doesn't exist yet, create as premade (inactive) and require verification
         user = create_premade_user(uid, email, role=Profile.STUDENT)
-        if professor: user.profile.role = Profile.PROFESSOR
-        elif librarian: user.profile.role = Profile.LIBRARIAN; user.is_staff = True
-        elif admin_staff: user.profile.role = Profile.ADMIN; user.is_staff = True; user.is_superuser = True
+        if professor:
+            user.profile.role = Profile.PROFESSOR
+        elif librarian:
+            user.profile.role = Profile.LIBRARIAN
+            user.is_staff = True
+        elif admin_staff:
+            user.profile.role = Profile.ADMIN
+            user.is_staff = True
+            user.is_superuser = True
         user.profile.save()
         
         code = generate_verification_code()
@@ -135,9 +152,12 @@ def signup_view(request):
 def verify_email_view(request):
     if request.method == 'POST':
         if request.content_type and 'application/json' in request.content_type:
-            try: data = json.loads(request.body)
-            except: data = {}
-        else: data = request.POST
+            try:
+                data = json.loads(request.body)
+            except Exception:
+                data = {}
+        else:
+            data = request.POST
         uid, code = data.get('id') or data.get('username'), data.get('code')
         try:
             user = User.objects.get(username=uid)
@@ -146,7 +166,7 @@ def verify_email_view(request):
                 # Don't activate yet! Just confirm code is good so they can set password.
                 return JsonResponse({'success': True, 'requires_password_setup': True, 'id': uid, 'code': code})
             return JsonResponse({'success': False, 'error': 'Invalid or expired code'}, status=400)
-        except Exception as e:
+        except Exception:
             return JsonResponse({'success': False, 'error': "Incorrect ID or code."}, status=400)
     return JsonResponse({'success': False}, status=400)
 
@@ -161,7 +181,8 @@ def forgot_password(request):
             PasswordResetCode.objects.filter(user=user, is_used=False).update(is_used=True)
             PasswordResetCode.objects.create(user=user, code=code, expires_at=timezone.now()+timezone.timedelta(hours=1))
             send_password_reset_email(user, code)
-        except: pass
+        except Exception:
+            pass
         # In offline LAN, we inform the user to visit the Librarian
         return JsonResponse({
             'success': True, 
@@ -178,9 +199,13 @@ def reset_password(request):
             user = User.objects.get(username=uid)
             rc = PasswordResetCode.objects.filter(user=user, is_used=False, code=code).first()
             if rc and not rc.is_expired():
-                user.set_password(pwd); user.save(); rc.is_used = True; rc.save()
+                user.set_password(pwd)
+                user.save()
+                rc.is_used = True
+                rc.save()
                 return JsonResponse({'success': True})
-        except: pass
+        except Exception:
+            pass
     return JsonResponse({'success': False}, status=400)
 
 @login_required
@@ -191,7 +216,8 @@ def change_password(request, user_id):
         data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
         new, confirm = data.get('new_password'), data.get('confirm_password')
         if new == confirm:
-            user.set_password(new); user.save()
+            user.set_password(new)
+            user.save()
             return JsonResponse({'success': True}) if request.content_type == 'application/json' else redirect('user_list')
     return redirect('user_list')
 
@@ -201,7 +227,8 @@ def change_password_profile(request):
         data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
         old, new = data.get('old_password'), data.get('new_password')
         if request.user.check_password(old):
-            request.user.set_password(new); request.user.save()
+            request.user.set_password(new)
+            request.user.save()
             return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
 

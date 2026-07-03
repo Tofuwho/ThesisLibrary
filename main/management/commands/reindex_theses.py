@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 from main.models import Thesis
 from main.utils import extract_thesis_text
-import sys
 
 class Command(BaseCommand):
     help = 'Extracts and indexes full text for all existing theses'

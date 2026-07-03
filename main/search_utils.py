@@ -1,8 +1,8 @@
 import re
 from django.db.models import Q, F, Value, IntegerField, Case, When, ExpressionWrapper, CharField
 from django.db.models.functions import Concat
-from .models import Thesis, Department, Course, Category
-from .utils import suggest_query_correction, get_thesis_preview, search_in_thesis_pdf, pdf_search_engine
+from .models import Thesis, Department, Course
+from .utils import suggest_query_correction, search_in_thesis_pdf, pdf_search_engine
 
 STOPWORDS = {
     'a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'as', 
@@ -95,13 +95,21 @@ def apply_search_scoring(queryset, query):
         
     for token in search_tokens:
         lemmas = get_lemmas(token)
-        title_q = Q(); author_q = Q(); abstract_q = Q(); keywords_q = Q()
-        research_cat_q = Q(); cat_name_q = Q(); dept_name_q = Q(); course_name_q = Q()
+        title_q = Q()
+        author_q = Q()
+        abstract_q = Q()
+        keywords_q = Q()
+        research_cat_q = Q()
+        cat_name_q = Q()
+        dept_name_q = Q()
+        course_name_q = Q()
         coauthor_q = Q()
         
         for lemma in lemmas:
-            title_q |= Q(title__icontains=lemma); author_q |= Q(author__icontains=lemma)
-            abstract_q |= Q(abstract__icontains=lemma); keywords_q |= Q(keywords__icontains=lemma)
+            title_q |= Q(title__icontains=lemma)
+            author_q |= Q(author__icontains=lemma)
+            abstract_q |= Q(abstract__icontains=lemma)
+            keywords_q |= Q(keywords__icontains=lemma)
             research_cat_q |= Q(research_category__icontains=lemma)
             cat_name_q |= Q(category__name__icontains=lemma)
             dept_name_q |= Q(department__name__icontains=lemma)
@@ -123,7 +131,8 @@ def apply_search_scoring(queryset, query):
             year_int = int(token)
             if 1900 < year_int < 2100:
                 token_score += Case(When(year=year_int, then=Value(TOKEN_WEIGHTS['year'])), default=Value(0), output_field=IntegerField())
-        except: pass
+        except Exception:
+            pass
         token_score_expr += token_score
     
     return queryset.annotate(score=ExpressionWrapper(phrase_score + token_score_expr, output_field=IntegerField()))

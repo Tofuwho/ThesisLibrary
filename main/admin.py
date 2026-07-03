@@ -1,12 +1,8 @@
 from django.contrib import admin
-from django.contrib.admin import AdminSite
-from django import forms
 from django.utils.html import format_html
 from django.contrib import messages
-from django.shortcuts import redirect, render
 from django.urls import path
 from django.template.response import TemplateResponse
-from django.http import HttpResponseRedirect
 from django.contrib.admin.models import LogEntry, CHANGE, DELETION, ADDITION
 from django.contrib.contenttypes.models import ContentType
 from .models import Thesis, SubmissionCoAuthor, CoAuthor, Submission, Category, Department, Course, RejectedThesis, DownloadLog, Student, Professor, VerificationCode
@@ -39,7 +35,7 @@ def log_admin_action(user, obj, action_flag, message):
             action_flag=action_flag,
             change_message=message,
         )
-    except Exception as e:
+    except Exception:
         pass
 
 

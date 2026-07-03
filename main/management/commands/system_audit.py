@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.test import Client
 from django.urls import reverse
-from django.contrib.admin.models import LogEntry
 
 class Command(BaseCommand):
     help = 'Runs a full functional audit of the system'

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 import sys
+import socket
 
 # Django-Python 3.14 compatibility monkeypatch for tests
 try:
@@ -66,7 +67,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Move host detection here so it can be used for both ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS
-import socket
 def get_local_ip():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

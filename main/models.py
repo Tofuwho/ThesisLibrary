@@ -2,7 +2,6 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.core.validators import FileExtensionValidator
-from django import forms
 from django.contrib.auth.models import User
 
 class Category(models.Model):

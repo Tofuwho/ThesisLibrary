@@ -15,7 +15,6 @@ from django.utils import timezone
 from django.utils.dateformat import DateFormat
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from openpyxl.utils import get_column_letter
 
 from ..models import Thesis, Category, Submission, DownloadLog, RejectedThesis, Course, Department
 from authapp.models import Profile
@@ -148,9 +147,12 @@ def _refine_log_data(log):
     elif "Login" in msg or "password" in msg:
         action = "Security Alert"
     elif not msg:
-        if log.action_flag == 1: action = f"New {model_name.capitalize()}"
-        elif log.action_flag == 2: action = f"Edit {model_name.capitalize()}"
-        elif log.action_flag == 3: action = f"Delete {model_name.capitalize()}"
+        if log.action_flag == 1:
+            action = f"New {model_name.capitalize()}"
+        elif log.action_flag == 2:
+            action = f"Edit {model_name.capitalize()}"
+        elif log.action_flag == 3:
+            action = f"Delete {model_name.capitalize()}"
         details = f"Administrative action on {model_name} record."
 
     return action, details
@@ -266,7 +268,8 @@ def approve_thesis(request, thesis_id):
 def reject_thesis(request, thesis_id):
     submission = get_object_or_404(Submission, id=thesis_id)
     if request.method == 'POST':
-        if submission.status == Submission.STATUS_REJECTED: return redirect('pending_submissions')
+        if submission.status == Submission.STATUS_REJECTED:
+            return redirect('pending_submissions')
         rejection_reason = request.POST.get('rejection_reason', '').strip()
         if not rejection_reason:
             messages.error(request, "Rejection reason is required.")
@@ -501,7 +504,8 @@ def delete_course(request, course_id):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def archive_old_theses(request):
-    if request.method != "POST": return JsonResponse({"error": "Invalid"}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid"}, status=400)
     system_user = User.objects.filter(is_superuser=True).first()
     cutoff_year = datetime.now().year - 10
     old_theses = Thesis.objects.filter(year__lte=cutoff_year)
@@ -567,7 +571,6 @@ def export_system_logs(request):
     # Define Styles
     header_fill = PatternFill(start_color="1B5E20", end_color="1B5E20", fill_type="solid")
     header_font = Font(bold=True, color="FFFFFF", size=12)
-    sub_header_fill = PatternFill(start_color="E8F5E9", end_color="E8F5E9", fill_type="solid")
     border = Border(
         left=Side(style='thin', color="DDDDDD"),
         right=Side(style='thin', color="DDDDDD"),

@@ -1,7 +1,6 @@
 import re
-from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Count, Q, F, Value, IntegerField, Case, When, ExpressionWrapper, CharField
-from django.db.models.functions import Concat
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -187,7 +186,6 @@ def category_detail(request, category_name):
 def get_initials(name):
     if not name:
         return ""
-    import re
     cleaned_name = re.sub(r'^(Dr\.|Prof\.|Mr\.|Ms\.|Mrs\.)\s+', '', name, flags=re.IGNORECASE)
     parts = cleaned_name.split()
     if len(parts) >= 2:

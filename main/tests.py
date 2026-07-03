@@ -37,7 +37,7 @@ class AuthTestCase(TestCase):
         # Create department and course first
         cat = Category.objects.create(name="Undergraduate")
         dept = Department.objects.create(name="CICT", category=cat)
-        course = Course.objects.create(name="BSCS", department=dept)
+        Course.objects.create(name="BSCS", department=dept)
         
         # Create student in records
         Student.objects.create(
@@ -223,7 +223,7 @@ class AdminPanelTestCase(TestCase):
 
     def test_tc012_create_admin_user(self):
         """TC012: Admin - Create New User"""
-        response = self.client.post(reverse("admin:auth_user_add"), {
+        self.client.post(reverse("admin:auth_user_add"), {
             "username": "Admin02",
             "password1": "StrongPass123!",
             "password2": "StrongPass123!",
@@ -246,7 +246,7 @@ class AdminPanelTestCase(TestCase):
     def test_tc016_add_rejected_thesis(self):
         """TC016: Admin - Add Rejected Thesis"""
         url = reverse('admin:main_rejectedthesis_add')
-        response = self.client.post(url, {
+        self.client.post(url, {
             'title': 'Rejected Thesis',
             'author': 'Miguel Villar',
             'year': 2025,
