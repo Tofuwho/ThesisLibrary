@@ -14,6 +14,31 @@
     const INACTIVITY_THRESHOLD = 30 * 60 * 1000; // 30 minutes in milliseconds
     const SESSION_CHECK_INTERVAL = 5 * 60 * 1000; // Check session every 5 minutes
 
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function updateDOMCSRFToken() {
+        const token = getCookie('csrftoken');
+        if (token) {
+            document.querySelectorAll('input[name="csrfmiddlewaretoken"]').forEach(input => {
+                input.value = token;
+            });
+            console.log('CSRF token in DOM inputs synchronized with updated cookie.');
+        }
+    }
+
     /**
      * Refresh CSRF token from the server
      * This is called when the page regains focus to ensure token is valid
@@ -26,7 +51,11 @@
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
-        }).catch(error => {
+        })
+        .then(() => {
+            updateDOMCSRFToken();
+        })
+        .catch(error => {
             console.log('Session check fetch failed (expected for some pages):', error.message);
         });
     }

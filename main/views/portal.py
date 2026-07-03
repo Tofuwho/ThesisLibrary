@@ -63,12 +63,18 @@ def profile_card(request):
 
     if profile_obj.role == Profile.STUDENT:
         submissions_qs = Submission.objects.filter(submitter=user)
-        recent = submissions_qs.order_by('-created_at').first()
+        co_authored_qs = Submission.objects.filter(co_authors__user=user)
+        recent_sub = submissions_qs.order_by('-created_at').first()
+        recent_co = co_authored_qs.order_by('-created_at').first()
+        recent = recent_sub
+        if recent_co and (not recent_sub or recent_co.created_at > recent_sub.created_at):
+            recent = recent_co
+            
         profile.update({
-            "total_submissions": submissions_qs.count(),
-            "approved_count": submissions_qs.filter(status='approved').count(),
-            "pending_count": submissions_qs.filter(status='pending').count(),
-            "returned_count": submissions_qs.filter(status='rejected').count(),
+            "total_submissions": submissions_qs.count() + co_authored_qs.count(),
+            "approved_count": submissions_qs.filter(status='approved').count() + co_authored_qs.filter(status='approved').count(),
+            "pending_count": submissions_qs.filter(status='pending').count() + co_authored_qs.filter(status='pending').count(),
+            "returned_count": submissions_qs.filter(status='rejected').count() + co_authored_qs.filter(status='rejected').count(),
             "recent_title": recent.title if recent else None,
             "recent_date": recent.created_at if recent else None,
             "recent_status": recent.get_status_display() if recent else None,
@@ -271,9 +277,17 @@ def create_submission(request):
             status=Submission.STATUS_PENDING,
         )
         
+        from django.contrib.auth.models import User
         for coauthor_data in co_authors_data:
+            user_link = None
+            if coauthor_data['student_id']:
+                user_link = User.objects.filter(username=coauthor_data['student_id']).first()
+            if not user_link and coauthor_data['email']:
+                user_link = User.objects.filter(email=coauthor_data['email']).first()
+
             SubmissionCoAuthor.objects.create(
                 submission=submission,
+                user=user_link,
                 first_name=coauthor_data['first_name'],
                 last_name=coauthor_data['last_name'],
                 student_id=coauthor_data['student_id'],
@@ -300,4 +314,8 @@ def my_submissions(request):
         return redirect('/')
 
     submissions = Submission.objects.filter(submitter=request.user)
-    return render(request, 'main/my_submissions.html', {'submissions': submissions})
+    co_authored_submissions = Submission.objects.filter(co_authors__user=request.user)
+    return render(request, 'main/my_submissions.html', {
+        'submissions': submissions,
+        'co_authored_submissions': co_authored_submissions
+    })

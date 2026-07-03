@@ -108,6 +108,7 @@ class Thesis(models.Model):
 class CoAuthor(models.Model):
     """Relational co-authors linked to an approved Thesis."""
     thesis = models.ForeignKey(Thesis, related_name="co_authors", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="co_authored_theses")
     first_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100, blank=True)
     student_id = models.CharField(max_length=50, blank=True)
@@ -119,6 +120,7 @@ class CoAuthor(models.Model):
 class SubmissionCoAuthor(models.Model):
     """Relational co-authors linked to a Submission (before approval)."""
     submission = models.ForeignKey("Submission", related_name="co_authors", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="co_authored_submissions")
     first_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100, blank=True)
     student_id = models.CharField(max_length=50, blank=True)
@@ -307,6 +309,7 @@ class Submission(models.Model):
         for ca in self.co_authors.all():
             CoAuthor.objects.create(
                 thesis=thesis,
+                user=ca.user,
                 first_name=ca.first_name,
                 last_name=ca.last_name,
                 student_id=ca.student_id,

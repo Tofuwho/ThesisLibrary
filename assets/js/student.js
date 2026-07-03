@@ -60,6 +60,15 @@ function createCoauthorBlock(container, index, values = {}) {
         <h4>Co-Author ${index + 1}</h4>
         <div class="form-row">
             <div class="form-group">
+                <label for="coauthor${index}_student_id">Co-Author ID (Student/Faculty ID)</label>
+                <div class="input-with-indicator">
+                    <input data-field="student_id" type="text" id="coauthor${index}_student_id"
+                           name="coauthors[${index}][student_id]" placeholder="Student/Faculty ID" value="${escapeHtml(values.student_id || '')}">
+                    <span class="lookup-indicator"></span>
+                </div>
+                <div class="lookup-status-text" style="font-size: 0.75rem; margin-top: 4px; font-weight: 600; min-height: 15px;"></div>
+            </div>
+            <div class="form-group">
                 <label for="coauthor${index}_first_name">First Name</label>
                 <input data-field="first_name" type="text" id="coauthor${index}_first_name"
                        name="coauthors[${index}][first_name]" placeholder="First Name" value="${escapeHtml(values.first_name || '')}">
@@ -68,11 +77,6 @@ function createCoauthorBlock(container, index, values = {}) {
                 <label for="coauthor${index}_last_name">Last Name</label>
                 <input data-field="last_name" type="text" id="coauthor${index}_last_name"
                        name="coauthors[${index}][last_name]" placeholder="Last Name" value="${escapeHtml(values.last_name || '')}">
-            </div>
-            <div class="form-group">
-                <label for="coauthor${index}_student_id">Co-Author ID</label>
-                <input data-field="student_id" type="text" id="coauthor${index}_student_id"
-                       name="coauthors[${index}][student_id]" placeholder="Student/Faculty ID" value="${escapeHtml(values.student_id || '')}">
             </div>
             <div class="form-group">
                 <label for="coauthor${index}_email">Email</label>
@@ -97,6 +101,186 @@ function createCoauthorBlock(container, index, values = {}) {
         updateReviewSection();
         saveFormData();
     });
+
+    // Auto-lookup logic for Student ID
+    const idInput = block.querySelector('[data-field="student_id"]');
+    const firstNameInput = block.querySelector('[data-field="first_name"]');
+    const lastNameInput = block.querySelector('[data-field="last_name"]');
+    const emailInput = block.querySelector('[data-field="email"]');
+    const h4 = block.querySelector('h4');
+    const statusText = block.querySelector('.lookup-status-text');
+    const lookupIndicator = block.querySelector('.lookup-indicator');
+
+    const statusBadge = document.createElement('span');
+    statusBadge.className = 'coauthor-status-badge';
+    statusBadge.style.fontSize = '0.75rem';
+    statusBadge.style.marginLeft = '10px';
+    statusBadge.style.padding = '2px 8px';
+    statusBadge.style.borderRadius = '12px';
+    statusBadge.style.fontWeight = 'bold';
+    statusBadge.style.display = 'none';
+    if (h4) {
+        h4.appendChild(statusBadge);
+    }
+
+    function setBadge(type, text) {
+        statusBadge.style.display = 'inline-block';
+        statusBadge.textContent = text;
+        if (type === 'success') {
+            statusBadge.style.backgroundColor = '#d4edda';
+            statusBadge.style.color = '#155724';
+            statusBadge.style.border = '1px solid #c3e6cb';
+        } else if (type === 'searching') {
+            statusBadge.style.backgroundColor = '#fff3cd';
+            statusBadge.style.color = '#856404';
+            statusBadge.style.border = '1px solid #ffeeba';
+        } else {
+            statusBadge.style.backgroundColor = '#f8d7da';
+            statusBadge.style.color = '#721c24';
+            statusBadge.style.border = '1px solid #f5c6cb';
+        }
+    }
+
+    function setConnectionStatus(status, message) {
+        if (!statusText) return;
+        statusText.textContent = message;
+        
+        if (status === 'success') {
+            statusText.style.color = '#28a745';
+            idInput.style.borderColor = '#28a745';
+            idInput.style.boxShadow = '0 0 0 3px rgba(40, 167, 69, 0.1)';
+            if (lookupIndicator) {
+                lookupIndicator.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745;"></i>';
+            }
+            // Make name read-only since they are linked to a registered account
+            firstNameInput.readOnly = true;
+            lastNameInput.readOnly = true;
+            firstNameInput.style.backgroundColor = '#f8f9fa';
+            lastNameInput.style.backgroundColor = '#f8f9fa';
+        } else if (status === 'searching') {
+            statusText.style.color = '#fd7e14';
+            idInput.style.borderColor = '#fd7e14';
+            idInput.style.boxShadow = 'none';
+            if (lookupIndicator) {
+                lookupIndicator.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: #fd7e14;"></i>';
+            }
+        } else if (status === 'external') {
+            statusText.style.color = '#6c757d';
+            idInput.style.borderColor = '#ced4da';
+            idInput.style.boxShadow = 'none';
+            if (lookupIndicator) {
+                lookupIndicator.innerHTML = '<i class="fas fa-user-edit" style="color: #6c757d;"></i>';
+            }
+            // Allow editing for external/unregistered co-authors
+            firstNameInput.readOnly = false;
+            lastNameInput.readOnly = false;
+            firstNameInput.style.backgroundColor = '';
+            lastNameInput.style.backgroundColor = '';
+        } else {
+            statusText.style.color = '#dc3545';
+            idInput.style.borderColor = '#dc3545';
+            idInput.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
+            if (lookupIndicator) {
+                lookupIndicator.innerHTML = '<i class="fas fa-times-circle" style="color: #dc3545;"></i>';
+            }
+            firstNameInput.readOnly = false;
+            lastNameInput.readOnly = false;
+            firstNameInput.style.backgroundColor = '';
+            lastNameInput.style.backgroundColor = '';
+        }
+    }
+
+    if (idInput) {
+        idInput.addEventListener('change', () => {
+            const val = idInput.value.trim();
+            if (!val) {
+                statusBadge.style.display = 'none';
+                setConnectionStatus('external', '');
+                return;
+            }
+            setBadge('searching', 'Searching...');
+            setConnectionStatus('searching', 'Verifying student connection...');
+            fetch(`/api/student-lookup/${encodeURIComponent(val)}/`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Not found');
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    firstNameInput.value = data.first_name || '';
+                    lastNameInput.value = data.last_name || '';
+                    setBadge('success', '✓ TCU Student Connected');
+                    setConnectionStatus('success', 'Connected to TCU Student Account');
+                    clearFieldError(firstNameInput);
+                    clearFieldError(lastNameInput);
+                    updateReviewSection();
+                    saveFormData();
+                } else {
+                    setBadge('error', 'Unregistered ID');
+                    setConnectionStatus('error', 'Unregistered Student ID');
+                }
+            })
+            .catch(() => {
+                setBadge('error', 'Unregistered ID (External)');
+                setConnectionStatus('external', 'Unregistered ID (Manual/External entry allowed)');
+            });
+        });
+        
+        // If loaded with a student_id, run the change handler to verify
+        if (idInput.value.trim()) {
+            // trigger change event after a tiny timeout to let everything mount
+            setTimeout(() => {
+                idInput.dispatchEvent(new Event('change'));
+            }, 50);
+        }
+    }
+
+    function lookupByName() {
+        const first = firstNameInput.value.trim();
+        const last = lastNameInput.value.trim();
+        
+        // Only trigger lookup if both are filled and ID is not already verified/connected
+        if (!first || !last || (idInput.style.borderColor === 'rgb(40, 167, 69)' || idInput.style.borderColor === '#28a745')) {
+            return;
+        }
+        
+        setBadge('searching', 'Searching...');
+        setConnectionStatus('searching', 'Verifying student connection...');
+        
+        fetch(`/api/student-lookup-by-name/?first_name=${encodeURIComponent(first)}&last_name=${encodeURIComponent(last)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Not found');
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                idInput.value = data.student_id || '';
+                setBadge('success', '✓ TCU Student Connected');
+                setConnectionStatus('success', 'Connected to TCU Student Account');
+                clearFieldError(idInput);
+                updateReviewSection();
+                saveFormData();
+            }
+        })
+        .catch(() => {
+            // If search by name fails, we just don't lock anything or display unregistered badge yet
+            statusBadge.style.display = 'none';
+            setConnectionStatus('external', '');
+        });
+    }
+
+    if (firstNameInput && lastNameInput) {
+        firstNameInput.addEventListener('change', lookupByName);
+        lastNameInput.addEventListener('change', lookupByName);
+    }
 
     // Attach input/blur listeners for these inputs (dynamic)
     block.querySelectorAll('input, textarea, select').forEach(inp => {

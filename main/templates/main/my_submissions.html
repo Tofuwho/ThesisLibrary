@@ -319,11 +319,76 @@
         </div>
         {% endfor %}
     </div>
-    {% else %}
+    {% endif %}
+
+    {% if co_authored_submissions %}
+    <div class="submissions-header" style="margin-top: 50px;">
+        <h2>Co-Authored Submissions</h2>
+        <p>Submissions where you are listed as a co-author.</p>
+    </div>
+    <div class="submissions-grid">
+        {% for s in co_authored_submissions %}
+        <div class="sub-card">
+            <div class="sub-card-header">
+                <span class="sub-status-pill status-{{ s.status }}">
+                    {% if s.status == 'pending' %}<i class="fas fa-clock"></i>
+                    {% elif s.status == 'approved' %}<i class="fas fa-check-circle"></i>
+                    {% elif s.status == 'rejected' %}<i class="fas fa-times-circle"></i>
+                    {% endif %}
+                    {{ s.get_status_display }}
+                </span>
+                {% if s.category %}
+                <span class="academic-label">{{ s.category.name }}</span>
+                {% endif %}
+            </div>
+
+            <div class="sub-card-body">
+                <h3 class="sub-title">{{ s.title }}</h3>
+
+                <div class="sub-meta">
+                    <div class="meta-item">
+                        <i class="far fa-calendar-alt"></i>
+                        {{ s.created_at|date:'M d, Y' }}
+                    </div>
+                    {% if s.year %}
+                    <div class="meta-item">
+                        <i class="fas fa-university"></i>
+                        Program Year {{ s.year }}
+                    </div>
+                    {% endif %}
+                    <div class="meta-item">
+                        <i class="fas fa-user-friends"></i>
+                        By {{ s.submitter.get_full_name|default:s.submitter.username }}
+                    </div>
+                </div>
+
+                {% if s.status == 'rejected' and s.decision_note %}
+                <div class="sub-note">
+                    <strong>Feedback from Reviewer</strong>
+                    <p>{{ s.decision_note }}</p>
+                </div>
+                {% endif %}
+
+                <div class="sub-card-actions">
+                    {% if s.file %}
+                    <a href="{{ s.file.url }}" class="action-btn btn-view" target="_blank">
+                        <i class="fas fa-file-pdf"></i> View Manuscript
+                    </a>
+                    {% else %}
+                    <span class="action-btn btn-empty">No File Uploaded</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not submissions and not co_authored_submissions %}
     <div class="empty-state">
         <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
         <h3>No submissions found</h3>
-        <p>You haven't submitted any thesis research yet. Ready to start your application?</p>
+        <p>You haven't submitted or been listed on any thesis research yet. Ready to start your application?</p>
         <a href="{% url 'student_dashboard' %}" class="btn-portal">
             <i class="fas fa-plus"></i> Submit Your Thesis
         </a>

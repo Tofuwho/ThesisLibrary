@@ -11,13 +11,30 @@
         margin-top: 70px;
         padding: 0;
     }
+    /* Lookup Indicator Styling */
+    .input-with-indicator {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .input-with-indicator input {
+        padding-right: 35px;
+        width: 100%;
+    }
+    .lookup-indicator {
+        position: absolute;
+        right: 12px;
+        font-size: 1.1rem;
+        pointer-events: none;
+    }
 </style>
 {% endblock %}
 
 {% block body_class %}portal-page{% endblock %}
 
 {% block extra_scripts %}
-<script src="{% static 'js/student.js' %}?v=1.0.1"></script>
+<script src="{% static 'js/student.js' %}?v={% now 'U' %}"></script>
 <script>
     // User data for autofill
     const USER_DATA = {

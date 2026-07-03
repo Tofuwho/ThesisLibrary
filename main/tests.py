@@ -599,3 +599,156 @@ class AdminTemplatesTestCase(TestCase):
         self.assertIn('profile', response.context)
         self.assertEqual(response.context['profile']['role_code'], 'admin')
         self.assertIn('total_actions', response.context['profile'])
+
+
+class CoAuthorIntegrationTestCase(TestCase):
+    def setUp(self):
+        # Create categories and course details
+        self.category = Category.objects.create(name="Undergraduate")
+        self.department = Department.objects.create(name="CICT", category=self.category)
+        self.course = Course.objects.create(name="BSCS", department=self.department)
+
+        # Create two students
+        self.student1 = User.objects.create_user(
+            username="Student01",
+            email="student1@tcu.edu.ph",
+            password="password123"
+        )
+        self.student1.profile.role = 'student'
+        self.student1.profile.save()
+
+        self.student2 = User.objects.create_user(
+            username="Student02",
+            email="student2@tcu.edu.ph",
+            password="password123"
+        )
+        self.student2.profile.role = 'student'
+        self.student2.profile.save()
+
+        # Add student2 to the Student pre-registration database
+        from main.models import Student
+        Student.objects.create(
+            student_id="Student02",
+            first_name="Juan",
+            last_name="Cruz",
+            email="student2@tcu.edu.ph"
+        )
+
+        # Create an admin user for approval
+        self.admin_user = User.objects.create_superuser(
+            username="admin_user",
+            email="admin@test.com",
+            password="password123"
+        )
+
+    def test_student_lookup_api(self):
+        self.client.login(username="Student01", password="password123")
+        response = self.client.get(reverse('api_student_lookup', kwargs={'student_id': 'Student02'}))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertEqual(data['first_name'], 'Juan')
+        self.assertEqual(data['last_name'], 'Cruz')
+        self.assertEqual(data['email'], 'student2@tcu.edu.ph')
+
+    def test_create_submission_links_coauthor(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from main.models import Submission
+        
+        pdf_file = SimpleUploadedFile("thesis.pdf", b"pdf content", content_type="application/pdf")
+        sheet_file = SimpleUploadedFile("approval.jpg", b"image content", content_type="image/jpeg")
+
+        self.client.login(username="Student01", password="password123")
+        # Submit a thesis listing Student02 as co-author
+        response = self.client.post(reverse('create_submission'), {
+            'title': 'Linked Co-Author Study',
+            'academic_level': self.category.id,
+            'department': self.department.id,
+            'course': self.course.id,
+            'year': 2026,
+            'abstract': 'Test Abstract',
+            'keywords': 'test, linking',
+            'firstName': 'Jane',
+            'lastName': 'Doe',
+            'thesisFile': pdf_file,
+            'approval_sheet': sheet_file,
+            'coauthors[0][first_name]': 'Juan',
+            'coauthors[0][last_name]': 'Cruz',
+            'coauthors[0][student_id]': 'Student02',
+            'coauthors[0][email]': 'student2@tcu.edu.ph',
+            'confirmSubmission': 'on'
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify SubmissionCoAuthor is linked to Student02's User account
+        submission = Submission.objects.get(title='Linked Co-Author Study')
+        co_author = submission.co_authors.first()
+        self.assertIsNotNone(co_author)
+        self.assertEqual(co_author.user, self.student2)
+
+    def test_approve_submission_carries_link(self):
+        from main.models import Submission, SubmissionCoAuthor
+        self.client.login(username="Student01", password="password123")
+        submission = Submission.objects.create(
+            submitter=self.student1,
+            title='Approval Carries Link Study',
+            category=self.category,
+            department=self.department,
+            course=self.course,
+            year=2026,
+            abstract='Test Abstract'
+        )
+        SubmissionCoAuthor.objects.create(
+            submission=submission,
+            user=self.student2,
+            first_name='Juan',
+            last_name='Cruz',
+            student_id='Student02',
+            email='student2@tcu.edu.ph'
+        )
+        
+        # Approve submission
+        thesis = submission.approve()
+        
+        # Verify CoAuthor in Thesis carries the linked User relation
+        co_author = thesis.co_authors.first()
+        self.assertIsNotNone(co_author)
+        self.assertEqual(co_author.user, self.student2)
+
+    def test_dashboard_displays_coauthored(self):
+        from main.models import Submission, SubmissionCoAuthor
+        # Create submission listing Student02 as co-author
+        submission = Submission.objects.create(
+            submitter=self.student1,
+            title='Co-Authored Dashboard Study',
+            category=self.category,
+            department=self.department,
+            course=self.course,
+            year=2026,
+            abstract='Test Abstract'
+        )
+        SubmissionCoAuthor.objects.create(
+            submission=submission,
+            user=self.student2,
+            first_name='Juan',
+            last_name='Cruz',
+            student_id='Student02',
+            email='student2@tcu.edu.ph'
+        )
+        
+        # Login as Student02
+        self.client.login(username="Student02", password="password123")
+        response = self.client.get(reverse('my_submissions'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('co_authored_submissions', response.context)
+        self.assertEqual(response.context['co_authored_submissions'].count(), 1)
+        self.assertEqual(response.context['co_authored_submissions'].first(), submission)
+
+    def test_student_lookup_by_name_api(self):
+        self.client.login(username="Student01", password="password123")
+        response = self.client.get(reverse('api_student_lookup_by_name') + '?first_name=Juan&last_name=Cruz')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertEqual(data['student_id'], 'Student02')
+        self.assertEqual(data['email'], 'student2@tcu.edu.ph')
