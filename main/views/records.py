@@ -35,10 +35,10 @@ def import_students(request):
     created = []
     for s in students_data:
         sid = s.get("student_id")
-        if sid and not Student.objects.filter(student_id=sid).exists():
+        if sid and not Student.objects.filter(student_id=sid).exists() and not User.objects.filter(username=sid).exists():
             student = Student.objects.create(student_id=sid, first_name=s.get("first_name"), last_name=s.get("last_name"), email=s.get("email"), created_at=timezone.now())
             created.append(student)
-        create_premade_user(sid, s.get("email"), s.get("first_name"), s.get("last_name"), Profile.STUDENT)
+            create_premade_user(sid, s.get("email"), s.get("first_name"), s.get("last_name"), Profile.STUDENT)
     if created:
         log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} student records")
     return JsonResponse({"count": len(created)})
@@ -49,8 +49,14 @@ def add_student(request):
     if request.method == "POST":
         sid = request.POST.get("student_id")
         first, last, email = request.POST.get("first_name"), request.POST.get("last_name"), request.POST.get("email")
+        if Student.objects.filter(student_id=sid).exists() or User.objects.filter(username=sid).exists():
+            messages.error(request, f"Student ID '{sid}' already exists. Please choose a different ID.")
+            return render(request, "main/add_student.html", {
+                "student_id": sid, "first_name": first, "last_name": last, "email": email
+            })
         Student.objects.create(student_id=sid, first_name=first, last_name=last, email=email)
         create_premade_user(sid, email, first, last, Profile.STUDENT)
+        messages.success(request, f"Student account '{sid}' created successfully.")
         return redirect("students_list")
     return render(request, "main/add_student.html")
 
@@ -87,8 +93,14 @@ def add_professor(request):
     if request.method == "POST":
         pid = request.POST.get("professor_id")
         first, last, email = request.POST.get("first_name"), request.POST.get("last_name"), request.POST.get("email")
+        if Professor.objects.filter(professor_id=pid).exists() or User.objects.filter(username=pid).exists():
+            messages.error(request, f"Professor ID '{pid}' already exists. Please choose a different ID.")
+            return render(request, "main/add_professor.html", {
+                "professor_id": pid, "first_name": first, "last_name": last, "email": email
+            })
         Professor.objects.create(professor_id=pid, first_name=first, last_name=last, email=email)
         create_premade_user(pid, email, first, last, Profile.PROFESSOR)
+        messages.success(request, f"Professor account '{pid}' created successfully.")
         return redirect('professors_list')
     return render(request, 'main/add_professor.html')
 
@@ -122,10 +134,10 @@ def import_professors(request):
     created = []
     for p in items:
         pid = p.get("professor_id")
-        if pid and not Professor.objects.filter(professor_id=pid).exists():
+        if pid and not Professor.objects.filter(professor_id=pid).exists() and not User.objects.filter(username=pid).exists():
             professor = Professor.objects.create(professor_id=pid, first_name=p.get("first_name"), last_name=p.get("last_name"), email=p.get("email"), created_at=timezone.now())
             created.append(professor)
-        create_premade_user(pid, p.get("email"), p.get("first_name"), p.get("last_name"), Profile.PROFESSOR)
+            create_premade_user(pid, p.get("email"), p.get("first_name"), p.get("last_name"), Profile.PROFESSOR)
     if created:
         log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} professor records")
     return JsonResponse({"count": len(created)})
@@ -146,8 +158,14 @@ def add_librarian(request):
     if request.method == "POST":
         lid = request.POST.get("librarian_id")
         first, last, email = request.POST.get("first_name"), request.POST.get("last_name"), request.POST.get("email")
-        Librarian.objects.get_or_create(librarian_id=lid, defaults={'first_name': first,'last_name': last,'email': email})
+        if Librarian.objects.filter(librarian_id=lid).exists() or User.objects.filter(username=lid).exists():
+            messages.error(request, f"Librarian ID '{lid}' already exists. Please choose a different ID.")
+            return render(request, 'main/add_librarian.html', {
+                "librarian_id": lid, "first_name": first, "last_name": last, "email": email
+            })
+        Librarian.objects.create(librarian_id=lid, first_name=first, last_name=last, email=email)
         create_premade_user(lid, email, first, last, Profile.LIBRARIAN)
+        messages.success(request, f"Librarian account '{lid}' created successfully.")
         return redirect('librarians_list')
     return render(request, 'main/add_librarian.html')
 
@@ -181,10 +199,9 @@ def import_librarians(request):
     created = []
     for i in items:
         lid = i.get("librarian_id")
-        if lid:
-            obj, c = Librarian.objects.get_or_create(librarian_id=lid, defaults={"first_name": i.get("first_name"), "last_name": i.get("last_name"), "email": i.get("email")})
-            if c:
-                created.append(obj)
+        if lid and not Librarian.objects.filter(librarian_id=lid).exists() and not User.objects.filter(username=lid).exists():
+            obj = Librarian.objects.create(librarian_id=lid, first_name=i.get("first_name"), last_name=i.get("last_name"), email=i.get("email"))
+            created.append(obj)
             create_premade_user(lid, i.get("email"), i.get("first_name"), i.get("last_name"), Profile.LIBRARIAN)
     if created:
         log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} librarian records")
@@ -206,8 +223,14 @@ def add_admin_staff(request):
     if request.method == "POST":
         aid = request.POST.get("admin_id")
         first, last, email = request.POST.get("first_name"), request.POST.get("last_name"), request.POST.get("email")
-        AdminStaff.objects.get_or_create(admin_id=aid, defaults={'first_name': first, 'last_name': last, 'email': email})
+        if AdminStaff.objects.filter(admin_id=aid).exists() or User.objects.filter(username=aid).exists():
+            messages.error(request, f"Admin ID '{aid}' already exists. Please choose a different ID.")
+            return render(request, 'main/add_admin_staff.html', {
+                "admin_id": aid, "first_name": first, "last_name": last, "email": email
+            })
+        AdminStaff.objects.create(admin_id=aid, first_name=first, last_name=last, email=email)
         create_premade_user(aid, email, first, last, Profile.ADMIN)
+        messages.success(request, f"Admin account '{aid}' created successfully.")
         return redirect('admin_staff_list')
     return render(request, 'main/add_admin_staff.html')
 
@@ -241,10 +264,9 @@ def import_admin_staff(request):
     created = []
     for i in items:
         aid = i.get("admin_id")
-        if aid:
-            obj, c = AdminStaff.objects.get_or_create(admin_id=aid, defaults={"first_name": i.get("first_name"), "last_name": i.get("last_name"), "email": i.get("email")})
-            if c:
-                created.append(obj)
+        if aid and not AdminStaff.objects.filter(admin_id=aid).exists() and not User.objects.filter(username=aid).exists():
+            obj = AdminStaff.objects.create(admin_id=aid, first_name=i.get("first_name"), last_name=i.get("last_name"), email=i.get("email"))
+            created.append(obj)
             create_premade_user(aid, i.get("email"), i.get("first_name"), i.get("last_name"), Profile.ADMIN)
     if created:
         log_admin_action(request.user, request.user, ADDITION, f"[BULK IMPORT] Imported {len(created)} admin records")

@@ -752,3 +752,75 @@ class CoAuthorIntegrationTestCase(TestCase):
         self.assertTrue(data['success'])
         self.assertEqual(data['student_id'], 'Student02')
         self.assertEqual(data['email'], 'student2@tcu.edu.ph')
+
+
+class DuplicateAccountsTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        # Create admin user
+        self.admin = User.objects.create_superuser(
+            username="Admin01",
+            email="admin01@tcu.edu.ph",
+            password="adminpassword"
+        )
+        from authapp.models import Profile
+        profile, _ = Profile.objects.get_or_create(user=self.admin)
+        profile.role = Profile.ADMIN
+        profile.save()
+        self.client.login(username="Admin01", password="adminpassword")
+
+        # Create an existing student
+        from main.models import Student
+        Student.objects.create(
+            student_id="StudentExist",
+            first_name="Existing",
+            last_name="Student",
+            email="exist@tcu.edu.ph"
+        )
+        User.objects.create_user(username="StudentExist", email="exist@tcu.edu.ph", password="passwordExist")
+
+    def test_add_student_duplicate_blocked(self):
+        """Verify that adding a student with an existing ID is blocked and returns an error."""
+        response = self.client.post(reverse("add_student"), {
+            "student_id": "StudentExist",
+            "first_name": "New",
+            "last_name": "Student",
+            "email": "new@tcu.edu.ph"
+        })
+        self.assertEqual(response.status_code, 200) # Form re-renders on validation error
+        # Verify student table size hasn't changed
+        from main.models import Student
+        self.assertEqual(Student.objects.filter(student_id="StudentExist").count(), 1)
+        self.assertEqual(Student.objects.all().count(), 1)
+
+    def test_import_students_duplicate_skipped(self):
+        """Verify that importing students skips those with existing IDs/usernames."""
+        import json
+        response = self.client.post(
+            reverse("import_students"),
+            data=json.dumps({
+                "students": [
+                    {
+                        "student_id": "StudentExist",
+                        "first_name": "Ignored",
+                        "last_name": "Import",
+                        "email": "ignored@tcu.edu.ph"
+                    },
+                    {
+                        "student_id": "StudentNew",
+                        "first_name": "Imported",
+                        "last_name": "Student",
+                        "email": "newimport@tcu.edu.ph"
+                    }
+                ]
+            }),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        # Only 1 student should be imported (StudentNew), StudentExist should be skipped cleanly
+        self.assertEqual(data["count"], 1)
+        from main.models import Student
+        self.assertTrue(Student.objects.filter(student_id="StudentNew").exists())
+        self.assertEqual(Student.objects.all().count(), 2)
+
