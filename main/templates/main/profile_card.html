@@ -300,6 +300,39 @@
         font-style: italic;
     }
 
+    .profile-stat-v2.stat-success {
+        background: linear-gradient(135deg, rgba(46, 204, 113, 0.04) 0%, rgba(39, 174, 96, 0.07) 100%);
+        border-color: rgba(46, 204, 113, 0.22);
+    }
+    .profile-stat-v2.stat-success .stat-label {
+        color: #27ae60;
+    }
+    .profile-stat-v2.stat-success .stat-value {
+        color: #27ae60;
+    }
+
+    .profile-stat-v2.stat-warning {
+        background: linear-gradient(135deg, rgba(243, 156, 18, 0.04) 0%, rgba(230, 126, 34, 0.07) 100%);
+        border-color: rgba(243, 156, 18, 0.22);
+    }
+    .profile-stat-v2.stat-warning .stat-label {
+        color: #d35400;
+    }
+    .profile-stat-v2.stat-warning .stat-value {
+        color: #d35400;
+    }
+
+    .profile-stat-v2.stat-danger {
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.04) 0%, rgba(192, 57, 43, 0.07) 100%);
+        border-color: rgba(231, 76, 60, 0.22);
+    }
+    .profile-stat-v2.stat-danger .stat-label {
+        color: #c0392b;
+    }
+    .profile-stat-v2.stat-danger .stat-value {
+        color: #c0392b;
+    }
+
     /* ---- ACTIONS ---- */
     .profile-actions {
         display: flex;
@@ -638,40 +671,117 @@
 
                 <!-- Stats row -->
                 <div class="profile-stats-row">
+                    {% if profile.role_code == 'student' %}
                     <div class="profile-stat-v2">
-                        <span class="stat-label"><i class="fas fa-file-alt" style="margin-right:4px;"></i>Total
-                            Submissions</span>
-                        <span class="stat-value">{{ profile.submission_count }}</span>
-                        <span class="stat-sub">All-time submissions</span>
+                        <span class="stat-label"><i class="fas fa-file-alt" style="margin-right:4px;"></i>Total Submissions</span>
+                        <span class="stat-value">{{ profile.total_submissions }}</span>
+                        <span class="stat-sub">Submitted papers</span>
                     </div>
 
-                    <div class="profile-stat-v2">
-                        <span class="stat-label"><i class="fas fa-bookmark" style="margin-right:4px;"></i>Most
-                            Recent</span>
-                        {% if profile.recent_submission_title %}
-                        <span class="stat-value" style="font-size:1rem; line-height:1.3; padding-top:4px;">
-                            {{ profile.recent_submission_title|truncatewords:6 }}
-                        </span>
-                        <span class="stat-sub">{{ profile.recent_submission_date|date:"M j, Y" }}</span>
+                    <div class="profile-stat-v2 stat-success">
+                        <span class="stat-label"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Approved Theses</span>
+                        <span class="stat-value">{{ profile.approved_count }}</span>
+                        <span class="stat-sub">In library catalog</span>
+                    </div>
+
+                    <div class="profile-stat-v2 stat-warning">
+                        <span class="stat-label"><i class="fas fa-history" style="margin-right:4px;"></i>Pending Review</span>
+                        <span class="stat-value">{{ profile.pending_count }}</span>
+                        <span class="stat-sub">Awaiting approval</span>
+                    </div>
+
+                    <div class="profile-stat-v2 stat-danger">
+                        <span class="stat-label"><i class="fas fa-reply" style="margin-right:4px;"></i>Returned/Rejected</span>
+                        <span class="stat-value">{{ profile.returned_count }}</span>
+                        <span class="stat-sub">Needs corrections</span>
+                    </div>
+
+                    <div class="profile-stat-v2" style="grid-column: 1 / -1; display: flex; flex-direction: column; justify-content: center; background: #fafafa; border: 1px dashed #ddd; text-align: left; padding: 16px 20px;">
+                        <span class="stat-label" style="color: #555; font-size: 0.72rem; font-weight: 700; margin-bottom: 4px;"><i class="fas fa-bookmark" style="margin-right:6px; color:#a31d23;"></i>Most Recent Activity</span>
+                        {% if profile.recent_title %}
+                        <p style="font-size: 0.95rem; font-weight: 700; color: #2d3436; margin: 4px 0 2px 0; line-height: 1.35;">{{ profile.recent_title }}</p>
+                        <span class="stat-sub" style="font-size: 0.76rem; color: #777; margin: 0; font-style: normal;">Submitted on {{ profile.recent_date|date:"F j, Y" }} &bull; Status: <strong>{{ profile.recent_status }}</strong></span>
                         {% else %}
-                        <span class="stat-value" style="font-size:1.4rem;">None yet</span>
-                        <span class="stat-sub">No submissions yet</span>
+                        <p style="font-size: 0.88rem; font-weight: 600; color: #7f8c8d; margin: 4px 0 0 0; font-style: italic;">No active submissions found.</p>
                         {% endif %}
                     </div>
+
+                    {% elif profile.role_code == 'professor' %}
+                    <div class="profile-stat-v2">
+                        <span class="stat-label"><i class="fas fa-graduation-cap" style="margin-right:4px;"></i>Theses Supervised</span>
+                        <span class="stat-value">{{ profile.total_supervised }}</span>
+                        <span class="stat-sub">Advised submissions</span>
+                    </div>
+
+                    <div class="profile-stat-v2 stat-success">
+                        <span class="stat-label"><i class="fas fa-check-double" style="margin-right:4px;"></i>Approved advisorships</span>
+                        <span class="stat-value">{{ profile.approved_supervised }}</span>
+                        <span class="stat-sub">Archived in library</span>
+                    </div>
+
+                    <div class="profile-stat-v2 stat-warning">
+                        <span class="stat-label"><i class="fas fa-clock" style="margin-right:4px;"></i>Pending Reviews</span>
+                        <span class="stat-value">{{ profile.pending_supervised }}</span>
+                        <span class="stat-sub">Awaiting confirmation</span>
+                    </div>
+
+                    <div class="profile-stat-v2" style="grid-column: 1 / -1; display: flex; flex-direction: column; justify-content: center; background: #fafafa; border: 1px dashed #ddd; text-align: left; padding: 16px 20px;">
+                        <span class="stat-label" style="color: #555; font-size: 0.72rem; font-weight: 700; margin-bottom: 4px;"><i class="fas fa-users-cog" style="margin-right:6px; color:#a31d23;"></i>Latest Mentorship</span>
+                        {% if profile.recent_title %}
+                        <p style="font-size: 0.95rem; font-weight: 700; color: #2d3436; margin: 4px 0 2px 0; line-height: 1.35;">{{ profile.recent_title }}</p>
+                        <span class="stat-sub" style="font-size: 0.76rem; color: #777; margin: 0; font-style: normal;">Supervised submission on {{ profile.recent_date|date:"F j, Y" }} &bull; Status: <strong>{{ profile.recent_status }}</strong></span>
+                        {% else %}
+                        <p style="font-size: 0.88rem; font-weight: 600; color: #7f8c8d; margin: 4px 0 0 0; font-style: italic;">No supervised submissions on record.</p>
+                        {% endif %}
+                    </div>
+
+                    {% elif profile.role_code == 'admin' or profile.role_code == 'librarian' %}
+                    <div class="profile-stat-v2">
+                        <span class="stat-label"><i class="fas fa-tools" style="margin-right:4px;"></i>System Actions Logged</span>
+                        <span class="stat-value">{{ profile.total_actions }}</span>
+                        <span class="stat-sub">All-time operations</span>
+                    </div>
+
+                    <div class="profile-stat-v2 stat-success">
+                        <span class="stat-label"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Approvals Processed</span>
+                        <span class="stat-value">{{ profile.approvals_processed }}</span>
+                        <span class="stat-sub">Added to main archives</span>
+                    </div>
+
+                    <div class="profile-stat-v2 stat-danger">
+                        <span class="stat-label"><i class="fas fa-times-circle" style="margin-right:4px;"></i>Rejections/Returns</span>
+                        <span class="stat-value">{{ profile.rejections_processed }}</span>
+                        <span class="stat-sub">Returned for corrections</span>
+                    </div>
+
+                    <div class="profile-stat-v2" style="grid-column: 1 / -1; display: flex; flex-direction: column; justify-content: center; background: #fafafa; border: 1px dashed #ddd; text-align: left; padding: 16px 20px;">
+                        <span class="stat-label" style="color: #555; font-size: 0.72rem; font-weight: 700; margin-bottom: 4px;"><i class="fas fa-history" style="margin-right:6px; color:#a31d23;"></i>Latest Action Log</span>
+                        {% if profile.recent_action_msg %}
+                        <p style="font-size: 0.95rem; font-weight: 700; color: #2d3436; margin: 4px 0 2px 0; line-height: 1.35;">{{ profile.recent_action_msg }}</p>
+                        <span class="stat-sub" style="font-size: 0.76rem; color: #777; margin: 0; font-style: normal;">Executed on {{ profile.recent_action_time|date:"F j, Y • g:i A" }}</span>
+                        {% else %}
+                        <p style="font-size: 0.88rem; font-weight: 600; color: #7f8c8d; margin: 4px 0 0 0; font-style: italic;">No system actions recorded yet.</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- Action buttons -->
                 <div class="profile-actions">
-                    {% if profile.is_admin %}
+                    {% if profile.role_code == 'admin' or profile.role_code == 'librarian' %}
                     <a href="{% url 'admin_dashboard' %}" class="profile-btn-primary">
                         <i class="fas fa-tachometer-alt"></i> Admin Dashboard
                     </a>
-                    {% else %}
+                    {% elif profile.role_code == 'student' %}
                     <a href="{% url 'student_dashboard' %}" class="profile-btn-primary">
                         <i class="fas fa-upload"></i> Submission Portal
                     </a>
                     <a href="{% url 'my_submissions' %}" class="profile-btn-outline">
                         <i class="fas fa-file-alt"></i> My Submissions
+                    </a>
+                    {% else %}
+                    <a href="{% url 'theses_list' %}" class="profile-btn-primary">
+                        <i class="fas fa-search"></i> Browse Thesis Catalog
                     </a>
                     {% endif %}
                     <button type="button" id="openChangePwBtn" class="profile-btn-outline">

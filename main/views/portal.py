@@ -55,13 +55,53 @@ def profile_card(request):
         "email": contact_email or "Not provided",
         "joined": user.date_joined,
         "last_login": user.last_login,
-        "submission_count": submissions_qs.count(),
-        "recent_submission_title": recent_submission.title if recent_submission else None,
-        "recent_submission_date": recent_submission.created_at if recent_submission else None,
         "initials": initials,
         "is_admin": profile_obj.role in [Profile.ADMIN, Profile.LIBRARIAN],
         "has_dashboard": profile_obj.role not in [Profile.ADMIN, Profile.LIBRARIAN],
     }
+
+    if profile_obj.role == Profile.STUDENT:
+        submissions_qs = Submission.objects.filter(submitter=user)
+        recent = submissions_qs.order_by('-created_at').first()
+        profile.update({
+            "total_submissions": submissions_qs.count(),
+            "approved_count": submissions_qs.filter(status='approved').count(),
+            "pending_count": submissions_qs.filter(status='pending').count(),
+            "returned_count": submissions_qs.filter(status='rejected').count(),
+            "recent_title": recent.title if recent else None,
+            "recent_date": recent.created_at if recent else None,
+            "recent_status": recent.get_status_display() if recent else None,
+        })
+    elif profile_obj.role == Profile.PROFESSOR:
+        from django.db.models import Q
+        supervised_qs = Submission.objects.filter(
+            Q(supervisor_email__iexact=user.email) | 
+            Q(co_supervisor_email__iexact=user.email) |
+            Q(supervisor_email__iexact=contact_email) |
+            Q(co_supervisor_email__iexact=contact_email)
+        )
+        recent = supervised_qs.order_by('-created_at').first()
+        profile.update({
+            "total_supervised": supervised_qs.count(),
+            "approved_supervised": supervised_qs.filter(status='approved').count(),
+            "pending_supervised": supervised_qs.filter(status='pending').count(),
+            "recent_title": recent.title if recent else None,
+            "recent_date": recent.created_at if recent else None,
+            "recent_status": recent.get_status_display() if recent else None,
+        })
+    elif profile_obj.role in [Profile.ADMIN, Profile.LIBRARIAN]:
+        from django.contrib.admin.models import LogEntry
+        total_actions = LogEntry.objects.filter(user_id=user.id).count()
+        approvals_processed = LogEntry.objects.filter(user_id=user.id, change_message__contains='[APPROVED]').count()
+        rejections_processed = LogEntry.objects.filter(user_id=user.id, change_message__contains='[REJECTED]').count()
+        recent_log = LogEntry.objects.filter(user_id=user.id).order_by('-action_time').first()
+        profile.update({
+            "total_actions": total_actions,
+            "approvals_processed": approvals_processed,
+            "rejections_processed": rejections_processed,
+            "recent_action_msg": recent_log.change_message if recent_log else None,
+            "recent_action_time": recent_log.action_time if recent_log else None,
+        })
 
     return render(request, 'main/profile_card.html', {"profile": profile})
 

@@ -561,3 +561,41 @@ class AdminTemplatesTestCase(TestCase):
         self.client.logout()
         response = self.client.get(reverse('student_dashboard'))
         self.assertEqual(response.status_code, 302)
+
+    def test_profile_card_for_student(self):
+        student_user = User.objects.create_user(
+            username="student_test_profile",
+            email="student_profile@test.com",
+            password="password123"
+        )
+        student_user.profile.role = 'student'
+        student_user.profile.save()
+        self.client.login(username="student_test_profile", password="password123")
+        response = self.client.get(reverse('profile_card'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('profile', response.context)
+        self.assertEqual(response.context['profile']['role_code'], 'student')
+        self.assertIn('total_submissions', response.context['profile'])
+
+    def test_profile_card_for_professor(self):
+        prof_user = User.objects.create_user(
+            username="prof_test_profile",
+            email="prof_profile@test.com",
+            password="password123"
+        )
+        prof_user.profile.role = 'professor'
+        prof_user.profile.save()
+        self.client.login(username="prof_test_profile", password="password123")
+        response = self.client.get(reverse('profile_card'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('profile', response.context)
+        self.assertEqual(response.context['profile']['role_code'], 'professor')
+        self.assertIn('total_supervised', response.context['profile'])
+
+    def test_profile_card_for_admin(self):
+        self.client.login(username="admin_test", password="password123")
+        response = self.client.get(reverse('profile_card'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('profile', response.context)
+        self.assertEqual(response.context['profile']['role_code'], 'admin')
+        self.assertIn('total_actions', response.context['profile'])
