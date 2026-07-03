@@ -4,7 +4,7 @@
 {% block title %}{{ category.name }} - Theses Library{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/categories.css' %}">
+<link rel="stylesheet" href="{% static 'css/categories.css' %}?v={% now 'U' %}">
 {% endblock %}
 
 {% block content %}

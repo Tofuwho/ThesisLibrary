@@ -2,11 +2,13 @@
     <h2>Results <span class="results-badge">{{ total_results }}</span></h2>
     <div class="cat-sort-options">
         <label for="sort-select">Sort by:</label>
-        <select class="cat-sort-select" id="sort-select">
+        <select class="cat-sort-select" id="sort-select" onchange="updateSort(this.value)">
             <option value="date-desc" {% if current_sort == 'date-desc' %}selected{% endif %}>Date (Newest First)</option>
             <option value="date-asc" {% if current_sort == 'date-asc' %}selected{% endif %}>Date (Oldest First)</option>
             <option value="title-asc" {% if current_sort == 'title-asc' %}selected{% endif %}>Title (A-Z)</option>
             <option value="title-desc" {% if current_sort == 'title-desc' %}selected{% endif %}>Title (Z-A)</option>
+            <option value="author-asc" {% if current_sort == 'author-asc' %}selected{% endif %}>Author (A-Z)</option>
+            <option value="author-desc" {% if current_sort == 'author-desc' %}selected{% endif %}>Author (Z-A)</option>
         </select>
     </div>
 </div>

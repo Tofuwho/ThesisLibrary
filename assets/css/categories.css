@@ -526,6 +526,45 @@ body .department-bookmarks .dept-bookmark.active {
     margin-left: 6px;
 }
 
+.cat-sort-options {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cat-sort-options label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cat-sort-select {
+    padding: 6px 30px 6px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background-color: var(--bento-card);
+    border: 1px solid var(--bento-border);
+    border-radius: 8px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23800000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+}
+
+.cat-sort-select:focus {
+    border-color: var(--dept-accent);
+    box-shadow: 0 0 0 3px rgba(var(--dept-accent-rgb), 0.1);
+}
+
 /* Bento Grid Layout (Wide Columns to prevent text cramp) */
 .cat-thesis-list {
     display: grid;
