@@ -466,7 +466,7 @@ canvas {
   position: relative !important;
 }
 
-.admin-search-input {
+input[type="text"].admin-search-input {
   width: 100% !important;
   max-width: 380px !important;
   padding: 10px 14px 10px 38px !important;
@@ -478,7 +478,7 @@ canvas {
   transition: var(--transition) !important;
 }
 
-.admin-search-input:focus {
+input[type="text"].admin-search-input:focus {
   border-color: var(--primary-red) !important;
   box-shadow: 0 0 0 3px rgba(163, 29, 35, 0.08) !important;
 }
@@ -1266,19 +1266,19 @@ textarea:focus {
   font-size: 0.85rem;
 }
 
-.org-search-input {
-  width: 100%;
-  padding: 8px 12px 8px 32px;
-  border: 1px solid #dfe6e9;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  transition: all 0.2s ease;
+input[type="text"].org-search-input {
+  width: 100% !important;
+  padding: 8px 12px 8px 32px !important;
+  border: 1px solid #dfe6e9 !important;
+  border-radius: 8px !important;
+  font-size: 0.85rem !important;
+  transition: all 0.2s ease !important;
 }
 
-.org-search-input:focus {
-  outline: none;
-  border-color: #a31d23;
-  box-shadow: 0 0 0 3px rgba(163, 29, 35, 0.08);
+input[type="text"].org-search-input:focus {
+  outline: none !important;
+  border-color: #a31d23 !important;
+  box-shadow: 0 0 0 3px rgba(163, 29, 35, 0.08) !important;
 }
 
 /* Organization Delete Button */
