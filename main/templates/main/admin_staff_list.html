@@ -31,11 +31,9 @@
           </div>
           <div class="button-group">
             {% if request.user.profile.role == 'admin' %}
-            <button onclick="downloadAdminTemplate()" class="btn-admin-secondary">
-              <i class="fas fa-file-download" style="color: #0284c7;"></i> Download Template
+            <button onclick="openImportModal()" class="btn-admin-secondary">
+              <i class="fas fa-file-import"></i> Bulk Import
             </button>
-            <label for="importFile" class="btn-admin-secondary" style="cursor:pointer;"><i class="fas fa-file-import"></i> Bulk Import</label>
-            <input type="file" id="importFile" accept=".csv, .xls, .xlsx" style="display:none;">
             <a href="{% url 'add_admin_staff' %}" class="btn-admin-primary"><i class="fas fa-plus"></i> Add Admin</a>
             {% endif %}
           </div>
@@ -79,6 +77,78 @@
   </div>
 </div>
 
+<!-- Bulk Import Modal -->
+<div id="importModal" class="admin-modal">
+  <div class="admin-modal-content">
+    <div class="admin-modal-header">
+      <h3><i class="fas fa-file-import" style="color: var(--primary-red);"></i> Bulk Import Admin Staff</h3>
+      <button class="modal-close" onclick="closeImportModal()">&times;</button>
+    </div>
+    <div class="admin-modal-body">
+      <p class="modal-intro">Upload a CSV or Excel file to create multiple admin staff accounts at once. Make sure your file matches our required template format.</p>
+      
+      <!-- Template Download Card -->
+      <div class="template-download-card">
+        <div class="card-info">
+          <i class="fas fa-file-excel excel-icon"></i>
+          <div>
+            <h4>Don't have the template?</h4>
+            <p>Download our pre-formatted Excel template to ensure your upload goes smoothly.</p>
+          </div>
+        </div>
+        <button onclick="downloadAdminTemplate()" class="btn-template-download">
+          <i class="fas fa-download"></i> Download Template
+        </button>
+      </div>
+
+      <!-- Dropzone Area -->
+      <div class="upload-dropzone" id="uploadDropzone">
+        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+        <p class="dropzone-text">Drag and drop your file here or <span class="browse-link">browse</span></p>
+        <p class="dropzone-subtext">Supports .csv, .xls, .xlsx</p>
+        <input type="file" id="modalImportFile" accept=".csv, .xls, .xlsx" style="display:none;">
+      </div>
+
+      <!-- Selected File & Preview Area -->
+      <div id="previewArea" class="import-preview-area" style="display: none;">
+        <div class="selected-file-info">
+          <i class="fas fa-file-alt file-icon"></i>
+          <div class="file-details">
+            <span id="fileName" class="file-name">admins.xlsx</span>
+            <span id="fileSize" class="file-size">12.5 KB</span>
+          </div>
+          <button class="btn-remove-file" onclick="resetImportModal()"><i class="fas fa-trash-alt"></i></button>
+        </div>
+        
+        <div class="preview-table-container">
+          <h4>Parsed Accounts Preview (<span id="previewCount">0</span>)</h4>
+          <table class="preview-table" id="previewTable">
+            <thead>
+              <tr>
+                <th>Admin ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn-admin-secondary" onclick="closeImportModal()">Cancel</button>
+      <button class="btn-admin-primary" id="btnConfirmImport" disabled onclick="executeImport()">
+        <span class="btn-text">Import Accounts</span>
+        <span class="btn-spinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Processing...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="{% static 'js/xlsx.full.min.js' %}"></script>
 <script>
   // Export Logic
@@ -108,71 +178,212 @@
     XLSX.writeFile(workbook, "Admins_Import_Template.xlsx");
   }
 
-  // Import Logic
-  let importedData = [];
-  document.getElementById("importFile").addEventListener("change", function() {
-    const file = this.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    const ext = file.name.split(".").pop().toLowerCase();
-    reader.onload = (e) => {
-        if(ext === "csv") processCSV(e.target.result);
-        else if(ext === "xls" || ext === "xlsx") processExcel(e.target.result);
-    };
-    if(ext === "csv") reader.readAsText(file);
-    else reader.readAsArrayBuffer(file);
+  let parsedAdmins = [];
+
+  function openImportModal() {
+    document.getElementById("importModal").classList.add("active");
+  }
+
+  function closeImportModal() {
+    document.getElementById("importModal").classList.remove("active");
+    resetImportModal();
+  }
+
+  function resetImportModal() {
+    document.getElementById("modalImportFile").value = "";
+    document.getElementById("previewArea").style.display = "none";
+    document.getElementById("uploadDropzone").style.display = "block";
+    document.getElementById("btnConfirmImport").disabled = true;
+    document.getElementById("previewTable").querySelector("tbody").innerHTML = "";
+    parsedAdmins = [];
+  }
+
+  // Setup drag-and-drop listeners
+  window.addEventListener("load", () => {
+    const dropzone = document.getElementById("uploadDropzone");
+    if (!dropzone) return;
+
+    dropzone.addEventListener("click", () => {
+      document.getElementById("modalImportFile").click();
+    });
+
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.classList.remove("dragover");
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleSelectedFile(files[0]);
+      }
+    });
+
+    document.getElementById("modalImportFile").addEventListener("change", function() {
+      if (this.files.length > 0) {
+        handleSelectedFile(this.files[0]);
+      }
+    });
   });
 
-  function processCSV(text) {
-    const lines = text.split("\n").map(l => l.split(","));
-    const col = mapColumns(lines[0]);
-    importedData = [];
-    for(let i=1; i<lines.length; i++) {
-        const item = extractItem(lines[i], col);
-        if(item) importedData.push(item);
+  function handleSelectedFile(file) {
+    document.getElementById("fileName").textContent = file.name;
+    document.getElementById("fileSize").textContent = (file.size / 1024).toFixed(1) + " KB";
+    
+    const reader = new FileReader();
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    reader.onload = (e) => {
+      if (ext === "csv") {
+        processCSVData(e.target.result);
+      } else if (ext === "xls" || ext === "xlsx") {
+        processExcelData(e.target.result);
+      }
+    };
+
+    if (ext === "csv") {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
     }
-    saveToDb();
   }
 
-  function processExcel(binary) {
-    const wb = XLSX.read(binary, {type:"array"});
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
-    const col = mapColumns(rows[0]);
-    importedData = [];
-    for(let i=1; i<rows.length; i++) {
-        const item = extractItem(rows[i], col);
-        if(item) importedData.push(item);
-    }
-    saveToDb();
-  }
-
-  function mapColumns(head) {
-    const m = {};
-    head.forEach((h, i) => {
-      const k = h.trim().toLowerCase();
-      if(k.includes("id")) m.id = i;
-      if(k.includes("first")) m.first = i;
-      if(k.includes("last")) m.last = i;
-      if(k.includes("email")) m.email = i;
+  function mapColumns(headerRow) {
+    const map = {};
+    headerRow.forEach((h, i) => {
+      const key = h.trim().toLowerCase();
+      if (key.includes("id")) map.id = i;
+      if (key.includes("first")) map.first = i;
+      if (key.includes("last")) map.last = i;
+      if (key.includes("email")) map.email = i;
     });
-    return m;
+    return map;
+  }
+
+  function processCSVData(text) {
+    const lines = text.split("\n").map(l => l.split(","));
+    const headers = lines[0];
+    const col = mapColumns(headers);
+
+    if (Object.keys(col).length === 0) {
+      alert("No valid admin staff columns found. Header must include Admin ID, First Name, Last Name, and Email.");
+      resetImportModal();
+      return;
+    }
+
+    parsedAdmins = [];
+    for (let i = 1; i < lines.length; i++) {
+      const item = extractItem(lines[i], col);
+      if (item) parsedAdmins.push(item);
+    }
+
+    showPreview();
+  }
+
+  function processExcelData(binary) {
+    const data = new Uint8Array(binary);
+    const arr = Array.from(data).map(byte => String.fromCharCode(byte)).join("");
+    const workbook = XLSX.read(arr, { type: "binary" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    const headers = rows[0];
+    const col = mapColumns(headers);
+
+    if (Object.keys(col).length === 0) {
+      alert("No valid admin columns found in Excel. Header must include Admin ID, First Name, Last Name, and Email.");
+      resetImportModal();
+      return;
+    }
+
+    parsedAdmins = [];
+    for (let i = 1; i < rows.length; i++) {
+      const item = extractItem(rows[i], col);
+      if (item) parsedAdmins.push(item);
+    }
+
+    showPreview();
   }
 
   function extractItem(row, col) {
-    const id = row[col.id]?.toString().trim();
-    if(!id) return null;
-    return { admin_id: id, first_name: row[col.first], last_name: row[col.last], email: row[col.email] };
+    const id = col.id !== undefined ? (row[col.id] || "").toString().trim() : "";
+    const firstName = col.first !== undefined ? (row[col.first] || "").toString().trim() : "";
+    const lastName = col.last !== undefined ? (row[col.last] || "").toString().trim() : "";
+    const email = col.email !== undefined ? (row[col.email] || "").toString().trim() : "";
+
+    if (!id) return null;
+    return { admin_id: id, first_name: firstName, last_name: lastName, email: email };
   }
 
-  function saveToDb() {
-    fetch("{% url 'import_admin_staff' %}", {
-        method: "POST",
-        headers: { "X-CSRFToken": "{{ csrf_token }}", "Content-Type": "application/json" },
-        body: JSON.stringify({ admins: importedData })
-    }).then(r => r.json()).then(d => {
-        alert("Imported " + d.count + " records.");
-        location.reload();
+  function showPreview() {
+    if (parsedAdmins.length === 0) {
+      alert("No valid accounts found in the file.");
+      resetImportModal();
+      return;
+    }
+
+    const tbody = document.getElementById("previewTable").querySelector("tbody");
+    tbody.innerHTML = "";
+    
+    parsedAdmins.slice(0, 10).forEach(a => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${a.admin_id}</strong></td>
+        <td>${a.first_name || "—"}</td>
+        <td>${a.last_name || "—"}</td>
+        <td>${a.email || "—"}</td>
+      `;
+      tbody.appendChild(tr);
     });
+
+    if (parsedAdmins.length > 10) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="4" style="text-align: center; color: var(--text-muted); font-style: italic;">... and ${parsedAdmins.length - 10} more rows</td>`;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById("previewCount").textContent = parsedAdmins.length + " rows";
+    document.getElementById("uploadDropzone").style.display = "none";
+    document.getElementById("previewArea").style.display = "block";
+    document.getElementById("btnConfirmImport").disabled = false;
+  }
+
+  function executeImport() {
+    if (parsedAdmins.length === 0) return;
+
+    const btn = document.getElementById("btnConfirmImport");
+    const textSpan = btn.querySelector(".btn-text");
+    const spinnerSpan = btn.querySelector(".btn-spinner");
+
+    btn.disabled = true;
+    textSpan.style.display = "none";
+    spinnerSpan.style.display = "inline-flex";
+
+    fetch("{% url 'import_admin_staff' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ admins: parsedAdmins })
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert(`Successfully imported ${data.count} accounts.`);
+        location.reload();
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Import failed.");
+        btn.disabled = false;
+        textSpan.style.display = "inline-flex";
+        spinnerSpan.style.display = "none";
+      });
   }
 
   // Search Logic

@@ -33,11 +33,9 @@
           </div>
           <div class="button-group">
             {% if request.user.profile.role == 'admin' %}
-            <button onclick="downloadProfessorTemplate()" class="btn-admin-secondary">
-              <i class="fas fa-file-download" style="color: #0284c7;"></i> Download Template
+            <button onclick="openImportModal()" class="btn-admin-secondary">
+              <i class="fas fa-file-import"></i> Bulk Import
             </button>
-            <label for="importProfessorFile" class="btn-admin-secondary" style="cursor:pointer;"><i class="fas fa-file-import"></i> Bulk Import</label>
-            <input type="file" id="importProfessorFile" accept=".csv, .xls, .xlsx" style="display:none;">
             <a href="{% url 'add_professor' %}" class="btn-admin-primary"><i class="fas fa-plus"></i> Add Professor</a>
             {% endif %}
           </div>
@@ -90,6 +88,78 @@
 
         <div id="professorPagination" class="pagination"></div>
       </div>
+  </div>
+</div>
+
+<!-- Bulk Import Modal -->
+<div id="importModal" class="admin-modal">
+  <div class="admin-modal-content">
+    <div class="admin-modal-header">
+      <h3><i class="fas fa-file-import" style="color: var(--primary-red);"></i> Bulk Import Staff / Professors</h3>
+      <button class="modal-close" onclick="closeImportModal()">&times;</button>
+    </div>
+    <div class="admin-modal-body">
+      <p class="modal-intro">Upload a CSV or Excel file to create multiple staff/professor accounts at once. Make sure your file matches our required template format.</p>
+      
+      <!-- Template Download Card -->
+      <div class="template-download-card">
+        <div class="card-info">
+          <i class="fas fa-file-excel excel-icon"></i>
+          <div>
+            <h4>Don't have the template?</h4>
+            <p>Download our pre-formatted Excel template to ensure your upload goes smoothly.</p>
+          </div>
+        </div>
+        <button onclick="downloadProfessorTemplate()" class="btn-template-download">
+          <i class="fas fa-download"></i> Download Template
+        </button>
+      </div>
+
+      <!-- Dropzone Area -->
+      <div class="upload-dropzone" id="uploadDropzone">
+        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+        <p class="dropzone-text">Drag and drop your file here or <span class="browse-link">browse</span></p>
+        <p class="dropzone-subtext">Supports .csv, .xls, .xlsx</p>
+        <input type="file" id="modalImportFile" accept=".csv, .xls, .xlsx" style="display:none;">
+      </div>
+
+      <!-- Selected File & Preview Area -->
+      <div id="previewArea" class="import-preview-area" style="display: none;">
+        <div class="selected-file-info">
+          <i class="fas fa-file-alt file-icon"></i>
+          <div class="file-details">
+            <span id="fileName" class="file-name">professors.xlsx</span>
+            <span id="fileSize" class="file-size">12.5 KB</span>
+          </div>
+          <button class="btn-remove-file" onclick="resetImportModal()"><i class="fas fa-trash-alt"></i></button>
+        </div>
+        
+        <div class="preview-table-container">
+          <h4>Parsed Accounts Preview (<span id="previewCount">0</span>)</h4>
+          <table class="preview-table" id="previewTable">
+            <thead>
+              <tr>
+                <th>Professor ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn-admin-secondary" onclick="closeImportModal()">Cancel</button>
+      <button class="btn-admin-primary" id="btnConfirmImport" disabled onclick="executeImport()">
+        <span class="btn-text">Import Accounts</span>
+        <span class="btn-spinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Processing...</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -201,21 +271,81 @@
     professorTable.style.visibility = "visible";
   });
 
-  document.getElementById("importProfessorFile").addEventListener("change", function () {
-    const file = this.files[0];
-    if (!file) return;
+  let parsedProfessors = [];
 
+  function openImportModal() {
+    document.getElementById("importModal").classList.add("active");
+  }
+
+  function closeImportModal() {
+    document.getElementById("importModal").classList.remove("active");
+    resetImportModal();
+  }
+
+  function resetImportModal() {
+    document.getElementById("modalImportFile").value = "";
+    document.getElementById("previewArea").style.display = "none";
+    document.getElementById("uploadDropzone").style.display = "block";
+    document.getElementById("btnConfirmImport").disabled = true;
+    document.getElementById("previewTable").querySelector("tbody").innerHTML = "";
+    parsedProfessors = [];
+  }
+
+  // Setup drag-and-drop listeners
+  window.addEventListener("load", () => {
+    const dropzone = document.getElementById("uploadDropzone");
+    if (!dropzone) return;
+
+    dropzone.addEventListener("click", () => {
+      document.getElementById("modalImportFile").click();
+    });
+
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.classList.remove("dragover");
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleSelectedFile(files[0]);
+      }
+    });
+
+    document.getElementById("modalImportFile").addEventListener("change", function() {
+      if (this.files.length > 0) {
+        handleSelectedFile(this.files[0]);
+      }
+    });
+  });
+
+  function handleSelectedFile(file) {
+    document.getElementById("fileName").textContent = file.name;
+    document.getElementById("fileSize").textContent = (file.size / 1024).toFixed(1) + " KB";
+    
     const reader = new FileReader();
     const ext = file.name.split(".").pop().toLowerCase();
 
     reader.onload = (e) => {
-      if (ext === "csv") processCSV(e.target.result);
-      else if (ext === "xls" || ext === "xlsx") processExcel(e.target.result, ext);
+      if (ext === "csv") {
+        processCSVData(e.target.result);
+      } else if (ext === "xls" || ext === "xlsx") {
+        processExcelData(e.target.result);
+      }
     };
 
-    if (ext === "csv") reader.readAsText(file);
-    else reader.readAsArrayBuffer(file);
-  });
+    if (ext === "csv") {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
+  }
 
   function mapColumns(headerRow) {
     const map = {};
@@ -229,58 +359,124 @@
     return map;
   }
 
-  function extractProfessor(row, col) {
-    const professorID = col.professor_id !== undefined ? (row[col.professor_id] || "").trim() : "";
-    const firstName = col.first_name !== undefined ? (row[col.first_name] || "").trim() : "";
-    const lastName = col.last_name !== undefined ? (row[col.last_name] || "").trim() : "";
-    const email = col.email !== undefined ? (row[col.email] || "").trim() : "";
-    if (!professorID) return null;
-    return { professor_id: professorID, first_name: firstName, last_name: lastName, email: email };
-  }
-
-  function processCSV(text) {
+  function processCSVData(text) {
     const lines = text.split("\n").map(l => l.split(","));
     const headers = lines[0];
     const col = mapColumns(headers);
-    if (!Object.keys(col).length) { alert("No valid professor columns found."); return; }
-    importedProfessors = [];
+
+    if (Object.keys(col).length === 0) {
+      alert("No valid professor columns found. Header must include Professor ID, First Name, Last Name, and Email.");
+      resetImportModal();
+      return;
+    }
+
+    parsedProfessors = [];
     for (let i = 1; i < lines.length; i++) {
       const prof = extractProfessor(lines[i], col);
-      if (prof) importedProfessors.push(prof);
+      if (prof) parsedProfessors.push(prof);
     }
-    saveImportedToDatabase();
+
+    showPreview();
   }
 
-  function processExcel(binary) {
+  function processExcelData(binary) {
     const data = new Uint8Array(binary);
-    const arr = Array.from(data).map(b => String.fromCharCode(b)).join("");
+    const arr = Array.from(data).map(byte => String.fromCharCode(byte)).join("");
     const workbook = XLSX.read(arr, { type: "binary" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
     const headers = rows[0];
     const col = mapColumns(headers);
-    if (!Object.keys(col).length) { alert("No valid professor columns found."); return; }
-    importedProfessors = [];
+
+    if (Object.keys(col).length === 0) {
+      alert("No valid professor columns found in Excel. Header must include Professor ID, First Name, Last Name, and Email.");
+      resetImportModal();
+      return;
+    }
+
+    parsedProfessors = [];
     for (let i = 1; i < rows.length; i++) {
       const prof = extractProfessor(rows[i], col);
-      if (prof) importedProfessors.push(prof);
+      if (prof) parsedProfessors.push(prof);
     }
-    saveImportedToDatabase();
+
+    showPreview();
   }
 
-  function saveImportedToDatabase() {
-    if (!importedProfessors.length) { alert("No valid data to import."); return; }
+  function extractProfessor(row, col) {
+    const professorID = col.professor_id !== undefined ? (row[col.professor_id] || "").toString().trim() : "";
+    const firstName = col.first_name !== undefined ? (row[col.first_name] || "").toString().trim() : "";
+    const lastName = col.last_name !== undefined ? (row[col.last_name] || "").toString().trim() : "";
+    const email = col.email !== undefined ? (row[col.email] || "").toString().trim() : "";
+
+    if (!professorID) return null;
+    return { professor_id: professorID, first_name: firstName, last_name: lastName, email: email };
+  }
+
+  function showPreview() {
+    if (parsedProfessors.length === 0) {
+      alert("No valid accounts found in the file.");
+      resetImportModal();
+      return;
+    }
+
+    const tbody = document.getElementById("previewTable").querySelector("tbody");
+    tbody.innerHTML = "";
+    
+    parsedProfessors.slice(0, 10).forEach(p => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${p.professor_id}</strong></td>
+        <td>${p.first_name || "—"}</td>
+        <td>${p.last_name || "—"}</td>
+        <td>${p.email || "—"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    if (parsedProfessors.length > 10) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="4" style="text-align: center; color: var(--text-muted); font-style: italic;">... and ${parsedProfessors.length - 10} more rows</td>`;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById("previewCount").textContent = parsedProfessors.length + " rows";
+    document.getElementById("uploadDropzone").style.display = "none";
+    document.getElementById("previewArea").style.display = "block";
+    document.getElementById("btnConfirmImport").disabled = false;
+  }
+
+  function executeImport() {
+    if (parsedProfessors.length === 0) return;
+
+    const btn = document.getElementById("btnConfirmImport");
+    const textSpan = btn.querySelector(".btn-text");
+    const spinnerSpan = btn.querySelector(".btn-spinner");
+
+    btn.disabled = true;
+    textSpan.style.display = "none";
+    spinnerSpan.style.display = "inline-flex";
+
     fetch("/import-professors/", {
       method: "POST",
-      headers: { "X-CSRFToken": getCSRFToken(), "Content-Type": "application/json" },
-      body: JSON.stringify({ professors: importedProfessors })
+      headers: {
+        "X-CSRFToken": getCSRFToken(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ professors: parsedProfessors })
     })
       .then(res => res.json())
       .then(data => {
-        if (data.count > 0) addProfessorsToTable(data.professors);
-        else alert("No professors were added (maybe duplicates).");
-        importedProfessors = [];
-      }).catch(err => { console.error(err); alert("Import failed."); });
+        alert(`Successfully imported ${data.count} accounts.`);
+        location.reload();
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Import failed.");
+        btn.disabled = false;
+        textSpan.style.display = "inline-flex";
+        spinnerSpan.style.display = "none";
+      });
   }
 
   function addProfessorsToTable(professors) {
