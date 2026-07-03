@@ -191,9 +191,29 @@ def admin_log_entries(request):
             processed.append(log)
         return processed
 
-    security_logs = process_logs(all_logs_qs.filter(Q(change_message__icontains='Login') | Q(change_message__icontains='password') | Q(change_message__icontains='reset')))
-    user_logs     = process_logs(all_logs_qs.filter(Q(change_message__icontains='role') | Q(change_message__icontains='deleted user')))
-    thesis_logs   = process_logs(all_logs_qs.filter(Q(change_message__icontains='APPROVED') | Q(change_message__icontains='Rejected') | Q(change_message__icontains='Submission') | Q(change_message__icontains='Thesis')))
+    security_logs = process_logs(all_logs_qs.filter(
+        Q(change_message__icontains='Login') | 
+        Q(change_message__icontains='password') | 
+        Q(change_message__icontains='reset') |
+        Q(change_message__icontains='Security')
+    ))
+    user_logs     = process_logs(all_logs_qs.filter(
+        Q(change_message__icontains='role') | 
+        Q(change_message__icontains='deleted user') |
+        Q(change_message__icontains='Account') |
+        Q(change_message__icontains='Student') |
+        Q(change_message__icontains='Professor') |
+        Q(change_message__icontains='Librarian') |
+        Q(change_message__icontains='Admin Staff') |
+        Q(content_type__model__in=['student', 'professor', 'librarian', 'adminstaff', 'profile'])
+    ))
+    thesis_logs   = process_logs(all_logs_qs.filter(
+        Q(change_message__icontains='APPROVED') | 
+        Q(change_message__icontains='Rejected') | 
+        Q(change_message__icontains='Submission') | 
+        Q(change_message__icontains='Thesis') |
+        Q(content_type__model__in=['thesis', 'submission', 'rejectedthesis'])
+    ))
     import_logs   = process_logs(all_logs_qs.filter(change_message__icontains='BULK IMPORT'))
     all_logs      = process_logs(all_logs_qs)
 
