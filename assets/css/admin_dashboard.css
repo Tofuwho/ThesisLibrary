@@ -814,3 +814,177 @@ textarea:focus {
   color: #ffffff !important;
   box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25) !important;
 }
+
+/* ============================================================
+   BENTO GRID & LIBRARY CARDS OVERRIDES (Categories.css consistency)
+   ============================================================ */
+.cat-thesis-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+  gap: 1.5rem;
+  padding: 0 !important;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.cat-thesis-item {
+  display: flex !important;
+  background: #ffffff !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.015);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  min-height: 220px !important;
+}
+
+.cat-thesis-item:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Department Cover Gradients for Admin Lists */
+.cat-thesis-item-cover.dept-graduate { background: linear-gradient(160deg, #7c3aed 0%, #4c1d95 100%) !important; }
+.cat-thesis-item-cover.dept-ce { background: linear-gradient(160deg, #10b981 0%, #064e3b 100%) !important; }
+.cat-thesis-item-cover.dept-cict { background: linear-gradient(160deg, #0284c7 0%, #0c4a6e 100%) !important; }
+.cat-thesis-item-cover.dept-cas { background: linear-gradient(160deg, #f59e0b 0%, #78350f 100%) !important; }
+.cat-thesis-item-cover.dept-cbm { background: linear-gradient(160deg, #4f46e5 0%, #1e1b4b 100%) !important; }
+.cat-thesis-item-cover.dept-ccj { background: linear-gradient(160deg, #4b5563 0%, #111827 100%) !important; }
+.cat-thesis-item-cover.dept-chtm { background: linear-gradient(160deg, #ef4444 0%, #7f1d1d 100%) !important; }
+.cat-thesis-item-cover.dept-cet { background: linear-gradient(160deg, #f97316 0%, #7c2d12 100%) !important; }
+.cat-thesis-item-cover.dept-ippg { background: linear-gradient(160deg, #0d9488 0%, #115e59 100%) !important; }
+.cat-thesis-item-cover.dept-coll { background: linear-gradient(160deg, #800000 0%, #450a0a 100%) !important; }
+
+/* Status Badges */
+.bento-status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bento-status-pending {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.bento-status-approved {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.bento-status-rejected {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Call Label Spine Sticker style */
+.library-call-label {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #333;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  text-align: center;
+  min-width: 85px;
+}
+
+.library-call-label .call-prefix {
+  font-size: 0.55rem;
+  color: #888;
+  border-bottom: 1px solid #eee;
+  width: 100%;
+  margin-bottom: 2px;
+  padding-bottom: 2px;
+}
+
+/* Rejection Bubble */
+.bento-rejection-bubble {
+  background: #fdf2f2;
+  border: 1px solid #fde2e2;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  font-size: 0.74rem;
+  color: #9b1c1c;
+}
+
+.bento-rejection-bubble strong {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.bento-rejection-bubble p {
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card Button Actions Override */
+.bento-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.bento-btn-approve,
+.bento-btn-reject,
+.bento-btn-view {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bento-btn-approve {
+  background: #2e7d32;
+  color: white;
+}
+
+.bento-btn-approve:hover {
+  background: #1b5e20;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+}
+
+.bento-btn-reject {
+  background: #c62828;
+  color: white;
+}
+
+.bento-btn-reject:hover {
+  background: #b71c1c;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.3);
+}
+
+.bento-btn-view {
+  background: rgba(25, 118, 210, 0.08);
+  color: #1976d2;
+}
+
+.bento-btn-view:hover {
+  background: #1976d2;
+  color: white;
+}

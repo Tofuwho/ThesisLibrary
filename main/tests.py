@@ -408,3 +408,67 @@ class Updated_Test(TestCase):
     test_tc022_download_logging = test_tc022_download_disabled
     test_tc023_invalid_thesis_download = test_tc023_download_disabled_for_invalid_id
     test_tc024_ajax_unauthorized_download = test_tc024_ajax_download_disabled
+
+
+class AdminTemplatesTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        # Create a staff user
+        self.staff_user = User.objects.create_superuser(
+            username="admin_test",
+            email="admin@test.com",
+            password="password123"
+        )
+        self.client.login(username="admin_test", password="password123")
+        
+        # Create category, department, course, and a thesis for rendering
+        self.category = Category.objects.create(name="Undergraduate")
+        self.department = Department.objects.create(name="CICT", category=self.category)
+        self.course = Course.objects.create(name="BSCS", department=self.department)
+        
+        # Create a pending submission
+        self.pending = Submission.objects.create(
+            submitter=self.staff_user,
+            title="Pending Thesis",
+            author="Author One",
+            year=2026,
+            abstract="Abstract here",
+            status="pending",
+            category=self.category,
+            department=self.department,
+            course=self.course
+        )
+        # Create an approved thesis
+        self.approved = Thesis.objects.create(
+            title="Approved Thesis",
+            author="Author Two",
+            year=2026,
+            abstract="Abstract here",
+            category=self.category,
+            department=self.department,
+            course=self.course
+        )
+        # Create a rejected submission
+        self.rejected = RejectedThesis.objects.create(
+            title="Rejected Thesis",
+            author="Author Three",
+            year=2026,
+            abstract="Abstract here",
+            rejection_reason="Typo",
+            category=self.category,
+            department=self.department,
+            course=self.course,
+            rejected_by=self.staff_user
+        )
+
+    def test_pending_submissions_renders(self):
+        response = self.client.get(reverse('pending_submissions'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_approved_theses_renders(self):
+        response = self.client.get(reverse('theses_list'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_rejected_theses_renders(self):
+        response = self.client.get(reverse('rejected_thesis_list'))
+        self.assertEqual(response.status_code, 200)

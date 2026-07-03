@@ -1,10 +1,11 @@
 {% extends 'main/base.html' %}
-{% load static %}
+{% load static department_filters %}
 
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/categories.css' %}?v=2.2">
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.2">
 <style>
   .search-bar {
     margin-bottom: 1rem;
@@ -171,90 +172,156 @@
     <div class="dashboard-section" style="margin-top: 2rem;">
       <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
 
-        <div class="search-bar">
+        <div class="search-bar" style="display: flex; gap: 10px; align-items: center; justify-content: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap;">
           <button onclick="exportTableToExcel('thesisTable', 'Pending_Submissions')" class="add-btn"
-            style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
+            style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; font-weight:600; height: 38px; display: inline-flex; align-items: center; gap: 6px;">
             📊 Export
           </button>
-          <input type="text" id="searchInput" class="search-input" placeholder="Search submissions...">
+          
+          <select id="sortSelect" class="search-input" style="width: 160px; height: 38px; padding: 0 10px; margin-bottom: 0;">
+            <option value="recent">Most Recent</option>
+            <option value="title">Title (A-Z)</option>
+            <option value="author">Author (A-Z)</option>
+            <option value="year">Newest Year</option>
+          </select>
+
+          <input type="text" id="searchInput" class="search-input" placeholder="Search submissions..." style="margin-bottom: 0; height: 38px;">
         </div>
 
-        <table id="thesisTable" style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr style="background-color:#f8f9fa;">
-              <th style="padding:0.8rem;">LC Classification</th>
-              <th style="padding:0.8rem;">Thesis Title</th>
-              <th style="padding:0.8rem;">Lead Author</th>
-              <th style="padding:0.8rem;">Academic Year</th>
-              <th style="padding:0.8rem;">Review Status</th>
-              <th style="padding:0.8rem;">College/Dept</th>
-              <th style="padding:0.8rem;">Faculty Adviser</th>
-              <th style="padding:0.8rem;">Degree Program</th>
-              <th style="padding:0.8rem;">Submission Date</th>
-              <th style="padding:0.8rem;">Signed Approval</th>
-              <th style="padding:0.8rem;">Review Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for thesis in theses %}
-            <tr style="border-bottom:1px solid #eee;">
-              <td style="padding:0.8rem; color: #666; font-style: italic;">
-                {% if thesis.lc_classification %}
-                {{ thesis.lc_classification }}
-                {% else %}
-                <span style="color:#999;">Not Issued</span>
-                {% endif %}
-              </td>
-              <td style="padding:0.8rem; color: #0277bd; font-weight: 500;">{{ thesis.title }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.author }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.year }}</td>
-              <td style="padding:0.8rem;">
-                <span
-                  style="background: #fff3e0; color: #ef6c00; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-                  {{ thesis.status }}
-                </span>
-              </td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.department }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.supervisor_name }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.course }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.created_at|date:"Y-m-d" }}</td>
-              <td style="padding:0.8rem;">
-                {% if thesis.approval_sheet %}
-                <a href="#" class="open-image" data-img="{{ thesis.approval_sheet.url }}"
-                  style="font-size: 0.8rem; background: #e3f2fd; color: #0277bd; padding: 4px 8px; border-radius: 4px;">
-                  📄 View File
-                </a>
-                {% else %}
-                <span style="color:#6c757d; font-size: 0.85rem;">None</span>
-                {% endif %}
-              </td>
-              <td style="padding:0.8rem;">
-                <div class="action-buttons">
-                  <button type="button" class="btn-approve"
-                    onclick="openLCModal('{{ thesis.id }}', '{{ thesis.title|escapejs }}')">Approve</button>
-                  <a href="{% url 'reject_thesis' thesis.id %}" class="btn-reject">Reject</a>
-                  <a href="{% url 'view_thesis' thesis.id %}" class="btn-view">View</a>
+        <!-- Hidden table to keep exportTableToExcel working perfectly -->
+        <div style="display: none;">
+          <table id="thesisTable">
+            <thead>
+              <tr>
+                <th>LC Classification</th>
+                <th>Thesis Title</th>
+                <th>Lead Author</th>
+                <th>Academic Year</th>
+                <th>Review Status</th>
+                <th>College/Dept</th>
+                <th>Faculty Adviser</th>
+                <th>Degree Program</th>
+                <th>Submission Date</th>
+                <th>Signed Approval</th>
+                <th>Review Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for thesis in theses %}
+              <tr>
+                <td>{{ thesis.lc_classification|default:"Not Issued" }}</td>
+                <td>{{ thesis.title }}</td>
+                <td>{{ thesis.author }}</td>
+                <td>{{ thesis.year }}</td>
+                <td>{{ thesis.status }}</td>
+                <td>{{ thesis.department }}</td>
+                <td>{{ thesis.supervisor_name }}</td>
+                <td>{{ thesis.course }}</td>
+                <td>{{ thesis.created_at|date:"Y-m-d" }}</td>
+                <td>{% if thesis.approval_sheet %}{{ thesis.approval_sheet.url }}{% else %}None{% endif %}</td>
+                <td>Action</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bento Grid Layout -->
+        <div class="cat-thesis-list" id="bentoContainer">
+          {% for thesis in theses %}
+          {% with dept_code=thesis.department.name|dept_theme_code %}
+          <div class="cat-thesis-item" data-index="{{ forloop.counter0 }}">
+            <!-- Left Column: Department Panel (30%) -->
+            <div class="cat-thesis-item-cover dept-{{ dept_code }}">
+              <div class="cover-spine"></div>
+              <div class="cover-content">
+                <div class="cover-badge">
+                  {% if 'grad' in dept_code %}<i class="fas fa-microscope"></i>
+                  {% elif 'ce' in dept_code %}<i class="fas fa-apple-alt"></i>
+                  {% elif 'cict' in dept_code %}<i class="fas fa-terminal"></i>
+                  {% elif 'cas' in dept_code %}<i class="fas fa-landmark"></i>
+                  {% elif 'cbm' in dept_code %}<i class="fas fa-chart-pie"></i>
+                  {% elif 'ccj' in dept_code %}<i class="fas fa-balance-scale"></i>
+                  {% elif 'chtm' in dept_code %}<i class="fas fa-concierge-bell"></i>
+                  {% elif 'cet' in dept_code %}<i class="fas fa-drafting-compass"></i>
+                  {% else %}<i class="fas fa-university"></i>
+                  {% endif %}
                 </div>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="10" style="text-align:center; padding:1rem; color:#6c757d;">No pending submissions found.
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                <div class="cover-year-badge">{{ thesis.year }}</div>
+              </div>
+              <div class="cover-footer-dept">
+                {{ thesis.department.name|department_display }}
+              </div>
+            </div>
+
+            <!-- Right Column: Scholarly details (70%) -->
+            <div class="cat-thesis-item-content">
+              <!-- Title & Authors -->
+              <div class="cat-thesis-item-header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                  <h3 class="cat-thesis-item-title" style="font-size: 0.88rem !important; font-weight: 700 !important; line-height: 1.35; margin: 0; flex: 1;">
+                    <a href="{% url 'view_thesis' thesis.id %}" onclick="event.stopPropagation();">{{ thesis.title }}</a>
+                  </h3>
+                  <span class="bento-status-badge bento-status-pending" style="flex-shrink: 0;">PENDING</span>
+                </div>
+                <div class="cat-thesis-item-author" style="margin-top: 4px;">
+                  <span class="author-label" style="font-size: 0.72rem; color: var(--text-muted);"><i class="fas fa-user"></i> Author:</span>
+                  <div class="authors-pill-list" style="display: inline-flex; gap: 4px;">
+                    <span class="author-pill lead-author">{{ thesis.author }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Abstract -->
+              <div class="cat-thesis-item-body" style="flex-grow: 1;">
+                <p class="cat-thesis-item-abstract">{{ thesis.abstract|default:"No abstract provided." }}</p>
+              </div>
+
+              <!-- Footer with Metadata and Action Buttons -->
+              <div class="cat-thesis-item-footer" style="display: flex; flex-direction: column; gap: 10px; margin-top: auto; border-top: 1px solid var(--bento-border); padding-top: 8px;">
+                <div class="card-meta-badges" style="border: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; width: 100%;">
+                  <span class="meta-badge" title="Course" style="font-size: 0.62rem; font-weight: 600; padding: 2px 6px; background: var(--bg-light); border-radius: 4px; color: var(--text-muted);"><i class="fas fa-graduation-cap"></i> {{ thesis.course }}</span>
+                  <span class="meta-badge" title="Adviser" style="font-size: 0.62rem; font-weight: 600; padding: 2px 6px; background: var(--bg-light); border-radius: 4px; color: var(--text-muted);"><i class="fas fa-user-tie"></i> {{ thesis.supervisor_name|default:"No Adviser" }}</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; margin-top: 2px;">
+                  {% if thesis.approval_sheet %}
+                  <a href="#" class="open-image" data-img="{{ thesis.approval_sheet.url }}"
+                     style="font-size: 0.72rem; color: #1976d2; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-file-signature"></i> Signed Sheet
+                  </a>
+                  {% else %}
+                  <span style="font-size: 0.72rem; color: #999;"><i class="fas fa-times-circle"></i> No Sheet</span>
+                  {% endif %}
+
+                  <div class="bento-card-actions" style="margin-top: 0;">
+                    <button type="button" class="bento-btn-approve"
+                            onclick="openLCModal('{{ thesis.id }}', '{{ thesis.title|escapejs }}')">Approve</button>
+                    <a href="{% url 'reject_thesis' thesis.id %}" class="bento-btn-reject" title="Reject"><i class="fas fa-times"></i></a>
+                    <a href="{% url 'view_thesis' thesis.id %}" class="bento-btn-view" title="View"><i class="fas fa-eye"></i></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endwith %}
+          {% empty %}
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: var(--text-muted); font-style: italic;">
+            No pending submissions found.
+          </div>
+          {% endfor %}
+        </div>
+
         <div class="pagination" id="pagination"></div>
       </div>
     </div>
+
+    <!-- Image Modal for Approval Sheet -->
     <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
                 background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
                 justify-content:center; align-items:center; z-index:2000;">
-
       <span id="closeModal" style="position:absolute; top:20px; right:30px;
                    font-size:2rem; color:white; cursor:pointer;">&times;</span>
-
       <img id="modalImage" src="" style="max-width:80%; max-height:80%; transition:transform 0.2s ease; cursor:grab;">
     </div>
 
@@ -262,11 +329,9 @@
     <div id="lcModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
                 background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);
                 justify-content:center; align-items:center; z-index:2100;">
-      <div
-        style="background:white; padding:2rem; border-radius:12px; width:400px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+      <div style="background:white; padding:2rem; border-radius:12px; width:400px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
         <h3 style="margin-top:0; color:#333;">Enter LC Classification</h3>
-        <p style="font-size:0.9rem; color:#666;">Provide the Library of Congress Classification for: <br><strong
-            id="lcThesisTitle"></strong></p>
+        <p style="font-size:0.9rem; color:#666;">Provide the Library of Congress Classification for: <br><strong id="lcThesisTitle"></strong></p>
 
         <form id="lcForm" method="POST" action="">
           {% csrf_token %}
@@ -285,44 +350,41 @@
 </div>
 
 <script>
-  document.querySelectorAll("#thesisTable th").forEach((th, index) => {
-    th.addEventListener("click", () => {
-      const table = th.closest("table");
-      const tbody = table.querySelector("tbody");
-      const rows = Array.from(tbody.querySelectorAll("tr"));
-      const asc = !th.classList.contains("sort-asc");
-
-      table.querySelectorAll("th").forEach(header => header.classList.remove("sort-asc", "sort-desc"));
-      th.classList.toggle("sort-asc", asc);
-      th.classList.toggle("sort-desc", !asc);
-
-      rows.sort((a, b) => {
-        const A = a.children[index].innerText.trim().toLowerCase();
-        const B = b.children[index].innerText.trim().toLowerCase();
-        return asc ? A.localeCompare(B) : B.localeCompare(A);
-      });
-
-      rows.forEach(row => tbody.appendChild(row));
-    });
-  });
-
-  const table = document.getElementById("thesisTable");
-  const tbody = table.querySelector("tbody");
+  const bentoContainer = document.getElementById("bentoContainer");
+  let cards = Array.from(bentoContainer.querySelectorAll(".cat-thesis-item"));
+  
+  const hiddenTable = document.getElementById("thesisTable");
+  const tbody = hiddenTable.querySelector("tbody");
   let rows = Array.from(tbody.querySelectorAll("tr"));
+  
   const searchInput = document.getElementById("searchInput");
-  const rowsPerPage = 10;
+  const sortSelect = document.getElementById("sortSelect");
+  const itemsPerPage = 8;
   let currentPage = 1;
 
-  function renderTablePage(page = 1) {
-    const visibleRows = rows.filter(r => r.dataset.visible !== "0");
-    const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
+  function renderBentoPage(page = 1) {
+    const visibleCards = cards.filter(c => c.dataset.visible !== "0");
+    const totalPages = Math.ceil(visibleCards.length / itemsPerPage) || 1;
 
     if (page > totalPages) page = totalPages;
     if (page < 1) page = 1;
     currentPage = page;
 
+    // Hide all cards and table rows
+    cards.forEach(c => c.style.display = "none");
     rows.forEach(r => r.style.display = "none");
-    visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage).forEach(r => r.style.display = "");
+
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = page * itemsPerPage;
+
+    const pageCards = visibleCards.slice(startIndex, endIndex);
+    pageCards.forEach(c => {
+      c.style.display = "flex";
+      const idx = c.getAttribute("data-index");
+      if (rows[idx]) {
+        rows[idx].style.display = "";
+      }
+    });
 
     renderPagination(totalPages);
   }
@@ -340,7 +402,7 @@
       container.appendChild(btn);
     };
 
-    createBtn("Prev", currentPage === 1, () => renderTablePage(currentPage - 1));
+    createBtn("Prev", currentPage === 1, () => renderBentoPage(currentPage - 1));
 
     const pageRange = [];
     if (totalPages <= 7) {
@@ -363,68 +425,75 @@
         span.style.color = "#777";
         container.appendChild(span);
       } else {
-        createBtn(p, false, () => renderTablePage(p), p === currentPage);
+        createBtn(p, false, () => renderBentoPage(p), p === currentPage);
       }
     });
 
-    createBtn("Next", currentPage === totalPages, () => renderTablePage(currentPage + 1));
+    createBtn("Next", currentPage === totalPages, () => renderBentoPage(currentPage + 1));
   }
 
+  // Search input event listener
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
-    rows.forEach(row => {
-      let match = false;
-      const tds = row.querySelectorAll("td");
-
-      tds.forEach(td => {
-        if (td.querySelector("a") || td.querySelector("button") || td.querySelector(".btn-approve") || td.querySelector(".btn-reject") || td.querySelector(".btn-view")) return;
-        const originalHTML = td.getAttribute("data-original") || td.innerHTML;
-        td.setAttribute("data-original", originalHTML);
-        td.innerHTML = originalHTML;
-
-        const text = td.textContent.toLowerCase();
-        if (filter && text.includes(filter)) {
-          match = true;
-          const regex = new RegExp(`(${filter})`, "gi");
-          td.innerHTML = originalHTML.replace(regex, "<mark>$1</mark>");
-        } else if (text.includes(filter)) {
-          match = true;
-        }
-      });
-
-      row.dataset.visible = match || filter === "" ? "1" : "0";
+    cards.forEach(card => {
+      const title = card.querySelector(".cat-thesis-item-title").textContent.toLowerCase();
+      const abstract = card.querySelector(".cat-thesis-item-abstract").textContent.toLowerCase();
+      const author = card.querySelector(".lead-author") ? card.querySelector(".lead-author").textContent.toLowerCase() : "";
+      const metaValues = Array.from(card.querySelectorAll(".meta-badge")).map(v => v.textContent.toLowerCase()).join(" ");
+      
+      const allText = title + " " + abstract + " " + author + " " + metaValues;
+      const match = allText.includes(filter);
+      
+      card.dataset.visible = match || filter === "" ? "1" : "0";
+      
+      const idx = card.getAttribute("data-index");
+      if (rows[idx]) {
+        rows[idx].dataset.visible = match || filter === "" ? "1" : "0";
+      }
     });
 
     currentPage = 1;
-    renderTablePage(currentPage);
+    renderBentoPage(currentPage);
   });
 
-  table.querySelectorAll("th").forEach((th, index) => {
-    th.addEventListener("click", () => {
-      const asc = !th.classList.contains("sort-asc");
-      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
-      th.classList.add(asc ? "sort-asc" : "sort-desc");
-
-      rows.sort((a, b) => {
-        const aText = a.children[index].innerText.trim().toLowerCase();
-        const bText = b.children[index].innerText.trim().toLowerCase();
-        if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
-          return asc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
-        }
-        return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-      });
-
-      rows.forEach(r => tbody.appendChild(r));
-      renderTablePage(currentPage);
+  // Sort dropdown event listener
+  sortSelect.addEventListener("change", () => {
+    const criteria = sortSelect.value;
+    cards.sort((a, b) => {
+      let valA, valB;
+      if (criteria === "recent") {
+        valA = parseInt(a.getAttribute("data-index"));
+        valB = parseInt(b.getAttribute("data-index"));
+        return valA - valB;
+      } else if (criteria === "title") {
+        valA = a.querySelector(".cat-thesis-item-title").textContent.trim().toLowerCase();
+        valB = b.querySelector(".cat-thesis-item-title").textContent.trim().toLowerCase();
+        return valA.localeCompare(valB);
+      } else if (criteria === "author") {
+        valA = a.querySelector(".lead-author") ? a.querySelector(".lead-author").textContent.trim().toLowerCase() : "";
+        valB = b.querySelector(".lead-author") ? b.querySelector(".lead-author").textContent.trim().toLowerCase() : "";
+        return valA.localeCompare(valB);
+      } else if (criteria === "year") {
+        valA = parseInt(a.querySelector(".cover-year-badge").textContent.trim()) || 0;
+        valB = parseInt(b.querySelector(".cover-year-badge").textContent.trim()) || 0;
+        return valB - valA; // Newest year first
+      }
+      return 0;
     });
+
+    // Re-append cards in sorted order
+    cards.forEach(c => bentoContainer.appendChild(c));
+    currentPage = 1;
+    renderBentoPage(currentPage);
   });
 
   window.onload = () => {
+    cards.forEach(c => c.dataset.visible = "1");
     rows.forEach(r => r.dataset.visible = "1");
-    renderTablePage();
-    table.style.visibility = "visible";
+    renderBentoPage();
   };
 
+  // Image zoom modal logic
   const modal = document.getElementById("imageModal");
   const modalImg = document.getElementById("modalImage");
   const closeModal = document.getElementById("closeModal");
@@ -448,7 +517,6 @@
   });
 
   let scale = 1;
-
   modalImg.addEventListener("wheel", (e) => {
     e.preventDefault();
     if (e.deltaY < 0) {
@@ -467,7 +535,7 @@
 
   function openLCModal(thesisId, thesisTitle) {
     lcThesisTitle.innerText = thesisTitle;
-    lcForm.action = `/approve-thesis/${thesisId}/`; // Construct the approval URL
+    lcForm.action = `/approve-thesis/${thesisId}/`;
     lcInput.value = "";
     lcModal.style.display = "flex";
     lcInput.focus();
@@ -477,7 +545,6 @@
     lcModal.style.display = "none";
   }
 
-  // Close modal when clicking outside
   lcModal.addEventListener("click", (e) => {
     if (e.target === lcModal) closeLCModal();
   });

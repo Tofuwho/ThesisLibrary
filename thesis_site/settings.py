@@ -16,10 +16,20 @@ import sys
 try:
     if sys.version_info >= (3, 14):
         from django.template.context import BaseContext
+        import copy
         def base_context_copy(self):
             dup = object.__new__(self.__class__)
             dup.__dict__.update(self.__dict__)
-            dup.dicts = [d.copy() for d in self.dicts]
+            new_dicts = []
+            for d in self.dicts:
+                if hasattr(d, 'copy'):
+                    new_dicts.append(d.copy())
+                else:
+                    try:
+                        new_dicts.append(copy.copy(d))
+                    except Exception:
+                        new_dicts.append(d)
+            dup.dicts = new_dicts
             return dup
         BaseContext.__copy__ = base_context_copy
 except Exception:

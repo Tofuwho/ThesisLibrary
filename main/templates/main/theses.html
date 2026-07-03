@@ -1,10 +1,11 @@
 {% extends 'main/base.html' %}
-{% load static %}
+{% load static department_filters %}
 
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.0">
+<link rel="stylesheet" href="{% static 'css/categories.css' %}?v=2.2">
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.2">
 {% endblock %}
 
 {% block content %}
@@ -16,27 +17,38 @@
       <p>All theses that have been approved and added to the archive.</p>
     </div>
 
-    <div class="admin-table-container">
-      <div style="padding: 1.5rem 1.5rem 0;">
-        <div class="top-controls" style="margin-bottom: 0;">
+    <div class="admin-table-container" style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
+      <div style="padding: 0 0 1.5rem 0;">
+        <div class="top-controls" style="margin-bottom: 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
           <div style="display: flex; gap: 10px; align-items: center; flex: 1;">
             <div class="search-box-container" style="flex: 1; max-width: 320px; margin-bottom: 0 !important;">
               <i class="fas fa-search"></i>
               <input type="text" id="thesisSearch" class="admin-search-input" placeholder="Search approved library...">
             </div>
-            <button onclick="exportTableToExcel('thesisTable', 'Approved_Theses')" class="btn-admin-secondary">
+
+            <select id="sortSelect" class="search-input" style="width: 160px; height: 38px; padding: 0 10px; margin-bottom: 0; border: 1px solid #ced4da; border-radius: 8px; background: white;">
+              <option value="recent">Most Recent</option>
+              <option value="title">Title (A-Z)</option>
+              <option value="author">Author (A-Z)</option>
+              <option value="year">Newest Year</option>
+            </select>
+
+            <button onclick="exportTableToExcel('thesisTable', 'Approved_Theses')" class="btn-admin-secondary" style="height: 38px; display: inline-flex; align-items: center; gap: 6px; padding: 0 1rem; border-radius: 8px; border: 1px solid #ced4da; background: white; cursor: pointer; font-weight: 600;">
               <i class="fas fa-file-excel" style="color: #2e7d32;"></i> Export
             </button>
           </div>
 
-          <button id="archiveBtn" class="btn-admin-primary">
+          <button id="archiveBtn" class="btn-admin-primary" style="height: 38px; display: inline-flex; align-items: center; gap: 6px; background: var(--primary-red); color: white; border: none; padding: 0 1.25rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
             <i class="fas fa-archive"></i> Archive Old Theses (10+ Years)
           </button>
         </div>
       </div>
-      <table id="thesisTable" class="admin-table">
+
+      <!-- Hidden table for Excel exporting -->
+      <div style="display: none;">
+        <table id="thesisTable">
           <thead>
-            <tr style="background-color:#f8f9fa;">
+            <tr>
               <th>LC Classification</th>
               <th>Thesis Title</th>
               <th>Lead Researcher</th>
@@ -44,60 +56,157 @@
               <th>Academic Year</th>
               <th>Affiliated College</th>
               <th>Degree Program</th>
-              <th style="text-align:center;">Actions</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {% for thesis in theses %}
-            <tr style="border-bottom: 1px solid #eee;">
-              <td style="color:#666; font-weight: 500;">{{ thesis.lc_classification|default:"—" }}</td>
-              <td class="title"><a href="{% url 'thesis_detail' thesis.id %}" style="text-decoration:none; color:inherit;">{{ thesis.title }}</a></td>
-              <td style="color:#333;">{{ thesis.author }}</td>
-              <td style="color:#333;">{{ thesis.get_coauthor_names|join:", "|default:"—" }}</td>
-              <td style="color:#333;">{{ thesis.year|default:"—" }}</td>
-              <td style="color:#333;">{{ thesis.department.name }}</td>
-              <td style="color:#333;">{{ thesis.course_display }}</td>
-              <td style="padding:0.8rem; text-align:center;">
-                <div style="display:flex; gap:6px; justify-content:center;">
-                  {% if thesis.file %}
-                  <a href="{{ thesis.file.url }}" target="_blank" class="archive-btn" style="padding: 4px 12px; font-size: 0.8rem; background:#1976d2;">View</a>
-                  {% else %}
-                  <span style="color:#999; font-size:0.8rem;">No File</span>
-                  {% endif %}
-                </div>
-              </td>
-            </tr>
-            {% empty %}
             <tr>
-              <td colspan="8" style="text-align:center; color:#6c757d; padding:1rem;">No theses found.</td>
+              <td>{{ thesis.lc_classification|default:"—" }}</td>
+              <td>{{ thesis.title }}</td>
+              <td>{{ thesis.author }}</td>
+              <td>{{ thesis.get_coauthor_names|join:", "|default:"—" }}</td>
+              <td>{{ thesis.year|default:"—" }}</td>
+              <td>{{ thesis.department.name }}</td>
+              <td>{{ thesis.course_display }}</td>
+              <td>View</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
-
-        <div class="pagination" id="pagination"></div>
       </div>
+
+      <!-- Bento Grid Layout -->
+      <div class="cat-thesis-list" id="bentoContainer">
+        {% for thesis in theses %}
+        {% with dept_code=thesis.department.name|dept_theme_code %}
+        <div class="cat-thesis-item" data-index="{{ forloop.counter0 }}">
+          <!-- Left Column: Department Panel (30%) -->
+          <div class="cat-thesis-item-cover dept-{{ dept_code }}">
+            <div class="cover-spine"></div>
+            <div class="cover-content">
+              <div class="cover-badge">
+                {% if 'grad' in dept_code %}<i class="fas fa-microscope"></i>
+                {% elif 'ce' in dept_code %}<i class="fas fa-apple-alt"></i>
+                {% elif 'cict' in dept_code %}<i class="fas fa-terminal"></i>
+                {% elif 'cas' in dept_code %}<i class="fas fa-landmark"></i>
+                {% elif 'cbm' in dept_code %}<i class="fas fa-chart-pie"></i>
+                {% elif 'ccj' in dept_code %}<i class="fas fa-balance-scale"></i>
+                {% elif 'chtm' in dept_code %}<i class="fas fa-concierge-bell"></i>
+                {% elif 'cet' in dept_code %}<i class="fas fa-drafting-compass"></i>
+                {% else %}<i class="fas fa-university"></i>
+                {% endif %}
+              </div>
+              <div class="cover-year-badge">{{ thesis.year }}</div>
+            </div>
+            <div class="cover-footer-dept">
+              {{ thesis.department.name|department_display }}
+            </div>
+          </div>
+
+          <!-- Right Column: Scholarly details (70%) -->
+          <div class="cat-thesis-item-content">
+            <!-- Title & Authors -->
+            <div class="cat-thesis-item-header">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                <h3 class="cat-thesis-item-title" style="font-size: 0.88rem !important; font-weight: 700 !important; line-height: 1.35; margin: 0; flex: 1;">
+                  <a href="{% url 'thesis_detail' thesis.id %}" onclick="event.stopPropagation();">{{ thesis.title }}</a>
+                </h3>
+                <span class="bento-status-badge bento-status-approved" style="flex-shrink: 0;">APPROVED</span>
+              </div>
+              <div class="cat-thesis-item-author" style="margin-top: 4px;">
+                <span class="author-label" style="font-size: 0.72rem; color: var(--text-muted);"><i class="fas fa-user-friends"></i> Researchers:</span>
+                <div class="authors-pill-list" style="display: inline-flex; gap: 4px;">
+                  <span class="author-pill lead-author">{{ thesis.author }}</span>
+                  {% if thesis.get_coauthor_names %}
+                    {% for coauthor in thesis.get_coauthor_names %}
+                      <span class="author-pill {% if forloop.counter > 1 %}hidden{% endif %}">{{ coauthor }}</span>
+                    {% endfor %}
+                    {% if thesis.get_coauthor_names|length > 1 %}
+                      <span class="author-pill-more" style="font-size: 0.62rem; color: #888; font-weight: 600;">+{{ thesis.get_coauthor_names|length|add:"-1" }}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Abstract -->
+            <div class="cat-thesis-item-body" style="flex-grow: 1;">
+              <p class="cat-thesis-item-abstract">{{ thesis.abstract|default:"No abstract provided." }}</p>
+            </div>
+
+            <!-- Footer / Metadata row & action -->
+            <div class="cat-thesis-item-footer" style="display: flex; flex-direction: column; gap: 10px; margin-top: auto; border-top: 1px solid var(--bento-border); padding-top: 8px;">
+              <div class="card-meta-badges" style="border: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; width: 100%;">
+                <span class="meta-badge" title="Program" style="font-size: 0.62rem; font-weight: 600; padding: 2px 6px; background: var(--bg-light); border-radius: 4px; color: var(--text-muted);"><i class="fas fa-graduation-cap"></i> {{ thesis.course_display }}</span>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px;">
+                <div class="library-call-label" style="flex-shrink: 0;">
+                  <span class="call-prefix">CALL NO.</span>
+                  <span class="call-code">{{ thesis.lc_classification|default:"—" }}</span>
+                </div>
+
+                <div class="bento-card-actions">
+                  {% if thesis.file %}
+                  <a href="{{ thesis.file.url }}" target="_blank" class="bento-btn-view" style="flex-grow: 1;">View PDF</a>
+                  {% else %}
+                  <span style="font-size: 0.72rem; color: #999; font-weight: 600;">No PDF</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endwith %}
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: var(--text-muted); font-style: italic;">
+          No approved theses found.
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
   </div>
 </div>
 
 <script>
-  const table = document.getElementById("thesisTable");
-  const tbody = table.querySelector("tbody");
-  const rows = Array.from(tbody.querySelectorAll("tr"));
+  const bentoContainer = document.getElementById("bentoContainer");
+  let cards = Array.from(bentoContainer.querySelectorAll(".cat-thesis-item"));
+  
+  const hiddenTable = document.getElementById("thesisTable");
+  const tbody = hiddenTable.querySelector("tbody");
+  let rows = Array.from(tbody.querySelectorAll("tr"));
+  
   const searchInput = document.getElementById("thesisSearch");
-  const rowsPerPage = 16;
+  const sortSelect = document.getElementById("sortSelect");
+  const itemsPerPage = 8;
   let currentPage = 1;
 
-  function renderTablePage(page = 1) {
-    const visibleRows = rows.filter(r => r.dataset.visible !== "0");
-    const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
+  function renderBentoPage(page = 1) {
+    const visibleCards = cards.filter(c => c.dataset.visible !== "0");
+    const totalPages = Math.ceil(visibleCards.length / itemsPerPage) || 1;
 
     if (page > totalPages) page = totalPages;
     if (page < 1) page = 1;
     currentPage = page;
 
+    // Hide all cards and table rows
+    cards.forEach(c => c.style.display = "none");
     rows.forEach(r => r.style.display = "none");
-    visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage).forEach(r => r.style.display = "");
+
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = page * itemsPerPage;
+
+    const pageCards = visibleCards.slice(startIndex, endIndex);
+    pageCards.forEach(c => {
+      c.style.display = "flex";
+      const idx = c.getAttribute("data-index");
+      if (rows[idx]) {
+        rows[idx].style.display = "";
+      }
+    });
 
     renderPagination(totalPages);
   }
@@ -109,14 +218,14 @@
     const prevBtn = document.createElement("button");
     prevBtn.innerText = "Prev";
     prevBtn.disabled = currentPage === 1;
-    prevBtn.addEventListener("click", () => renderTablePage(currentPage - 1));
+    prevBtn.addEventListener("click", () => renderBentoPage(currentPage - 1));
     container.appendChild(prevBtn);
 
     function addPageBtn(i) {
       const btn = document.createElement("button");
       btn.innerText = i;
       btn.classList.toggle("active", i === currentPage);
-      btn.addEventListener("click", () => renderTablePage(i));
+      btn.addEventListener("click", () => renderBentoPage(i));
       container.appendChild(btn);
     }
 
@@ -151,56 +260,72 @@
     const nextBtn = document.createElement("button");
     nextBtn.innerText = "Next";
     nextBtn.disabled = currentPage === totalPages;
-    nextBtn.addEventListener("click", () => renderTablePage(currentPage + 1));
+    nextBtn.addEventListener("click", () => renderBentoPage(currentPage + 1));
     container.appendChild(nextBtn);
   }
 
+  // Search input filter
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
 
-    rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      row.dataset.visible = text.includes(filter) ? "1" : "0";
+    cards.forEach(card => {
+      const title = card.querySelector(".cat-thesis-item-title").textContent.toLowerCase();
+      const abstract = card.querySelector(".cat-thesis-item-abstract").textContent.toLowerCase();
+      const leadAuthor = card.querySelector(".lead-author") ? card.querySelector(".lead-author").textContent.toLowerCase() : "";
+      const otherAuthors = Array.from(card.querySelectorAll(".author-pill:not(.lead-author)")).map(a => a.textContent.toLowerCase()).join(" ");
+      const metaValues = Array.from(card.querySelectorAll(".meta-badge")).map(v => v.textContent.toLowerCase()).join(" ");
+      const callNo = card.querySelector(".library-call-label .call-code").textContent.toLowerCase();
+      
+      const allText = title + " " + abstract + " " + leadAuthor + " " + otherAuthors + " " + metaValues + " " + callNo;
+      const match = allText.includes(filter);
 
-      row.querySelectorAll("td").forEach(td => td.innerHTML = td.textContent);
+      card.dataset.visible = match || filter === "" ? "1" : "0";
 
-      if (filter && text.includes(filter)) {
-        row.querySelectorAll("td").forEach(td => {
-          td.innerHTML = td.textContent.replace(new RegExp(`(${filter})`, "gi"), `<span class="highlight">$1</span>`);
-        });
+      const idx = card.getAttribute("data-index");
+      if (rows[idx]) {
+        rows[idx].dataset.visible = match || filter === "" ? "1" : "0";
       }
     });
 
     currentPage = 1;
-    renderTablePage(currentPage);
+    renderBentoPage(currentPage);
   });
 
-  table.querySelectorAll("th").forEach((th, index) => {
-    th.addEventListener("click", () => {
-      const isAsc = !th.classList.contains("sort-asc");
-      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
-      th.classList.add(isAsc ? "sort-asc" : "sort-desc");
-
-      rows.sort((a, b) => {
-        const aText = a.children[index].innerText.trim().toLowerCase();
-        const bText = b.children[index].innerText.trim().toLowerCase();
-
-        if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
-          return isAsc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
-        }
-
-        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-      });
-
-      rows.forEach(r => tbody.appendChild(r));
-      renderTablePage(currentPage);
+  // Sort dropdown filter
+  sortSelect.addEventListener("change", () => {
+    const criteria = sortSelect.value;
+    cards.sort((a, b) => {
+      let valA, valB;
+      if (criteria === "recent") {
+        valA = parseInt(a.getAttribute("data-index"));
+        valB = parseInt(b.getAttribute("data-index"));
+        return valA - valB;
+      } else if (criteria === "title") {
+        valA = a.querySelector(".cat-thesis-item-title").textContent.trim().toLowerCase();
+        valB = b.querySelector(".cat-thesis-item-title").textContent.trim().toLowerCase();
+        return valA.localeCompare(valB);
+      } else if (criteria === "author") {
+        valA = a.querySelector(".lead-author") ? a.querySelector(".lead-author").textContent.trim().toLowerCase() : "";
+        valB = b.querySelector(".lead-author") ? b.querySelector(".lead-author").textContent.trim().toLowerCase() : "";
+        return valA.localeCompare(valB);
+      } else if (criteria === "year") {
+        valA = parseInt(a.querySelector(".cover-year-badge").textContent.trim()) || 0;
+        valB = parseInt(b.querySelector(".cover-year-badge").textContent.trim()) || 0;
+        return valB - valA; // Newest first
+      }
+      return 0;
     });
+
+    // Re-append cards in sorted order
+    cards.forEach(c => bentoContainer.appendChild(c));
+    currentPage = 1;
+    renderBentoPage(currentPage);
   });
 
   window.onload = () => {
+    cards.forEach(c => c.dataset.visible = "1");
     rows.forEach(r => r.dataset.visible = "1");
-    renderTablePage();
-    table.style.visibility = "visible";
+    renderBentoPage();
   };
 
   document.getElementById("archiveBtn").addEventListener("click", function () {
@@ -225,7 +350,7 @@
     let originalTable = document.getElementById(tableID);
     let tableClone = originalTable.cloneNode(true);
     let rows = tableClone.querySelectorAll('tr');
-    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
+    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); });
     let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
     XLSX.writeFile(wb, filename + '.xlsx');
   }

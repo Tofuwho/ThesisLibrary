@@ -1,128 +1,11 @@
 {% extends 'main/base.html' %}
-{% load static %}
+{% load static department_filters %}
 
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
-<style>
-  .search-bar {
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .search-input {
-    background: #ffffff;
-    color: #333;
-    border: 1px solid #ced4da;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    width: 250px;
-    transition: 0.2s;
-  }
-
-  .search-input:focus {
-    outline: none;
-    border-color: #0277bd;
-    box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
-  }
-
-  mark {
-    background-color: #ffeb3b;
-    color: #000;
-    border-radius: 4px;
-    padding: 0 2px;
-  }
-
-  th {
-    cursor: pointer;
-    transition: color 0.2s;
-    text-align: left;
-    color: #555;
-  }
-
-  th.sort-asc::after {
-    content: " ▲";
-    color: #0277bd;
-  }
-
-  th.sort-desc::after {
-    content: " ▼";
-    color: #0277bd;
-  }
-
-  th:hover {
-    color: #0277bd;
-  }
-
-  #rejectedTable tbody tr:hover {
-    background-color: #f8f9fa;
-    transition: background 0.2s;
-  }
-
-  .btn-view {
-    display: inline-block;
-    width: 90px;
-    text-align: center;
-    text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    border: none;
-    background: #1976d2;
-    color: white;
-  }
-
-  .btn-view:hover {
-    background: #1565c0;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
-  }
-
-  .pagination {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .pagination button {
-    background: #ffffff;
-    border: 1px solid #ced4da;
-    color: #333;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .pagination button:hover:not(:disabled) {
-    background: #e3f2fd;
-    color: #0d47a1;
-  }
-
-  .pagination button.active {
-    background: #0277bd;
-    color: #fff;
-    pointer-events: none;
-  }
-
-  .pagination span {
-    background: #fff;
-    border: 1px solid #ced4da;
-    color: #777;
-    padding: 6px 12px;
-    border-radius: 6px;
-    display: inline-block;
-    user-select: none;
-    transition: 0.2s;
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/categories.css' %}?v=2.2">
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.2">
 {% endblock %}
 
 {% block content %}
@@ -131,71 +14,148 @@
 
   <div class="admin-main">
     <div class="dashboard-header">
-      <h1>❌ Rejected Theses</h1>
-      <p>View and manage all rejected thesis submissions.</p>
+      <h1>❌ Returned & Rejected Theses</h1>
+      <p>View and manage all rejected or returned thesis submissions.</p>
     </div>
 
     <div class="dashboard-section" style="margin-top: 2rem;">
       <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
 
-        <div class="search-bar">
+        <div class="search-bar" style="display: flex; gap: 10px; align-items: center; justify-content: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap;">
           <button onclick="exportTableToExcel('rejectedTable', 'Rejected_Theses')" class="add-btn"
-            style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; margin-right: 10px; font-weight:600;">
+            style="background: #2e7d32; color:white; padding: 0.5rem 1rem; border-radius: 8px; border:none; cursor: pointer; font-weight:600; height: 38px; display: inline-flex; align-items: center; gap: 6px;">
             📊 Export
           </button>
-          <input type="text" id="searchInput" class="search-input" placeholder="Search rejected theses...">
+          
+          <select id="sortSelect" class="search-input" style="width: 160px; height: 38px; padding: 0 10px; margin-bottom: 0; border: 1px solid #ced4da; border-radius: 8px; background: white;">
+            <option value="recent">Most Recent</option>
+            <option value="title">Title (A-Z)</option>
+            <option value="author">Author (A-Z)</option>
+            <option value="year">Newest Year</option>
+          </select>
+
+          <input type="text" id="searchInput" class="search-input" placeholder="Search rejected theses..." style="margin-bottom: 0; height: 38px;">
         </div>
 
-        <table id="rejectedTable" style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr style="background-color:#f8f9fa;">
-              <th style="padding:0.8rem;">Title</th>
-              <th style="padding:0.8rem;">Author</th>
-              <th style="padding:0.8rem;">Original Submitter</th>
-              <th style="padding:0.8rem;">Category</th>
-              <th style="padding:0.8rem;">Department</th>
-              <th style="padding:0.8rem;">Course</th>
-              <th style="padding:0.8rem;">Rejection Reason</th>
-              <th style="padding:0.8rem;">Rejected At</th>
-              <th style="padding:0.8rem;">Rejected By</th>
-              <th style="padding:0.8rem;">File</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for thesis in rejected_theses %}
-            <tr style="border-bottom:1px solid #eee;">
-              <td style="padding:0.8rem; color: #0277bd; font-weight: 500;">{{ thesis.title }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.author }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.original_submitter }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.category }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.department }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.course_display }}</td>
-              <td style="padding:0.8rem; max-width:300px;">
-                {% if thesis.rejection_reason %}
-                <span title="{{ thesis.rejection_reason }}" style="color:#e65100;">
-                  {{ thesis.rejection_reason|truncatewords:15 }}
-                </span>
-                {% else %}
-                <span style="color:#6c757d;">No reason provided</span>
-                {% endif %}
-              </td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.rejected_at|date:"Y-m-d H:i" }}</td>
-              <td style="padding:0.8rem; color: #333;">{{ thesis.rejected_by }}</td>
-              <td style="padding:0.8rem; text-align:center;">
-                {% if thesis.file %}
-                <a href="{{ thesis.file.url }}" target="_blank" class="btn-view">View</a>
-                {% else %}
-                <span style="color:#6c757d;">No file</span>
-                {% endif %}
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="10" style="text-align:center; padding:1rem; color:#6c757d;">No rejected theses found.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <!-- Hidden table to keep Excel export working -->
+        <div style="display: none;">
+          <table id="rejectedTable">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Original Submitter</th>
+                <th>Category</th>
+                <th>Department</th>
+                <th>Course</th>
+                <th>Rejection Reason</th>
+                <th>Rejected At</th>
+                <th>Rejected By</th>
+                <th>File</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for thesis in rejected_theses %}
+              <tr>
+                <td>{{ thesis.title }}</td>
+                <td>{{ thesis.author }}</td>
+                <td>{{ thesis.original_submitter }}</td>
+                <td>{{ thesis.category }}</td>
+                <td>{{ thesis.department }}</td>
+                <td>{{ thesis.course_display }}</td>
+                <td>{{ thesis.rejection_reason }}</td>
+                <td>{{ thesis.rejected_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ thesis.rejected_by }}</td>
+                <td>{% if thesis.file %}{{ thesis.file.url }}{% else %}None{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bento Grid Layout -->
+        <div class="cat-thesis-list" id="bentoContainer">
+          {% for thesis in rejected_theses %}
+          {% with dept_code=thesis.department.name|dept_theme_code %}
+          <div class="cat-thesis-item" data-index="{{ forloop.counter0 }}">
+            <!-- Left Column: Department Panel (30%) -->
+            <div class="cat-thesis-item-cover dept-{{ dept_code }}">
+              <div class="cover-spine"></div>
+              <div class="cover-content">
+                <div class="cover-badge">
+                  {% if 'grad' in dept_code %}<i class="fas fa-microscope"></i>
+                  {% elif 'ce' in dept_code %}<i class="fas fa-apple-alt"></i>
+                  {% elif 'cict' in dept_code %}<i class="fas fa-terminal"></i>
+                  {% elif 'cas' in dept_code %}<i class="fas fa-landmark"></i>
+                  {% elif 'cbm' in dept_code %}<i class="fas fa-chart-pie"></i>
+                  {% elif 'ccj' in dept_code %}<i class="fas fa-balance-scale"></i>
+                  {% elif 'chtm' in dept_code %}<i class="fas fa-concierge-bell"></i>
+                  {% elif 'cet' in dept_code %}<i class="fas fa-drafting-compass"></i>
+                  {% else %}<i class="fas fa-university"></i>
+                  {% endif %}
+                </div>
+                <div class="cover-year-badge">{{ thesis.year }}</div>
+              </div>
+              <div class="cover-footer-dept">
+                {{ thesis.department.name|department_display }}
+              </div>
+            </div>
+
+            <!-- Right Column: Scholarly details (70%) -->
+            <div class="cat-thesis-item-content">
+              <!-- Title & Authors -->
+              <div class="cat-thesis-item-header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                  <h3 class="cat-thesis-item-title" style="font-size: 0.88rem !important; font-weight: 700 !important; line-height: 1.35; margin: 0; flex: 1;">
+                    <span title="{{ thesis.title }}">{{ thesis.title }}</span>
+                  </h3>
+                  <span class="bento-status-badge bento-status-rejected" style="flex-shrink: 0;">RETURNED</span>
+                </div>
+                <div class="cat-thesis-item-author" style="margin-top: 4px;">
+                  <span class="author-label" style="font-size: 0.72rem; color: var(--text-muted);"><i class="fas fa-user"></i> Author:</span>
+                  <div class="authors-pill-list" style="display: inline-flex; gap: 4px;">
+                    <span class="author-pill lead-author">{{ thesis.author }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Return Reason Bubble -->
+              <div class="bento-rejection-bubble" style="margin-top: 4px; margin-bottom: 4px;">
+                <strong>Return Reason:</strong>
+                <p title="{{ thesis.rejection_reason }}">{{ thesis.rejection_reason|default:"No reason provided" }}</p>
+              </div>
+
+              <!-- Footer with Metadata and Action Buttons -->
+              <div class="cat-thesis-item-footer" style="display: flex; flex-direction: column; gap: 10px; margin-top: auto; border-top: 1px solid var(--bento-border); padding-top: 8px;">
+                <div class="card-meta-badges" style="border: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; width: 100%;">
+                  <span class="meta-badge" title="Program" style="font-size: 0.62rem; font-weight: 600; padding: 2px 6px; background: var(--bg-light); border-radius: 4px; color: var(--text-muted);"><i class="fas fa-graduation-cap"></i> {{ thesis.course_display }}</span>
+                  <span class="meta-badge" title="Submitter" style="font-size: 0.62rem; font-weight: 600; padding: 2px 6px; background: var(--bg-light); border-radius: 4px; color: var(--text-muted);"><i class="fas fa-user-edit"></i> Submitter: {{ thesis.original_submitter }}</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px;">
+                  <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;" title="Rejected by {{ thesis.rejected_by }}">
+                    Returned By: {{ thesis.rejected_by }}
+                  </span>
+
+                  <div class="bento-card-actions">
+                    {% if thesis.file %}
+                    <a href="{{ thesis.file.url }}" target="_blank" class="bento-btn-view" style="flex-grow: 1;">View PDF</a>
+                    {% else %}
+                    <span style="font-size: 0.72rem; color: #999; font-weight: 600;">No File</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endwith %}
+          {% empty %}
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: var(--text-muted); font-style: italic;">
+            No rejected theses found.
+          </div>
+          {% endfor %}
+        </div>
+
         <div class="pagination" id="rejectedPagination"></div>
       </div>
     </div>
@@ -203,155 +163,146 @@
 </div>
 
 <script>
-  const searchInput = document.getElementById('searchInput');
-  const rows = document.querySelectorAll('#rejectedTable tbody tr');
-
-  searchInput.addEventListener('input', function () {
-    const query = this.value.toLowerCase();
-
-    rows.forEach(row => {
-      const cells = row.querySelectorAll('td');
-      let match = false;
-
-      cells.forEach(cell => {
-        if (cell.querySelector('a') || cell.querySelector('button')) return;
-
-        const originalHTML = cell.getAttribute('data-original') || cell.innerHTML;
-        cell.setAttribute('data-original', originalHTML);
-        cell.innerHTML = originalHTML;
-
-        if (query && cell.textContent.toLowerCase().includes(query)) {
-          match = true;
-          const regex = new RegExp(`(${query})`, 'gi');
-          cell.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
-        } else if (cell.textContent.toLowerCase().includes(query)) {
-          match = true;
-        }
-      });
-
-      row.style.display = match || query === '' ? '' : 'none';
-    });
-  });
-
-  document.querySelectorAll('th.sortable').forEach((header, index) => {
-    header.addEventListener('click', () => {
-      const table = header.closest('table');
-      const tbody = table.querySelector('tbody');
-      const rowsArray = Array.from(tbody.querySelectorAll('tr'));
-      const isAsc = !header.classList.contains('sorted-asc');
-
-      table.querySelectorAll('th.sortable').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
-      header.classList.add(isAsc ? 'sorted-asc' : 'sorted-desc');
-
-      rowsArray.sort((a, b) => {
-        const aText = a.children[index].innerText.trim().toLowerCase();
-        const bText = b.children[index].innerText.trim().toLowerCase();
-
-        if (!isNaN(Date.parse(aText)) && !isNaN(Date.parse(bText))) {
-          return isAsc ? new Date(aText) - new Date(bText) : new Date(bText) - new Date(aText);
-        }
-
-        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-      });
-
-      rowsArray.forEach(row => tbody.appendChild(row));
-    });
-  });
-
-  const rejectedTable = document.getElementById('rejectedTable');
-  const rejectedTbody = rejectedTable.querySelector('tbody');
-  const rejectedRows = Array.from(rejectedTbody.querySelectorAll('tr'));
-  const rejectedSearch = document.getElementById('searchInput');
-  const rowsPerPage = 10;
-  let currentPage = 1;
-
-  function renderRejectedPage(page = 1) {
-    const visibleRows = rejectedRows.filter(r => r.dataset.visible !== "0");
-    const totalPages = Math.ceil(visibleRows.length / rowsPerPage) || 1;
-
-    if (page > totalPages) page = totalPages;
-    if (page < 1) page = 1;
-    currentPage = page;
-
-    rejectedRows.forEach(r => r.style.display = "none");
-    visibleRows.slice((page - 1) * rowsPerPage, page * rowsPerPage).forEach(r => r.style.display = "");
-
-    renderRejectedPagination(totalPages);
-  }
-
-  function renderRejectedPagination(totalPages) {
-    const container = document.getElementById('rejectedPagination');
-    container.innerHTML = "";
-
-    const createBtn = (text, disabled, clickHandler, isActive = false) => {
-      const btn = document.createElement("button");
-      btn.innerText = text;
-      btn.disabled = disabled;
-      if (isActive) btn.classList.add("active");
-      btn.addEventListener("click", clickHandler);
-      container.appendChild(btn);
-    };
-
-    createBtn("Prev", currentPage === 1, () => renderRejectedPage(currentPage - 1));
-
-    const pageNumbers = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
-    } else {
-      pageNumbers.push(1);
-      if (currentPage > 4) pageNumbers.push("...");
-      for (let i = Math.max(2, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) pageNumbers.push(i);
-      if (currentPage < totalPages - 3) pageNumbers.push("...");
-      pageNumbers.push(totalPages);
-    }
-
-    pageNumbers.forEach(p => {
-      if (p === "...") {
-        const span = document.createElement("span");
-        span.innerText = "...";
-        span.style.padding = "6px 12px";
-        span.style.color = "#ccc";
-        container.appendChild(span);
-      } else {
-        createBtn(p, false, () => renderRejectedPage(p), p === currentPage);
-      }
-    });
-
-    createBtn("Next", currentPage === totalPages, () => renderRejectedPage(currentPage + 1));
-  }
-
-  rejectedSearch.addEventListener('input', () => {
-    const query = rejectedSearch.value.toLowerCase();
-    rejectedRows.forEach(row => {
-      const tds = row.querySelectorAll('td');
-      let match = false;
-
-      tds.forEach(td => {
-        if (td.querySelector('a') || td.querySelector('button')) return;
-
-        const originalHTML = td.getAttribute('data-original') || td.innerHTML;
-        td.setAttribute('data-original', originalHTML);
-        td.innerHTML = originalHTML;
-
-        if (query && td.textContent.toLowerCase().includes(query)) {
-          match = true;
-          td.innerHTML = originalHTML.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
-        } else if (td.textContent.toLowerCase().includes(query)) {
-          match = true;
-        }
-      });
-
-      row.dataset.visible = match || query === '' ? "1" : "0";
-    });
-
-    currentPage = 1;
-    renderRejectedPage(currentPage);
-  });
-
-  window.onload = () => {
-    rejectedRows.forEach(r => r.dataset.visible = "1");
-    renderRejectedPage();
-  };
+   const bentoContainer = document.getElementById("bentoContainer");
+   let cards = Array.from(bentoContainer.querySelectorAll(".cat-thesis-item"));
+ 
+   const hiddenTable = document.getElementById("rejectedTable");
+   const tbody = hiddenTable.querySelector("tbody");
+   let rows = Array.from(tbody.querySelectorAll("tr"));
+ 
+   const searchInput = document.getElementById("searchInput");
+   const sortSelect = document.getElementById("sortSelect");
+   const itemsPerPage = 8;
+   let currentPage = 1;
+ 
+   function renderRejectedPage(page = 1) {
+     const visibleCards = cards.filter(c => c.dataset.visible !== "0");
+     const totalPages = Math.ceil(visibleCards.length / itemsPerPage) || 1;
+ 
+     if (page > totalPages) page = totalPages;
+     if (page < 1) page = 1;
+     currentPage = page;
+ 
+     // Hide all
+     cards.forEach(c => c.style.display = "none");
+     rows.forEach(r => r.style.display = "none");
+ 
+     const startIndex = (page - 1) * itemsPerPage;
+     const endIndex = page * itemsPerPage;
+ 
+     const pageCards = visibleCards.slice(startIndex, endIndex);
+     pageCards.forEach(c => {
+       c.style.display = "flex";
+       const idx = c.getAttribute("data-index");
+       if (rows[idx]) {
+         rows[idx].style.display = "";
+       }
+     });
+ 
+     renderRejectedPagination(totalPages);
+   }
+ 
+   function renderRejectedPagination(totalPages) {
+     const container = document.getElementById('rejectedPagination');
+     container.innerHTML = "";
+ 
+     const createBtn = (text, disabled, clickHandler, isActive = false) => {
+       const btn = document.createElement("button");
+       btn.innerText = text;
+       btn.disabled = disabled;
+       if (isActive) btn.classList.add("active");
+       btn.addEventListener("click", clickHandler);
+       container.appendChild(btn);
+     };
+ 
+     createBtn("Prev", currentPage === 1, () => renderRejectedPage(currentPage - 1));
+ 
+     const pageNumbers = [];
+     if (totalPages <= 7) {
+       for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+     } else {
+       pageNumbers.push(1);
+       if (currentPage > 4) pageNumbers.push("...");
+       for (let i = Math.max(2, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) pageNumbers.push(i);
+       if (currentPage < totalPages - 3) pageNumbers.push("...");
+       pageNumbers.push(totalPages);
+     }
+ 
+     pageNumbers.forEach(p => {
+       if (p === "...") {
+         const span = document.createElement("span");
+         span.innerText = "...";
+         span.style.padding = "6px 12px";
+         span.style.color = "#ccc";
+         container.appendChild(span);
+       } else {
+         createBtn(p, false, () => renderRejectedPage(p), p === currentPage);
+       }
+     });
+ 
+     createBtn("Next", currentPage === totalPages, () => renderRejectedPage(currentPage + 1));
+   }
+ 
+   // Search input filter
+   searchInput.addEventListener('input', () => {
+     const filter = searchInput.value.toLowerCase();
+     cards.forEach(card => {
+       const title = card.querySelector(".cat-thesis-item-title").textContent.toLowerCase();
+       const reason = card.querySelector(".bento-rejection-bubble p").textContent.toLowerCase();
+       const leadAuthor = card.querySelector(".lead-author") ? card.querySelector(".lead-author").textContent.toLowerCase() : "";
+       const metaValues = Array.from(card.querySelectorAll(".meta-badge")).map(v => v.textContent.toLowerCase()).join(" ");
+       
+       const allText = title + " " + reason + " " + leadAuthor + " " + metaValues;
+       const match = allText.includes(filter);
+ 
+       card.dataset.visible = match || filter === '' ? "1" : "0";
+ 
+       const idx = card.getAttribute("data-index");
+       if (rows[idx]) {
+         rows[idx].dataset.visible = match || filter === '' ? "1" : "0";
+       }
+     });
+ 
+     currentPage = 1;
+     renderRejectedPage(currentPage);
+   });
+ 
+   // Sort dropdown filter
+   sortSelect.addEventListener("change", () => {
+     const criteria = sortSelect.value;
+     cards.sort((a, b) => {
+       let valA, valB;
+       if (criteria === "recent") {
+         valA = parseInt(a.getAttribute("data-index"));
+         valB = parseInt(b.getAttribute("data-index"));
+         return valA - valB;
+       } else if (criteria === "title") {
+         valA = a.querySelector(".cat-thesis-item-title").textContent.trim().toLowerCase();
+         valB = b.querySelector(".cat-thesis-item-title").textContent.trim().toLowerCase();
+         return valA.localeCompare(valB);
+       } else if (criteria === "author") {
+         valA = a.querySelector(".lead-author") ? a.querySelector(".lead-author").textContent.trim().toLowerCase() : "";
+         valB = b.querySelector(".lead-author") ? b.querySelector(".lead-author").textContent.trim().toLowerCase() : "";
+         return valA.localeCompare(valB);
+       } else if (criteria === "year") {
+         valA = parseInt(a.querySelector(".cover-year-badge").textContent.trim()) || 0;
+         valB = parseInt(b.querySelector(".cover-year-badge").textContent.trim()) || 0;
+         return valB - valA; // Newest first
+       }
+       return 0;
+     });
+ 
+     // Re-append cards in sorted order
+     cards.forEach(c => bentoContainer.appendChild(c));
+     currentPage = 1;
+     renderRejectedPage(currentPage);
+   });
+ 
+   window.onload = () => {
+     cards.forEach(c => c.dataset.visible = "1");
+     rows.forEach(r => r.dataset.visible = "1");
+     renderRejectedPage();
+   };
 </script>
 <script src="{% static 'js/xlsx.full.min.js' %}"></script>
 <script>
@@ -359,7 +310,7 @@
     let originalTable = document.getElementById(tableID);
     let tableClone = originalTable.cloneNode(true);
     let rows = tableClone.querySelectorAll('tr');
-    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); }); // Remove Actions column
+    rows.forEach(row => { if (row.cells.length > 0) row.deleteCell(-1); });
     let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
     XLSX.writeFile(wb, filename + '.xlsx');
   }
