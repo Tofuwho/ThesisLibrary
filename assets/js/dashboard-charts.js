@@ -7,19 +7,22 @@ document.addEventListener("DOMContentLoaded", function () {
   // ===== Submission Trend =====
   const trendCtx = document.getElementById('trendChart').getContext('2d');
 
-  const months = JSON.parse(document.getElementById('months_data').textContent);
-  const approvedData = JSON.parse(document.getElementById('approved_data_json').textContent);
-  const pendingData = JSON.parse(document.getElementById('pending_data_json').textContent);
-  const rejectedData = JSON.parse(document.getElementById('rejected_data_json').textContent);
+  const trendData = JSON.parse(document.getElementById('trend_data_json').textContent);
+  const courseData = JSON.parse(document.getElementById('course_data_json').textContent);
+  const deptData = JSON.parse(document.getElementById('dept_data_json').textContent);
+  const rangeSelect = document.getElementById('trendRangeSelect');
 
-  new Chart(trendCtx, {
+  let activeRange = rangeSelect ? rangeSelect.value : '12m';
+  let activeData = trendData[activeRange] || trendData['12m'];
+
+  const trendChart = new Chart(trendCtx, {
     type: 'line',
     data: {
-      labels: months,
+      labels: activeData.labels,
       datasets: [
         {
           label: 'Approved',
-          data: approvedData,
+          data: activeData.approved,
           borderColor: '#1e7e34',
           backgroundColor: 'rgba(30, 126, 52, 0.05)',
           tension: 0.4,
@@ -29,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         {
           label: 'Pending',
-          data: pendingData,
+          data: activeData.pending,
           borderColor: '#b08d00',
           backgroundColor: 'rgba(176, 141, 0, 0.05)',
           tension: 0.4,
@@ -39,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         {
           label: 'Rejected',
-          data: rejectedData,
+          data: activeData.rejected,
           borderColor: '#a31d23',
           backgroundColor: 'rgba(163, 29, 35, 0.05)',
           tension: 0.4,
@@ -72,6 +75,20 @@ document.addEventListener("DOMContentLoaded", function () {
     },
   });
 
+  if (rangeSelect) {
+    rangeSelect.addEventListener('change', function () {
+      const selectedRange = this.value;
+      const newData = trendData[selectedRange];
+      if (newData) {
+        trendChart.data.labels = newData.labels;
+        trendChart.data.datasets[0].data = newData.approved;
+        trendChart.data.datasets[1].data = newData.pending;
+        trendChart.data.datasets[2].data = newData.rejected;
+        trendChart.update();
+      }
+    });
+  }
+
   // ===== Course Chart (Pie/Doughnut) =====
   const courseCounts = courseData.map(item => item.count);
   const courseLabels = courseData.map(item => item.course_name);
@@ -100,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
         datalabels: {
           color: '#fff',
           font: { weight: 'bold' },
-          formatter: value => ((value / totalCourse) * 100).toFixed(0) + '%'
+          formatter: value => totalCourse > 0 ? ((value / totalCourse) * 100).toFixed(0) + '%' : '0%'
         },
         legend: {
           display: false

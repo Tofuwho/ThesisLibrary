@@ -1,18 +1,16 @@
 import os
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, Q, F, Subquery, OuterRef, DateTimeField, Case, When
-from django.db.models.functions import TruncMonth
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 from django.conf import settings
 from django.utils import timezone
-from django.utils.dateformat import DateFormat
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
@@ -42,23 +40,99 @@ def admin_dashboard(request):
     approved_theses = Submission.objects.filter(status='approved').count()
     download_logs = DownloadLog.objects.count()
 
-    monthly_trends = (
-        Submission.objects
-        .annotate(month=TruncMonth('created_at'))
-        .values('month', 'status')
-        .annotate(count=Count('id'))
-        .order_by('month')
-    )
+    # Get all submissions from the last 365 days in a single query
+    one_year_ago = timezone.now() - timedelta(days=365)
+    submissions = list(Submission.objects.filter(created_at__gte=one_year_ago).values('id', 'created_at', 'status'))
+    today = timezone.now().date()
 
-    months = []
-    approved_data, pending_data, rejected_data = [], [], []
+    # 1. 1 Month (Daily) - last 30 days
+    one_month_labels = []
+    one_month_approved = []
+    one_month_pending = []
+    one_month_rejected = []
+    for i in range(29, -1, -1):
+        day = today - timedelta(days=i)
+        one_month_labels.append(day.strftime('%b %d'))
+        day_subs = [s for s in submissions if s['created_at'].date() == day]
+        one_month_approved.append(sum(1 for s in day_subs if s['status'] == 'approved'))
+        one_month_pending.append(sum(1 for s in day_subs if s['status'] == 'pending'))
+        one_month_rejected.append(sum(1 for s in day_subs if s['status'] == 'rejected'))
 
-    for entry in sorted({item['month'] for item in monthly_trends if item['month']}):
-        months.append(DateFormat(entry).format('M'))
-        month_entries = [e for e in monthly_trends if e['month'] == entry]
-        approved_data.append(next((e['count'] for e in month_entries if e['status'] == 'approved'), 0))
-        pending_data.append(next((e['count'] for e in month_entries if e['status'] == 'pending'), 0))
-        rejected_data.append(next((e['count'] for e in month_entries if e['status'] == 'rejected'), 0))
+    # 2. 3 Months (Weekly) - last 12 weeks
+    three_month_labels = []
+    three_month_approved = []
+    three_month_pending = []
+    three_month_rejected = []
+    for i in range(11, -1, -1):
+        start_date = today - timedelta(weeks=i+1)
+        end_date = today - timedelta(weeks=i)
+        three_month_labels.append(f"Wk {12-i}")
+        week_subs = [s for s in submissions if start_date < s['created_at'].date() <= end_date]
+        three_month_approved.append(sum(1 for s in week_subs if s['status'] == 'approved'))
+        three_month_pending.append(sum(1 for s in week_subs if s['status'] == 'pending'))
+        three_month_rejected.append(sum(1 for s in week_subs if s['status'] == 'rejected'))
+
+    # 3. 6 Months (Monthly) - last 6 calendar months
+    six_month_labels = []
+    six_month_approved = []
+    six_month_pending = []
+    six_month_rejected = []
+    for i in range(5, -1, -1):
+        year = today.year
+        month = today.month - i
+        if month <= 0:
+            month += 12
+            year -= 1
+        month_date = timezone.datetime(year, month, 1).date()
+        six_month_labels.append(month_date.strftime('%b'))
+        month_subs = [s for s in submissions if s['created_at'].year == year and s['created_at'].month == month]
+        six_month_approved.append(sum(1 for s in month_subs if s['status'] == 'approved'))
+        six_month_pending.append(sum(1 for s in month_subs if s['status'] == 'pending'))
+        six_month_rejected.append(sum(1 for s in month_subs if s['status'] == 'rejected'))
+
+    # 4. 9 Months (Monthly) - last 9 calendar months
+    nine_month_labels = []
+    nine_month_approved = []
+    nine_month_pending = []
+    nine_month_rejected = []
+    for i in range(8, -1, -1):
+        year = today.year
+        month = today.month - i
+        if month <= 0:
+            month += 12
+            year -= 1
+        month_date = timezone.datetime(year, month, 1).date()
+        nine_month_labels.append(month_date.strftime('%b'))
+        month_subs = [s for s in submissions if s['created_at'].year == year and s['created_at'].month == month]
+        nine_month_approved.append(sum(1 for s in month_subs if s['status'] == 'approved'))
+        nine_month_pending.append(sum(1 for s in month_subs if s['status'] == 'pending'))
+        nine_month_rejected.append(sum(1 for s in month_subs if s['status'] == 'rejected'))
+
+    # 5. 12 Months (Monthly/Annual) - last 12 calendar months
+    twelve_month_labels = []
+    twelve_month_approved = []
+    twelve_month_pending = []
+    twelve_month_rejected = []
+    for i in range(11, -1, -1):
+        year = today.year
+        month = today.month - i
+        if month <= 0:
+            month += 12
+            year -= 1
+        month_date = timezone.datetime(year, month, 1).date()
+        twelve_month_labels.append(month_date.strftime('%b %Y') if i == 11 or month_date.month == 1 else month_date.strftime('%b'))
+        month_subs = [s for s in submissions if s['created_at'].year == year and s['created_at'].month == month]
+        twelve_month_approved.append(sum(1 for s in month_subs if s['status'] == 'approved'))
+        twelve_month_pending.append(sum(1 for s in month_subs if s['status'] == 'pending'))
+        twelve_month_rejected.append(sum(1 for s in month_subs if s['status'] == 'rejected'))
+
+    trend_data = {
+        '1m': {'labels': one_month_labels, 'approved': one_month_approved, 'pending': one_month_pending, 'rejected': one_month_rejected},
+        '3m': {'labels': three_month_labels, 'approved': three_month_approved, 'pending': three_month_pending, 'rejected': three_month_rejected},
+        '6m': {'labels': six_month_labels, 'approved': six_month_approved, 'pending': six_month_pending, 'rejected': six_month_rejected},
+        '9m': {'labels': nine_month_labels, 'approved': nine_month_approved, 'pending': nine_month_pending, 'rejected': nine_month_rejected},
+        '12m': {'labels': twelve_month_labels, 'approved': twelve_month_approved, 'pending': twelve_month_pending, 'rejected': twelve_month_rejected},
+    }
 
     theses_by_course = list(
         Thesis.objects
@@ -111,10 +185,7 @@ def admin_dashboard(request):
         'theses_by_department': theses_by_department,
         'recent_theses': recent_theses,
         'theses_by_course': theses_by_course,
-        'months': months,
-        'approved_data': approved_data,
-        'pending_data': pending_data,
-        'rejected_data': rejected_data,
+        'trend_data': trend_data,
         'archived_theses_count': archived_theses_count,
     }
     return render(request, 'main/admin_dashboard.html', context)
