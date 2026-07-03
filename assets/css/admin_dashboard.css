@@ -714,6 +714,14 @@ textarea:focus {
 .dot-professor { background: #8b5cf6; }
 .dot-student { background: #10b981; }
 
+.tab-panel {
+  display: none !important;
+}
+
+.tab-panel.active {
+  display: block !important;
+}
+
 /* --- ADMIN DROPDOWNS --- */
 .dropdown-content {
   display: none;
