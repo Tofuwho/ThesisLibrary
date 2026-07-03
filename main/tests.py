@@ -824,3 +824,16 @@ class DuplicateAccountsTestCase(TestCase):
         self.assertTrue(Student.objects.filter(student_id="StudentNew").exists())
         self.assertEqual(Student.objects.all().count(), 2)
 
+    def test_delete_non_existent_student(self):
+        """Verify that deleting a non-existent student redirects cleanly without raising Http404."""
+        response = self.client.get(reverse("delete_student", args=["DoesNotExistId"]))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("students_list"))
+
+    def test_delete_non_existent_admin_staff(self):
+        """Verify that deleting a non-existent admin staff redirects cleanly without raising Http404."""
+        response = self.client.get(reverse("delete_admin_staff", args=["DoesNotExistAdmin"]))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("admin_staff_list"))
+
+

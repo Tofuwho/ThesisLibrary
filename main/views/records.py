@@ -73,8 +73,12 @@ def edit_student(request, student_id):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def delete_student(request, student_id):
-    get_object_or_404(Student, student_id=student_id).delete()
-    messages.success(request, f"Student {student_id} deleted.")
+    try:
+        student = Student.objects.get(student_id=student_id)
+        student.delete()
+        messages.success(request, f"Student {student_id} deleted.")
+    except Student.DoesNotExist:
+        messages.warning(request, f"Student {student_id} has already been deleted or does not exist.")
     return redirect('students_list')
 
 @login_required
@@ -107,8 +111,12 @@ def add_professor(request):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def delete_professor(request, professor_id):
-    get_object_or_404(Professor, professor_id=professor_id).delete()
-    messages.success(request, f"Professor {professor_id} deleted.")
+    try:
+        professor = Professor.objects.get(professor_id=professor_id)
+        professor.delete()
+        messages.success(request, f"Professor {professor_id} deleted.")
+    except Professor.DoesNotExist:
+        messages.warning(request, f"Professor {professor_id} has already been deleted or does not exist.")
     return redirect('professors_list')
 
 @login_required
@@ -182,8 +190,12 @@ def edit_librarian(request, librarian_id):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def delete_librarian(request, librarian_id):
-    get_object_or_404(Librarian, librarian_id=librarian_id).delete()
-    messages.success(request, f"Librarian {librarian_id} deleted.")
+    try:
+        librarian = Librarian.objects.get(librarian_id=librarian_id)
+        librarian.delete()
+        messages.success(request, f"Librarian {librarian_id} deleted.")
+    except Librarian.DoesNotExist:
+        messages.warning(request, f"Librarian {librarian_id} has already been deleted or does not exist.")
     return redirect('librarians_list')
 
 @login_required
@@ -247,8 +259,12 @@ def edit_admin_staff(request, admin_id):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def delete_admin_staff(request, admin_id):
-    get_object_or_404(AdminStaff, admin_id=admin_id).delete()
-    messages.success(request, f"Admin Staff {admin_id} deleted.")
+    try:
+        admin = AdminStaff.objects.get(admin_id=admin_id)
+        admin.delete()
+        messages.success(request, f"Admin Staff {admin_id} deleted.")
+    except AdminStaff.DoesNotExist:
+        messages.warning(request, f"Admin Staff {admin_id} has already been deleted or does not exist.")
     return redirect('admin_staff_list')
 
 @login_required

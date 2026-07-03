@@ -214,10 +214,14 @@ def user_list(request):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def delete_user(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    username = user.username
-    user.delete()
-    log_admin_action(request.user, request.user, DELETION, f"Permanently deleted user account: {username}")
+    try:
+        user = User.objects.get(id=user_id)
+        username = user.username
+        user.delete()
+        log_admin_action(request.user, request.user, DELETION, f"Permanently deleted user account: {username}")
+        messages.success(request, f"User account '{username}' permanently deleted.")
+    except User.DoesNotExist:
+        messages.warning(request, "This user account has already been deleted or does not exist.")
     return redirect('user_list')
 
 @login_required
