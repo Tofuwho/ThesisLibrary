@@ -216,14 +216,40 @@
   document.addEventListener('DOMContentLoaded', () => {
     const sidebarNav = document.querySelector('.sidebar-nav');
     if (sidebarNav) {
-      // Restore scroll position from sessionStorage
-      const scrollPosition = sessionStorage.getItem('sidebar-scroll');
-      if (scrollPosition !== null) {
-        sidebarNav.scrollTop = parseInt(scrollPosition, 10);
-      }
-      // Save scroll position to sessionStorage on scroll
+      // Helper to restore scroll position
+      const restoreScroll = () => {
+        const scrollPosition = sessionStorage.getItem('sidebar-scroll');
+        if (scrollPosition !== null) {
+          sidebarNav.scrollTop = parseInt(scrollPosition, 10);
+        }
+      };
+
+      // Restore immediately
+      restoreScroll();
+
+      // Restore again after paint to prevent layout-shift jumps
+      requestAnimationFrame(() => {
+        restoreScroll();
+      });
+
+      // Track if page is unloading to ignore tear-down scroll events
+      let isUnloading = false;
+      window.addEventListener('beforeunload', () => {
+        isUnloading = true;
+      });
+
+      // Save scroll position on scroll
       sidebarNav.addEventListener('scroll', () => {
-        sessionStorage.setItem('sidebar-scroll', sidebarNav.scrollTop);
+        if (!isUnloading) {
+          sessionStorage.setItem('sidebar-scroll', sidebarNav.scrollTop);
+        }
+      });
+
+      // Also explicitly save on link clicks
+      sidebarNav.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          sessionStorage.setItem('sidebar-scroll', sidebarNav.scrollTop);
+        });
       });
     }
   });
