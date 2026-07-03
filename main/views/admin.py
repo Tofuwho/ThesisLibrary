@@ -247,7 +247,7 @@ def _refine_log_data(log):
     return action, details
 
 @login_required
-@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])
 def admin_log_entries(request):
     all_logs_qs = LogEntry.objects.all().select_related('user', 'content_type').order_by('-action_time')
     
@@ -307,7 +307,7 @@ def password_reset_requests(request):
     })
 
 @login_required
-@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])
 def user_list(request):
     all_users = User.objects.select_related('profile').order_by('-date_joined')
     admins     = all_users.filter(profile__role=Profile.ADMIN)

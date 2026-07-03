@@ -930,5 +930,57 @@ class AdminDashboardStatsTestCase(TestCase):
         self.assertEqual(context["total_users"], 1)  # Just the admin
 
 
+class LibrarianPermissionsTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        
+        # Create a librarian user
+        self.librarian_user = User.objects.create_user(
+            username="Librarian01",
+            email="lib@tcu.edu.ph",
+            password="libpassword"
+        )
+        self.librarian_user.is_staff = True
+        self.librarian_user.save()
+        
+        from authapp.models import Profile
+        profile, _ = Profile.objects.get_or_create(user=self.librarian_user)
+        profile.role = Profile.LIBRARIAN
+        profile.save()
+        
+        # Create a student user to try deleting
+        self.student_user = User.objects.create_user(
+            username="StudentToDelete",
+            email="stud@tcu.edu.ph",
+            password="studpassword"
+        )
+        profile_stud, _ = Profile.objects.get_or_create(user=self.student_user)
+        profile_stud.role = Profile.STUDENT
+        profile_stud.save()
+
+    def test_librarian_read_access_allowed(self):
+        """Verify that a Librarian can view user list and system history."""
+        self.client.login(username="Librarian01", password="libpassword")
+        
+        response = self.client.get(reverse("user_list"))
+        self.assertEqual(response.status_code, 200)
+        
+        response = self.client.get(reverse("admin_log_entries"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_librarian_write_access_prohibited(self):
+        """Verify that a Librarian cannot perform deletions or modifications."""
+        self.client.login(username="Librarian01", password="libpassword")
+        
+        # Attempt to delete a user
+        response = self.client.get(reverse("delete_user", args=[self.student_user.id]))
+        # user_passes_test decorator redirects to login page (which redirects to landing page) on failure
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify the student user is NOT deleted
+        self.assertTrue(User.objects.filter(id=self.student_user.id).exists())
+
+
+
 
 
