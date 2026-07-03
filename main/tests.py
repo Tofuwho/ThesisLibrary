@@ -887,4 +887,48 @@ class AuditLogTestCase(TestCase):
         self.assertEqual(logs_del.first().action_flag, DELETION)
 
 
+class AdminDashboardStatsTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = User.objects.create_superuser(
+            username="AdminStats",
+            email="adminstats@tcu.edu.ph",
+            password="adminpassword"
+        )
+        from authapp.models import Profile
+        profile, _ = Profile.objects.get_or_create(user=self.admin)
+        profile.role = Profile.ADMIN
+        profile.save()
+        self.client.login(username="AdminStats", password="adminpassword")
+
+        # Create Thesis objects (one active, one archived)
+        from main.models import Thesis
+        self.active_thesis = Thesis.objects.create(
+            title="Active Study",
+            author="Author One",
+            year=2026,
+            abstract="Abstract of active study",
+            is_archived=False
+        )
+        self.archived_thesis = Thesis.objects.create(
+            title="Archived Study",
+            author="Author Two",
+            year=2025,
+            abstract="Abstract of archived study",
+            is_archived=True
+        )
+
+    def test_dashboard_statistics(self):
+        """Verify the correctness of statistics returned to the admin dashboard."""
+        response = self.client.get(reverse("admin_dashboard"))
+        self.assertEqual(response.status_code, 200)
+        context = response.context
+        
+        # Verify counts
+        self.assertEqual(context["total_theses"], 1)  # Only active ones
+        self.assertEqual(context["archived_theses_count"], 1)  # Only archived ones
+        self.assertEqual(context["total_users"], 1)  # Just the admin
+
+
+
 

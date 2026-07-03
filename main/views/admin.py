@@ -36,7 +36,7 @@ def log_admin_action(user, obj, action_flag, message):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])
 def admin_dashboard(request):
-    total_theses = Thesis.objects.count()
+    total_theses = Thesis.objects.filter(is_archived=False).count()
     total_users = User.objects.count()
     pending_submissions = Submission.objects.filter(status='pending').count()
     approved_theses = Submission.objects.filter(status='approved').count()
@@ -61,8 +61,8 @@ def admin_dashboard(request):
         rejected_data.append(next((e['count'] for e in month_entries if e['status'] == 'rejected'), 0))
 
     theses_by_course = list(
-        Submission.objects
-        .filter(status='approved', approved_at__isnull=False, course__isnull=False)
+        Thesis.objects
+        .filter(is_archived=False, course__isnull=False)
         .values(course_name=F('course__name'))
         .annotate(count=Count('id'))
         .order_by('-count')[:16]
@@ -72,8 +72,8 @@ def admin_dashboard(request):
         item['course_name'] = " ".join(name.split()[4:]) if len(name.split()) > 4 else name
 
     theses_by_department = list(
-        Submission.objects
-        .filter(status='approved', approved_at__isnull=False)
+        Thesis.objects
+        .filter(is_archived=False, department__isnull=False)
         .values('department__name')
         .annotate(count=Count('id'))
         .order_by('-count')[:16]
@@ -100,8 +100,7 @@ def admin_dashboard(request):
         .order_by('-activity_date')[:16]
     )
 
-    archive_path = os.path.join(settings.MEDIA_ROOT, 'thesis_files', 'Archived')
-    archived_theses_count = len([f for f in os.listdir(archive_path) if os.path.isfile(os.path.join(archive_path, f))]) if os.path.exists(archive_path) else 0
+    archived_theses_count = Thesis.objects.filter(is_archived=True).count()
 
     context = {
         'total_theses': total_theses,
