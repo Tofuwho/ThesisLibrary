@@ -303,6 +303,23 @@ def rejected_thesis_list(request):
 @user_passes_test(lambda u: u.is_staff)
 def departments_list(request):
     if request.method == 'POST':
+        # Enforce Admin Role
+        if not hasattr(request.user, 'profile') or request.user.profile.role != Profile.ADMIN:
+            return HttpResponseForbidden("Only administrators can add or delete colleges/departments.")
+            
+        admin_name = request.POST.get('admin_name', '').strip()
+        action_reason = request.POST.get('action_reason', '').strip()
+        action_date = request.POST.get('action_date')
+        password = request.POST.get('password')
+
+        if not password or not request.user.check_password(password):
+            messages.error(request, "Authentication failed. Invalid password.")
+            return redirect('departments_list')
+            
+        if not admin_name or not action_reason or not action_date:
+            messages.error(request, "All confirmation fields (Name, Reason, Date, Password) are required.")
+            return redirect('departments_list')
+
         name = request.POST.get('name', '').strip()
         category_id = request.POST.get('category_id')
         if name and category_id:
@@ -311,7 +328,7 @@ def departments_list(request):
                 messages.error(request, f"Department '{name}' already exists under '{category.name}'.")
             else:
                 Department.objects.create(name=name, category=category)
-                messages.success(request, f"Department '{name}' successfully created.")
+                messages.success(request, f"Department '{name}' successfully created by administrator {admin_name} on {action_date}. Reason: {action_reason}")
             return redirect('departments_list')
             
     departments = Department.objects.annotate(courses_count=Count('courses'))
@@ -325,6 +342,23 @@ def departments_list(request):
 @user_passes_test(lambda u: u.is_staff)
 def courses_list(request):
     if request.method == 'POST':
+        # Enforce Admin Role
+        if not hasattr(request.user, 'profile') or request.user.profile.role != Profile.ADMIN:
+            return HttpResponseForbidden("Only administrators can add or delete degree programs.")
+            
+        admin_name = request.POST.get('admin_name', '').strip()
+        action_reason = request.POST.get('action_reason', '').strip()
+        action_date = request.POST.get('action_date')
+        password = request.POST.get('password')
+
+        if not password or not request.user.check_password(password):
+            messages.error(request, "Authentication failed. Invalid password.")
+            return redirect('courses_list')
+            
+        if not admin_name or not action_reason or not action_date:
+            messages.error(request, "All confirmation fields (Name, Reason, Date, Password) are required.")
+            return redirect('courses_list')
+
         name = request.POST.get('name', '').strip()
         department_id = request.POST.get('department_id')
         if name and department_id:
@@ -333,7 +367,7 @@ def courses_list(request):
                 messages.error(request, f"Degree Program '{name}' already exists under '{department.name}'.")
             else:
                 Course.objects.create(name=name, department=department)
-                messages.success(request, f"Degree Program '{name}' successfully created.")
+                messages.success(request, f"Degree Program '{name}' successfully created by administrator {admin_name} on {action_date}. Reason: {action_reason}")
             return redirect('courses_list')
             
     courses = Course.objects.select_related('department').all()
@@ -349,13 +383,30 @@ def courses_list(request):
 @user_passes_test(lambda u: u.is_staff)
 def admin_categories(request):
     if request.method == 'POST':
+        # Enforce Admin Role
+        if not hasattr(request.user, 'profile') or request.user.profile.role != Profile.ADMIN:
+            return HttpResponseForbidden("Only administrators can add or delete graduation levels.")
+            
+        admin_name = request.POST.get('admin_name', '').strip()
+        action_reason = request.POST.get('action_reason', '').strip()
+        action_date = request.POST.get('action_date')
+        password = request.POST.get('password')
+
+        if not password or not request.user.check_password(password):
+            messages.error(request, "Authentication failed. Invalid password.")
+            return redirect('admin_categories')
+            
+        if not admin_name or not action_reason or not action_date:
+            messages.error(request, "All confirmation fields (Name, Reason, Date, Password) are required.")
+            return redirect('admin_categories')
+
         name = request.POST.get('name', '').strip()
         if name:
             if Category.objects.filter(name=name).exists():
                 messages.error(request, f"Graduation Level '{name}' already exists.")
             else:
                 Category.objects.create(name=name)
-                messages.success(request, f"Graduation Level '{name}' successfully created.")
+                messages.success(request, f"Graduation Level '{name}' successfully created by administrator {admin_name} on {action_date}. Reason: {action_reason}")
             return redirect('admin_categories')
             
     categories = Category.objects.all()
@@ -368,6 +419,84 @@ def admin_categories(request):
             'course_count': sum(dept.courses.count() for dept in category.departments.all()),
         })
     return render(request, 'main/admin_categories.html', {'categories': category_data})
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def delete_category(request, category_id):
+    if request.method != 'POST':
+        return HttpResponseForbidden("Invalid request method.")
+        
+    category = get_object_or_404(Category, id=category_id)
+    name = category.name
+    
+    admin_name = request.POST.get('admin_name', '').strip()
+    action_reason = request.POST.get('action_reason', '').strip()
+    action_date = request.POST.get('action_date')
+    password = request.POST.get('password')
+
+    if not password or not request.user.check_password(password):
+        messages.error(request, "Authentication failed. Invalid password.")
+        return redirect('admin_categories')
+        
+    if not admin_name or not action_reason or not action_date:
+        messages.error(request, "All confirmation fields are required.")
+        return redirect('admin_categories')
+
+    category.delete()
+    messages.success(request, f"Graduation Level '{name}' has been successfully deleted by administrator {admin_name} on {action_date}. Reason: {action_reason}")
+    return redirect('admin_categories')
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def delete_department(request, department_id):
+    if request.method != 'POST':
+        return HttpResponseForbidden("Invalid request method.")
+        
+    department = get_object_or_404(Department, id=department_id)
+    name = department.name
+    
+    admin_name = request.POST.get('admin_name', '').strip()
+    action_reason = request.POST.get('action_reason', '').strip()
+    action_date = request.POST.get('action_date')
+    password = request.POST.get('password')
+
+    if not password or not request.user.check_password(password):
+        messages.error(request, "Authentication failed. Invalid password.")
+        return redirect('departments_list')
+        
+    if not admin_name or not action_reason or not action_date:
+        messages.error(request, "All confirmation fields are required.")
+        return redirect('departments_list')
+
+    department.delete()
+    messages.success(request, f"College/Department '{name}' has been successfully deleted by administrator {admin_name} on {action_date}. Reason: {action_reason}")
+    return redirect('departments_list')
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
+def delete_course(request, course_id):
+    if request.method != 'POST':
+        return HttpResponseForbidden("Invalid request method.")
+        
+    course = get_object_or_404(Course, id=course_id)
+    name = course.name
+    
+    admin_name = request.POST.get('admin_name', '').strip()
+    action_reason = request.POST.get('action_reason', '').strip()
+    action_date = request.POST.get('action_date')
+    password = request.POST.get('password')
+
+    if not password or not request.user.check_password(password):
+        messages.error(request, "Authentication failed. Invalid password.")
+        return redirect('courses_list')
+        
+    if not admin_name or not action_reason or not action_date:
+        messages.error(request, "All confirmation fields are required.")
+        return redirect('courses_list')
+
+    course.delete()
+    messages.success(request, f"Degree Program '{name}' has been successfully deleted by administrator {admin_name} on {action_date}. Reason: {action_reason}")
+    return redirect('courses_list')
 
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)

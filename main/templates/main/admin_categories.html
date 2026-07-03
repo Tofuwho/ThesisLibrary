@@ -85,8 +85,9 @@
       </div>
     {% endif %}
 
-    <div class="org-layout-container">
+    <div class="org-layout-container" {% if user.profile.role != 'admin' %}style="grid-template-columns: 1fr;"{% endif %}>
       <!-- Left Column: Add Form -->
+      {% if user.profile.role == 'admin' %}
       <div class="org-form-card">
         <h3><i class="fas fa-plus-circle" style="color: #a31d23;"></i> Add New Level</h3>
         <form method="POST" action="{% url 'admin_categories' %}">
@@ -95,11 +96,37 @@
             <label class="org-form-label" for="category_name">Level Name</label>
             <input type="text" id="category_name" name="name" class="org-form-input" placeholder="e.g., Undergraduate, Graduate" required>
           </div>
+          
+          <div style="border-top: 1px dashed #eee; margin: 15px 0; padding-top: 15px;">
+            <h4 style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: #a31d23; margin-top: 0; margin-bottom: 10px; letter-spacing: 0.5px;">Security Verification</h4>
+          </div>
+
+          <div class="org-form-group">
+            <label class="org-form-label" for="admin_name">Admin Name</label>
+            <input type="text" id="admin_name" name="admin_name" class="org-form-input" value="{{ user.get_full_name|default:user.username }}" required>
+          </div>
+
+          <div class="org-form-group">
+            <label class="org-form-label" for="action_reason">Reason for Addition</label>
+            <input type="text" id="action_reason" name="action_reason" class="org-form-input" placeholder="e.g., Expanded course catalog" required>
+          </div>
+
+          <div class="org-form-group">
+            <label class="org-form-label" for="action_date">Date</label>
+            <input type="date" id="action_date" name="action_date" class="org-form-input" required>
+          </div>
+
+          <div class="org-form-group">
+            <label class="org-form-label" for="password">Your Password</label>
+            <input type="password" id="password" name="password" class="org-form-input" placeholder="Verify password" required>
+          </div>
+
           <button type="submit" class="org-form-btn">
             <i class="fas fa-save"></i> Save Level
           </button>
         </form>
       </div>
+      {% endif %}
 
       <!-- Right Column: Bento Cards -->
       <div>
@@ -118,7 +145,17 @@
               <div class="org-card-icon">
                 <i class="fas fa-layer-group"></i>
               </div>
-              <span class="org-card-badge">Level ID #{{ category.id }}</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="org-card-badge">Level ID #{{ category.id }}</span>
+                {% if user.profile.role == 'admin' %}
+                <a href="javascript:void(0)" 
+                   class="btn-delete-org" 
+                   title="Delete Level"
+                   onclick="openDeleteModal('{% url 'delete_category' category.id %}', '{{ category.name }}', 'This will also cascade and delete all associated colleges and degree programs.')">
+                  <i class="fas fa-trash-alt" style="color: #ef4444; font-size: 0.82rem;"></i>
+                </a>
+                {% endif %}
+              </div>
             </div>
             
             <h3 class="org-card-title">{{ category.name }}</h3>
@@ -147,7 +184,82 @@
   </div>
 </div>
 
+{% if user.profile.role == 'admin' %}
+<!-- Security Deletion Modal -->
+<div id="deleteConfirmModal" class="org-modal-backdrop">
+  <div class="org-modal">
+    <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Confirm Deletion</h3>
+    <p class="org-modal-desc" id="deleteModalDesc">You are about to delete this item. This action is irreversible.</p>
+    
+    <form id="deleteConfirmForm" method="POST" action="">
+      {% csrf_token %}
+      
+      <div class="org-form-group">
+        <label class="org-form-label" for="del_admin_name">Admin Name</label>
+        <input type="text" id="del_admin_name" name="admin_name" class="org-form-input" value="{{ user.get_full_name|default:user.username }}" required>
+      </div>
+
+      <div class="org-form-group">
+        <label class="org-form-label" for="del_action_reason">Reason for Deletion</label>
+        <input type="text" id="del_action_reason" name="action_reason" class="org-form-input" placeholder="e.g., Removal of test entry" required>
+      </div>
+
+      <div class="org-form-group">
+        <label class="org-form-label" for="del_action_date">Date</label>
+        <input type="date" id="del_action_date" name="action_date" class="org-form-input" required>
+      </div>
+
+      <div class="org-form-group">
+        <label class="org-form-label" for="del_password">Your Password</label>
+        <input type="password" id="del_password" name="password" class="org-form-input" placeholder="Verify password" required>
+      </div>
+      
+      <div class="org-modal-actions">
+        <button type="button" class="org-modal-btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+        <button type="submit" class="org-form-btn" style="width: auto; background: #ef4444;">
+          <i class="fas fa-trash-alt"></i> Confirm & Delete
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
 <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Pre-fill todays date in addition form
+    const addDateInput = document.getElementById('action_date');
+    if (addDateInput) {
+      addDateInput.valueAsDate = new Date();
+    }
+  });
+
+  // Modal display logic
+  function openDeleteModal(actionUrl, itemName, warningText = '') {
+    const modal = document.getElementById('deleteConfirmModal');
+    const form = document.getElementById('deleteConfirmForm');
+    const desc = document.getElementById('deleteModalDesc');
+    
+    if (modal && form) {
+      form.action = actionUrl;
+      desc.innerHTML = `You are about to delete <strong>${itemName}</strong>. ${warningText} Please fill out this authorization form to proceed.`;
+      
+      const dateInput = document.getElementById('del_action_date');
+      if (dateInput) {
+        dateInput.valueAsDate = new Date();
+      }
+      
+      modal.classList.add('active');
+    }
+  }
+
+  function closeDeleteModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+  }
+
   // Simple search filter for Bento Cards
   const searchInput = document.getElementById("categorySearch");
   searchInput.addEventListener("input", () => {

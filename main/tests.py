@@ -413,12 +413,13 @@ class Updated_Test(TestCase):
 class AdminTemplatesTestCase(TestCase):
     def setUp(self):
         self.client = Client()
-        # Create a staff user
         self.staff_user = User.objects.create_superuser(
             username="admin_test",
             email="admin@test.com",
             password="password123"
         )
+        self.staff_user.profile.role = 'admin'
+        self.staff_user.profile.save()
         self.client.login(username="admin_test", password="password123")
         
         # Create category, department, course, and a thesis for rendering
@@ -475,7 +476,11 @@ class AdminTemplatesTestCase(TestCase):
 
     def test_add_category_post(self):
         response = self.client.post(reverse('admin_categories'), {
-            'name': 'New Category'
+            'name': 'New Category',
+            'admin_name': 'Test Admin',
+            'action_reason': 'Testing additions',
+            'action_date': '2026-07-03',
+            'password': 'password123'
         })
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Category.objects.filter(name='New Category').exists())
@@ -483,7 +488,11 @@ class AdminTemplatesTestCase(TestCase):
     def test_add_department_post(self):
         response = self.client.post(reverse('departments_list'), {
             'name': 'New Dept',
-            'category_id': self.category.id
+            'category_id': self.category.id,
+            'admin_name': 'Test Admin',
+            'action_reason': 'Testing additions',
+            'action_date': '2026-07-03',
+            'password': 'password123'
         })
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Department.objects.filter(name='New Dept', category=self.category).exists())
@@ -491,7 +500,41 @@ class AdminTemplatesTestCase(TestCase):
     def test_add_course_post(self):
         response = self.client.post(reverse('courses_list'), {
             'name': 'New Program',
-            'department_id': self.department.id
+            'department_id': self.department.id,
+            'admin_name': 'Test Admin',
+            'action_reason': 'Testing additions',
+            'action_date': '2026-07-03',
+            'password': 'password123'
         })
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Course.objects.filter(name='New Program', department=self.department).exists())
+
+    def test_delete_course(self):
+        response = self.client.post(reverse('delete_course', args=[self.course.id]), {
+            'admin_name': 'Test Admin',
+            'action_reason': 'Testing deletions',
+            'action_date': '2026-07-03',
+            'password': 'password123'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Course.objects.filter(id=self.course.id).exists())
+
+    def test_delete_department(self):
+        response = self.client.post(reverse('delete_department', args=[self.department.id]), {
+            'admin_name': 'Test Admin',
+            'action_reason': 'Testing deletions',
+            'action_date': '2026-07-03',
+            'password': 'password123'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Department.objects.filter(id=self.department.id).exists())
+
+    def test_delete_category(self):
+        response = self.client.post(reverse('delete_category', args=[self.category.id]), {
+            'admin_name': 'Test Admin',
+            'action_reason': 'Testing deletions',
+            'action_date': '2026-07-03',
+            'password': 'password123'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Category.objects.filter(id=self.category.id).exists())
