@@ -33,6 +33,9 @@
           </div>
           <div class="button-group">
             {% if request.user.profile.role == 'admin' %}
+            <button onclick="downloadProfessorTemplate()" class="btn-admin-secondary">
+              <i class="fas fa-file-download" style="color: #0284c7;"></i> Download Template
+            </button>
             <label for="importProfessorFile" class="btn-admin-secondary" style="cursor:pointer;"><i class="fas fa-file-import"></i> Bulk Import</label>
             <input type="file" id="importProfessorFile" accept=".csv, .xls, .xlsx" style="display:none;">
             <a href="{% url 'add_professor' %}" class="btn-admin-primary"><i class="fas fa-plus"></i> Add Professor</a>
@@ -337,6 +340,27 @@
     let wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
     let fn = filename ? filename + '.xlsx' : 'Export_Data.xlsx';
     XLSX.writeFile(wb, fn);
+  }
+
+  function downloadProfessorTemplate() {
+    const data = [
+      {
+        "Professor ID": "PROF-0001",
+        "First Name": "Jane",
+        "Last Name": "Smith",
+        "Email": "janesmith@example.com"
+      },
+      {
+        "Professor ID": "PROF-0002",
+        "First Name": "Carlos",
+        "Last Name": "Reyes",
+        "Email": "carlosreyes@example.com"
+      }
+    ];
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Professors Template");
+    XLSX.writeFile(workbook, "Professors_Import_Template.xlsx");
   }
 </script>
 {% endblock %}

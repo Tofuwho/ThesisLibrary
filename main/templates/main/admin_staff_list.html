@@ -31,6 +31,9 @@
           </div>
           <div class="button-group">
             {% if request.user.profile.role == 'admin' %}
+            <button onclick="downloadAdminTemplate()" class="btn-admin-secondary">
+              <i class="fas fa-file-download" style="color: #0284c7;"></i> Download Template
+            </button>
             <label for="importFile" class="btn-admin-secondary" style="cursor:pointer;"><i class="fas fa-file-import"></i> Bulk Import</label>
             <input type="file" id="importFile" accept=".csv, .xls, .xlsx" style="display:none;">
             <a href="{% url 'add_admin_staff' %}" class="btn-admin-primary"><i class="fas fa-plus"></i> Add Admin</a>
@@ -82,6 +85,27 @@
   function exportTableToExcel(tableID, filename = 'Export') {
     let wb = XLSX.utils.table_to_book(document.getElementById(tableID), {sheet:"Sheet1"});
     XLSX.writeFile(wb, filename + '.xlsx');
+  }
+
+  function downloadAdminTemplate() {
+    const data = [
+      {
+        "Admin ID": "ADM-0001",
+        "First Name": "Bob",
+        "Last Name": "Brown",
+        "Email": "bobbrown@example.com"
+      },
+      {
+        "Admin ID": "ADM-0002",
+        "First Name": "Diana",
+        "Last Name": "Cruz",
+        "Email": "dianacruz@example.com"
+      }
+    ];
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Admins Template");
+    XLSX.writeFile(workbook, "Admins_Import_Template.xlsx");
   }
 
   // Import Logic
