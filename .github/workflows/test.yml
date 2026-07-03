@@ -46,7 +46,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt ruff
+
+      - name: Run code linter (Ruff)
+        run: ruff check .
+
+      - name: Verify system libraries and download NLTK data
+        run: python check_libs.py
+
+      - name: Run Django system configuration checks
+        run: python manage.py check
+
+      - name: Check for missing database migrations
+        run: python manage.py makemigrations --check --dry-run
 
       - name: Wait for DB
         run: |
