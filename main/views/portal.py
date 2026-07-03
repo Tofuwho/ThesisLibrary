@@ -67,6 +67,13 @@ def profile_card(request):
 
 @login_required
 def student_dashboard(request):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != Profile.STUDENT:
+        role = request.user.profile.role if hasattr(request.user, 'profile') else None
+        if role in [Profile.ADMIN, Profile.LIBRARIAN]:
+            return redirect('pending_submissions')
+        messages.error(request, "Access denied. Only student accounts can access the thesis submission portal.")
+        return redirect('/')
+        
     categories = Category.objects.all().order_by('name')
     
     user_data = {
@@ -106,6 +113,13 @@ def student_dashboard(request):
 @login_required
 @require_POST
 def create_submission(request):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != Profile.STUDENT:
+        role = request.user.profile.role if hasattr(request.user, 'profile') else None
+        if role in [Profile.ADMIN, Profile.LIBRARIAN]:
+            return redirect('pending_submissions')
+        messages.error(request, "Access denied. Only student accounts can submit theses.")
+        return redirect('/')
+
     title = request.POST.get('thesisTitle') or request.POST.get('title')
     abstract = request.POST.get('abstract', '')
     keywords = request.POST.get('keywords', '')
@@ -211,5 +225,12 @@ def create_submission(request):
 
 @login_required
 def my_submissions(request):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != Profile.STUDENT:
+        role = request.user.profile.role if hasattr(request.user, 'profile') else None
+        if role in [Profile.ADMIN, Profile.LIBRARIAN]:
+            return redirect('pending_submissions')
+        messages.error(request, "Access denied. Only student accounts can view submissions.")
+        return redirect('/')
+
     submissions = Submission.objects.filter(submitter=request.user)
     return render(request, 'main/my_submissions.html', {'submissions': submissions})

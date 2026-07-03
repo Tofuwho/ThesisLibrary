@@ -538,3 +538,26 @@ class AdminTemplatesTestCase(TestCase):
         })
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Category.objects.filter(id=self.category.id).exists())
+
+    def test_student_dashboard_access_for_student(self):
+        student_user = User.objects.create_user(
+            username="student_test",
+            email="student@test.com",
+            password="password123"
+        )
+        student_user.profile.role = 'student'
+        student_user.profile.save()
+        self.client.login(username="student_test", password="password123")
+        response = self.client.get(reverse('student_dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_student_dashboard_access_for_admin_redirects(self):
+        self.client.login(username="admin_test", password="password123")
+        response = self.client.get(reverse('student_dashboard'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('pending_submissions'), response.url)
+
+    def test_student_dashboard_access_for_anonymous_redirects(self):
+        self.client.logout()
+        response = self.client.get(reverse('student_dashboard'))
+        self.assertEqual(response.status_code, 302)

@@ -125,9 +125,19 @@
             <p>Join the Taguig City University research community. Share your findings, preserve knowledge, and inspire
                 the next generation of scholars.</p>
             <div class="banner-actions">
+                {% if not user.is_authenticated or user.profile.role == 'student' %}
                 <a href="{% url 'student_dashboard' %}" class="btn-primary-white">
                     <i class="fas fa-upload"></i> Submit My Thesis
                 </a>
+                {% elif user.profile.role == 'admin' or user.profile.role == 'librarian' %}
+                <a href="{% url 'pending_submissions' %}" class="btn-primary-white">
+                    <i class="fas fa-tasks"></i> Go to Admin Panel
+                </a>
+                {% else %}
+                <a href="{% url 'theses_list' %}" class="btn-primary-white">
+                    <i class="fas fa-search"></i> Browse Thesis Catalog
+                </a>
+                {% endif %}
                 <a href="{% url 'about' %}" class="btn-outline-white">
                     <i class="fas fa-info-circle"></i> Learn More
                 </a>
