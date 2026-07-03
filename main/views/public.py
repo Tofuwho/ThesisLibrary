@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import Http404
 
-from ..models import Thesis, Category, Department, Course
+from ..models import Thesis, Category, Department, Course, Submission
 from authapp.models import Profile
 from ..search_utils import perform_thesis_search
 
@@ -29,6 +29,9 @@ def index_page(request):
     total_theses = f"{total_theses_count:,}"
     total_colleges = Department.objects.count()
     
+    total_submissions_count = Submission.objects.count()
+    total_submissions = f"{total_submissions_count:,}"
+    
     if total_theses_count > 0:
         open_access_count = Thesis.objects.filter(is_archived=False).exclude(file='').exclude(file__isnull=True).count()
         open_access_percent = int((open_access_count / total_theses_count) * 100)
@@ -38,6 +41,7 @@ def index_page(request):
     return render(request, 'main/index.html', {
         'recent_theses': recent_theses,
         'departments': departments,
+        'total_submissions': total_submissions,
         'total_theses': total_theses,
         'total_colleges': total_colleges,
         'open_access_percent': open_access_percent,

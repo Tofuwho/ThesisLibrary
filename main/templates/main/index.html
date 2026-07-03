@@ -31,8 +31,13 @@
 
             <div class="hero-stats">
                 <div class="stat-item">
+                    <span class="stat-number">{{ total_submissions }}</span>
+                    <span class="stat-label">Total Submissions</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
                     <span class="stat-number">{{ total_theses }}</span>
-                    <span class="stat-label">Theses Archived</span>
+                    <span class="stat-label">Approved Theses</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
@@ -146,4 +151,56 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const counterElements = document.querySelectorAll(".stat-number");
+    
+    const countUp = (el) => {
+        const targetText = el.textContent.trim();
+        const matches = targetText.match(/^([\d,]+)(%?)$/);
+        if (!matches) return;
+        
+        const targetVal = parseInt(matches[1].replace(/,/g, ''), 10);
+        const suffix = matches[2] || '';
+        
+        let currentVal = 0;
+        const duration = 1200; // 1.2s count up duration
+        const startTime = performance.now();
+        
+        function updateCounter(currentTime) {
+            const elapsedTime = currentTime - startTime;
+            const progress = Math.min(elapsedTime / duration, 1);
+            const easeProgress = progress * (2 - progress); // easeOutQuad
+            
+            currentVal = Math.floor(easeProgress * targetVal);
+            el.textContent = currentVal.toLocaleString() + suffix;
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+            } else {
+                el.textContent = targetText;
+            }
+        }
+        
+        el.textContent = "0" + suffix;
+        requestAnimationFrame(updateCounter);
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                countUp(entry.target);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+
+    counterElements.forEach(el => observer.observe(el));
+});
+</script>
 {% endblock %}
