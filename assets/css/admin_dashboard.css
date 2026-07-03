@@ -988,3 +988,277 @@ textarea:focus {
   background: #1976d2;
   color: white;
 }
+
+/* ============================================================
+   ORGANIZATION BENTO SECTIONS (Categories, Depts, Courses)
+   ============================================================ */
+.org-layout-container {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 992px) {
+  .org-layout-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form Card */
+.org-form-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+.org-form-card h3 {
+  font-family: Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d3436;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.org-form-group {
+  margin-bottom: 1.25rem;
+}
+
+.org-form-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #636e72;
+  margin-bottom: 6px;
+}
+
+.org-form-input,
+.org-form-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #2d3436;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.org-form-input:focus,
+.org-form-select:focus {
+  outline: none;
+  border-color: #a31d23;
+  box-shadow: 0 0 0 3px rgba(163, 29, 35, 0.1);
+}
+
+.org-form-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #a31d23, #7b0d11);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.org-form-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(163, 29, 35, 0.25);
+}
+
+/* Bento Grid and Cards */
+.org-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.org-bento-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 155px;
+  position: relative;
+  overflow: hidden;
+}
+
+.org-bento-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: rgba(163, 29, 35, 0.2);
+  transition: background 0.25s ease;
+}
+
+.org-bento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.04);
+  border-color: rgba(163, 29, 35, 0.15);
+}
+
+.org-bento-card:hover::before {
+  background: #a31d23;
+}
+
+/* Cover / accent overrides based on department theme code */
+.org-bento-card.dept-cict::before { background-color: #0284c7; }
+.org-bento-card.dept-cas::before { background-color: #f59e0b; }
+.org-bento-card.dept-chtm::before { background-color: #ef4444; }
+.org-bento-card.dept-cbm::before { background-color: #4f46e5; }
+.org-bento-card.dept-ccj::before { background-color: #4b5563; }
+.org-bento-card.dept-cet::before { background-color: #f97316; }
+.org-bento-card.dept-ce::before { background-color: #10b981; }
+.org-bento-card.dept-ippg::before { background-color: #0d9488; }
+.org-bento-card.dept-graduate::before { background-color: #7c3aed; }
+
+.org-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.org-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  background: rgba(163, 29, 35, 0.06);
+  color: #a31d23;
+  transition: all 0.25s ease;
+}
+
+.org-bento-card.dept-cict .org-card-icon { background: rgba(2, 132, 199, 0.08); color: #0284c7; }
+.org-bento-card.dept-cas .org-card-icon { background: rgba(245, 158, 11, 0.08); color: #f59e0b; }
+.org-bento-card.dept-chtm .org-card-icon { background: rgba(239, 68, 68, 0.08); color: #ef4444; }
+.org-bento-card.dept-cbm .org-card-icon { background: rgba(79, 70, 229, 0.08); color: #4f46e5; }
+.org-bento-card.dept-ccj .org-card-icon { background: rgba(75, 85, 99, 0.08); color: #4b5563; }
+.org-bento-card.dept-cet .org-card-icon { background: rgba(249, 115, 22, 0.08); color: #f97316; }
+.org-bento-card.dept-ce .org-card-icon { background: rgba(16, 185, 129, 0.08); color: #10b981; }
+.org-bento-card.dept-ippg .org-card-icon { background: rgba(13, 148, 136, 0.08); color: #0d9488; }
+.org-bento-card.dept-graduate .org-card-icon { background: rgba(124, 58, 237, 0.08); color: #7c3aed; }
+
+.org-card-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f8f9fa;
+  color: #495057;
+  border: 1px solid #e9ecef;
+}
+
+.org-card-title {
+  font-family: Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d3436;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.35;
+}
+
+.org-card-subtitle {
+  font-size: 0.72rem;
+  color: #a31d23;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.org-card-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #636e72;
+  border-top: 1px solid #f1f3f5;
+  padding-top: 0.75rem;
+  margin-top: auto;
+}
+
+.org-card-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.org-card-stat-item i {
+  color: #b2bec3;
+}
+
+/* Category Filter Bar consistently styled */
+.org-search-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.005);
+}
+
+.org-search-input-wrapper {
+  position: relative;
+  width: 280px;
+}
+
+.org-search-input-wrapper i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a4b0be;
+  font-size: 0.85rem;
+}
+
+.org-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.org-search-input:focus {
+  outline: none;
+  border-color: #a31d23;
+  box-shadow: 0 0 0 3px rgba(163, 29, 35, 0.08);
+}

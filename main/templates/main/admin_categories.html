@@ -4,7 +4,7 @@
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.3">
 <style>
   .search-bar {
     margin-bottom: 1rem;
@@ -68,86 +68,96 @@
 
   <div class="admin-main">
     <div class="dashboard-header">
-      <h1>🏛️ Categories</h1>
-      <p>Overview of categories with department and course statistics.</p>
+      <div class="header-title-container">
+        <h1>🏛️ Graduation Levels</h1>
+        <p>Manage and overview academic categories with department and course statistics.</p>
+      </div>
     </div>
 
-    <div class="dashboard-section" style="margin-top: 2rem;">
-      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
-        <div class="search-bar">
-          <input type="text" id="categorySearch" class="search-input" placeholder="Search categories...">
+    <!-- Alert Messages -->
+    {% if messages %}
+      <div style="margin-top: 1rem;">
+        {% for message in messages %}
+          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" style="padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; margin-bottom: 1rem; border: 1px solid transparent; {% if message.tags == 'error' %}background-color: #fdf2f2; color: #9b1c1c; border-color: #fde2e2;{% else %}background-color: #f3faf7; color: #03543f; border-color: #def7ec;{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="org-layout-container">
+      <!-- Left Column: Add Form -->
+      <div class="org-form-card">
+        <h3><i class="fas fa-plus-circle" style="color: #a31d23;"></i> Add New Level</h3>
+        <form method="POST" action="{% url 'admin_categories' %}">
+          {% csrf_token %}
+          <div class="org-form-group">
+            <label class="org-form-label" for="category_name">Level Name</label>
+            <input type="text" id="category_name" name="name" class="org-form-input" placeholder="e.g., Undergraduate, Graduate" required>
+          </div>
+          <button type="submit" class="org-form-btn">
+            <i class="fas fa-save"></i> Save Level
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Column: Bento Cards -->
+      <div>
+        <div class="org-search-container">
+          <span style="font-size: 0.85rem; font-weight: 700; color: #555;">Active Levels ({{ categories|length }})</span>
+          <div class="org-search-input-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="categorySearch" class="org-search-input" placeholder="Search categories...">
+          </div>
         </div>
 
-        <table id="categoriesTable" style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr style="background-color:#f8f9fa;">
-              <th style="padding:0.8rem; text-align:left;">Name</th>
-              <th style="padding:0.8rem; text-align:left;">Departments</th>
-              <th style="padding:0.8rem; text-align:left;">Total Courses</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for category in categories %}
-            <tr style="border-bottom:1px solid #eee;">
-              <td style="padding:0.8rem; color:#0277bd;">{{ category.name }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ category.department_count }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ category.course_count }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="3" style="text-align:center; padding:1rem; color:#6c757d;">No categories found.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <div class="org-grid" id="categoriesGrid">
+          {% for category in categories %}
+          <div class="org-bento-card {% if 'graduate' in category.name|lower %}dept-graduate{% else %}dept-coll{% endif %}">
+            <div class="org-card-header">
+              <div class="org-card-icon">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <span class="org-card-badge">Level ID #{{ category.id }}</span>
+            </div>
+            
+            <h3 class="org-card-title">{{ category.name }}</h3>
+            <span class="org-card-subtitle">
+              <i class="fas fa-university" style="font-size: 0.65rem;"></i> TCU Academic Structure
+            </span>
+
+            <div class="org-card-stats">
+              <span class="org-card-stat-item">
+                <i class="fas fa-university"></i> {{ category.department_count }} Colleges
+              </span>
+              <span class="org-card-stat-item">
+                <i class="fas fa-graduation-cap"></i> {{ category.course_count }} Programs
+              </span>
+            </div>
+          </div>
+          {% empty %}
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: #ffffff; border-radius: 16px; border: 1px dashed #ddd; color: #7f8c8d;">
+            <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 0.5rem; color: #bdc3c7;"></i>
+            <p style="margin: 0; font-weight: 600;">No graduation levels registered.</p>
+          </div>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  document.querySelectorAll("#categoriesTable th").forEach((th, index) => {
-    th.addEventListener("click", () => {
-      const table = th.closest("table");
-      const tbody = table.querySelector("tbody");
-      const rows = Array.from(tbody.querySelectorAll("tr"));
-      const asc = !th.classList.contains("sort-asc");
-
-      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
-      th.classList.toggle("sort-asc", asc);
-      th.classList.toggle("sort-desc", !asc);
-
-      rows.sort((a, b) => {
-        const cellA = a.children[index].innerText.trim().toLowerCase();
-        const cellB = b.children[index].innerText.trim().toLowerCase();
-        return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
-      });
-
-      rows.forEach(row => tbody.appendChild(row));
-    });
-  });
-
+  // Simple search filter for Bento Cards
   const searchInput = document.getElementById("categorySearch");
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
-    const rows = document.querySelectorAll("#categoriesTable tbody tr");
+    const cards = document.querySelectorAll("#categoriesGrid .org-bento-card");
 
-    rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      const match = text.includes(filter);
-      row.style.display = match ? "" : "none";
-
-      row.querySelectorAll("td").forEach(td => {
-        td.innerHTML = td.textContent;
-      });
-
-      if (filter && match) {
-        row.querySelectorAll("td").forEach(td => {
-          const innerText = td.textContent;
-          const regex = new RegExp(`(${filter})`, "gi");
-          td.innerHTML = innerText.replace(regex, `<span class="highlight">$1</span>`);
-        });
-      }
+    cards.forEach(card => {
+      const title = card.querySelector(".org-card-title").textContent.toLowerCase();
+      const match = title.includes(filter);
+      card.style.display = match ? "flex" : "none";
     });
   });
 </script>

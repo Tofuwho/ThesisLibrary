@@ -302,22 +302,67 @@ def rejected_thesis_list(request):
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def departments_list(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        category_id = request.POST.get('category_id')
+        if name and category_id:
+            category = get_object_or_404(Category, id=category_id)
+            if Department.objects.filter(name=name, category=category).exists():
+                messages.error(request, f"Department '{name}' already exists under '{category.name}'.")
+            else:
+                Department.objects.create(name=name, category=category)
+                messages.success(request, f"Department '{name}' successfully created.")
+            return redirect('departments_list')
+            
     departments = Department.objects.annotate(courses_count=Count('courses'))
-    return render(request, 'main/departments.html', {'departments': departments})
+    categories = Category.objects.all()
+    return render(request, 'main/departments.html', {
+        'departments': departments,
+        'categories': categories
+    })
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def courses_list(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        department_id = request.POST.get('department_id')
+        if name and department_id:
+            department = get_object_or_404(Department, id=department_id)
+            if Course.objects.filter(name=name, department=department).exists():
+                messages.error(request, f"Degree Program '{name}' already exists under '{department.name}'.")
+            else:
+                Course.objects.create(name=name, department=department)
+                messages.success(request, f"Degree Program '{name}' successfully created.")
+            return redirect('courses_list')
+            
     courses = Course.objects.select_related('department').all()
-    return render(request, 'main/courses.html', {'courses': courses})
+    departments = Department.objects.select_related('category').all()
+    for course in courses:
+        course.course_display = str(course.name).split('-')[0].strip()
+    return render(request, 'main/Courses.html', {
+        'courses': courses,
+        'departments': departments
+    })
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def admin_categories(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if name:
+            if Category.objects.filter(name=name).exists():
+                messages.error(request, f"Graduation Level '{name}' already exists.")
+            else:
+                Category.objects.create(name=name)
+                messages.success(request, f"Graduation Level '{name}' successfully created.")
+            return redirect('admin_categories')
+            
     categories = Category.objects.all()
     category_data = []
     for category in categories:
         category_data.append({
+            'id': category.id,
             'name': category.name,
             'department_count': category.departments.count(),
             'course_count': sum(dept.courses.count() for dept in category.departments.all()),

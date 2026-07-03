@@ -472,3 +472,26 @@ class AdminTemplatesTestCase(TestCase):
     def test_rejected_theses_renders(self):
         response = self.client.get(reverse('rejected_thesis_list'))
         self.assertEqual(response.status_code, 200)
+
+    def test_add_category_post(self):
+        response = self.client.post(reverse('admin_categories'), {
+            'name': 'New Category'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Category.objects.filter(name='New Category').exists())
+
+    def test_add_department_post(self):
+        response = self.client.post(reverse('departments_list'), {
+            'name': 'New Dept',
+            'category_id': self.category.id
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Department.objects.filter(name='New Dept', category=self.category).exists())
+
+    def test_add_course_post(self):
+        response = self.client.post(reverse('courses_list'), {
+            'name': 'New Program',
+            'department_id': self.department.id
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Course.objects.filter(name='New Program', department=self.department).exists())

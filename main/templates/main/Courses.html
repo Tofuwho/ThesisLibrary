@@ -1,58 +1,10 @@
 {% extends 'main/base.html' %}
-{% load static %}
+{% load static department_filters %}
 
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
-<style>
-  .search-bar {
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .search-input {
-    background: #ffffff;
-    color: #333;
-    border: 1px solid #ced4da;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    width: 250px;
-    transition: 0.2s;
-  }
-
-  .search-input:focus {
-    outline: none;
-    border-color: #0277bd;
-    box-shadow: 0 0 5px rgba(2, 119, 189, 0.3);
-  }
-
-  th {
-    cursor: pointer;
-    transition: color 0.2s;
-    color: #555;
-  }
-
-  th.sort-asc::after {
-    content: " ▲";
-    color: #0277bd;
-  }
-
-  th.sort-desc::after {
-    content: " ▼";
-    color: #0277bd;
-  }
-
-  th:hover {
-    color: #0277bd;
-  }
-
-  #courseTable tbody tr:hover {
-    background-color: #f8f9fa;
-    transition: background 0.2s;
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.3">
 {% endblock %}
 
 {% block content %}
@@ -61,76 +13,114 @@
 
   <div class="admin-main">
     <div class="dashboard-header">
-      <h1>🎓 Courses</h1>
-      <p>List of all courses with their respective departments and academic paths.</p>
+      <div class="header-title-container">
+        <h1>🎓 Degree Programs</h1>
+        <p>List and manage academic degree courses offered across colleges.</p>
+      </div>
     </div>
 
-    <div class="dashboard-section" style="margin-top: 2rem;">
-      <div style="background:#ffffff; border:1px solid #eaeaea; border-radius:12px; padding:1.5rem;">
-        <div class="search-bar">
-          <input type="text" id="courseSearch" class="search-input" placeholder="Search courses...">
+    <!-- Alert Messages -->
+    {% if messages %}
+      <div style="margin-top: 1rem;">
+        {% for message in messages %}
+          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" style="padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; margin-bottom: 1rem; border: 1px solid transparent; {% if message.tags == 'error' %}background-color: #fdf2f2; color: #9b1c1c; border-color: #fde2e2;{% else %}background-color: #f3faf7; color: #03543f; border-color: #def7ec;{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="org-layout-container">
+      <!-- Left Column: Add Form -->
+      <div class="org-form-card">
+        <h3><i class="fas fa-plus-circle" style="color: #a31d23;"></i> Add Program</h3>
+        <form method="POST" action="{% url 'courses_list' %}">
+          {% csrf_token %}
+          <div class="org-form-group">
+            <label class="org-form-label" for="course_name">Program Name/Abbreviation</label>
+            <input type="text" id="course_name" name="name" class="org-form-input" placeholder="e.g., BSCS" required>
+          </div>
+          <div class="org-form-group">
+            <label class="org-form-label" for="dept_select">Department / College</label>
+            <select id="dept_select" name="department_id" class="org-form-select" required>
+              <option value="" disabled selected>Select department...</option>
+              {% for dept in departments %}
+                <option value="{{ dept.id }}">{{ dept.name }} ({{ dept.category.name }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="org-form-btn">
+            <i class="fas fa-save"></i> Save Program
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Column: Bento Cards -->
+      <div>
+        <div class="org-search-container">
+          <span style="font-size: 0.85rem; font-weight: 700; color: #555;">Programs Offered ({{ courses|length }})</span>
+          <div class="org-search-input-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="courseSearch" class="org-search-input" placeholder="Search courses...">
+          </div>
         </div>
 
-        <table id="courseTable" style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr style="background-color:#f8f9fa;">
-              <th style="padding:0.8rem; text-align:left;">Name</th>
-              <th style="padding:0.8rem; text-align:left;">Department</th>
-              <th style="padding:0.8rem; text-align:left;">Category</th>
-              <th style="padding:0.8rem; text-align:left;">Academic Path</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for course in courses %}
-            <tr style="border-bottom:1px solid #eee;">
-              <td style="padding:0.8rem; color:#0277bd;">{{ course.name }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ course.department.name }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ course.department.category }}</td>
-              <td style="padding:0.8rem; color:#333;">{{ course.department.category }} → {{ course.department.name }}
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="4" style="text-align:center; padding:1rem; color:#6c757d;">No courses found.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <div class="org-grid" id="coursesGrid">
+          {% for course in courses %}
+          {% with code=course.department.name|dept_theme_code %}
+          <div class="org-bento-card {{ code }}">
+            <div class="org-card-header">
+              <div class="org-card-icon">
+                {% if 'cict' in code %}<i class="fas fa-terminal"></i>
+                {% elif 'cas' in code %}<i class="fas fa-landmark"></i>
+                {% elif 'chtm' in code %}<i class="fas fa-concierge-bell"></i>
+                {% elif 'cbm' in code %}<i class="fas fa-chart-pie"></i>
+                {% elif 'ccj' in code %}<i class="fas fa-balance-scale"></i>
+                {% elif 'cet' in code %}<i class="fas fa-drafting-compass"></i>
+                {% elif 'ce' in code %}<i class="fas fa-apple-alt"></i>
+                {% elif 'graduate' in code %}<i class="fas fa-microscope"></i>
+                {% else %}<i class="fas fa-university"></i>
+                {% endif %}
+              </div>
+              <span class="org-card-badge">{{ course.department.category.name }}</span>
+            </div>
+            
+            <h3 class="org-card-title">{{ course.name }}</h3>
+            <span class="org-card-subtitle">
+              <i class="fas fa-university" style="font-size: 0.65rem;"></i> {{ course.department.name }}
+            </span>
+
+            <div class="org-card-stats">
+              <span class="org-card-stat-item" style="font-size: 0.72rem;">
+                <i class="fas fa-route"></i> {{ course.department.category.name }} → {{ course.department.name }}
+              </span>
+            </div>
+          </div>
+          {% endwith %}
+          {% empty %}
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: #ffffff; border-radius: 16px; border: 1px dashed #ddd; color: #7f8c8d;">
+            <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 0.5rem; color: #bdc3c7;"></i>
+            <p style="margin: 0; font-weight: 600;">No degree programs registered.</p>
+          </div>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  document.querySelectorAll("#courseTable th").forEach((th, index) => {
-    th.addEventListener("click", () => {
-      const table = th.closest("table");
-      const tbody = table.querySelector("tbody");
-      const rows = Array.from(tbody.querySelectorAll("tr"));
-      const asc = !th.classList.contains("sort-asc");
-
-      table.querySelectorAll("th").forEach(t => t.classList.remove("sort-asc", "sort-desc"));
-      th.classList.toggle("sort-asc", asc);
-      th.classList.toggle("sort-desc", !asc);
-
-      rows.sort((a, b) => {
-        const cellA = a.children[index].innerText.trim().toLowerCase();
-        const cellB = b.children[index].innerText.trim().toLowerCase();
-        return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
-      });
-
-      rows.forEach(row => tbody.appendChild(row));
-    });
-  });
-
+  // Simple search filter for Bento Cards
   const searchInput = document.getElementById("courseSearch");
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase();
-    const rows = document.querySelectorAll("#courseTable tbody tr");
+    const cards = document.querySelectorAll("#coursesGrid .org-bento-card");
 
-    rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      row.style.display = text.includes(filter) ? "" : "none";
+    cards.forEach(card => {
+      const title = card.querySelector(".org-card-title").textContent.toLowerCase();
+      const department = card.querySelector(".org-card-subtitle").textContent.toLowerCase();
+      const match = title.includes(filter) || department.includes(filter);
+      card.style.display = match ? "flex" : "none";
     });
   });
 </script>
