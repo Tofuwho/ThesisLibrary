@@ -211,3 +211,20 @@
     }
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebarNav = document.querySelector('.sidebar-nav');
+    if (sidebarNav) {
+      // Restore scroll position from sessionStorage
+      const scrollPosition = sessionStorage.getItem('sidebar-scroll');
+      if (scrollPosition !== null) {
+        sidebarNav.scrollTop = parseInt(scrollPosition, 10);
+      }
+      // Save scroll position to sessionStorage on scroll
+      sidebarNav.addEventListener('scroll', () => {
+        sessionStorage.setItem('sidebar-scroll', sidebarNav.scrollTop);
+      });
+    }
+  });
+</script>
