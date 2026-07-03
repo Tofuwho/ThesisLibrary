@@ -4,7 +4,7 @@
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.0">
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v={% now 'U' %}">
 <script src="{% static 'js/chart.js' %}"></script>
 <script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
 {% endblock %}

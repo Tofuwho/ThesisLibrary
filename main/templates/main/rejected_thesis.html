@@ -4,8 +4,8 @@
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/categories.css' %}?v=2.2">
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v=2.2">
+<link rel="stylesheet" href="{% static 'css/categories.css' %}?v={% now 'U' %}">
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v={% now 'U' %}">
 {% endblock %}
 
 {% block content %}

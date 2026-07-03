@@ -4,7 +4,7 @@
 {% block body_class %}admin-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}?v={% now 'U' %}">
 <style>
   .reject-form-container {
     max-width: 800px;

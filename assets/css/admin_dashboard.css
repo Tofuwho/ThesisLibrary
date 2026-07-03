@@ -59,6 +59,11 @@ body.admin-page footer {
   overflow: hidden;
 }
 
+.dashboard-header {
+  position: relative !important;
+  z-index: 1002 !important;
+}
+
 /* ============================================================
    ADMIN SIDEBAR
    ============================================================ */
