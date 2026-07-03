@@ -14,6 +14,8 @@ from django.views.decorators.csrf import csrf_protect, csrf_exempt
 
 from ..models import Student, Professor, Librarian, AdminStaff, VerificationCode, PasswordResetCode
 from authapp.models import Profile
+from django.contrib.admin.models import CHANGE
+from .admin import log_admin_action
 
 def generate_verification_code():
     return ''.join(random.choices(string.digits, k=6))
@@ -72,16 +74,26 @@ def login_view(request):
                 except VerificationCode.DoesNotExist:
                     pass
                 login(request, user)
+                log_admin_action(user, user, CHANGE, f"Login: User {user.username} logged in successfully.")
                 return JsonResponse({'success': True})
+            
+            attempted_user = User.objects.filter(username=uid).first()
+            if attempted_user:
+                log_admin_action(attempted_user, attempted_user, CHANGE, f"Login Attempt: Failed login attempt for user {uid}")
             return JsonResponse({'success': False, 'error': 'Invalid credentials'}, status=400)
         else:
             uid, pwd = request.POST.get('username'), request.POST.get('password')
             user = authenticate(request, username=uid, password=pwd)
             if user and user.is_active:
                 login(request, user)
+                log_admin_action(user, user, CHANGE, f"Login: User {user.username} logged in successfully.")
                 if is_ajax:
                     return JsonResponse({'success': True, 'redirect_url': request.POST.get('next') or '/'})
                 return redirect(request.POST.get('next') or '/')
+            
+            attempted_user = User.objects.filter(username=uid).first()
+            if attempted_user:
+                log_admin_action(attempted_user, attempted_user, CHANGE, f"Login Attempt: Failed login attempt for user {uid}")
             
             if is_ajax:
                 return JsonResponse({'success': False, 'errors': {'__all__': ['Invalid ID or password.']}}, status=400)
@@ -181,6 +193,7 @@ def forgot_password(request):
             PasswordResetCode.objects.filter(user=user, is_used=False).update(is_used=True)
             PasswordResetCode.objects.create(user=user, code=code, expires_at=timezone.now()+timezone.timedelta(hours=1))
             send_password_reset_email(user, code)
+            log_admin_action(user, user, CHANGE, f"Security: Password reset requested for {uid}")
         except Exception:
             pass
         # In offline LAN, we inform the user to visit the Librarian
@@ -203,6 +216,7 @@ def reset_password(request):
                 user.save()
                 rc.is_used = True
                 rc.save()
+                log_admin_action(user, user, CHANGE, f"Security: Password reset successfully via verification code for {uid}")
                 return JsonResponse({'success': True})
         except Exception:
             pass
@@ -218,6 +232,7 @@ def change_password(request, user_id):
         if new == confirm:
             user.set_password(new)
             user.save()
+            log_admin_action(request.user, user, CHANGE, f"Security: Administrator forced password change for user {user.username}")
             return JsonResponse({'success': True}) if request.content_type == 'application/json' else redirect('user_list')
     return redirect('user_list')
 
@@ -229,6 +244,7 @@ def change_password_profile(request):
         if request.user.check_password(old):
             request.user.set_password(new)
             request.user.save()
+            log_admin_action(request.user, request.user, CHANGE, f"Security: Password changed by user {request.user.username}")
             return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
 
@@ -282,6 +298,7 @@ def activate_premade_account(request):
         v.is_verified = True
         v.save()
         
+        log_admin_action(user, user, CHANGE, f"Security: Account activated successfully for {uid}")
         logger.warning(f"[ACTIVATION SUCCESS] Account activated for {uid}")
         return JsonResponse({"success": True})
 

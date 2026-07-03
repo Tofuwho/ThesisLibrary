@@ -129,7 +129,15 @@ def _refine_log_data(log):
     msg = log.change_message
     model_name = log.content_type.model.lower()
     
-    if "[APPROVED]" in msg:
+    if not msg:
+        if log.action_flag == 1:
+            action = f"New {model_name.capitalize()}"
+        elif log.action_flag == 2:
+            action = f"Edit {model_name.capitalize()}"
+        elif log.action_flag == 3:
+            action = f"Delete {model_name.capitalize()}"
+        details = f"Administrative action on {model_name} record."
+    elif "[APPROVED]" in msg:
         action = "Thesis Approved"
         details = msg.replace("[APPROVED]", "").strip()
     elif "[REJECTED]" in msg:
@@ -144,16 +152,27 @@ def _refine_log_data(log):
         action = "Role Assignment"
     elif "BULK IMPORT" in msg:
         action = "Data Import"
+        details = msg.replace("BULK IMPORT:", "").strip()
+    elif "Login:" in msg:
+        action = "User Login"
+        details = msg.replace("Login:", "").strip()
+    elif "Login Attempt:" in msg:
+        action = "Login Failed"
+        details = msg.replace("Login Attempt:", "").strip()
+    elif "Security:" in msg:
+        action = "Security Event"
+        details = msg.replace("Security:", "").strip()
+    elif "Account Creation:" in msg:
+        action = "Account Created"
+        details = msg.replace("Account Creation:", "").strip()
+    elif "Account Edit:" in msg:
+        action = "Account Updated"
+        details = msg.replace("Account Edit:", "").strip()
+    elif "Account Deletion:" in msg:
+        action = "Account Deleted"
+        details = msg.replace("Account Deletion:", "").strip()
     elif "Login" in msg or "password" in msg:
         action = "Security Alert"
-    elif not msg:
-        if log.action_flag == 1:
-            action = f"New {model_name.capitalize()}"
-        elif log.action_flag == 2:
-            action = f"Edit {model_name.capitalize()}"
-        elif log.action_flag == 3:
-            action = f"Delete {model_name.capitalize()}"
-        details = f"Administrative action on {model_name} record."
 
     return action, details
 

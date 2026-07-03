@@ -837,3 +837,54 @@ class DuplicateAccountsTestCase(TestCase):
         self.assertRedirects(response, reverse("admin_staff_list"))
 
 
+class AuditLogTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = User.objects.create_superuser(
+            username="Admin01",
+            email="admin01@tcu.edu.ph",
+            password="adminpassword"
+        )
+        from authapp.models import Profile
+        profile, _ = Profile.objects.get_or_create(user=self.admin)
+        profile.role = Profile.ADMIN
+        profile.save()
+        self.client.login(username="Admin01", password="adminpassword")
+
+    def test_manual_student_actions_logged(self):
+        """Verify that manually adding, editing, and deleting a student generates LogEntry records."""
+        # 1. Add Student
+        response = self.client.post(reverse("add_student"), {
+            "student_id": "StudentLogTest",
+            "first_name": "Log",
+            "last_name": "Test",
+            "email": "logtest@tcu.edu.ph"
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify log entry created
+        from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
+        logs = LogEntry.objects.filter(change_message__icontains="Manually added Student record")
+        self.assertTrue(logs.exists())
+        self.assertEqual(logs.first().action_flag, ADDITION)
+
+        # 2. Edit Student
+        response = self.client.post(reverse("edit_student", args=["StudentLogTest"]), {
+            "first_name": "LogUpdated",
+            "last_name": "Test",
+            "email": "logtest@tcu.edu.ph"
+        })
+        self.assertEqual(response.status_code, 302)
+        logs_edit = LogEntry.objects.filter(change_message__icontains="Updated Student record")
+        self.assertTrue(logs_edit.exists())
+        self.assertEqual(logs_edit.first().action_flag, CHANGE)
+
+        # 3. Delete Student
+        response = self.client.get(reverse("delete_student", args=["StudentLogTest"]))
+        self.assertEqual(response.status_code, 302)
+        logs_del = LogEntry.objects.filter(change_message__icontains="Deleted Student record")
+        self.assertTrue(logs_del.exists())
+        self.assertEqual(logs_del.first().action_flag, DELETION)
+
+
+

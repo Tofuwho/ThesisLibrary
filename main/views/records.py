@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.admin.models import ADDITION
+from django.contrib.admin.models import ADDITION, CHANGE, DELETION
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.http import JsonResponse
@@ -54,8 +54,9 @@ def add_student(request):
             return render(request, "main/add_student.html", {
                 "student_id": sid, "first_name": first, "last_name": last, "email": email
             })
-        Student.objects.create(student_id=sid, first_name=first, last_name=last, email=email)
+        student = Student.objects.create(student_id=sid, first_name=first, last_name=last, email=email)
         create_premade_user(sid, email, first, last, Profile.STUDENT)
+        log_admin_action(request.user, student, ADDITION, f"Account Creation: Manually added Student record for {sid}")
         messages.success(request, f"Student account '{sid}' created successfully.")
         return redirect("students_list")
     return render(request, "main/add_student.html")
@@ -67,6 +68,7 @@ def edit_student(request, student_id):
     if request.method == "POST":
         student.first_name, student.last_name, student.email = request.POST.get("first_name"), request.POST.get("last_name"), request.POST.get("email")
         student.save()
+        log_admin_action(request.user, student, CHANGE, f"Account Edit: Updated Student record for {student_id}")
         return redirect('students_list')
     return render(request, 'main/edit_student.html', {'student': student})
 
@@ -76,13 +78,17 @@ def delete_student(request, student_id):
     deleted_any = False
     try:
         student = Student.objects.get(student_id=student_id)
+        log_admin_action(request.user, student, DELETION, f"Account Deletion: Deleted Student record for {student_id}")
         student.delete()
         deleted_any = True
     except Student.DoesNotExist:
         pass
 
-    user_deleted, _ = User.objects.filter(username=student_id).delete()
-    if user_deleted > 0:
+    user_qs = User.objects.filter(username=student_id)
+    user_obj = user_qs.first()
+    if user_obj:
+        log_admin_action(request.user, user_obj, DELETION, f"Account Deletion: Deleted user account for {student_id}")
+        user_qs.delete()
         deleted_any = True
 
     if deleted_any:
@@ -112,8 +118,9 @@ def add_professor(request):
             return render(request, "main/add_professor.html", {
                 "professor_id": pid, "first_name": first, "last_name": last, "email": email
             })
-        Professor.objects.create(professor_id=pid, first_name=first, last_name=last, email=email)
+        professor = Professor.objects.create(professor_id=pid, first_name=first, last_name=last, email=email)
         create_premade_user(pid, email, first, last, Profile.PROFESSOR)
+        log_admin_action(request.user, professor, ADDITION, f"Account Creation: Manually added Professor record for {pid}")
         messages.success(request, f"Professor account '{pid}' created successfully.")
         return redirect('professors_list')
     return render(request, 'main/add_professor.html')
@@ -124,13 +131,17 @@ def delete_professor(request, professor_id):
     deleted_any = False
     try:
         professor = Professor.objects.get(professor_id=professor_id)
+        log_admin_action(request.user, professor, DELETION, f"Account Deletion: Deleted Professor record for {professor_id}")
         professor.delete()
         deleted_any = True
     except Professor.DoesNotExist:
         pass
 
-    user_deleted, _ = User.objects.filter(username=professor_id).delete()
-    if user_deleted > 0:
+    user_qs = User.objects.filter(username=professor_id)
+    user_obj = user_qs.first()
+    if user_obj:
+        log_admin_action(request.user, user_obj, DELETION, f"Account Deletion: Deleted user account for {professor_id}")
+        user_qs.delete()
         deleted_any = True
 
     if deleted_any:
@@ -146,6 +157,7 @@ def edit_professor(request, professor_id):
     if request.method == "POST":
         professor.first_name, professor.last_name, professor.email = request.POST.get("first_name"), request.POST.get("last_name"), request.POST.get("email")
         professor.save()
+        log_admin_action(request.user, professor, CHANGE, f"Account Edit: Updated Professor record for {professor_id}")
         return redirect('professors_list')
     return render(request, 'main/edit_professor.html', {'professor': professor})
 
@@ -180,6 +192,8 @@ def librarians_list(request):
         librarians.append(Librarian(librarian_id=o.username, first_name=o.first_name, last_name=o.last_name, email=o.email, created_at=o.date_joined))
     return render(request, 'main/librarians_list.html', {'librarians': librarians})
 
+
+
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def add_librarian(request):
@@ -191,8 +205,9 @@ def add_librarian(request):
             return render(request, 'main/add_librarian.html', {
                 "librarian_id": lid, "first_name": first, "last_name": last, "email": email
             })
-        Librarian.objects.create(librarian_id=lid, first_name=first, last_name=last, email=email)
+        librarian = Librarian.objects.create(librarian_id=lid, first_name=first, last_name=last, email=email)
         create_premade_user(lid, email, first, last, Profile.LIBRARIAN)
+        log_admin_action(request.user, librarian, ADDITION, f"Account Creation: Manually added Librarian record for {lid}")
         messages.success(request, f"Librarian account '{lid}' created successfully.")
         return redirect('librarians_list')
     return render(request, 'main/add_librarian.html')
@@ -204,6 +219,7 @@ def edit_librarian(request, librarian_id):
     if request.method == "POST":
         librarian.first_name, librarian.last_name, librarian.email = request.POST.get("first_name"), request.POST.get("last_name"), request.POST.get("email")
         librarian.save()
+        log_admin_action(request.user, librarian, CHANGE, f"Account Edit: Updated Librarian record for {librarian_id}")
         return redirect('librarians_list')
     return render(request, 'main/edit_librarian.html', {'librarian': librarian})
 
@@ -213,13 +229,17 @@ def delete_librarian(request, librarian_id):
     deleted_any = False
     try:
         librarian = Librarian.objects.get(librarian_id=librarian_id)
+        log_admin_action(request.user, librarian, DELETION, f"Account Deletion: Deleted Librarian record for {librarian_id}")
         librarian.delete()
         deleted_any = True
     except Librarian.DoesNotExist:
         pass
 
-    user_deleted, _ = User.objects.filter(username=librarian_id).delete()
-    if user_deleted > 0:
+    user_qs = User.objects.filter(username=librarian_id)
+    user_obj = user_qs.first()
+    if user_obj:
+        log_admin_action(request.user, user_obj, DELETION, f"Account Deletion: Deleted user account for {librarian_id}")
+        user_qs.delete()
         deleted_any = True
 
     if deleted_any:
@@ -270,8 +290,9 @@ def add_admin_staff(request):
             return render(request, 'main/add_admin_staff.html', {
                 "admin_id": aid, "first_name": first, "last_name": last, "email": email
             })
-        AdminStaff.objects.create(admin_id=aid, first_name=first, last_name=last, email=email)
+        admin = AdminStaff.objects.create(admin_id=aid, first_name=first, last_name=last, email=email)
         create_premade_user(aid, email, first, last, Profile.ADMIN)
+        log_admin_action(request.user, admin, ADDITION, f"Account Creation: Manually added Admin Staff record for {aid}")
         messages.success(request, f"Admin account '{aid}' created successfully.")
         return redirect('admin_staff_list')
     return render(request, 'main/add_admin_staff.html')
@@ -283,6 +304,7 @@ def edit_admin_staff(request, admin_id):
     if request.method == "POST":
         admin.first_name, admin.last_name, admin.email = request.POST.get("first_name"), request.POST.get("last_name"), request.POST.get("email")
         admin.save()
+        log_admin_action(request.user, admin, CHANGE, f"Account Edit: Updated Admin Staff record for {admin_id}")
         return redirect('admin_staff_list')
     return render(request, 'main/edit_admin_staff.html', {'admin': admin})
 
@@ -292,13 +314,17 @@ def delete_admin_staff(request, admin_id):
     deleted_any = False
     try:
         admin = AdminStaff.objects.get(admin_id=admin_id)
+        log_admin_action(request.user, admin, DELETION, f"Account Deletion: Deleted Admin Staff record for {admin_id}")
         admin.delete()
         deleted_any = True
     except AdminStaff.DoesNotExist:
         pass
 
-    user_deleted, _ = User.objects.filter(username=admin_id).delete()
-    if user_deleted > 0:
+    user_qs = User.objects.filter(username=admin_id)
+    user_obj = user_qs.first()
+    if user_obj:
+        log_admin_action(request.user, user_obj, DELETION, f"Account Deletion: Deleted user account for {admin_id}")
+        user_qs.delete()
         deleted_any = True
 
     if deleted_any:
