@@ -1411,3 +1411,16 @@ input[type="text"].org-search-input:focus {
     font-size: 0.82rem;
   }
 }
+
+/* Alert Custom Classes for IDE Warning Cleanses */
+.alert-custom-error {
+  background-color: #fdf2f2 !important;
+  color: #9b1c1c !important;
+  border-color: #fde2e2 !important;
+}
+
+.alert-custom-success {
+  background-color: #f3faf7 !important;
+  color: #03543f !important;
+  border-color: #def7ec !important;
+}

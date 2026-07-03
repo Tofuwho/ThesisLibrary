@@ -23,7 +23,7 @@
     {% if messages %}
       <div style="margin-top: 1rem;">
         {% for message in messages %}
-          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" style="padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; margin-bottom: 1rem; border: 1px solid transparent; {% if message.tags == 'error' %}background-color: #fdf2f2; color: #9b1c1c; border-color: #fde2e2;{% else %}background-color: #f3faf7; color: #03543f; border-color: #def7ec;{% endif %}">
+          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} {% if message.tags == 'error' %}alert-custom-error{% else %}alert-custom-success{% endif %}" style="padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; margin-bottom: 1rem; border: 1px solid transparent;">
             {{ message }}
           </div>
         {% endfor %}
@@ -112,10 +112,11 @@
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span class="org-card-badge">{{ course.department.category.name }}</span>
                 {% if user.profile.role == 'admin' %}
+                {% url 'delete_course' course.id as delete_url %}
                 <a href="javascript:void(0)" 
                    class="btn-delete-org" 
                    title="Delete Program"
-                   onclick="openDeleteModal('{% url 'delete_course' course.id %}', '{{ course.name }}')">
+                   onclick="openDeleteModal('{{ delete_url }}', '{{ course.name|escapejs }}')">
                   <i class="fas fa-trash-alt" style="color: #ef4444; font-size: 0.82rem;"></i>
                 </a>
                 {% endif %}
