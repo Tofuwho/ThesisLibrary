@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Unavailable — TCU Theses Library</title>
+    <style>
+        /* ── Reset ─────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── Root tokens (mirrors landing.css palette) ──── */
+        :root {
+            --maroon:        #800000;
+            --maroon-dark:   #500000;
+            --maroon-deep:   #1a0000;
+            --gold:          #C5B358;
+            --gold-dim:      rgba(197,179,88,0.35);
+            --gold-faint:    rgba(197,179,88,0.08);
+            --white:         #ffffff;
+            --text-muted:    rgba(230,215,195,0.65);
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(128,0,0,0.28) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, rgba(100,0,0,0.18) 0%, transparent 55%),
+                var(--maroon-deep);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--white);
+            padding: 24px;
+        }
+
+        /* ── Floating particles canvas (optional, lightweight) */
+        .page-wrap {
+            width: 100%;
+            max-width: 680px;
+            position: relative;
+        }
+
+        /* ── Main card ───────────────────────────────────── */
+        .card {
+            background: rgba(40, 5, 5, 0.72);
+            border: 1px solid var(--gold-dim);
+            border-radius: 16px;
+            padding: 48px 44px 40px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow:
+                0 0 0 1px rgba(0,0,0,0.4),
+                0 24px 60px rgba(0,0,0,0.6);
+            animation: slideUp 0.55s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Status icon ─────────────────────────────────── */
+        .status-icon {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .icon-ring {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 2px solid rgba(197,179,88,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(197,179,88,0.08);
+            flex-shrink: 0;
+        }
+
+        .icon-ring svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--gold);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .status-label {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            background: rgba(197,179,88,0.1);
+            border: 1px solid rgba(197,179,88,0.3);
+            color: var(--gold);
+            width: fit-content;
+        }
+
+        .status-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #e55;
+            box-shadow: 0 0 6px #e55;
+            animation: blink 1.4s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.25; }
+        }
+
+        .status-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Heading ─────────────────────────────────────── */
+        h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+
+        h1 span { color: var(--gold); }
+
+        .lead {
+            font-size: 0.97rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        /* ── Divider ─────────────────────────────────────── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+            margin: 0 0 28px;
+        }
+
+        /* ── Steps ───────────────────────────────────────── */
+        .steps-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 16px;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--gold-faint);
+            border: 1px solid var(--gold-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-top: 1px;
+        }
+
+        .step-content strong {
+            display: block;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2px;
+        }
+
+        .step-content p {
+            font-size: 0.83rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background: rgba(197,179,88,0.1);
+            border: 1px solid rgba(197,179,88,0.2);
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-size: 0.82em;
+            color: #e8d87a;
+        }
+
+        /* ── Refresh button ─────────────────────────────── */
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: linear-gradient(180deg, #9a1010 0%, #6b0000 100%);
+            color: #fff;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border: none;
+            outline: 1px solid rgba(197,179,88,0.35);
+            box-shadow:
+                0 1px 0 rgba(197,179,88,0.45) inset,
+                0 6px 18px rgba(80,0,0,0.5);
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 1px 0 rgba(197,179,88,0.55) inset,
+                0 10px 26px rgba(80,0,0,0.6),
+                0 0 0 2px rgba(197,179,88,0.2);
+        }
+
+        .btn-primary:active { transform: translateY(1px); }
+
+        .btn-primary svg {
+            width: 15px;
+            height: 15px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            border: none;
+            outline: 1px solid rgba(255,255,255,0.15);
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.15s ease, outline-color 0.15s ease;
+        }
+
+        .btn-secondary:hover {
+            color: rgba(255,255,255,0.85);
+            outline-color: rgba(255,255,255,0.35);
+        }
+
+        /* ── Error detail (collapsed by default) ─────────── */
+        .error-detail {
+            margin-top: 28px;
+        }
+
+        details summary {
+            font-size: 0.78rem;
+            color: rgba(197,179,88,0.55);
+            cursor: pointer;
+            user-select: none;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        details summary::before {
+            content: '›';
+            font-size: 1rem;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        details[open] summary::before { transform: rotate(90deg); }
+
+        details pre {
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(197,179,88,0.12);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: rgba(230,215,195,0.55);
+            font-family: 'Consolas', monospace;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ── Footer note ─────────────────────────────────── */
+        .card-footer {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(197,179,88,0.1);
+            font-size: 0.76rem;
+            color: rgba(180,160,140,0.4);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrap">
+    <div class="card">
+
+        <!-- Status indicator -->
+        <div class="status-icon">
+            <div class="icon-ring">
+                <!-- Database off icon -->
+                <svg viewBox="0 0 24 24">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+                    <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+                    <line x1="2" y1="2" x2="22" y2="22"/>
+                </svg>
+            </div>
+            <div class="status-label">
+                <span class="status-badge">
+                    <span class="dot"></span>
+                    Database Offline
+                </span>
+                <span class="status-sub">TCU Theses Library &mdash; Service Unavailable</span>
+            </div>
+        </div>
+
+        <!-- Heading -->
+        <h1>Cannot connect to<br><span>the database</span></h1>
+        <p class="lead">
+            The site requires a running MySQL database to operate.
+            It appears MySQL is currently offline or unreachable.
+            Follow the steps below to restore the connection.
+        </p>
+
+        <div class="divider"></div>
+
+        <!-- Steps -->
+        <p class="steps-title">How to fix this</p>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <strong>Open XAMPP Control Panel</strong>
+                    <p>Find <code>XAMPP Control Panel</code> in your Start Menu or desktop shortcut and launch it as administrator.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <strong>Start the MySQL service</strong>
+                    <p>Click the <code>Start</code> button next to <code>MySQL</code>. The status indicator should turn green.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <strong>Optionally start Apache</strong>
+                    <p>If you are also using Apache for other services, click <code>Start</code> next to <code>Apache</code> as well.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                    <strong>Refresh this page</strong>
+                    <p>Once MySQL shows as running, click <strong>Try Again</strong> below or press <code>F5</code>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button class="btn-primary" onclick="window.location.reload()">
+                <!-- Refresh icon -->
+                <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Try Again
+            </button>
+            <a class="btn-secondary" href="/">Go to Home</a>
+        </div>
+
+        <!-- Collapsed error detail -->
+        {% if error_detail %}
+        <div class="error-detail">
+            <details>
+                <summary>Technical error detail</summary>
+                <pre>{{ error_detail }}</pre>
+            </details>
+        </div>
+        {% endif %}
+
+        <p class="card-footer">
+            Taguig City University &mdash; Theses Library Archiver &bull; HTTP 503 Service Unavailable
+        </p>
+
+    </div>
+</div>
+
+<script>
+    // Auto-retry every 8 seconds so the page self-heals when DB comes back up
+    (function () {
+        let retries = 0;
+        const MAX = 20; // stop after ~2.5 minutes to avoid hammering
+        const interval = setInterval(function () {
+            retries++;
+            if (retries > MAX) { clearInterval(interval); return; }
+            fetch(window.location.href, { method: 'HEAD', cache: 'no-store' })
+                .then(function (r) {
+                    if (r.status !== 503) {
+                        clearInterval(interval);
+                        window.location.reload();
+                    }
+                })
+                .catch(function () {}); // still offline — ignore
+        }, 8000);
+    })();
+</script>
+</body>
+</html>

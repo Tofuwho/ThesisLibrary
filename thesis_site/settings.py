@@ -113,6 +113,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'main.middleware.db_check.DatabaseAvailabilityMiddleware',  # Must be first — catches DB-down errors site-wide
     'django.middleware.security.SecurityMiddleware',
     'main.middleware.ratelimit.RateLimitMiddleware',  # Rate limiting should be early
     'whitenoise.middleware.WhiteNoiseMiddleware',
