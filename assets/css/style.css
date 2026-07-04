@@ -1303,16 +1303,16 @@ ul {
 }
 
 /* College-Specific Theme Mappings */
-.department-card-v2.dept-graduate { --dept-color: #7c3aed; --dept-color-light: rgba(124, 58, 237, 0.08); --dept-color-rgb: 124, 58, 237; }
-.department-card-v2.dept-ce { --dept-color: #10b981; --dept-color-light: rgba(16, 185, 129, 0.08); --dept-color-rgb: 16, 185, 129; }
-.department-card-v2.dept-cict { --dept-color: #0284c7; --dept-color-light: rgba(2, 132, 199, 0.08); --dept-color-rgb: 2, 132, 199; }
-.department-card-v2.dept-cas { --dept-color: #f59e0b; --dept-color-light: rgba(245, 158, 11, 0.08); --dept-color-rgb: 245, 158, 11; }
-.department-card-v2.dept-cbm { --dept-color: #4f46e5; --dept-color-light: rgba(79, 70, 229, 0.08); --dept-color-rgb: 79, 70, 229; }
-.department-card-v2.dept-ccj { --dept-color: #4b5563; --dept-color-light: rgba(75, 85, 99, 0.08); --dept-color-rgb: 75, 85, 99; }
-.department-card-v2.dept-chtm { --dept-color: #ef4444; --dept-color-light: rgba(239, 68, 68, 0.08); --dept-color-rgb: 239, 68, 68; }
-.department-card-v2.dept-cet { --dept-color: #f97316; --dept-color-light: rgba(249, 115, 22, 0.08); --dept-color-rgb: 249, 115, 22; }
-.department-card-v2.dept-ippg { --dept-color: #0d9488; --dept-color-light: rgba(13, 148, 136, 0.08); --dept-color-rgb: 13, 148, 136; }
-.department-card-v2.dept-coll { --dept-color: var(--primary-color); --dept-color-light: var(--primary-light); --dept-color-rgb: 128, 0, 0; }
+.department-card-v2.dept-graduate { --dept-color: #0ea5e9; --dept-color-light: rgba(14, 165, 233, 0.08); --dept-color-rgb: 14, 165, 233; }  /* Light Blue */
+.department-card-v2.dept-ce       { --dept-color: #2563eb; --dept-color-light: rgba(37, 99, 235, 0.08);  --dept-color-rgb: 37, 99, 235; }   /* Blue */
+.department-card-v2.dept-cict     { --dept-color: #7c3aed; --dept-color-light: rgba(124, 58, 237, 0.08); --dept-color-rgb: 124, 58, 237; }  /* Violet */
+.department-card-v2.dept-cas      { --dept-color: #9ca3af; --dept-color-light: rgba(156, 163, 175, 0.12); --dept-color-rgb: 156, 163, 175; } /* White/Silver */
+.department-card-v2.dept-cbm      { --dept-color: #d97706; --dept-color-light: rgba(217, 119, 6, 0.08);  --dept-color-rgb: 217, 119, 6; }   /* Light Yellow */
+.department-card-v2.dept-ccj      { --dept-color: #800000; --dept-color-light: rgba(128, 0, 0, 0.08);    --dept-color-rgb: 128, 0, 0; }     /* Maroon */
+.department-card-v2.dept-chtm     { --dept-color: #16a34a; --dept-color-light: rgba(22, 163, 74, 0.08);  --dept-color-rgb: 22, 163, 74; }   /* Green */
+.department-card-v2.dept-cet      { --dept-color: #ea580c; --dept-color-light: rgba(234, 88, 12, 0.08);  --dept-color-rgb: 234, 88, 12; }   /* Orange */
+.department-card-v2.dept-ippg     { --dept-color: #dc2626; --dept-color-light: rgba(220, 38, 38, 0.08);  --dept-color-rgb: 220, 38, 38; }   /* Red */
+.department-card-v2.dept-coll     { --dept-color: var(--primary-color); --dept-color-light: var(--primary-light); --dept-color-rgb: 128, 0, 0; }
 
 .department-card-v2::before {
   content: '';

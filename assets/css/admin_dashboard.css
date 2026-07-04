@@ -856,17 +856,17 @@ textarea:focus {
   box-shadow: 0 12px 25px rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Department Cover Gradients for Admin Lists */
-.cat-thesis-item-cover.dept-graduate { background: linear-gradient(160deg, #7c3aed 0%, #4c1d95 100%) !important; }
-.cat-thesis-item-cover.dept-ce { background: linear-gradient(160deg, #10b981 0%, #064e3b 100%) !important; }
-.cat-thesis-item-cover.dept-cict { background: linear-gradient(160deg, #0284c7 0%, #0c4a6e 100%) !important; }
-.cat-thesis-item-cover.dept-cas { background: linear-gradient(160deg, #f59e0b 0%, #78350f 100%) !important; }
-.cat-thesis-item-cover.dept-cbm { background: linear-gradient(160deg, #4f46e5 0%, #1e1b4b 100%) !important; }
-.cat-thesis-item-cover.dept-ccj { background: linear-gradient(160deg, #4b5563 0%, #111827 100%) !important; }
-.cat-thesis-item-cover.dept-chtm { background: linear-gradient(160deg, #ef4444 0%, #7f1d1d 100%) !important; }
-.cat-thesis-item-cover.dept-cet { background: linear-gradient(160deg, #f97316 0%, #7c2d12 100%) !important; }
-.cat-thesis-item-cover.dept-ippg { background: linear-gradient(160deg, #0d9488 0%, #115e59 100%) !important; }
-.cat-thesis-item-cover.dept-coll { background: linear-gradient(160deg, #800000 0%, #450a0a 100%) !important; }
+/* Department Cover Gradients for Thesis Cards */
+.cat-thesis-item-cover.dept-graduate { background: linear-gradient(160deg, #0ea5e9 0%, #0c4a6e 100%) !important; } /* Light Blue */
+.cat-thesis-item-cover.dept-ce       { background: linear-gradient(160deg, #2563eb 0%, #1e3a8a 100%) !important; } /* Blue */
+.cat-thesis-item-cover.dept-cict     { background: linear-gradient(160deg, #7c3aed 0%, #2e1065 100%) !important; } /* Violet */
+.cat-thesis-item-cover.dept-cas      { background: linear-gradient(160deg, #9ca3af 0%, #4b5563 100%) !important; } /* White/Silver */
+.cat-thesis-item-cover.dept-cbm      { background: linear-gradient(160deg, #fbbf24 0%, #92400e 100%) !important; } /* Light Yellow */
+.cat-thesis-item-cover.dept-ccj      { background: linear-gradient(160deg, #800000 0%, #3b0000 100%) !important; } /* Maroon */
+.cat-thesis-item-cover.dept-chtm     { background: linear-gradient(160deg, #16a34a 0%, #052e16 100%) !important; } /* Green */
+.cat-thesis-item-cover.dept-cet      { background: linear-gradient(160deg, #ea580c 0%, #7c2d12 100%) !important; } /* Orange */
+.cat-thesis-item-cover.dept-ippg     { background: linear-gradient(160deg, #dc2626 0%, #7f1d1d 100%) !important; } /* Red */
+.cat-thesis-item-cover.dept-coll     { background: linear-gradient(160deg, #800000 0%, #450a0a 100%) !important; }
 
 /* Status Badges */
 .bento-status-badge {
@@ -1157,16 +1157,27 @@ textarea:focus {
   background: #a31d23;
 }
 
-/* Cover / accent overrides based on department theme code */
-.org-bento-card.dept-cict::before { background-color: #0284c7; }
-.org-bento-card.dept-cas::before { background-color: #f59e0b; }
-.org-bento-card.dept-chtm::before { background-color: #ef4444; }
-.org-bento-card.dept-cbm::before { background-color: #4f46e5; }
-.org-bento-card.dept-ccj::before { background-color: #4b5563; }
-.org-bento-card.dept-cet::before { background-color: #f97316; }
-.org-bento-card.dept-ce::before { background-color: #10b981; }
-.org-bento-card.dept-ippg::before { background-color: #0d9488; }
-.org-bento-card.dept-graduate::before { background-color: #7c3aed; }
+/* Org Bento Card Top-Bar Accents */
+.org-bento-card.dept-graduate::before { background-color: #0ea5e9; } /* Light Blue */
+.org-bento-card.dept-cict::before     { background-color: #7c3aed; } /* Violet */
+.org-bento-card.dept-cas::before      { background-color: #9ca3af; } /* White/Silver */
+.org-bento-card.dept-chtm::before     { background-color: #16a34a; } /* Green */
+.org-bento-card.dept-cbm::before      { background-color: #fbbf24; } /* Light Yellow */
+.org-bento-card.dept-ccj::before      { background-color: #800000; } /* Maroon */
+.org-bento-card.dept-cet::before      { background-color: #ea580c; } /* Orange */
+.org-bento-card.dept-ce::before       { background-color: #2563eb; } /* Blue */
+.org-bento-card.dept-ippg::before     { background-color: #dc2626; } /* Red */
+
+/* Org Bento Card Icon Colors */
+.org-bento-card.dept-graduate .org-card-icon { background: rgba(14, 165, 233, 0.08);  color: #0ea5e9; }
+.org-bento-card.dept-cict     .org-card-icon { background: rgba(124, 58, 237, 0.08);  color: #7c3aed; }
+.org-bento-card.dept-cas      .org-card-icon { background: rgba(156, 163, 175, 0.12); color: #6b7280; }
+.org-bento-card.dept-chtm     .org-card-icon { background: rgba(22, 163, 74, 0.08);   color: #16a34a; }
+.org-bento-card.dept-cbm      .org-card-icon { background: rgba(217, 119, 6, 0.08);   color: #d97706; }
+.org-bento-card.dept-ccj      .org-card-icon { background: rgba(128, 0, 0, 0.08);     color: #800000; }
+.org-bento-card.dept-cet      .org-card-icon { background: rgba(234, 88, 12, 0.08);   color: #ea580c; }
+.org-bento-card.dept-ce       .org-card-icon { background: rgba(37, 99, 235, 0.08);   color: #2563eb; }
+.org-bento-card.dept-ippg     .org-card-icon { background: rgba(220, 38, 38, 0.08);   color: #dc2626; }
 
 .org-card-header {
   display: flex;
@@ -1187,16 +1198,6 @@ textarea:focus {
   color: #a31d23;
   transition: all 0.25s ease;
 }
-
-.org-bento-card.dept-cict .org-card-icon { background: rgba(2, 132, 199, 0.08); color: #0284c7; }
-.org-bento-card.dept-cas .org-card-icon { background: rgba(245, 158, 11, 0.08); color: #f59e0b; }
-.org-bento-card.dept-chtm .org-card-icon { background: rgba(239, 68, 68, 0.08); color: #ef4444; }
-.org-bento-card.dept-cbm .org-card-icon { background: rgba(79, 70, 229, 0.08); color: #4f46e5; }
-.org-bento-card.dept-ccj .org-card-icon { background: rgba(75, 85, 99, 0.08); color: #4b5563; }
-.org-bento-card.dept-cet .org-card-icon { background: rgba(249, 115, 22, 0.08); color: #f97316; }
-.org-bento-card.dept-ce .org-card-icon { background: rgba(16, 185, 129, 0.08); color: #10b981; }
-.org-bento-card.dept-ippg .org-card-icon { background: rgba(13, 148, 136, 0.08); color: #0d9488; }
-.org-bento-card.dept-graduate .org-card-icon { background: rgba(124, 58, 237, 0.08); color: #7c3aed; }
 
 .org-card-badge {
   font-size: 0.65rem;

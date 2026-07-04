@@ -552,17 +552,17 @@ function applyDepartmentThemeFromId(deptId) {
 function pickAccentColor(colorKey) {
     // Curated palette for known Taguig City University colleges
     const palette = {
-        all: '#800000',        // TCU Maroon (heritage color)
-        graduate: '#7C3AED',   // Purple/Violet
-        ce: '#10B981',         // Emerald Green (Education)
-        cict: '#0284C7',       // Sky Blue (ICT/Tech)
-        cas: '#F59E0B',        // Amber (Arts & Sciences)
-        cbm: '#4F46E5',        // Indigo (Business & Management)
-        ccj: '#4B5563',        // Slate/Charcoal (Criminal Justice)
-        chtm: '#EF4444',       // Ruby Red (Hospitality & Tourism)
-        cet: '#F97316',        // Orange/Rust (Engineering & Tech)
-        ippg: '#0D9488',       // Teal (Public Policy & Governance)
-        coll: '#800000',       // Maroon
+        all:      '#800000',   // TCU Maroon (heritage color)
+        graduate: '#0EA5E9',   // Light Blue (Graduate School)
+        ce:       '#2563EB',   // Blue (Education)
+        cict:     '#7C3AED',   // Violet (ICT/Tech)
+        cas:      '#9CA3AF',   // White/Silver (Arts & Sciences)
+        cbm:      '#FBBF24',   // Light Yellow (Business & Management)
+        ccj:      '#800000',   // Maroon (Criminal Justice)
+        chtm:     '#16A34A',   // Green (Hospitality & Tourism)
+        cet:      '#EA580C',   // Orange (Engineering & Tech)
+        ippg:     '#DC2626',   // Red (Public Policy & Governance)
+        coll:     '#800000',   // Maroon
     };
     if (palette[colorKey]) return palette[colorKey];
     return stringToColor(colorKey);
