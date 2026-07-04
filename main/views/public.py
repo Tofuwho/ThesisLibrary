@@ -25,15 +25,17 @@ def index_page(request):
     departments = Department.objects.all().order_by('name')[:8]
     
     # Calculate live stats
-    total_theses_count = Thesis.objects.filter(is_archived=False).count()
+    # Count ALL approved theses (including archived — archiving doesn't un-approve a thesis)
+    total_theses_count = Thesis.objects.count()
     total_theses = f"{total_theses_count:,}"
     total_colleges = Department.objects.count()
-    
+
     total_submissions_count = Submission.objects.count()
     total_submissions = f"{total_submissions_count:,}"
-    
+
     if total_theses_count > 0:
-        open_access_count = Thesis.objects.filter(is_archived=False).exclude(file='').exclude(file__isnull=True).count()
+        # Open access = theses with a file attached (regardless of archive status)
+        open_access_count = Thesis.objects.exclude(file='').exclude(file__isnull=True).count()
         open_access_percent = int((open_access_count / total_theses_count) * 100)
     else:
         open_access_percent = 100
