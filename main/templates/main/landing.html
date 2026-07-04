@@ -6,7 +6,7 @@
 {% block title %}Welcome - Theses Library{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/landing.css' %}?v=2.7">
+<link rel="stylesheet" href="{% static 'css/landing.css' %}?v=3.2">
 {% endblock %}
 
 {% block content %}
@@ -16,21 +16,38 @@
     <canvas id="heroCanvas" class="hero-canvas"></canvas>
     <div class="hero-glow-1"></div>
     <div class="hero-glow-2"></div>
-    <div class="hero-spotlight" style="background-image: url('{% static 'images/tcu_building.svg' %}');"></div>
+    <div class="hero-spotlight" style='background-image: url("{% static "images/tcu_building.svg" %}");'></div>
     <div class="hero-overlay">
         <div class="hero-content">
             <h1>Welcome to Theses Library</h1>
             <p>Discover, explore, and contribute to our growing collection of academic research</p>
             
             {% if user.is_authenticated %}
-                <div class="welcome-message">
-                    {% if user.is_staff %}
-                        <h2>Welcome back, Admin {{ user.first_name|default:user.username }}!</h2>
-                        <p>Manage submissions, approve research, and oversee the repository.</p>
-                    {% else %}
-                        <h2>Welcome back, {{ user.first_name|default:user.username }}!</h2>
-                        <p>Ready to explore or submit your research?</p>
-                    {% endif %}
+                <div class="welcome-strip">
+                    <span class="ws-pill">
+                        {% if user.profile.role == 'admin' %}
+                            <i class="fas fa-shield-alt"></i> Admin
+                        {% elif user.profile.role == 'librarian' %}
+                            <i class="fas fa-book-open"></i> Librarian
+                        {% elif user.profile.role == 'professor' %}
+                            <i class="fas fa-chalkboard-teacher"></i> Professor
+                        {% else %}
+                            <i class="fas fa-graduation-cap"></i> Student
+                        {% endif %}
+                    </span>
+                    <span class="ws-greeting">Welcome back, {{ user.first_name|default:user.username }}</span>
+                    <span class="ws-dot"></span>
+                    <span class="ws-tagline">
+                        {% if user.profile.role == 'admin' %}
+                            Manage submissions and oversee the repository
+                        {% elif user.profile.role == 'librarian' %}
+                            Curate collections and review submissions
+                        {% elif user.profile.role == 'professor' %}
+                            Review research and guide your students
+                        {% else %}
+                            Ready to explore or submit your research
+                        {% endif %}
+                    </span>
                 </div>
             {% endif %}
 

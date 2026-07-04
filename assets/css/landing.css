@@ -309,25 +309,63 @@ ul {
   }
 }
 
-.welcome-message {
-  margin: 20px 0;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
+/* ── Welcome Strip (tertiary element — intentionally low weight) ── */
+.welcome-strip {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto 28px;
+  padding: 9px 20px;
+  border-top: 1px solid rgba(197, 179, 88, 0.2);
+  border-bottom: 1px solid rgba(197, 179, 88, 0.2);
+  opacity: 0;
+  animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
 }
 
-.welcome-message h2 {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
-  color: #fff;
+/* Role pill — smallest, least dominant element */
+.ws-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--luxury-gold);
+  border: 1px solid rgba(197, 179, 88, 0.35);
+  background: rgba(197, 179, 88, 0.07);
+  white-space: nowrap;
 }
 
-.welcome-message p {
-  font-size: 1.1rem;
-  margin-bottom: 0;
-  color: #e0e0e0;
+/* Name — medium weight, white, clearly secondary to H1 */
+.ws-greeting {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
 }
+
+/* Bullet separator */
+.ws-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(197, 179, 88, 0.5);
+  flex-shrink: 0;
+}
+
+/* Tagline — lowest weight, muted, reads last */
+.ws-tagline {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: rgba(220, 205, 185, 0.6);
+  font-style: italic;
+}
+
 
 .hero-buttons {
   display: flex;
