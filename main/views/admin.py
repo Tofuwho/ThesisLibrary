@@ -34,10 +34,11 @@ def log_admin_action(user, obj, action_flag, message):
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])
 def admin_dashboard(request):
-    total_theses = Thesis.objects.filter(is_archived=False).count()
+    # Stat cards
+    total_theses = Thesis.objects.count()  # all theses, including archived (archiving doesn't delete them)
     total_users = User.objects.count()
-    pending_submissions = Submission.objects.filter(status='pending').count()
-    approved_theses = Submission.objects.filter(status='approved').count()
+    pending_submissions = Submission.objects.filter(status='pending').count()  # live queue
+    approved_theses = Submission.objects.filter(status='approved').count()     # ever approved
     download_logs = DownloadLog.objects.count()
 
     # Get all submissions from the last 365 days in a single query
@@ -136,7 +137,7 @@ def admin_dashboard(request):
 
     theses_by_course = list(
         Thesis.objects
-        .filter(is_archived=False, course__isnull=False)
+        .filter(course__isnull=False)          # include archived — distribution should never shrink
         .values(course_name=F('course__name'))
         .annotate(count=Count('id'))
         .order_by('-count')[:16]
@@ -147,7 +148,7 @@ def admin_dashboard(request):
 
     theses_by_department = list(
         Thesis.objects
-        .filter(is_archived=False, department__isnull=False)
+        .filter(department__isnull=False)      # include archived — distribution should never shrink
         .values('department__name')
         .annotate(count=Count('id'))
         .order_by('-count')[:16]
