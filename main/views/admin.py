@@ -621,27 +621,45 @@ def archive_old_theses(request):
         return JsonResponse({"error": "Invalid"}, status=400)
     system_user = User.objects.filter(is_superuser=True).first()
     cutoff_year = datetime.now().year - 10
-    old_theses = Thesis.objects.filter(year__lte=cutoff_year)
+    old_theses = Thesis.objects.filter(year__lte=cutoff_year, is_archived=False)
     archived_count = 0
+    errors = []
+
+    # Permanent archive destination outside the webroot (for manual backup / cold storage)
+    PERMANENT_ARCHIVE_DIR = os.path.join("C:\\", "ThesisLibrary_Permanent_Archive", "thesis_files")
+
     for thesis in old_theses:
-        # We no longer delete co-authors or the record itself to preserve metadata like LC Classification
-        # Submission.objects.filter(title=thesis.title, author=thesis.author, year=thesis.year, status=Submission.STATUS_APPROVED).delete()
-        
         if thesis.file and thesis.file.name:
             old_path = thesis.file.path
+
+            # 1. Move file into media/thesis_files/Archived/ (keeps it accessible in the web app)
             archive_dir = os.path.join(settings.MEDIA_ROOT, "thesis_files", "Archived")
             os.makedirs(archive_dir, exist_ok=True)
             filename = os.path.basename(old_path)
             new_path = os.path.join(archive_dir, filename)
+
             if os.path.exists(old_path):
                 shutil.move(old_path, new_path)
                 thesis.file.name = f"thesis_files/Archived/{filename}"
-        
+
+                # 2. Copy to C:\ThesisLibrary_Permanent_Archive\thesis_files\ for permanent off-app backup
+                try:
+                    os.makedirs(PERMANENT_ARCHIVE_DIR, exist_ok=True)
+                    permanent_copy_path = os.path.join(PERMANENT_ARCHIVE_DIR, filename)
+                    if not os.path.exists(permanent_copy_path):
+                        shutil.copy2(new_path, permanent_copy_path)
+                except Exception as copy_err:
+                    errors.append(f"Could not copy '{filename}' to permanent archive: {str(copy_err)}")
+
         thesis.is_archived = True
         thesis.save()
         archived_count += 1
         log_admin_action(system_user, thesis, CHANGE, "Archived thesis (Metadata preserved)")
-    return JsonResponse({"archived": archived_count})
+
+    response_data = {"archived": archived_count}
+    if errors:
+        response_data["warnings"] = errors
+    return JsonResponse(response_data)
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role == Profile.ADMIN)
 def export_system_logs(request):
