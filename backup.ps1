@@ -60,7 +60,8 @@ if (Test-Path $SourceMediaDir) {
     # 2.1 Daily Rolling Backup (Mirror copy - mirrors current active site state)
     New-Item -ItemType Directory -Path $MediaBackupDir | Out-Null
     # /MIR mirrors directory structure (deletes from backup if deleted from source)
-    robocopy $SourceMediaDir $MediaBackupDir /MIR /COPY:DAT /R:2 /W:5 /NDL /NFL /NJH /NJS | Out-Null
+    # /XF excludes test files (test_*.pdf, test.pdf) generated during automated testing
+    robocopy $SourceMediaDir $MediaBackupDir /MIR /COPY:DAT /R:2 /W:5 /NDL /NFL /NJH /NJS /XF "test_*" "test.pdf" | Out-Null
     Write-Host "Active media files mirrored to daily backup." -ForegroundColor Green
     
     # 2.2 Permanent Archive (Accumulating copy - files are NEVER deleted from here)
@@ -69,7 +70,8 @@ if (Test-Path $SourceMediaDir) {
         Write-Host "Created Permanent Archive directory at $PermanentArchiveDir" -ForegroundColor Yellow
     }
     # robocopy without /MIR or /PURGE means files deleted from active site remain in the archive forever
-    robocopy $SourceMediaDir $PermanentArchiveDir /E /COPY:DAT /R:2 /W:5 /NDL /NFL /NJH /NJS | Out-Null
+    # /XF excludes test files (test_*.pdf, test.pdf) generated during automated testing
+    robocopy $SourceMediaDir $PermanentArchiveDir /E /COPY:DAT /R:2 /W:5 /NDL /NFL /NJH /NJS /XF "test_*" "test.pdf" | Out-Null
     Write-Host "All manuscripts synced to Permanent Archive." -ForegroundColor Green
 } else {
     Write-Warning "Source media folder not found at: $SourceMediaDir. Skipping."
