@@ -21,7 +21,7 @@
     <canvas id="heroCanvas" class="hero-canvas"></canvas>
     <div class="hero-glow-1"></div>
     <div class="hero-glow-2"></div>
-    <div class="hero-spotlight" style='background-image: url("{% static "images/tcu_building.svg" %}");'></div>
+    <div class="hero-spotlight" data-bg="{% static 'images/tcu_building.svg' %}"></div>
     <div class="hero-overlay">
         <div class="hero-content">
             <h1>Welcome to Theses Library</h1>
@@ -73,6 +73,15 @@
 <!-- Dynamic Canvas Particle Script and User Interaction Intercepts -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    // Set spotlight background image from data attribute (eliminates inline CSS parsing errors in IDEs)
+    const spotlight = document.querySelector('.hero-spotlight');
+    if (spotlight) {
+        const bgUrl = spotlight.getAttribute('data-bg');
+        if (bgUrl) {
+            spotlight.style.backgroundImage = `url('${bgUrl}')`;
+        }
+    }
+
     // Hero Canvas Particle Animation
     const canvas = document.getElementById('heroCanvas');
     if (canvas) {
