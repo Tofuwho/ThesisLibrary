@@ -35,7 +35,7 @@ def log_admin_action(user, obj, action_flag, message):
 @user_passes_test(lambda u: hasattr(u, 'profile') and u.profile.role in [Profile.ADMIN, Profile.LIBRARIAN])
 def admin_dashboard(request):
     # Stat cards
-    total_theses = Thesis.objects.count()  # all theses, including archived (archiving doesn't delete them)
+    total_theses = Thesis.objects.filter(is_archived=False).count()  # only active theses
     total_users = User.objects.count()
     pending_submissions = Submission.objects.filter(status='pending').count()  # live queue
     approved_theses = Submission.objects.filter(status='approved').count()     # ever approved
