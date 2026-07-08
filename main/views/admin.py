@@ -41,9 +41,13 @@ def admin_dashboard(request):
     approved_theses = Submission.objects.filter(status='approved').count()     # ever approved
     download_logs = DownloadLog.objects.count()
 
-    # Get all submissions from the last 365 days in a single query
+    # Get all submissions and archives from the last 365 days in single queries
     one_year_ago = timezone.now() - timedelta(days=365)
     submissions = list(Submission.objects.filter(created_at__gte=one_year_ago).values('id', 'created_at', 'status'))
+    archive_entries = list(LogEntry.objects.filter(
+        action_time__gte=one_year_ago,
+        change_message__icontains="Archived thesis"
+    ).values('id', 'action_time'))
     today = timezone.now().date()
 
     # 1. 1 Month (Daily) - last 30 days
@@ -51,6 +55,8 @@ def admin_dashboard(request):
     one_month_approved = []
     one_month_pending = []
     one_month_rejected = []
+    one_month_entered = []
+    one_month_archived = []
     for i in range(29, -1, -1):
         day = today - timedelta(days=i)
         one_month_labels.append(day.strftime('%b %d'))
@@ -58,12 +64,16 @@ def admin_dashboard(request):
         one_month_approved.append(sum(1 for s in day_subs if s['status'] == 'approved'))
         one_month_pending.append(sum(1 for s in day_subs if s['status'] == 'pending'))
         one_month_rejected.append(sum(1 for s in day_subs if s['status'] == 'rejected'))
+        one_month_entered.append(len(day_subs))
+        one_month_archived.append(sum(1 for e in archive_entries if e['action_time'].date() == day))
 
     # 2. 3 Months (Weekly) - last 12 weeks
     three_month_labels = []
     three_month_approved = []
     three_month_pending = []
     three_month_rejected = []
+    three_month_entered = []
+    three_month_archived = []
     for i in range(11, -1, -1):
         start_date = today - timedelta(weeks=i+1)
         end_date = today - timedelta(weeks=i)
@@ -72,12 +82,16 @@ def admin_dashboard(request):
         three_month_approved.append(sum(1 for s in week_subs if s['status'] == 'approved'))
         three_month_pending.append(sum(1 for s in week_subs if s['status'] == 'pending'))
         three_month_rejected.append(sum(1 for s in week_subs if s['status'] == 'rejected'))
+        three_month_entered.append(len(week_subs))
+        three_month_archived.append(sum(1 for e in archive_entries if start_date < e['action_time'].date() <= end_date))
 
     # 3. 6 Months (Monthly) - last 6 calendar months
     six_month_labels = []
     six_month_approved = []
     six_month_pending = []
     six_month_rejected = []
+    six_month_entered = []
+    six_month_archived = []
     for i in range(5, -1, -1):
         year = today.year
         month = today.month - i
@@ -90,12 +104,16 @@ def admin_dashboard(request):
         six_month_approved.append(sum(1 for s in month_subs if s['status'] == 'approved'))
         six_month_pending.append(sum(1 for s in month_subs if s['status'] == 'pending'))
         six_month_rejected.append(sum(1 for s in month_subs if s['status'] == 'rejected'))
+        six_month_entered.append(len(month_subs))
+        six_month_archived.append(sum(1 for e in archive_entries if e['action_time'].year == year and e['action_time'].month == month))
 
     # 4. 9 Months (Monthly) - last 9 calendar months
     nine_month_labels = []
     nine_month_approved = []
     nine_month_pending = []
     nine_month_rejected = []
+    nine_month_entered = []
+    nine_month_archived = []
     for i in range(8, -1, -1):
         year = today.year
         month = today.month - i
@@ -108,12 +126,16 @@ def admin_dashboard(request):
         nine_month_approved.append(sum(1 for s in month_subs if s['status'] == 'approved'))
         nine_month_pending.append(sum(1 for s in month_subs if s['status'] == 'pending'))
         nine_month_rejected.append(sum(1 for s in month_subs if s['status'] == 'rejected'))
+        nine_month_entered.append(len(month_subs))
+        nine_month_archived.append(sum(1 for e in archive_entries if e['action_time'].year == year and e['action_time'].month == month))
 
     # 5. 12 Months (Monthly/Annual) - last 12 calendar months
     twelve_month_labels = []
     twelve_month_approved = []
     twelve_month_pending = []
     twelve_month_rejected = []
+    twelve_month_entered = []
+    twelve_month_archived = []
     for i in range(11, -1, -1):
         year = today.year
         month = today.month - i
@@ -126,13 +148,15 @@ def admin_dashboard(request):
         twelve_month_approved.append(sum(1 for s in month_subs if s['status'] == 'approved'))
         twelve_month_pending.append(sum(1 for s in month_subs if s['status'] == 'pending'))
         twelve_month_rejected.append(sum(1 for s in month_subs if s['status'] == 'rejected'))
+        twelve_month_entered.append(len(month_subs))
+        twelve_month_archived.append(sum(1 for e in archive_entries if e['action_time'].year == year and e['action_time'].month == month))
 
     trend_data = {
-        '1m': {'labels': one_month_labels, 'approved': one_month_approved, 'pending': one_month_pending, 'rejected': one_month_rejected},
-        '3m': {'labels': three_month_labels, 'approved': three_month_approved, 'pending': three_month_pending, 'rejected': three_month_rejected},
-        '6m': {'labels': six_month_labels, 'approved': six_month_approved, 'pending': six_month_pending, 'rejected': six_month_rejected},
-        '9m': {'labels': nine_month_labels, 'approved': nine_month_approved, 'pending': nine_month_pending, 'rejected': nine_month_rejected},
-        '12m': {'labels': twelve_month_labels, 'approved': twelve_month_approved, 'pending': twelve_month_pending, 'rejected': twelve_month_rejected},
+        '1m': {'labels': one_month_labels, 'approved': one_month_approved, 'pending': one_month_pending, 'rejected': one_month_rejected, 'entered': one_month_entered, 'archived': one_month_archived},
+        '3m': {'labels': three_month_labels, 'approved': three_month_approved, 'pending': three_month_pending, 'rejected': three_month_rejected, 'entered': three_month_entered, 'archived': three_month_archived},
+        '6m': {'labels': six_month_labels, 'approved': six_month_approved, 'pending': six_month_pending, 'rejected': six_month_rejected, 'entered': six_month_entered, 'archived': six_month_archived},
+        '9m': {'labels': nine_month_labels, 'approved': nine_month_approved, 'pending': nine_month_pending, 'rejected': nine_month_rejected, 'entered': nine_month_entered, 'archived': nine_month_archived},
+        '12m': {'labels': twelve_month_labels, 'approved': twelve_month_approved, 'pending': twelve_month_pending, 'rejected': twelve_month_rejected, 'entered': twelve_month_entered, 'archived': twelve_month_archived},
     }
 
     theses_by_course = list(

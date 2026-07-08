@@ -88,6 +88,26 @@
                         <canvas id="courseChart"></canvas>
                     </div>
                 </div>
+        </div>
+
+        <div class="dashboard-section" style="margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <h2 style="margin: 0;">Manuscript Entry & Archival Frequency</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 4px 0 0 0;">Timeline tracking manuscript submission volume, decisions, and archives</p>
+                </div>
+                <div>
+                    <select id="entryRangeSelect" style="padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); background-color: var(--bg-card); color: var(--text-dark); font-size: 0.85rem; font-weight: 500; cursor: pointer; outline: none; transition: border-color 0.2s;">
+                        <option value="1m">Monthly (Last 30 Days)</option>
+                        <option value="3m">3 Months (Weekly)</option>
+                        <option value="6m">6 Months</option>
+                        <option value="9m">9 Months</option>
+                        <option value="12m" selected>12 Months (Annual)</option>
+                    </select>
+                </div>
+            </div>
+            <div style="height: 320px; position: relative; margin-top: 1rem;">
+                <canvas id="entryTrendChart"></canvas>
             </div>
         </div>
 
