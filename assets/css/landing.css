@@ -288,7 +288,7 @@ ul {
   z-index: 4;
 }
 
-.hero-content h1 {
+.landing-page .hero-content h1 {
   font-size: 3.8rem;
   margin-bottom: 25px;
   font-weight: 800;
@@ -299,7 +299,7 @@ ul {
   animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.hero-content p {
+.landing-page .hero-content p {
   font-size: 1.25rem;
   margin-bottom: 30px;
   opacity: 0;
@@ -318,7 +318,7 @@ ul {
 }
 
 /* ── Welcome Strip (tertiary element — intentionally low weight) ── */
-.welcome-strip {
+.landing-page .welcome-strip {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
@@ -333,7 +333,7 @@ ul {
 }
 
 /* Role pill — smallest, least dominant element */
-.ws-pill {
+.landing-page .ws-pill {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -350,7 +350,7 @@ ul {
 }
 
 /* Name — medium weight, white, clearly secondary to H1 */
-.ws-greeting {
+.landing-page .ws-greeting {
   font-size: 0.95rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.88);
@@ -358,7 +358,7 @@ ul {
 }
 
 /* Bullet separator */
-.ws-dot {
+.landing-page .ws-dot {
   width: 3px;
   height: 3px;
   border-radius: 50%;
@@ -367,7 +367,7 @@ ul {
 }
 
 /* Tagline — lowest weight, muted, reads last */
-.ws-tagline {
+.landing-page .ws-tagline {
   font-size: 0.85rem;
   font-weight: 400;
   color: rgba(220, 205, 185, 0.6);
@@ -375,14 +375,14 @@ ul {
 }
 
 
-.hero-buttons {
+.landing-page .hero-buttons {
   display: flex;
   gap: 15px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.cta-button {
+.landing-page .cta-button {
   display: inline-block;
   padding: 14px 40px;
   background: linear-gradient(180deg, #9a1010 0%, #6b0000 100%);
@@ -406,7 +406,7 @@ ul {
 }
 
 /* Shimmer sweep — off screen left by default */
-.cta-button::before {
+.landing-page .cta-button::before {
   content: '';
   position: absolute;
   top: 0;
@@ -423,11 +423,11 @@ ul {
   pointer-events: none;
 }
 
-.cta-button:hover::before {
+.landing-page .cta-button:hover::before {
   left: 160%;
 }
 
-.cta-button:hover {
+.landing-page .cta-button:hover {
   background: linear-gradient(180deg, #b01515 0%, #7d0000 100%);
   transform: translateY(-2px);
   box-shadow:
@@ -437,7 +437,7 @@ ul {
     0 0 0 2px rgba(197, 179, 88, 0.25);
 }
 
-.cta-button:active {
+.landing-page .cta-button:active {
   transform: translateY(1px);
   box-shadow:
     0 1px 0 rgba(197, 179, 88, 0.4) inset,
@@ -445,7 +445,7 @@ ul {
     0 3px 10px rgba(80, 0, 0, 0.4);
 }
 
-.cta-button.secondary {
+.landing-page .cta-button.secondary {
   background: transparent;
   border: none;
   outline: 1px solid rgba(255,255,255,0.45);
@@ -454,7 +454,7 @@ ul {
   color: #fff;
 }
 
-.cta-button.secondary:hover {
+.landing-page .cta-button.secondary:hover {
   background: rgba(255, 255, 255, 0.07);
   transform: translateY(-2px);
   outline-color: rgba(255,255,255,0.7);
@@ -463,7 +463,7 @@ ul {
 
 
 
-.cta-button:disabled, .cta-button.disabled {
+.landing-page .cta-button:disabled, .landing-page .cta-button.disabled {
   background: #6c757d !important;
   border-color: #6c757d !important;
   cursor: not-allowed;
@@ -472,7 +472,7 @@ ul {
   box-shadow: none !important;
 }
 
-.cta-button:disabled::before, .cta-button.disabled::before {
+.landing-page .cta-button:disabled::before, .landing-page .cta-button.disabled::before {
   display: none;
 }
 
