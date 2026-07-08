@@ -38,10 +38,18 @@
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: #333;
+.landing-page {
+  font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  line-height: 1.75 !important;
+  color: #2C2C2C !important;
+  background-color: #F8FAFC !important;
+}
+
+.landing-page h1,
+.landing-page h2,
+.landing-page h3,
+.landing-page h4 {
+  font-family: 'Crimson Pro', Georgia, "Times New Roman", serif !important;
 }
 
 .container {
@@ -810,4 +818,4 @@ ul {
 .resource-button:hover,
 .cta-button:hover {
   transform: none !important;
-}
+}

@@ -6,12 +6,17 @@
 {% block title %}Welcome - Theses Library{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/landing.css' %}?v=3.3">
+<!-- Google Fonts for Scholarly Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/landing.css' %}?v=4.0">
 {% endblock %}
 
 {% block content %}
 {% now "Y" as current_year %}
 
+<!-- Hero Section with Spotlight and Particle Canvas -->
 <section class="hero-section">
     <canvas id="heroCanvas" class="hero-canvas"></canvas>
     <div class="hero-glow-1"></div>
@@ -56,8 +61,8 @@
                     <a href="{% url 'index' %}" class="cta-button">Explore Theses</a>
                 {% else %}
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                        <button class="cta-button" disabled title="Login required to explore research archives">Explore Theses</button>
-                        <p style="font-size: 0.9rem; color: #ddd; margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">(Login required to explore)</p>
+                        <button class="cta-button btn-trigger-login" title="Login required to explore research archives">Explore Theses</button>
+                        <p style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">(Login required to explore)</p>
                     </div>
                 {% endif %}
             </div>
@@ -65,130 +70,135 @@
     </div>
 </section>
 
+<!-- Dynamic Canvas Particle Script and User Interaction Intercepts -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    // Hero Canvas Particle Animation
     const canvas = document.getElementById('heroCanvas');
-    if (!canvas) return;
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = canvas.offsetWidth;
+        let height = canvas.height = canvas.offsetHeight;
 
-    const ctx = canvas.getContext('2d');
-    let width = canvas.width = canvas.offsetWidth;
-    let height = canvas.height = canvas.offsetHeight;
+        const particles = [];
+        const particleCount = Math.min(80, Math.floor((width * height) / 15000));
 
-    const particles = [];
-    // Dynamic particle count depending on screen density
-    const particleCount = Math.min(80, Math.floor((width * height) / 15000));
-
-    class Particle {
-        constructor() {
-            this.x = Math.random() * width;
-            this.y = Math.random() * height;
-            // Float speeds
-            this.vx = (Math.random() - 0.5) * 0.35;
-            this.vy = (Math.random() - 0.5) * 0.35;
-            this.radius = Math.random() * 2 + 1;
-        }
-
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-
-            // Bounce off edges
-            if (this.x < 0 || this.x > width) this.vx *= -1;
-            if (this.y < 0 || this.y > height) this.vy *= -1;
-        }
-
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(212, 175, 55, 0.45)'; // Sleek gold particles
-            ctx.fill();
-        }
-    }
-
-    // Initialize particles
-    for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-    }
-
-    // Mouse interactive coordinates
-    let mouse = { x: null, y: null };
-    const heroSection = document.querySelector('.hero-section');
-    if (heroSection) {
-        heroSection.addEventListener('mousemove', function (e) {
-            const rect = heroSection.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            mouse.x = x;
-            mouse.y = y;
-            
-            // Set percentages for spotlight mask
-            const xPct = ((x / rect.width) * 100).toFixed(2);
-            const yPct = ((y / rect.height) * 100).toFixed(2);
-            heroSection.style.setProperty('--mouse-x', `${xPct}%`);
-            heroSection.style.setProperty('--mouse-y', `${yPct}%`);
-        });
-
-        heroSection.addEventListener('mouseleave', function () {
-            mouse.x = null;
-            mouse.y = null;
-            // Reset to center
-            heroSection.style.setProperty('--mouse-x', '50%');
-            heroSection.style.setProperty('--mouse-y', '50%');
-        });
-    }
-
-    // Primary Animation Loop
-    function animate() {
-        ctx.clearRect(0, 0, width, height);
-
-        // Draw connections
-        for (let i = 0; i < particles.length; i++) {
-            const p1 = particles[i];
-            p1.update();
-            p1.draw();
-
-            // Check proximity to other particles
-            for (let j = i + 1; j < particles.length; j++) {
-                const p2 = particles[j];
-                const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-                if (dist < 110) {
-                    const alpha = (1 - dist / 110) * 0.16;
-                    ctx.strokeStyle = `rgba(212, 175, 55, ${alpha})`;
-                    ctx.lineWidth = 0.6;
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.stroke();
-                }
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.35;
+                this.vy = (Math.random() - 0.5) * 0.35;
+                this.radius = Math.random() * 2 + 1;
             }
 
-            // Proximity connection to mouse cursor
-            if (mouse.x !== null && mouse.y !== null) {
-                const distToMouse = Math.hypot(p1.x - mouse.x, p1.y - mouse.y);
-                if (distToMouse < 180) {
-                    const alpha = (1 - distToMouse / 180) * 0.25;
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-                    ctx.lineWidth = 0.8;
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(mouse.x, mouse.y);
-                    ctx.stroke();
-                }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(197, 179, 88, 0.45)'; // Sleek gold particles
+                ctx.fill();
             }
         }
 
-        requestAnimationFrame(animate);
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        let mouse = { x: null, y: null };
+        const heroSection = document.querySelector('.hero-section');
+        if (heroSection) {
+            heroSection.addEventListener('mousemove', function (e) {
+                const rect = heroSection.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                mouse.x = x;
+                mouse.y = y;
+                
+                const xPct = ((x / rect.width) * 100).toFixed(2);
+                const yPct = ((y / rect.height) * 100).toFixed(2);
+                heroSection.style.setProperty('--mouse-x', `${xPct}%`);
+                heroSection.style.setProperty('--mouse-y', `${yPct}%`);
+            });
+
+            heroSection.addEventListener('mouseleave', function () {
+                mouse.x = null;
+                mouse.y = null;
+                heroSection.style.setProperty('--mouse-x', '50%');
+                heroSection.style.setProperty('--mouse-y', '50%');
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                const p1 = particles[i];
+                p1.update();
+                p1.draw();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    if (dist < 110) {
+                        const alpha = (1 - dist / 110) * 0.16;
+                        ctx.strokeStyle = `rgba(197, 179, 88, ${alpha})`;
+                        ctx.lineWidth = 0.6;
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+
+                if (mouse.x !== null && mouse.y !== null) {
+                    const distToMouse = Math.hypot(p1.x - mouse.x, p1.y - mouse.y);
+                    if (distToMouse < 180) {
+                        const alpha = (1 - distToMouse / 180) * 0.25;
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', function () {
+            if (canvas) {
+                width = canvas.width = canvas.offsetWidth;
+                height = canvas.height = canvas.offsetHeight;
+            }
+        });
     }
 
-    animate();
-
-    // Handle screen resize events
-    window.addEventListener('resize', function () {
-        if (canvas) {
-            width = canvas.width = canvas.offsetWidth;
-            height = canvas.height = canvas.offsetHeight;
-        }
+    // Global Login Modal Trigger Intercept
+    document.querySelectorAll('.btn-trigger-login').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (typeof showLoginModal === 'function') {
+                showLoginModal();
+            } else {
+                const loginBtn = document.getElementById('loginButton');
+                if (loginBtn) {
+                    loginBtn.click();
+                }
+            }
+        });
     });
 });
 </script>
