@@ -13,8 +13,23 @@
     <link rel="stylesheet" href="assets/css/mobile.css">
     <link rel="icon" type="image/png" href="assets/images/tcu_official_logo.png">
     <link rel="stylesheet" href="assets/css/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/demo-nav.css">
     <style>
-        .demo-bar {
+        .top-nav-wrapper {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        .top-nav-wrapper .demo-bar {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            z-index: 2;
+            margin: 0;
+            box-shadow: none;
             background: linear-gradient(90deg, #400000 0%, #800000 50%, #500000 100%);
             color: #fff;
             padding: 8px 16px;
@@ -22,13 +37,22 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100000;
             border-bottom: 2px solid #C5B358;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
             flex-wrap: wrap;
             gap: 10px;
+        }
+        .top-nav-wrapper .main-header {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            z-index: 1 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
+            background: #fff !important;
+        }
+        main, .main-content {
+            margin-top: 0 !important;
         }
         .demo-bar-badge {
             background: #C5B358;
@@ -104,44 +128,47 @@
 </head>
 <body style="background: #f8fafc; font-family: 'Atkinson Hyperlegible', sans-serif;">
 
-    <!-- Top Live Demo Bar -->
-    <div class="demo-bar">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <span class="demo-bar-badge">Live Demo</span>
-            <span>TCU Thesis Library Catalog</span>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <a href="index.html" style="color:#fff; text-decoration:none;"><i class="fas fa-home"></i> Landing</a>
-            <a href="admin_preview.html" style="color:#fff; text-decoration:none;"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
-            <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" style="background:#238636; color:#fff; padding:4px 10px; border-radius:6px; font-weight:600; text-decoration:none; font-size:12px;">
-                <i class="fas fa-terminal"></i> Open in Codespaces
-            </a>
-        </div>
-    </div>
-
-    <!-- Header -->
-    <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 24px;">
-        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
-            <a href="index.html" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
-                <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%;">
-                <h1 style="font-size:1.2rem; color:#800000; margin:0;">TCU Theses Library</h1>
-            </a>
-            <nav class="main-nav">
-                <ul style="display:flex; gap:20px; list-style:none; margin:0; padding:0;">
-                    <li><a href="index.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Home</a></li>
-                    <li><a href="categories.html" class="nav-link active" style="text-decoration:none; color:#800000; font-weight:700;">Categories</a></li>
-                    <li><a href="admin_preview.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Admin Dashboard</a></li>
-                    <li><a href="about.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">About</a></li>
-                </ul>
-            </nav>
+    <!-- Sticky Unified Navigation Wrapper -->
+    <div class="top-nav-wrapper">
+        <!-- Top Live Demo Bar -->
+        <div class="demo-bar">
             <div style="display:flex; align-items:center; gap:10px;">
-                <span class="demo-user-role-label" style="font-size:12px; font-weight:600; color:#800000; background:rgba(128,0,0,0.08); padding:4px 8px; border-radius:8px;"></span>
-                <button class="btn btn-outline btn-trigger-login" style="padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer;">
-                    <i class="fas fa-user-circle"></i> Demo Login
-                </button>
+                <span class="demo-bar-badge">Live Demo</span>
+                <span>TCU Thesis Library Catalog</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <a href="index.html" style="color:#fff; text-decoration:none;"><i class="fas fa-home"></i> Landing</a>
+                <a href="admin_preview.html" style="color:#fff; text-decoration:none;"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" style="background:#238636; color:#fff; padding:4px 10px; border-radius:6px; font-weight:600; text-decoration:none; font-size:12px;">
+                    <i class="fas fa-terminal"></i> Open in Codespaces
+                </a>
             </div>
         </div>
-    </header>
+
+        <!-- Header -->
+        <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 24px;">
+            <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+                <a href="index.html" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%;">
+                    <h1 style="font-size:1.2rem; color:#800000; margin:0;">TCU Theses Library</h1>
+                </a>
+                <nav class="main-nav">
+                    <ul style="display:flex; gap:20px; list-style:none; margin:0; padding:0;">
+                        <li><a href="index.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Home</a></li>
+                        <li><a href="categories.html" class="nav-link active" style="text-decoration:none; color:#800000; font-weight:700;">Categories</a></li>
+                        <li><a href="admin_preview.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Admin Dashboard</a></li>
+                        <li><a href="about.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">About</a></li>
+                    </ul>
+                </nav>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="demo-user-role-label" style="font-size:12px; font-weight:600; color:#800000; background:rgba(128,0,0,0.08); padding:4px 8px; border-radius:8px;"></span>
+                    <button class="btn btn-outline btn-trigger-login" style="padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer;">
+                        <i class="fas fa-user-circle"></i> Demo Login
+                    </button>
+                </div>
+            </div>
+        </header>
+    </div>
 
     <!-- Main Container -->
     <main style="max-width:1200px; margin:30px auto; padding:0 20px;">

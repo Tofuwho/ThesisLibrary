@@ -16,7 +16,21 @@
     <link rel="stylesheet" href="assets/css/fontawesome/css/all.min.css">
     <style>
         /* Top demo banner */
-        .demo-bar {
+        .top-nav-wrapper {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        .top-nav-wrapper .demo-bar {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            z-index: 2;
+            margin: 0;
+            box-shadow: none;
             background: linear-gradient(90deg, #400000 0%, #800000 50%, #500000 100%);
             color: #fff;
             padding: 8px 16px;
@@ -24,13 +38,25 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100000;
             border-bottom: 2px solid #C5B358;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
             flex-wrap: wrap;
             gap: 10px;
+        }
+        .top-nav-wrapper .main-header {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            z-index: 1 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
+            background: #fff !important;
+        }
+        .hero-section {
+            margin-top: 0 !important;
+        }
+        main, .main-content {
+            margin-top: 0 !important;
         }
         .demo-bar-badge {
             background: #C5B358;
@@ -88,58 +114,61 @@
 </head>
 <body class="landing-page">
 
-    <!-- Top Live Demo Bar -->
-    <div class="demo-bar">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <span class="demo-bar-badge">Live Demo</span>
-            <span>Taguig City University Digital Theses Repository</span>
+    <!-- Sticky Unified Navigation Wrapper -->
+    <div class="top-nav-wrapper">
+        <!-- Top Live Demo Bar -->
+        <div class="demo-bar">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="demo-bar-badge">Live Demo</span>
+                <span>Taguig City University Digital Theses Repository</span>
+            </div>
+            <div class="demo-bar-actions">
+                <span>Simulate User:</span>
+                <select class="demo-role-select" onchange="setDemoRole(this.value)">
+                    <option value="guest">Guest / Visitor</option>
+                    <option value="student">Student (Juan Dela Cruz)</option>
+                    <option value="professor">Faculty (Dr. Ramon Del Rosario)</option>
+                    <option value="librarian">Librarian (Maria Santos)</option>
+                    <option value="admin">Admin (TCU Administrator)</option>
+                </select>
+                <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" class="demo-codespaces-btn">
+                    <i class="fas fa-terminal"></i> Run Full Backend (Codespaces)
+                </a>
+                <a href="https://github.com/Tofuwho/ThesisLibrary" target="_blank" style="color:#C5B358; font-weight:600; text-decoration:none;">
+                    <i class="fab fa-github"></i> Repository
+                </a>
+            </div>
         </div>
-        <div class="demo-bar-actions">
-            <span>Simulate User:</span>
-            <select class="demo-role-select" onchange="setDemoRole(this.value)">
-                <option value="guest">Guest / Visitor</option>
-                <option value="student">Student (Juan Dela Cruz)</option>
-                <option value="professor">Faculty (Dr. Ramon Del Rosario)</option>
-                <option value="librarian">Librarian (Maria Santos)</option>
-                <option value="admin">Admin (TCU Administrator)</option>
-            </select>
-            <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" class="demo-codespaces-btn">
-                <i class="fas fa-terminal"></i> Run Full Backend (Codespaces)
-            </a>
-            <a href="https://github.com/Tofuwho/ThesisLibrary" target="_blank" style="color:#C5B358; font-weight:600; text-decoration:none;">
-                <i class="fab fa-github"></i> Repository
-            </a>
-        </div>
-    </div>
 
-    <!-- Main Header -->
-    <header class="main-header">
-        <div class="main-header-inner">
-            <a href="index.html" class="logo-container" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
-                <img src="assets/images/log-tcu.jpg" alt="TCU Logo" class="logo-image">
-                <h1 style="margin: 0; font-size: 1.3rem;">TCU Theses Library</h1>
-            </a>
-            <div class="header-flex-center">
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="index.html" class="nav-link active">Home</a></li>
-                        <li><a href="categories.html" class="nav-link">Categories & Browse</a></li>
-                        <li><a href="admin_preview.html" class="nav-link demo-auth-only">Admin Dashboard</a></li>
-                        <li><a href="about.html" class="nav-link">About</a></li>
-                    </ul>
-                </nav>
+        <!-- Main Header -->
+        <header class="main-header">
+            <div class="main-header-inner">
+                <a href="index.html" class="logo-container" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" class="logo-image">
+                    <h1 style="margin: 0; font-size: 1.3rem;">TCU Theses Library</h1>
+                </a>
+                <div class="header-flex-center">
+                    <nav class="main-nav">
+                        <ul>
+                            <li><a href="index.html" class="nav-link active">Home</a></li>
+                            <li><a href="categories.html" class="nav-link">Categories & Browse</a></li>
+                            <li><a href="admin_preview.html" class="nav-link demo-auth-only">Admin Dashboard</a></li>
+                            <li><a href="about.html" class="nav-link">About</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="auth-buttons nav-right-demo">
+                    <span class="demo-user-role-label demo-auth-only" style="font-size: 13px; font-weight:600; color:#800000; background:rgba(128,0,0,0.08); padding:4px 10px; border-radius:12px;"></span>
+                    <button class="btn btn-outline demo-guest-only btn-trigger-login" id="loginButton" style="padding: 6px 16px; border-radius: 6px; cursor: pointer;">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                    <button class="btn btn-outline demo-auth-only" onclick="setDemoRole('guest')" style="padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size:12px;">
+                        <i class="fas fa-sign-out-alt"></i> Exit Demo Role
+                    </button>
+                </div>
             </div>
-            <div class="auth-buttons nav-right-demo">
-                <span class="demo-user-role-label demo-auth-only" style="font-size: 13px; font-weight:600; color:#800000; background:rgba(128,0,0,0.08); padding:4px 10px; border-radius:12px;"></span>
-                <button class="btn btn-outline demo-guest-only btn-trigger-login" id="loginButton" style="padding: 6px 16px; border-radius: 6px; cursor: pointer;">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
-                </button>
-                <button class="btn btn-outline demo-auth-only" onclick="setDemoRole('guest')" style="padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size:12px;">
-                    <i class="fas fa-sign-out-alt"></i> Exit Demo Role
-                </button>
-            </div>
-        </div>
-    </header>
+        </header>
+    </div>
 
     <div class="main-content">
         <!-- Hero Section with Spotlight and Particle Canvas -->

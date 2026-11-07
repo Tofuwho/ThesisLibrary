@@ -15,8 +15,23 @@
     <link rel="stylesheet" href="assets/css/fontawesome/css/all.min.css">
     <!-- Chart.js -->
     <script src="assets/js/chart.js"></script>
+    <link rel="stylesheet" href="assets/css/demo-nav.css">
     <style>
-        .demo-bar {
+        .top-nav-wrapper {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        .top-nav-wrapper .demo-bar {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            z-index: 2;
+            margin: 0;
+            box-shadow: none;
             background: linear-gradient(90deg, #400000 0%, #800000 50%, #500000 100%);
             color: #fff;
             padding: 8px 16px;
@@ -24,13 +39,20 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100000;
             border-bottom: 2px solid #C5B358;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
             flex-wrap: wrap;
             gap: 10px;
+        }
+        .top-nav-wrapper header {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            z-index: 1 !important;
+            width: 100% !important;
+            margin: 0 !important;
+        }
+        main, .main-content {
+            margin-top: 0 !important;
         }
         .demo-bar-badge {
             background: #C5B358;
@@ -82,37 +104,40 @@
 </head>
 <body style="background: #f1f5f9; font-family: 'Atkinson Hyperlegible', sans-serif;">
 
-    <!-- Top Live Demo Bar -->
-    <div class="demo-bar">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <span class="demo-bar-badge">Live Demo</span>
-            <span>TCU Thesis Repository - Admin Analytics Portal</span>
+    <!-- Sticky Unified Navigation Wrapper -->
+    <div class="top-nav-wrapper">
+        <!-- Top Live Demo Bar -->
+        <div class="demo-bar">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="demo-bar-badge">Live Demo</span>
+                <span>TCU Thesis Repository - Admin Analytics Portal</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <a href="index.html" style="color:#fff; text-decoration:none;"><i class="fas fa-home"></i> Home</a>
+                <a href="categories.html" style="color:#fff; text-decoration:none;"><i class="fas fa-book"></i> Catalog</a>
+                <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" style="background:#238636; color:#fff; padding:4px 10px; border-radius:6px; font-weight:600; text-decoration:none; font-size:12px;">
+                    <i class="fas fa-terminal"></i> Open Full Backend in Codespaces
+                </a>
+            </div>
         </div>
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <a href="index.html" style="color:#fff; text-decoration:none;"><i class="fas fa-home"></i> Home</a>
-            <a href="categories.html" style="color:#fff; text-decoration:none;"><i class="fas fa-book"></i> Catalog</a>
-            <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" style="background:#238636; color:#fff; padding:4px 10px; border-radius:6px; font-weight:600; text-decoration:none; font-size:12px;">
-                <i class="fas fa-terminal"></i> Open Full Backend in Codespaces
-            </a>
-        </div>
-    </div>
 
-    <!-- Header -->
-    <header style="background:#800000; color:#fff; padding:16px 24px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%; border:2px solid #C5B358;">
-                <div>
-                    <h2 style="font-size:1.15rem; margin:0; color:#fff;">TCU Library Archival Administration</h2>
-                    <span style="font-size:11px; color:#C5B358; text-transform:uppercase; font-weight:700;">Institutional Repository Oversight</span>
+        <!-- Header -->
+        <header style="background:#800000; color:#fff; padding:16px 24px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+            <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%; border:2px solid #C5B358;">
+                    <div>
+                        <h2 style="font-size:1.15rem; margin:0; color:#fff;">TCU Library Archival Administration</h2>
+                        <span style="font-size:11px; color:#C5B358; text-transform:uppercase; font-weight:700;">Institutional Repository Oversight</span>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <span style="font-size:13px; color:#fff;"><i class="fas fa-shield-alt"></i> Signed in as: <strong>Admin (TCU Staff)</strong></span>
+                    <a href="index.html" style="background:rgba(255,255,255,0.2); color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; text-decoration:none;">Exit Admin</a>
                 </div>
             </div>
-            <div style="display:flex; align-items:center; gap:16px;">
-                <span style="font-size:13px; color:#fff;"><i class="fas fa-shield-alt"></i> Signed in as: <strong>Admin (TCU Staff)</strong></span>
-                <a href="index.html" style="background:rgba(255,255,255,0.2); color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; text-decoration:none;">Exit Admin</a>
-            </div>
-        </div>
-    </header>
+        </header>
+    </div>
 
     <main style="max-width:1200px; margin:30px auto; padding:0 20px;">
         
