@@ -372,10 +372,10 @@ function renderDemoUserUI() {
         b.textContent = currentDemoUser.name;
     });
 
-    const selector = document.querySelector('.demo-role-select');
-    if (selector) {
-        selector.value = currentDemoUser.role;
-    }
+    const selectors = document.querySelectorAll('.demo-role-select');
+    selectors.forEach(sel => {
+        sel.value = currentDemoUser.role;
+    });
 
     const authToggles = document.querySelectorAll('.demo-auth-only');
     authToggles.forEach(el => {
@@ -413,7 +413,132 @@ function generateCitation(t, style) {
     return '';
 }
 
+// Mobile Navigation System across All Platforms
+function initMobileNavigation() {
+    // 1. Ensure hamburger toggle exists in header
+    const headerRow = document.querySelector('.main-header > div, header > div');
+    if (headerRow && !document.querySelector('.mobile-nav-toggle')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'mobile-nav-toggle';
+        toggleBtn.setAttribute('aria-label', 'Toggle Navigation Menu');
+        toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+        toggleBtn.addEventListener('click', toggleMobileDrawer);
+        headerRow.appendChild(toggleBtn);
+    }
+
+    // 2. Ensure mobile drawer and backdrop exist
+    if (!document.querySelector('.mobile-nav-drawer')) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'mobile-nav-backdrop';
+        backdrop.addEventListener('click', closeMobileDrawer);
+        document.body.appendChild(backdrop);
+
+        const drawer = document.createElement('div');
+        drawer.className = 'mobile-nav-drawer';
+
+        // Detect active page
+        const path = window.location.pathname.toLowerCase();
+        const isHome = path.endsWith('index.html') || path.endsWith('/') || (!path.includes('categories') && !path.includes('thesis_detail') && !path.includes('admin') && !path.includes('about'));
+        const isCatalog = path.includes('categories');
+        const isAdmin = path.includes('admin_preview');
+        const isAbout = path.includes('about');
+
+        drawer.innerHTML = `
+            <div class="mobile-drawer-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:34px; height:34px; border-radius:50%; border:2px solid var(--tcu-gold);">
+                    <div>
+                        <strong style="display:block; font-size:14px; font-family:var(--lib-font-serif);">Taguig City University</strong>
+                        <span style="font-size:10px; color:var(--tcu-gold); text-transform:uppercase; letter-spacing:0.5px;">Theses & Archival Library</span>
+                    </div>
+                </div>
+                <button class="mobile-drawer-close" aria-label="Close menu">&times;</button>
+            </div>
+            <div class="mobile-drawer-body">
+                <div class="mobile-drawer-persona-box">
+                    <div style="font-size:11px; text-transform:uppercase; font-weight:700; color:var(--tcu-maroon); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-id-badge"></i> Active Evaluator Role:
+                    </div>
+                    <select class="demo-role-select" onchange="setDemoRole(this.value)" style="width:100%; box-sizing:border-box; padding:8px 10px; background:#fff; color:#1e293b; border:1px solid #cbd5e1; font-weight:600; border-radius:6px; font-size:12.5px;">
+                        <option value="guest">Guest Researcher</option>
+                        <option value="student">Student Author (Juan Dela Cruz)</option>
+                        <option value="professor">Faculty Adviser (Dr. Ramon Del Rosario)</option>
+                        <option value="librarian">Chief Librarian (Maria Santos, RL)</option>
+                        <option value="admin">System Administrator (TCU Library)</option>
+                    </select>
+                </div>
+
+                <ul class="mobile-drawer-links">
+                    <li>
+                        <a href="index.html" class="mobile-drawer-link ${isHome ? 'active' : ''}">
+                            <i class="fas fa-home"></i> Home Repository
+                        </a>
+                    </li>
+                    <li>
+                        <a href="categories.html" class="mobile-drawer-link ${isCatalog ? 'active' : ''}">
+                            <i class="fas fa-book-reader"></i> Browse Theses Catalog
+                        </a>
+                    </li>
+                    <li>
+                        <a href="admin_preview.html" class="mobile-drawer-link ${isAdmin ? 'active' : ''}">
+                            <i class="fas fa-tachometer-alt"></i> Archivist Moderation
+                        </a>
+                    </li>
+                    <li>
+                        <a href="about.html" class="mobile-drawer-link ${isAbout ? 'active' : ''}">
+                            <i class="fas fa-balance-scale"></i> Archival Policies (RA 8293)
+                        </a>
+                    </li>
+                </ul>
+
+                <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px; border-top:1px solid #e2e8f0; padding-top:16px;">
+                    <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" style="background:#238636; color:#fff; text-decoration:none; padding:10px; border-radius:6px; font-size:13px; font-weight:700; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <i class="fas fa-terminal"></i> Run Backend on Codespaces
+                    </a>
+                    <button class="btn btn-outline btn-trigger-login" style="padding:10px; border-radius:6px; font-size:13px; font-weight:700; width:100%; cursor:pointer; background:#fff; border:1px solid #cbd5e1; color:#334155;">
+                        <i class="fas fa-user-circle"></i> Demo Authentication
+                    </button>
+                </div>
+            </div>
+        `;
+        const closeBtn = drawer.querySelector('.mobile-drawer-close');
+        if (closeBtn) closeBtn.addEventListener('click', closeMobileDrawer);
+        document.body.appendChild(drawer);
+    }
+}
+
+function toggleMobileDrawer() {
+    const drawer = document.querySelector('.mobile-nav-drawer');
+    const backdrop = document.querySelector('.mobile-nav-backdrop');
+    if (drawer && backdrop) {
+        drawer.classList.toggle('active');
+        backdrop.classList.toggle('active');
+    }
+}
+
+function closeMobileDrawer() {
+    const drawer = document.querySelector('.mobile-nav-drawer');
+    const backdrop = document.querySelector('.mobile-nav-backdrop');
+    if (drawer) drawer.classList.remove('active');
+    if (backdrop) backdrop.classList.remove('active');
+}
+
+function toggleMobileFacets() {
+    const sidebar = document.querySelector('.opac-facets-sidebar');
+    const btn = document.querySelector('.mobile-filter-toggle-btn');
+    if (sidebar) {
+        sidebar.classList.toggle('mobile-open');
+        const isOpen = sidebar.classList.contains('mobile-open');
+        if (btn) {
+            btn.innerHTML = isOpen 
+                ? '<i class="fas fa-times"></i> <span>Hide Filter Options</span> <i class="fas fa-chevron-up"></i>' 
+                : '<i class="fas fa-sliders-h"></i> <span>Filter & Refine Collection</span> <span class="facet-active-pill">Tap to expand</span>';
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    initMobileNavigation();
     renderDemoUserUI();
 
     // Modal close handlers

@@ -50,11 +50,11 @@
     <div class="top-nav-wrapper">
         <!-- Institutional Demonstration Ribbon -->
         <div class="demo-bar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <span class="demo-bar-badge"><i class="fas fa-university"></i> TCU-IR ARCHIVE</span>
-                <span style="font-size:12px; color:rgba(255,255,255,0.9);">Digital Institutional Theses & Dissertations Repository • Record Accession Viewer</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="demo-bar-badge"><i class="fas fa-university"></i> TCU-IR DEMO</span>
+                <span class="demo-bar-tagline" style="font-size:12px; color:rgba(255,255,255,0.9);">Digital Institutional Theses & Dissertations Repository • Record Accession Viewer</span>
             </div>
-            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:6px;">
                     <span style="font-size:11.5px; color:var(--tcu-gold); font-weight:700;"><i class="fas fa-id-badge"></i> Persona:</span>
                     <select class="demo-role-select" onchange="setDemoRole(this.value)">
@@ -66,19 +66,19 @@
                     </select>
                 </div>
                 <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" class="demo-codespaces-btn">
-                    <i class="fas fa-server"></i> Run Full Backend (Codespaces)
+                    <i class="fas fa-server"></i> <span class="demo-codespaces-text-long">Run Full Backend</span> Codespaces
                 </a>
             </div>
         </div>
 
         <!-- Academic Library Header -->
-        <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 28px;">
-            <div style="max-width:1300px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+        <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 24px;">
+            <div class="lib-header-inner">
                 <a href="index.html" style="display:flex; align-items:center; gap:14px; text-decoration:none;">
                     <img src="assets/images/log-tcu.jpg" alt="TCU University Seal" style="width:44px; height:44px; border-radius:50%; border:2px solid var(--tcu-gold);">
                     <div>
-                        <h1 style="font-family:var(--lib-font-serif); font-size:1.35rem; font-weight:700; color:var(--tcu-maroon); margin:0; line-height:1.2;">Taguig City University</h1>
-                        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:700; display:block;">University Library & Digital Archives</span>
+                        <h1 class="lib-brand-title" style="font-family:var(--lib-font-serif); font-size:1.35rem; font-weight:700; color:var(--tcu-maroon); margin:0; line-height:1.2;">Taguig City University</h1>
+                        <span class="lib-brand-subtitle" style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:700; display:block;">University Library & Digital Archives</span>
                     </div>
                 </a>
                 <nav class="main-nav">
@@ -89,12 +89,15 @@
                         <li><a href="about.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Archival Policies</a></li>
                     </ul>
                 </nav>
-                <div style="display:flex; align-items:center; gap:12px;">
+                <div class="header-auth-actions" style="display:flex; align-items:center; gap:12px;">
                     <span class="demo-user-role-label" style="font-size:12px; font-weight:700; color:var(--tcu-maroon); background:var(--tcu-gold-light); border:1px solid var(--tcu-gold-border); padding:4px 10px; border-radius:12px;"></span>
                     <button class="btn btn-outline btn-trigger-login" style="padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600; border:1px solid #cbd5e1; background:#fff;">
                         <i class="fas fa-sign-in-alt"></i> Sign In
                     </button>
                 </div>
+                <button class="mobile-nav-toggle" aria-label="Toggle navigation menu" onclick="toggleMobileDrawer()">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </header>
     </div>
@@ -125,12 +128,12 @@
         </div>
 
         <!-- 2-Column Bibliographic Record Layout -->
-        <div style="display:grid; grid-template-columns: 1fr 340px; gap:28px; align-items:start;">
+        <div class="record-layout-container">
             
             <!-- LEFT COLUMN: Main Academic Record -->
             <div>
                 <!-- Primary Bibliographic Card -->
-                <article style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:32px; box-shadow:0 1px 4px rgba(0,0,0,0.03); margin-bottom:24px;">
+                <article class="primary-record-article" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:32px; box-shadow:0 1px 4px rgba(0,0,0,0.03); margin-bottom:24px;">
                     
                     <!-- Call Number & Accession Strip -->
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
@@ -149,7 +152,7 @@
 
                     <!-- Author & Responsibility Statement -->
                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:18px; margin-bottom:24px;">
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; font-size:13.5px;">
+                        <div class="author-statement-grid">
                             <div>
                                 <span style="color:#64748b; font-size:12px; text-transform:uppercase; font-weight:700; display:block;">Principal Researcher:</span>
                                 <strong id="recordAuthor" style="color:#1e293b; font-size:14.5px;"></strong>
@@ -171,7 +174,7 @@
                     </div>
 
                     <!-- Library Record Navigation Tabs -->
-                    <div style="display:flex; border-bottom:2px solid #e2e8f0; margin-bottom:24px;">
+                    <div class="record-tabs-nav">
                         <button class="record-tab-btn active" onclick="switchRecordTab('abstract', this)">
                             <i class="fas fa-align-left"></i> Abstract & Summary
                         </button>
@@ -205,54 +208,56 @@
                     <!-- TAB 2: Complete Dublin Core Metadata Table -->
                     <div id="tabDublinCore" class="record-tab-content" style="display:none;">
                         <h3 style="font-family:var(--lib-font-serif); font-size:1.35rem; color:#1e293b; margin:0 0 14px 0;">Complete Dublin Core Item Metadata</h3>
-                        <table class="dc-table">
-                            <tbody>
-                                <tr>
-                                    <th class="dc-label">dc.title</th>
-                                    <td class="dc-value" id="dcTitleVal"></td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.creator</th>
-                                    <td class="dc-value" id="dcCreatorVal"></td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.contributor.advisor</th>
-                                    <td class="dc-value" id="dcAdvisorVal"></td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.date.issued</th>
-                                    <td class="dc-value" id="dcDateVal"></td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.type</th>
-                                    <td class="dc-value" id="dcTypeVal"></td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.publisher</th>
-                                    <td class="dc-value">Taguig City University</td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.subject.classification</th>
-                                    <td class="dc-value" id="dcClassVal"></td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.identifier.uri</th>
-                                    <td class="dc-value" id="dcUriVal"></td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.format.extent</th>
-                                    <td class="dc-value" id="dcExtentVal"></td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.language.iso</th>
-                                    <td class="dc-value">en-PH</td>
-                                </tr>
-                                <tr>
-                                    <th class="dc-label">dc.rights</th>
-                                    <td class="dc-value" id="dcRightsVal"></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="dc-table">
+                                <tbody>
+                                    <tr>
+                                        <th class="dc-label">dc.title</th>
+                                        <td class="dc-value" id="dcTitleVal"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.creator</th>
+                                        <td class="dc-value" id="dcCreatorVal"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.contributor.advisor</th>
+                                        <td class="dc-value" id="dcAdvisorVal"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.date.issued</th>
+                                        <td class="dc-value" id="dcDateVal"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.type</th>
+                                        <td class="dc-value" id="dcTypeVal"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.publisher</th>
+                                        <td class="dc-value">Taguig City University</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.subject.classification</th>
+                                        <td class="dc-value" id="dcClassVal"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.identifier.uri</th>
+                                        <td class="dc-value" id="dcUriVal"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.format.extent</th>
+                                        <td class="dc-value" id="dcExtentVal"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.language.iso</th>
+                                        <td class="dc-value">en-PH</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="dc-label">dc.rights</th>
+                                        <td class="dc-value" id="dcRightsVal"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- TAB 3: Interactive Protected Manuscript Reader -->
