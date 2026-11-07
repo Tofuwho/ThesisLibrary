@@ -1,0 +1,895 @@
+/* ============================================================
+   SUBMISSION PORTAL DESIGN SYSTEM
+   Premium academic aesthetic for TCU Thesis Library
+   ============================================================ */
+
+:root {
+    --portal-primary: #800000;
+    --portal-primary-dark: #500000;
+    --portal-primary-light: rgba(128, 0, 0, 0.08);
+    --portal-gold: #C5B358;
+    --portal-bg: #f8f9fa;
+    --portal-card-bg: #ffffff;
+    --portal-text: #2d3436;
+    --portal-text-light: #636e72;
+    --portal-border: #e9ecef;
+    --portal-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --portal-radius: 20px;
+}
+
+/* Base Layout */
+.portal-page-wrap,
+.portal-bg-accent {
+    background: var(--portal-bg);
+}
+
+.portal-bg-accent {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 300px;
+    background: linear-gradient(135deg, var(--portal-primary-light) 0%, transparent 100%);
+    z-index: -1;
+}
+
+.portal-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Hero Header */
+.portal-hero {
+    background: linear-gradient(135deg, var(--portal-primary-dark) 0%, var(--portal-primary) 100%);
+    margin-top: 30px;
+    margin-bottom: 30px;
+    border-radius: 24px;
+    padding: 30px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 15px 40px rgba(128, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.portal-hero::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.hero-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    background: white;
+    padding: 8px;
+    border-radius: 16px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.hero-text h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.hero-text p {
+    margin: 5px 0 0;
+    opacity: 0.85;
+    font-size: 0.95rem;
+}
+
+.status-indicator {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: white;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+}
+
+.dot.pulse {
+    animation: pulse-white 2s infinite;
+}
+
+@keyframes pulse-white {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+/* Layout Grid */
+.portal-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* Sidebar Steps */
+.portal-sidebar {
+    position: sticky;
+    top: 100px;
+}
+
+.sidebar-steps {
+    background: var(--portal-card-bg);
+    border-radius: var(--portal-radius);
+    padding: 24px;
+    box-shadow: var(--portal-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nav-step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.nav-step:hover {
+    background: var(--portal-primary-light);
+    color: var(--portal-primary);
+}
+
+.nav-step.active {
+    background: var(--portal-primary);
+    color: white;
+    box-shadow: 0 10px 20px rgba(128, 0, 0, 0.15);
+}
+
+.step-num {
+    font-size: 1.2rem;
+    font-weight: 800;
+    opacity: 0.3;
+}
+
+.nav-step.active .step-num {
+    opacity: 1;
+}
+
+.step-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.step-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.6;
+}
+
+.step-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.sidebar-help {
+    margin-top: 20px;
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    padding: 20px;
+    border-radius: var(--portal-radius);
+    text-align: center;
+    border: 1px solid var(--portal-border);
+}
+
+.sidebar-help i {
+    font-size: 1.5rem;
+    color: var(--portal-primary);
+    margin-bottom: 10px;
+    display: block;
+}
+
+.sidebar-help p {
+    font-size: 0.8rem;
+    margin: 0;
+    color: var(--portal-text-light);
+    line-height: 1.4;
+}
+
+/* Main Content Area */
+.portal-main {
+    background: var(--portal-card-bg);
+    border-radius: var(--portal-radius);
+    box-shadow: var(--portal-shadow);
+    min-height: 600px;
+    position: relative;
+    overflow: hidden;
+}
+
+.portal-form {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-section {
+    display: none;
+    padding: 40px;
+}
+
+.form-section.active {
+    display: block;
+    animation: sectionIn 0.4s ease-out;
+}
+
+@keyframes sectionIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-header {
+    margin-bottom: 35px;
+    border-bottom: 2px solid var(--portal-bg);
+    padding-bottom: 20px;
+}
+
+.section-header h2 {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--portal-text);
+    margin: 0;
+}
+
+.section-header p {
+    margin: 8px 0 0;
+    color: var(--portal-text-light);
+    font-size: 1rem;
+}
+
+/* Controls and Inputs */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--portal-text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.required {
+    color: var(--portal-primary);
+    margin-left: 2px;
+}
+
+.optional {
+    color: var(--portal-text-light);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper i {
+    position: absolute;
+    left: 16px;
+    color: var(--portal-text-light);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.portal-form input[type="text"],
+.portal-form input[type="email"],
+.portal-form input[type="number"],
+.portal-form select,
+.portal-form textarea {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid var(--portal-border);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    background: #fff;
+    box-sizing: border-box;
+    color: var(--portal-text);
+}
+
+.input-wrapper input {
+    padding-left: 44px !important;
+}
+
+.portal-form input:focus,
+.portal-form select:focus,
+.portal-form textarea:focus {
+    outline: none;
+    border-color: var(--portal-primary);
+    box-shadow: 0 0 0 5px var(--portal-primary-light);
+    background: #fff;
+}
+
+.portal-form select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23636e72' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 18px;
+    padding-right: 44px;
+}
+
+.portal-form textarea {
+    min-height: 100px;
+    line-height: 1.6;
+}
+
+.title-textarea {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    padding: 20px !important;
+}
+
+.form-divider {
+    border: none;
+    height: 1px;
+    background: var(--portal-border);
+    margin: 40px 0 30px;
+}
+
+/* Section-Specific Elements */
+h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--portal-text);
+    margin: 0 0 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Co-authors */
+.co-authors-wrapper {
+    background: #fafafa;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px dashed var(--portal-border);
+}
+
+.coauthor-block {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--portal-border);
+    margin-bottom: 15px;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+/* Upload Area */
+.upload-area {
+    margin-bottom: 30px;
+}
+
+.drop-zone {
+    border: 2px dashed #ccd3d8;
+    background: #fdfdfd;
+    padding: 40px;
+    border-radius: 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.drop-zone:hover {
+    border-color: var(--portal-primary);
+    background: var(--portal-primary-light);
+}
+
+.drop-zone.small {
+    padding: 20px;
+    flex-direction: row;
+}
+
+.drop-zone-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--portal-primary-light);
+    color: var(--portal-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.drop-zone.small .drop-zone-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+}
+
+.drop-zone-text {
+    line-height: 1.5;
+    color: var(--portal-text-light);
+}
+
+.drop-zone-text strong {
+    color: var(--portal-text);
+    display: block;
+    font-size: 1rem;
+}
+
+.drop-zone-text span {
+    font-size: 0.8rem;
+    display: block;
+}
+
+/* File Previews */
+.file-preview-list {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 1px solid var(--portal-border);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    animation: itemIn 0.3s ease;
+}
+
+@keyframes itemIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-icon {
+    padding: 6px 8px;
+    background: var(--portal-primary);
+    color: white;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+.file-details .file-name {
+    font-weight: 700;
+    color: var(--portal-text);
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-details .file-size {
+    font-size: 0.75rem;
+    color: var(--portal-text-light);
+}
+
+.remove-file {
+    background: var(--portal-primary-light);
+    color: var(--portal-primary);
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+/* Supervisor & Details */
+.supervisor-card {
+    background: white;
+    border-radius: 18px;
+    border: 1px solid var(--portal-border);
+    padding: 30px;
+    margin-bottom: 25px;
+    position: relative;
+    padding-top: 40px;
+}
+
+.supervisor-card.primary {
+    border-color: rgba(128, 0, 0, 0.2);
+    box-shadow: 0 8px 20px rgba(128, 0, 0, 0.04);
+}
+
+.card-tag {
+    position: absolute;
+    top: -1px;
+    left: 20px;
+    padding: 6px 16px;
+    background: var(--portal-primary);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 0 0 10px 10px;
+    letter-spacing: 0.5px;
+}
+
+.card-tag.secondary {
+    background: #636e72;
+}
+
+.abstract-wrapper {
+    position: relative;
+}
+
+.abstract-textarea {
+    min-height: 250px !important;
+}
+
+.ai-hint {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--portal-primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Review Summary */
+.review-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    background: #fdfdfd;
+    padding: 30px;
+    border-radius: 18px;
+    border: 1px solid var(--portal-border);
+}
+
+.review-group {
+    flex: 1 1 300px;
+    margin-bottom: 10px;
+}
+
+.review-group.full-width {
+    flex: 1 1 100%;
+}
+
+.review-group h3 {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.review-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    gap: 20px;
+}
+
+.review-item span {
+    color: var(--portal-text-light);
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.review-item strong {
+    color: var(--portal-text);
+    text-align: right;
+}
+
+.text-wrap {
+    word-break: break-word;
+    white-space: pre-wrap;
+    text-align: left !important;
+}
+
+.review-sub-list {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0;
+    font-size: 0.85rem;
+}
+
+.final-agreement {
+    margin-top: 30px;
+    padding: 20px;
+    background: var(--portal-primary-light);
+    border-radius: 14px;
+    border: 1px solid rgba(128, 0, 0, 0.1);
+}
+
+/* Custom Checkbox */
+.checkbox-container {
+    display: flex;
+    gap: 15px;
+    cursor: pointer;
+    user-select: none;
+    align-items: flex-start;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    min-width: 24px;
+    height: 24px;
+    background-color: white;
+    border: 2px solid var(--portal-border);
+    border-radius: 6px;
+    position: relative;
+    margin-top: 2px;
+    transition: all 0.2s;
+}
+
+.checkbox-container:hover input~.checkmark {
+    border-color: var(--portal-primary);
+}
+
+.checkbox-container input:checked~.checkmark {
+    background-color: var(--portal-primary);
+    border-color: var(--portal-primary);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-container input:checked~.checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    left: 8px;
+    top: 4px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+
+.label-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--portal-text);
+    font-weight: 500;
+}
+
+/* Portal Buttons */
+.form-footer {
+    padding: 30px 40px;
+    background: #fdfdfd;
+    border-top: 1px solid var(--portal-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.btn-primary,
+.btn-submit,
+.btn-ghost,
+.btn-add-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 10px 22px;
+    height: 44px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--portal-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(128, 0, 0, 0.15);
+}
+
+.btn-primary:hover {
+    background: var(--portal-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(128, 0, 0, 0.25);
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, var(--portal-primary) 0%, var(--portal-gold) 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(128, 0, 0, 0.2);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(128, 0, 0, 0.3);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--portal-text-light);
+    border: 2px solid var(--portal-border);
+}
+
+.btn-ghost:hover {
+    background: var(--portal-primary-light);
+    border-color: var(--portal-primary);
+    color: var(--portal-primary);
+}
+
+.btn-add-secondary {
+    background: #fff;
+    color: var(--portal-primary);
+    border: 2px solid var(--portal-primary);
+    padding: 8px 18px;
+    font-size: 0.9rem;
+}
+
+.btn-add-secondary:hover {
+    background: var(--portal-primary-light);
+    transform: translateY(-2px);
+}
+
+/* Responsive portal design */
+@media (max-width: 1100px) {
+    .portal-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-sidebar {
+        position: static;
+        top: 0;
+    }
+
+    .sidebar-steps {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 15px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-step {
+        flex: 0 0 auto;
+        padding: 10px 15px;
+    }
+
+    .sidebar-help {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .portal-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 25px;
+    }
+
+    .hero-status {
+        margin-top: 15px;
+    }
+
+    .form-section {
+        padding: 25px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-footer {
+        flex-direction: column-reverse;
+        padding: 20px;
+    }
+
+    .btn-primary,
+    .btn-submit,
+    .btn-ghost {
+        width: 100%;
+        justify-content: center;
+    }
+}

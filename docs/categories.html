@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Researches & Theses - TCU Library</title>
+    <!-- Fonts & CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/categories.css?v=2.0">
+    <link rel="stylesheet" href="assets/css/mobile.css">
+    <link rel="icon" type="image/png" href="assets/images/tcu_official_logo.png">
+    <link rel="stylesheet" href="assets/css/fontawesome/css/all.min.css">
+    <style>
+        .demo-bar {
+            background: linear-gradient(90deg, #400000 0%, #800000 50%, #500000 100%);
+            color: #fff;
+            padding: 8px 16px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100000;
+            border-bottom: 2px solid #C5B358;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .demo-bar-badge {
+            background: #C5B358;
+            color: #400000;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+        .dept-btn {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dept-btn:hover {
+            border-color: #800000;
+            color: #800000;
+        }
+        .dept-btn.active {
+            background: #800000;
+            border-color: #800000;
+            color: #fff;
+        }
+        .dept-badge {
+            background: rgba(0,0,0,0.08);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        .dept-btn.active .dept-badge {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+        .thesis-catalog-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: all 0.2s;
+            display: flex;
+            gap: 20px;
+        }
+        .thesis-catalog-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border-color: #cbd5e1;
+        }
+        .dept-spine {
+            width: 8px;
+            border-radius: 4px;
+            background: #800000;
+            flex-shrink: 0;
+        }
+        .spine-cict { background: #0284c7; }
+        .spine-cas  { background: #7c3aed; }
+        .spine-cba  { background: #16a34a; }
+        .spine-ced  { background: #ea580c; }
+        .spine-coe  { background: #dc2626; }
+        .spine-ccj  { background: #475569; }
+        .spine-gs   { background: #b45309; }
+    </style>
+</head>
+<body style="background: #f8fafc; font-family: 'Atkinson Hyperlegible', sans-serif;">
+
+    <!-- Top Live Demo Bar -->
+    <div class="demo-bar">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span class="demo-bar-badge">Live Demo</span>
+            <span>TCU Thesis Library Catalog</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <a href="index.html" style="color:#fff; text-decoration:none;"><i class="fas fa-home"></i> Landing</a>
+            <a href="admin_preview.html" style="color:#fff; text-decoration:none;"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+            <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" style="background:#238636; color:#fff; padding:4px 10px; border-radius:6px; font-weight:600; text-decoration:none; font-size:12px;">
+                <i class="fas fa-terminal"></i> Open in Codespaces
+            </a>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 24px;">
+        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <a href="index.html" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
+                <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%;">
+                <h1 style="font-size:1.2rem; color:#800000; margin:0;">TCU Theses Library</h1>
+            </a>
+            <nav class="main-nav">
+                <ul style="display:flex; gap:20px; list-style:none; margin:0; padding:0;">
+                    <li><a href="index.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Home</a></li>
+                    <li><a href="categories.html" class="nav-link active" style="text-decoration:none; color:#800000; font-weight:700;">Categories</a></li>
+                    <li><a href="admin_preview.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Admin Dashboard</a></li>
+                    <li><a href="about.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">About</a></li>
+                </ul>
+            </nav>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="demo-user-role-label" style="font-size:12px; font-weight:600; color:#800000; background:rgba(128,0,0,0.08); padding:4px 8px; border-radius:8px;"></span>
+                <button class="btn btn-outline btn-trigger-login" style="padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer;">
+                    <i class="fas fa-user-circle"></i> Demo Login
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main style="max-width:1200px; margin:30px auto; padding:0 20px;">
+        
+        <!-- Search & Control Header -->
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; margin-bottom:24px; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
+            <div style="margin-bottom:20px;">
+                <h2 style="font-size:1.6rem; color:#1e293b; margin:0 0 6px 0;">University Digital Repository</h2>
+                <p style="color:#64748b; font-size:14px; margin:0;">Search through approved dissertations, capstones, and undergraduate research papers.</p>
+            </div>
+
+            <!-- Instant Search Input -->
+            <div style="position:relative; margin-bottom:20px;">
+                <i class="fas fa-search" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:16px;"></i>
+                <input type="text" id="liveSearchInput" placeholder="Instant search by title, keyword, author, or specialization..." 
+                    style="width:100%; box-sizing:border-box; padding:14px 44px; border:2px solid #e2e8f0; border-radius:10px; font-size:15px; outline:none; transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='#800000';" onblur="this.style.borderColor='#e2e8f0';">
+                <button id="clearSearchBtn" onclick="clearSearch()" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; display:none; font-size:16px;">&times;</button>
+            </div>
+
+            <!-- Filter Controls -->
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; width:100px;">Colleges:</span>
+                    <button class="dept-btn active" data-dept="ALL" onclick="filterDept('ALL')">All <span class="dept-badge" id="count-ALL">8</span></button>
+                    <button class="dept-btn" data-dept="CICT" onclick="filterDept('CICT')">CICT <span class="dept-badge" id="count-CICT">2</span></button>
+                    <button class="dept-btn" data-dept="CAS" onclick="filterDept('CAS')">CAS <span class="dept-badge" id="count-CAS">1</span></button>
+                    <button class="dept-btn" data-dept="CBA" onclick="filterDept('CBA')">CBA <span class="dept-badge" id="count-CBA">1</span></button>
+                    <button class="dept-btn" data-dept="CED" onclick="filterDept('CED')">CED <span class="dept-badge" id="count-CED">1</span></button>
+                    <button class="dept-btn" data-dept="COE" onclick="filterDept('COE')">COE <span class="dept-badge" id="count-COE">1</span></button>
+                    <button class="dept-btn" data-dept="CCJ" onclick="filterDept('CCJ')">CCJ <span class="dept-badge" id="count-CCJ">1</span></button>
+                    <button class="dept-btn" data-dept="GS" onclick="filterDept('GS')">GS <span class="dept-badge" id="count-GS">1</span></button>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap; border-top:1px solid #f1f5f9; padding-top:12px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:13px; color:#64748b; font-weight:600;">Category:</span>
+                        <select id="categoryFilter" onchange="applyFilters()" style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;">
+                            <option value="ALL">All Categories</option>
+                            <option value="Undergraduate">Undergraduate (7)</option>
+                            <option value="Graduate">Graduate (1)</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:13px; color:#64748b; font-weight:600;">Publication Year:</span>
+                        <select id="yearFilter" onchange="applyFilters()" style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;">
+                            <option value="ALL">All Years</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-left:auto; font-size:13px; color:#64748b;">
+                        Showing <strong id="resultsCount" style="color:#800000;">8</strong> research studies
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theses Catalog List -->
+        <div id="catalogListContainer">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyCatalogState" style="display:none; text-align:center; padding:60px 20px; background:#fff; border-radius:12px; border:1px solid #e2e8f0;">
+            <i class="fas fa-search" style="font-size:48px; color:#cbd5e1; margin-bottom:16px;"></i>
+            <h3 style="color:#1e293b; margin-bottom:8px;">No matching research papers found</h3>
+            <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Try adjusting your keywords or clearing the active filters.</p>
+            <button onclick="resetAllFilters()" style="background:#800000; color:#fff; border:none; padding:8px 20px; border-radius:6px; cursor:pointer; font-weight:600;">
+                Reset All Filters
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="assets/js/demo.js"></script>
+    <script>
+        let currentDept = 'ALL';
+
+        function filterDept(dept) {
+            currentDept = dept;
+            document.querySelectorAll('.dept-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.dept === dept);
+            });
+            applyFilters();
+        }
+
+        function clearSearch() {
+            document.getElementById('liveSearchInput').value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            applyFilters();
+        }
+
+        function resetAllFilters() {
+            currentDept = 'ALL';
+            document.querySelectorAll('.dept-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.dept === 'ALL');
+            });
+            document.getElementById('liveSearchInput').value = '';
+            document.getElementById('categoryFilter').value = 'ALL';
+            document.getElementById('yearFilter').value = 'ALL';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = (document.getElementById('liveSearchInput').value || '').trim().toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const year = document.getElementById('yearFilter').value;
+
+            document.getElementById('clearSearchBtn').style.display = query ? 'block' : 'none';
+
+            const filtered = SAMPLE_THESES.filter(t => {
+                if (currentDept !== 'ALL' && t.department !== currentDept) return false;
+                if (category !== 'ALL' && t.category !== category) return false;
+                if (year !== 'ALL' && t.year.toString() !== year) return false;
+                if (query) {
+                    const haystack = (t.title + ' ' + t.author + ' ' + t.abstract + ' ' + t.keywords.join(' ') + ' ' + t.specialization + ' ' + t.course).toLowerCase();
+                    if (!haystack.includes(query)) return false;
+                }
+                return true;
+            });
+
+            renderTheses(filtered);
+        }
+
+        function renderTheses(theses) {
+            const container = document.getElementById('catalogListContainer');
+            const empty = document.getElementById('emptyCatalogState');
+            const counter = document.getElementById('resultsCount');
+
+            counter.textContent = theses.length;
+
+            if (theses.length === 0) {
+                container.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            container.innerHTML = theses.map(t => {
+                const spineClass = 'spine-' + t.dept_code;
+                return `
+                <div class="thesis-catalog-card" onclick="window.location.href='thesis_detail.html?id=${t.id}'" style="cursor:pointer;">
+                    <div class="dept-spine ${spineClass}"></div>
+                    <div style="flex:1;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:12px;">
+                            <span style="font-size:12px; font-weight:700; color:#800000; background:rgba(128,0,0,0.08); padding:3px 10px; border-radius:12px; text-transform:uppercase;">
+                                ${t.dept_name}
+                            </span>
+                            <span style="font-size:13px; font-weight:700; color:#475569;"><i class="far fa-calendar-alt"></i> ${t.year}</span>
+                        </div>
+                        <h3 style="font-size:1.25rem; color:#1e293b; margin:0 0 10px 0; line-height:1.4;">
+                            <a href="thesis_detail.html?id=${t.id}" style="color:inherit; text-decoration:none;" onmouseover="this.style.color='#800000'" onmouseout="this.style.color='#1e293b'">${t.title}</a>
+                        </h3>
+                        <div style="display:flex; flex-wrap:wrap; gap:15px; font-size:13px; color:#64748b; margin-bottom:12px;">
+                            <span><i class="fas fa-user-edit" style="color:#800000;"></i> <strong>Lead Author:</strong> ${t.author}</span>
+                            ${t.coauthors.length ? `<span><i class="fas fa-user-friends"></i> <strong>Co-Authors:</strong> ${t.coauthors.join(', ')}</span>` : ''}
+                            <span><i class="fas fa-graduation-cap"></i> ${t.course}</span>
+                        </div>
+                        <p style="font-size:14px; color:#475569; line-height:1.6; margin:0 0 16px 0;">
+                            ${t.abstract}
+                        </p>
+                        <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; border-top:1px solid #f1f5f9; padding-top:14px;">
+                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                ${t.keywords.map(k => `<span style="font-size:11px; background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:4px;"><i class="fas fa-tag" style="font-size:9px; color:#94a3b8;"></i> ${k}</span>`).join('')}
+                            </div>
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <span style="font-size:12px; color:#94a3b8;"><i class="fas fa-barcode"></i> ${t.lc_classification}</span>
+                                <span style="color:#800000; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                                    View Full Record <i class="fas fa-arrow-right"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Read URL search params
+            const params = new URLSearchParams(window.location.search);
+            const initialSearch = params.get('search');
+            const initialDept = params.get('dept');
+
+            if (initialSearch) {
+                document.getElementById('liveSearchInput').value = initialSearch;
+            }
+            if (initialDept) {
+                currentDept = initialDept.toUpperCase();
+                document.querySelectorAll('.dept-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.dept === currentDept);
+                });
+            }
+
+            document.getElementById('liveSearchInput').addEventListener('input', applyFilters);
+            applyFilters();
+        });
+    </script>
+</body>
+</html>

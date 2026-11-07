@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: tcu-thesis-library
+    runtime: python
+    buildCommand: "pip install -r requirements.txt && python seed_demo_data.py && python manage.py collectstatic --noinput"
+    startCommand: "gunicorn thesis_site.wsgi:application"
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "True"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com,localhost,127.0.0.1"
+      - key: PYTHON_VERSION
+        value: "3.11.9"

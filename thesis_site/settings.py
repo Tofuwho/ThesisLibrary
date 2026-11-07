@@ -48,22 +48,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# Default to False for production safety. Set DJANGO_DEBUG=True for local development.
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+# Default to True for development & live demo convenience. In production, set DJANGO_DEBUG=False.
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
-if not SECRET_KEY and not DEBUG:
-    from django.core.exceptions import ImproperlyConfigured
-    raise ImproperlyConfigured("The SECRET_KEY environment variable is not set and is required in production.")
-elif not SECRET_KEY:
-    SECRET_KEY = 'django-insecure-dev-fallback-key-replace-in-production'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-fallback-key-thesis-library-2026')
 
-# Trusted Origins for Local LAN/Offline environments
+# Trusted Origins for Local LAN/Offline/Codespaces/Cloud environments
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost',
+    'http://localhost:8000',
     'http://127.0.0.1',
+    'http://127.0.0.1:8000',
+    'https://*.github.dev',
+    'https://*.app.github.dev',
+    'https://*.onrender.com',
 ]
 
 # Move host detection here so it can be used for both ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS
@@ -80,10 +79,13 @@ def get_local_ip():
 
 local_ip = get_local_ip()
 
-if DEBUG:
-    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+allowed_hosts_env = os.environ.get('ALLOWED_HOSTS')
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
+elif DEBUG:
+    ALLOWED_HOSTS = ['*']
 else:
-    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.github.dev', '.app.github.dev', '.onrender.com']
 
 if local_ip and local_ip not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(local_ip)
@@ -149,16 +151,19 @@ WSGI_APPLICATION = 'thesis_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-if os.getenv("GITHUB_ACTIONS") == "true":
-    # 🔹 Running in GitHub Actions → MySQL 8.0 (from workflow)
+db_engine = os.environ.get('DB_ENGINE', '').lower()
+db_name = os.environ.get('DB_NAME') or (os.getenv('MYSQL_DATABASE') if os.getenv("GITHUB_ACTIONS") == "true" else None)
+
+if os.getenv("GITHUB_ACTIONS") == "true" and os.getenv('MYSQL_DATABASE'):
+    # Running in GitHub Actions → MySQL 8.0 (from workflow)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': os.getenv('MYSQL_DATABASE'),
-            'USER': os.getenv('MYSQL_USER'),
-            'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-            'HOST': os.getenv('MYSQL_HOST'),
-            'PORT': os.getenv('MYSQL_PORT'),
+            'USER': os.getenv('MYSQL_USER', 'root'),
+            'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
+            'HOST': os.getenv('MYSQL_HOST', '127.0.0.1'),
+            'PORT': os.getenv('MYSQL_PORT', '3306'),
             'CONN_MAX_AGE': 600,  # Close connection after 10 minutes of inactivity
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -166,21 +171,29 @@ if os.getenv("GITHUB_ACTIONS") == "true":
             },
         }
     }
-else:
-    # 🔹 Running locally → MariaDB (XAMPP)
+elif db_name and db_engine != 'sqlite':
+    # Running locally or production → MariaDB / MySQL (XAMPP or external DB)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ.get('DB_NAME'),
-            'USER': os.environ.get('DB_USER'),
-            'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST'),
-            'PORT': os.environ.get('DB_PORT'),
+            'NAME': db_name,
+            'USER': os.environ.get('DB_USER', 'root'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+            'PORT': os.environ.get('DB_PORT', '3306'),
             'CONN_MAX_AGE': 0,  # Disable persistent connections locally to avoid stale connections
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
                 'isolation_level': None,
             },
+        }
+    }
+else:
+    # Default fallback: SQLite for instant plug-and-play live demo, GitHub Codespaces, or quick evaluation
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
@@ -191,9 +204,6 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
-
-
-
 
 
 # Password validation
