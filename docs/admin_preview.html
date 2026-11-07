@@ -3,84 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard Preview - TCU Library</title>
+    <title>Archivist & Moderation Portal - TCU Theses Library</title>
     <!-- Fonts & CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/admin_dashboard.css">
     <link rel="stylesheet" href="assets/css/mobile.css">
     <link rel="icon" type="image/png" href="assets/images/tcu_official_logo.png">
     <link rel="stylesheet" href="assets/css/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/demo-nav.css">
     <!-- Chart.js -->
     <script src="assets/js/chart.js"></script>
-    <link rel="stylesheet" href="assets/css/demo-nav.css">
     <style>
-        .top-nav-wrapper {
-            position: sticky;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100000;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        }
-        .top-nav-wrapper .demo-bar {
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            z-index: 2;
-            margin: 0;
-            box-shadow: none;
-            background: linear-gradient(90deg, #400000 0%, #800000 50%, #500000 100%);
-            color: #fff;
-            padding: 8px 16px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #C5B358;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .top-nav-wrapper header {
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            z-index: 1 !important;
-            width: 100% !important;
-            margin: 0 !important;
-        }
-        main, .main-content {
-            margin-top: 0 !important;
-        }
-        .demo-bar-badge {
-            background: #C5B358;
-            color: #400000;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            font-size: 11px;
-        }
         .admin-stat-card {
             background: #fff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
             display: flex;
             align-items: center;
             gap: 18px;
         }
         .admin-stat-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 20px;
         }
         .admin-table {
             width: 100%;
@@ -91,106 +45,134 @@
             text-align: left;
             padding: 12px 16px;
             background: #f8fafc;
-            color: #64748b;
+            color: #475569;
             font-weight: 700;
             border-bottom: 2px solid #e2e8f0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .admin-table td {
             padding: 14px 16px;
             border-bottom: 1px solid #f1f5f9;
             color: #334155;
+            vertical-align: middle;
         }
     </style>
 </head>
-<body style="background: #f1f5f9; font-family: 'Atkinson Hyperlegible', sans-serif;">
+<body style="background: #f8fafc; font-family: var(--lib-font-sans); color: #1e293b;">
 
     <!-- Sticky Unified Navigation Wrapper -->
     <div class="top-nav-wrapper">
-        <!-- Top Live Demo Bar -->
+        <!-- Institutional Demonstration Ribbon -->
         <div class="demo-bar">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span class="demo-bar-badge">Live Demo</span>
-                <span>TCU Thesis Repository - Admin Analytics Portal</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="demo-bar-badge"><i class="fas fa-university"></i> TCU-IR ARCHIVE</span>
+                <span style="font-size:12px; color:rgba(255,255,255,0.9);">Digital Institutional Theses & Dissertations Repository • Archivist & Cataloging Portal</span>
             </div>
-            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                <a href="index.html" style="color:#fff; text-decoration:none;"><i class="fas fa-home"></i> Home</a>
-                <a href="categories.html" style="color:#fff; text-decoration:none;"><i class="fas fa-book"></i> Catalog</a>
-                <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" style="background:#238636; color:#fff; padding:4px 10px; border-radius:6px; font-weight:600; text-decoration:none; font-size:12px;">
-                    <i class="fas fa-terminal"></i> Open Full Backend in Codespaces
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:11.5px; color:var(--tcu-gold); font-weight:700;"><i class="fas fa-id-badge"></i> Persona:</span>
+                    <select class="demo-role-select" onchange="setDemoRole(this.value)">
+                        <option value="librarian">Chief Librarian (Maria Santos, RL)</option>
+                        <option value="admin">System Administrator (TCU Library)</option>
+                        <option value="professor">Faculty Adviser (Dr. Ramon Del Rosario)</option>
+                        <option value="student">Student Author (Juan Dela Cruz)</option>
+                        <option value="guest">Guest Researcher</option>
+                    </select>
+                </div>
+                <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" class="demo-codespaces-btn">
+                    <i class="fas fa-server"></i> Run Full Backend (Codespaces)
                 </a>
             </div>
         </div>
 
         <!-- Header -->
-        <header style="background:#800000; color:#fff; padding:16px 24px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-            <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%; border:2px solid #C5B358;">
+        <header style="background:linear-gradient(135deg, #400000 0%, #600000 100%); color:#fff; padding:16px 28px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+            <div style="max-width:1300px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Seal" style="width:42px; height:42px; border-radius:50%; border:2px solid var(--tcu-gold);">
                     <div>
-                        <h2 style="font-size:1.15rem; margin:0; color:#fff;">TCU Library Archival Administration</h2>
-                        <span style="font-size:11px; color:#C5B358; text-transform:uppercase; font-weight:700;">Institutional Repository Oversight</span>
+                        <h2 style="font-family:var(--lib-font-serif); font-size:1.25rem; margin:0; color:#fff; font-weight:700;">Taguig City University Library Archival Administration</h2>
+                        <span style="font-size:11px; color:var(--tcu-gold); text-transform:uppercase; font-weight:700; letter-spacing:0.8px;">Cataloging, LCC Classification & Metadata Moderation</span>
                     </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:16px;">
-                    <span style="font-size:13px; color:#fff;"><i class="fas fa-shield-alt"></i> Signed in as: <strong>Admin (TCU Staff)</strong></span>
-                    <a href="index.html" style="background:rgba(255,255,255,0.2); color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; text-decoration:none;">Exit Admin</a>
+                    <span class="demo-user-role-label" style="font-size:12.5px; color:#fff; background:rgba(255,255,255,0.15); padding:4px 10px; border-radius:6px; font-weight:600;"></span>
+                    <a href="index.html" style="background:rgba(255,255,255,0.2); color:#fff; padding:6px 14px; border-radius:6px; font-size:12px; text-decoration:none; font-weight:700;">
+                        <i class="fas fa-door-open"></i> Public OPAC
+                    </a>
                 </div>
             </div>
         </header>
     </div>
 
-    <main style="max-width:1200px; margin:30px auto; padding:0 20px;">
+    <!-- Breadcrumb -->
+    <div style="background:#fff; border-bottom:1px solid #e2e8f0; padding:10px 0;">
+        <div style="max-width:1300px; margin:0 auto; padding:0 24px; font-size:12px; color:#64748b; display:flex; align-items:center; gap:8px;">
+            <a href="index.html" style="color:var(--tcu-maroon); text-decoration:none; font-weight:600;"><i class="fas fa-home"></i> Institutional Repository</a>
+            <span>/</span>
+            <span>Archivist Workspace</span>
+            <span>/</span>
+            <strong style="color:#1e293b;">Catalog Moderation & Analytics</strong>
+        </div>
+    </div>
+
+    <main style="max-width:1300px; margin:28px auto; padding:0 24px;">
         
         <!-- Summary Stats Grid -->
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:20px; margin-bottom:30px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:20px; margin-bottom:28px;">
             <div class="admin-stat-card">
-                <div class="admin-stat-icon" style="background:#eff6ff; color:#2563eb;">
-                    <i class="fas fa-book"></i>
+                <div class="admin-stat-icon" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;">
+                    <i class="fas fa-check-double"></i>
                 </div>
                 <div>
-                    <span style="font-size:12px; color:#64748b; font-weight:700; text-transform:uppercase;">Approved Theses</span>
-                    <h3 style="font-size:1.8rem; margin:2px 0 0 0; color:#1e293b;">8</h3>
+                    <span style="font-size:11.5px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Indexed & Approved</span>
+                    <h3 style="font-family:var(--lib-font-mono); font-size:1.85rem; margin:2px 0 0 0; color:#0f172a;">8 Studies</h3>
                 </div>
             </div>
 
             <div class="admin-stat-card">
-                <div class="admin-stat-icon" style="background:#fffbeb; color:#d97706;">
-                    <i class="fas fa-clock"></i>
+                <div class="admin-stat-icon" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a;">
+                    <i class="fas fa-hourglass-half"></i>
                 </div>
                 <div>
-                    <span style="font-size:12px; color:#64748b; font-weight:700; text-transform:uppercase;">Pending Review</span>
-                    <h3 style="font-size:1.8rem; margin:2px 0 0 0; color:#1e293b;">4</h3>
+                    <span style="font-size:11.5px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Pending LCC Review</span>
+                    <h3 style="font-family:var(--lib-font-mono); font-size:1.85rem; margin:2px 0 0 0; color:#0f172a;">3 Submissions</h3>
                 </div>
             </div>
 
             <div class="admin-stat-card">
-                <div class="admin-stat-icon" style="background:#ecfdf5; color:#059669;">
+                <div class="admin-stat-icon" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">
                     <i class="fas fa-university"></i>
                 </div>
                 <div>
-                    <span style="font-size:12px; color:#64748b; font-weight:700; text-transform:uppercase;">Active Colleges</span>
-                    <h3 style="font-size:1.8rem; margin:2px 0 0 0; color:#1e293b;">8</h3>
+                    <span style="font-size:11.5px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Academic Faculties</span>
+                    <h3 style="font-family:var(--lib-font-mono); font-size:1.85rem; margin:2px 0 0 0; color:#0f172a;">8 Colleges</h3>
                 </div>
             </div>
 
             <div class="admin-stat-card">
-                <div class="admin-stat-icon" style="background:#fdf2f8; color:#db2777;">
-                    <i class="fas fa-users"></i>
+                <div class="admin-stat-icon" style="background:#faf5ff; color:#7e22ce; border:1px solid #e9d5ff;">
+                    <i class="fas fa-shield-alt"></i>
                 </div>
                 <div>
-                    <span style="font-size:12px; color:#64748b; font-weight:700; text-transform:uppercase;">Registered Researchers</span>
-                    <h3 style="font-size:1.8rem; margin:2px 0 0 0; color:#1e293b;">380</h3>
+                    <span style="font-size:11.5px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Anti-Leak Protections</span>
+                    <h3 style="font-family:var(--lib-font-mono); font-size:1.85rem; margin:2px 0 0 0; color:#0f172a;">1,282 Blocked</h3>
                 </div>
             </div>
         </div>
 
         <!-- Analytical Charts Grid -->
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; margin-bottom:30px;" id="chartsContainer">
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; margin-bottom:28px;">
             <!-- Submissions by Department Chart -->
-            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
+            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:24px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                    <h3 style="font-size:1.1rem; color:#1e293b; margin:0;">Research Distribution by College</h3>
-                    <span style="font-size:12px; color:#64748b;">Academic Year 2024–2025</span>
+                    <div>
+                        <h3 style="font-family:var(--lib-font-serif); font-size:1.25rem; color:#0f172a; margin:0 0 2px 0;">Research Distribution by Collegiate Faculty</h3>
+                        <span style="font-size:12px; color:#64748b;">Academic Year 2024–2025 Institutional Holdings</span>
+                    </div>
+                    <span class="accession-pill"><i class="fas fa-chart-bar"></i> LCC Holdings</span>
                 </div>
                 <div style="height:280px;">
                     <canvas id="deptChart"></canvas>
@@ -198,10 +180,12 @@
             </div>
 
             <!-- Approval Status Ratio -->
-            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
+            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:24px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                    <h3 style="font-size:1.1rem; color:#1e293b; margin:0;">Review Ratio</h3>
-                    <span style="font-size:12px; color:#64748b;">All Time</span>
+                    <div>
+                        <h3 style="font-family:var(--lib-font-serif); font-size:1.25rem; color:#0f172a; margin:0 0 2px 0;">Accession Ratios</h3>
+                        <span style="font-size:12px; color:#64748b;">Moderation Status</span>
+                    </div>
                 </div>
                 <div style="height:280px; display:flex; align-items:center; justify-content:center;">
                     <canvas id="statusChart"></canvas>
@@ -209,15 +193,19 @@
             </div>
         </div>
 
-        <!-- Pending Submissions Queue -->
-        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.03); margin-bottom:30px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <!-- Pending Manuscripts Moderation Queue -->
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:24px; box-shadow:0 1px 4px rgba(0,0,0,0.02); margin-bottom:30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
                 <div>
-                    <h3 style="font-size:1.15rem; color:#1e293b; margin:0 0 4px 0;">Manuscript Moderation Queue</h3>
-                    <p style="font-size:13px; color:#64748b; margin:0;">Incoming student submissions awaiting library review and classification.</p>
+                    <h3 style="font-family:var(--lib-font-serif); font-size:1.35rem; color:#0f172a; margin:0 0 4px 0;">
+                        Manuscript Moderation & Accession Queue
+                    </h3>
+                    <p style="font-size:13px; color:#64748b; margin:0;">
+                        Verify Dublin Core descriptors, assign Library of Congress Classification (LCC) numbers, and approve for public cataloging.
+                    </p>
                 </div>
-                <span style="font-size:12px; background:#fffbeb; color:#b45309; border:1px solid #fde68a; padding:4px 10px; border-radius:12px; font-weight:700;">
-                    4 Awaiting Endorsement
+                <span style="font-size:12px; background:#fffbeb; color:#b45309; border:1px solid #fde68a; padding:4px 10px; border-radius:6px; font-weight:700;">
+                    3 Pending Verification
                 </span>
             </div>
 
@@ -225,46 +213,82 @@
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Thesis Title</th>
-                            <th>Lead Author</th>
-                            <th>College</th>
-                            <th>Date Submitted</th>
-                            <th>Actions</th>
+                            <th>Accession Slip</th>
+                            <th>Thesis / Capstone Title</th>
+                            <th>Lead Author & Faculty Adviser</th>
+                            <th>Collegiate Unit</th>
+                            <th>Suggested LCC Classification</th>
+                            <th>Verification Actions</th>
                         </tr>
                     </thead>
                     <tbody id="submissionQueue">
                         <tr>
-                            <td><strong>#SUB-104</strong></td>
-                            <td>Blockchain-Enabled Micro-Credential Verification for State Colleges</td>
-                            <td>Kenneth Bryan Ramos</td>
+                            <td><span class="accession-pill">TCU-2025-P09</span></td>
+                            <td>
+                                <strong>Blockchain-Enabled Micro-Credential Verification for State Colleges</strong>
+                                <div style="font-size:11.5px; color:#64748b; margin-top:2px;">Submitted: May 14, 2025 • 148 leaves</div>
+                            </td>
+                            <td>
+                                Ramos, Kenneth Bryan P.
+                                <div style="font-size:11.5px; color:#64748b;">Adviser: Prof. Manuel Bautista</div>
+                            </td>
                             <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;">CICT</span></td>
-                            <td>May 14, 2025</td>
+                            <td><span class="call-number-badge">QA76.9.B56 R36 2025</span></td>
                             <td>
-                                <button onclick="handleApprove(this, 'SUB-104')" style="background:#16a34a; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:600;"><i class="fas fa-check"></i> Approve</button>
-                                <button onclick="handleReject(this, 'SUB-104')" style="background:#ef4444; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:600;"><i class="fas fa-times"></i> Reject</button>
+                                <div style="display:flex; gap:6px;">
+                                    <button onclick="handleApprove(this, 'TCU-2025-P09')" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:11.5px; cursor:pointer; font-weight:700;">
+                                        <i class="fas fa-check"></i> Catalog
+                                    </button>
+                                    <button onclick="handleReject(this, 'TCU-2025-P09')" style="background:#ef4444; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-size:11.5px; cursor:pointer; font-weight:700;">
+                                        <i class="fas fa-undo"></i> Return
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <tr>
-                            <td><strong>#SUB-105</strong></td>
-                            <td>Comparative Nutritional Profile of Fortified Hydroponic Microgreens</td>
-                            <td>Stephanie May Alonzo</td>
+                            <td><span class="accession-pill">TCU-2025-P10</span></td>
+                            <td>
+                                <strong>Comparative Nutritional Profile of Fortified Hydroponic Microgreens</strong>
+                                <div style="font-size:11.5px; color:#64748b; margin-top:2px;">Submitted: May 12, 2025 • 122 leaves</div>
+                            </td>
+                            <td>
+                                Alonzo, Stephanie May R.
+                                <div style="font-size:11.5px; color:#64748b;">Adviser: Dr. Elena Garcia</div>
+                            </td>
                             <td><span style="background:#f3e8ff; color:#7e22ce; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;">CAS</span></td>
-                            <td>May 12, 2025</td>
+                            <td><span class="call-number-badge">SB126.5 .A46 2025</span></td>
                             <td>
-                                <button onclick="handleApprove(this, 'SUB-105')" style="background:#16a34a; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:600;"><i class="fas fa-check"></i> Approve</button>
-                                <button onclick="handleReject(this, 'SUB-105')" style="background:#ef4444; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:600;"><i class="fas fa-times"></i> Reject</button>
+                                <div style="display:flex; gap:6px;">
+                                    <button onclick="handleApprove(this, 'TCU-2025-P10')" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:11.5px; cursor:pointer; font-weight:700;">
+                                        <i class="fas fa-check"></i> Catalog
+                                    </button>
+                                    <button onclick="handleReject(this, 'TCU-2025-P10')" style="background:#ef4444; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-size:11.5px; cursor:pointer; font-weight:700;">
+                                        <i class="fas fa-undo"></i> Return
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <tr>
-                            <td><strong>#SUB-106</strong></td>
-                            <td>Impact of AI Writing Assistants on Critical Argumentation in Senior High Classes</td>
-                            <td>Gerald Joseph Cortez</td>
-                            <td><span style="background:#ffedd5; color:#c2410c; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;">CED</span></td>
-                            <td>May 09, 2025</td>
+                            <td><span class="accession-pill">TCU-2025-P11</span></td>
                             <td>
-                                <button onclick="handleApprove(this, 'SUB-106')" style="background:#16a34a; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:600;"><i class="fas fa-check"></i> Approve</button>
-                                <button onclick="handleReject(this, 'SUB-106')" style="background:#ef4444; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:600;"><i class="fas fa-times"></i> Reject</button>
+                                <strong>Impact of Generative AI Writing Assistants on Critical Argumentation in Secondary Schools</strong>
+                                <div style="font-size:11.5px; color:#64748b; margin-top:2px;">Submitted: May 09, 2025 • 164 leaves</div>
+                            </td>
+                            <td>
+                                Cortez, Gerald Joseph B.
+                                <div style="font-size:11.5px; color:#64748b;">Adviser: Dr. Cristina Valenzuela</div>
+                            </td>
+                            <td><span style="background:#ffedd5; color:#c2410c; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;">CED</span></td>
+                            <td><span class="call-number-badge">LB1028.3 .C67 2025</span></td>
+                            <td>
+                                <div style="display:flex; gap:6px;">
+                                    <button onclick="handleApprove(this, 'TCU-2025-P11')" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:11.5px; cursor:pointer; font-weight:700;">
+                                        <i class="fas fa-check"></i> Catalog
+                                    </button>
+                                    <button onclick="handleReject(this, 'TCU-2025-P11')" style="background:#ef4444; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-size:11.5px; cursor:pointer; font-weight:700;">
+                                        <i class="fas fa-undo"></i> Return
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -274,25 +298,68 @@
 
     </main>
 
+    <!-- Academic Library Footer -->
+    <footer class="main-footer" style="background:#1e293b; color:#cbd5e1; padding:48px 0 24px 0; border-top:4px solid var(--tcu-gold); margin-top:60px;">
+        <div style="max-width:1200px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:36px;">
+            <div>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--tcu-gold);">
+                    <div>
+                        <h4 style="color:#fff; font-size:1.1rem; margin:0; font-family:var(--lib-font-serif);">Taguig City University</h4>
+                        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--tcu-gold); display:block;">University Library & Digital Archives</span>
+                    </div>
+                </div>
+                <p style="font-size:13px; line-height:1.7; color:#94a3b8; margin:0;">
+                    Centralized intellectual repository preserving academic research, theses, and capstone dissertations produced by the students and faculty of Taguig City University.
+                </p>
+            </div>
+            <div>
+                <h4 style="color:#fff; font-size:14px; font-weight:700; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px;">Archival Discovery</h4>
+                <ul style="list-style:none; padding:0; margin:0; font-size:13px; line-height:2;">
+                    <li><a href="categories.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-search" style="width:16px;"></i> Browse All Accessions</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Information+and+Communication+Technology" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-laptop-code" style="width:16px;"></i> ICT & Computer Science</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Engineering" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-microchip" style="width:16px;"></i> Engineering Studies</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Education" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-graduation-cap" style="width:16px;"></i> Education & Pedagogy</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="color:#fff; font-size:14px; font-weight:700; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px;">Institutional Standards</h4>
+                <ul style="list-style:none; padding:0; margin:0; font-size:13px; line-height:2;">
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-book" style="width:16px;"></i> Dublin Core Schema</a></li>
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-stamp" style="width:16px;"></i> LCC Classification System</a></li>
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-gavel" style="width:16px;"></i> Republic Act 8293 (IP Code)</a></li>
+                    <li><a href="admin_preview.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-user-shield" style="width:16px;"></i> Archivist Verification Portal</a></li>
+                </ul>
+            </div>
+        </div>
+        <div style="max-width:1200px; margin:32px auto 0 auto; padding:20px 24px 0 24px; border-top:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; font-size:12px; color:#94a3b8;">
+            <div>&copy; 2024 Taguig City University. All rights reserved. University Library & Digital Archives.</div>
+            <div style="display:flex; gap:16px;">
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">Privacy Policy</a>
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">Terms of Archival Use</a>
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">OAI-PMH Documentation</a>
+            </div>
+        </div>
+    </footer>
+
     <!-- Scripts -->
     <script src="assets/js/demo.js"></script>
     <script>
         function handleApprove(btn, id) {
             const row = btn.closest('tr');
             row.style.background = '#f0fdf4';
-            btn.parentElement.innerHTML = '<span style="color:#16a34a; font-weight:700; font-size:12px;"><i class="fas fa-check-circle"></i> Approved & Indexed</span>';
-            showDemoNotification(`Submission ${id} approved and added to catalog!`, 'success');
+            btn.parentElement.innerHTML = '<span style="color:#16a34a; font-weight:700; font-size:12px;"><i class="fas fa-check-circle"></i> Accessioned & Indexed</span>';
+            showDemoNotification(`Manuscript ${id} verified, LCC call number assigned, and accessioned into OPAC.`, 'success');
         }
 
         function handleReject(btn, id) {
             const row = btn.closest('tr');
             row.style.background = '#fef2f2';
-            btn.parentElement.innerHTML = '<span style="color:#ef4444; font-weight:700; font-size:12px;"><i class="fas fa-times-circle"></i> Returned to Student</span>';
-            showDemoNotification(`Submission ${id} returned with revision notes.`, 'info');
+            btn.parentElement.innerHTML = '<span style="color:#ef4444; font-weight:700; font-size:12px;"><i class="fas fa-undo"></i> Returned for Revision</span>';
+            showDemoNotification(`Manuscript ${id} returned to research adviser for revisions.`, 'info');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Render Department Chart
             const deptCtx = document.getElementById('deptChart');
             if (deptCtx) {
                 new Chart(deptCtx, {
@@ -300,12 +367,12 @@
                     data: {
                         labels: ['CICT', 'CAS', 'CBA', 'CED', 'COE', 'CCJ', 'GS'],
                         datasets: [{
-                            label: 'Approved Theses',
+                            label: 'Accessioned Theses',
                             data: [2, 1, 1, 1, 1, 1, 1],
                             backgroundColor: [
                                 '#0284c7', '#7c3aed', '#16a34a', '#ea580c', '#dc2626', '#475569', '#b45309'
                             ],
-                            borderRadius: 6
+                            borderRadius: 4
                         }]
                     },
                     options: {
@@ -324,15 +391,14 @@
                 });
             }
 
-            // Render Status Doughnut Chart
             const statusCtx = document.getElementById('statusChart');
             if (statusCtx) {
                 new Chart(statusCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Approved', 'Pending', 'Rejected'],
+                        labels: ['Cataloged (OPAC)', 'Under Moderation', 'Revisions Required'],
                         datasets: [{
-                            data: [8, 4, 1],
+                            data: [8, 3, 1],
                             backgroundColor: ['#16a34a', '#d97706', '#ef4444'],
                             borderWidth: 2,
                             borderColor: '#fff'
@@ -344,7 +410,7 @@
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                                labels: { boxWidth: 12, padding: 15 }
+                                labels: { boxWidth: 12, padding: 14 }
                             }
                         }
                     }

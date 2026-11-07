@@ -3,258 +3,414 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse Researches & Theses - TCU Library</title>
-    <!-- Fonts & CSS -->
+    <title>Theses & Dissertations Catalog - Taguig City University Library</title>
+    <!-- Google Fonts for Scholarly Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/categories.css?v=2.0">
     <link rel="stylesheet" href="assets/css/mobile.css">
     <link rel="icon" type="image/png" href="assets/images/tcu_official_logo.png">
     <link rel="stylesheet" href="assets/css/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="assets/css/demo-nav.css">
-    <style>
-        .top-nav-wrapper {
-            position: sticky;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100000;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        }
-        .top-nav-wrapper .demo-bar {
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            z-index: 2;
-            margin: 0;
-            box-shadow: none;
-            background: linear-gradient(90deg, #400000 0%, #800000 50%, #500000 100%);
-            color: #fff;
-            padding: 8px 16px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #C5B358;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .top-nav-wrapper .main-header {
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            z-index: 1 !important;
-            width: 100% !important;
-            margin: 0 !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
-            background: #fff !important;
-        }
-        main, .main-content {
-            margin-top: 0 !important;
-        }
-        .demo-bar-badge {
-            background: #C5B358;
-            color: #400000;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            font-size: 11px;
-        }
-        .dept-btn {
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            color: #475569;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .dept-btn:hover {
-            border-color: #800000;
-            color: #800000;
-        }
-        .dept-btn.active {
-            background: #800000;
-            border-color: #800000;
-            color: #fff;
-        }
-        .dept-badge {
-            background: rgba(0,0,0,0.08);
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
-        .dept-btn.active .dept-badge {
-            background: rgba(255,255,255,0.25);
-            color: #fff;
-        }
-        .thesis-catalog-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            transition: all 0.2s;
-            display: flex;
-            gap: 20px;
-        }
-        .thesis-catalog-card:hover {
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-            border-color: #cbd5e1;
-        }
-        .dept-spine {
-            width: 8px;
-            border-radius: 4px;
-            background: #800000;
-            flex-shrink: 0;
-        }
-        .spine-cict { background: #0284c7; }
-        .spine-cas  { background: #7c3aed; }
-        .spine-cba  { background: #16a34a; }
-        .spine-ced  { background: #ea580c; }
-        .spine-coe  { background: #dc2626; }
-        .spine-ccj  { background: #475569; }
-        .spine-gs   { background: #b45309; }
-    </style>
 </head>
-<body style="background: #f8fafc; font-family: 'Atkinson Hyperlegible', sans-serif;">
+<body style="background: #f8fafc; font-family: var(--lib-font-sans); color: #1e293b;">
 
     <!-- Sticky Unified Navigation Wrapper -->
     <div class="top-nav-wrapper">
-        <!-- Top Live Demo Bar -->
+        <!-- Institutional Demonstration Ribbon -->
         <div class="demo-bar">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span class="demo-bar-badge">Live Demo</span>
-                <span>TCU Thesis Library Catalog</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="demo-bar-badge"><i class="fas fa-university"></i> TCU-IR ARCHIVE</span>
+                <span style="font-size:12px; color:rgba(255,255,255,0.9);">Digital Institutional Theses & Dissertations Repository • Demonstration Environment</span>
             </div>
-            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                <a href="index.html" style="color:#fff; text-decoration:none;"><i class="fas fa-home"></i> Landing</a>
-                <a href="admin_preview.html" style="color:#fff; text-decoration:none;"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
-                <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" style="background:#238636; color:#fff; padding:4px 10px; border-radius:6px; font-weight:600; text-decoration:none; font-size:12px;">
-                    <i class="fas fa-terminal"></i> Open in Codespaces
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:11.5px; color:var(--tcu-gold); font-weight:700;"><i class="fas fa-id-badge"></i> Role:</span>
+                    <select class="demo-role-select" onchange="setDemoRole(this.value)">
+                        <option value="guest">Guest Researcher</option>
+                        <option value="student">Student Author (Juan Dela Cruz)</option>
+                        <option value="professor">Faculty Adviser (Dr. Ramon Del Rosario)</option>
+                        <option value="librarian">Chief Librarian (Maria Santos, RL)</option>
+                        <option value="admin">System Administrator (TCU Library)</option>
+                    </select>
+                </div>
+                <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" class="demo-codespaces-btn">
+                    <i class="fas fa-server"></i> Run Full Backend (Codespaces)
                 </a>
             </div>
         </div>
 
-        <!-- Header -->
-        <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 24px;">
-            <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
-                <a href="index.html" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
-                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%;">
-                    <h1 style="font-size:1.2rem; color:#800000; margin:0;">TCU Theses Library</h1>
+        <!-- Academic Library Header -->
+        <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 28px;">
+            <div style="max-width:1300px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+                <a href="index.html" style="display:flex; align-items:center; gap:14px; text-decoration:none;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU University Seal" style="width:44px; height:44px; border-radius:50%; border:2px solid var(--tcu-gold);">
+                    <div>
+                        <h1 style="font-family:var(--lib-font-serif); font-size:1.35rem; font-weight:700; color:var(--tcu-maroon); margin:0; line-height:1.2;">Taguig City University</h1>
+                        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:700; display:block;">University Library & Digital Archives</span>
+                    </div>
                 </a>
                 <nav class="main-nav">
-                    <ul style="display:flex; gap:20px; list-style:none; margin:0; padding:0;">
-                        <li><a href="index.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Home</a></li>
-                        <li><a href="categories.html" class="nav-link active" style="text-decoration:none; color:#800000; font-weight:700;">Categories</a></li>
-                        <li><a href="admin_preview.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Admin Dashboard</a></li>
-                        <li><a href="about.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">About</a></li>
+                    <ul style="display:flex; gap:24px; list-style:none; margin:0; padding:0; align-items:center;">
+                        <li><a href="index.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Home</a></li>
+                        <li><a href="categories.html" class="nav-link active" style="text-decoration:none; color:var(--tcu-maroon); font-weight:700; font-size:14px; border-bottom:2px solid var(--tcu-maroon); padding-bottom:4px;">Browse Catalog</a></li>
+                        <li><a href="admin_preview.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Archivist Portal</a></li>
+                        <li><a href="about.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Archival Policies</a></li>
                     </ul>
                 </nav>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span class="demo-user-role-label" style="font-size:12px; font-weight:600; color:#800000; background:rgba(128,0,0,0.08); padding:4px 8px; border-radius:8px;"></span>
-                    <button class="btn btn-outline btn-trigger-login" style="padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer;">
-                        <i class="fas fa-user-circle"></i> Demo Login
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="demo-user-role-label" style="font-size:12px; font-weight:700; color:var(--tcu-maroon); background:var(--tcu-gold-light); border:1px solid var(--tcu-gold-border); padding:4px 10px; border-radius:12px;"></span>
+                    <button class="btn btn-outline btn-trigger-login" style="padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600; border:1px solid #cbd5e1; background:#fff;">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
                     </button>
                 </div>
             </div>
         </header>
     </div>
 
-    <!-- Main Container -->
-    <main style="max-width:1200px; margin:30px auto; padding:0 20px;">
+    <!-- Institutional Breadcrumb -->
+    <div style="background:#fff; border-bottom:1px solid #e2e8f0; padding:10px 0;">
+        <div style="max-width:1300px; margin:0 auto; padding:0 24px; font-size:12px; color:#64748b; display:flex; align-items:center; gap:8px;">
+            <a href="index.html" style="color:var(--tcu-maroon); text-decoration:none; font-weight:600;"><i class="fas fa-home"></i> Institutional Repository</a>
+            <span>/</span>
+            <span>Academic Theses & Dissertations</span>
+            <span>/</span>
+            <strong style="color:#1e293b;">Catalog Accession Search</strong>
+        </div>
+    </div>
+
+    <!-- Main Catalog Faceted Search Layout -->
+    <main style="max-width:1300px; margin:28px auto; padding:0 24px;">
         
-        <!-- Search & Control Header -->
-        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; margin-bottom:24px; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
-            <div style="margin-bottom:20px;">
-                <h2 style="font-size:1.6rem; color:#1e293b; margin:0 0 6px 0;">University Digital Repository</h2>
-                <p style="color:#64748b; font-size:14px; margin:0;">Search through approved dissertations, capstones, and undergraduate research papers.</p>
+        <!-- Search & Query Header -->
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:24px; margin-bottom:24px; box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <h2 style="font-family:var(--lib-font-serif); font-size:1.75rem; color:#0f172a; margin:0 0 4px 0; font-weight:700;">
+                        Theses & Dissertations Collection
+                    </h2>
+                    <p style="color:#64748b; font-size:13.5px; margin:0;">
+                        Indexed under <strong>Library of Congress Classification (LCC)</strong> and <strong>Dublin Core Metadata Standards</strong>.
+                    </p>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="open-access-pill"><i class="fas fa-check-circle"></i> Open Access Repository</span>
+                    <span class="peer-reviewed-pill"><i class="fas fa-certificate"></i> Faculty Approved</span>
+                </div>
             </div>
 
-            <!-- Instant Search Input -->
-            <div style="position:relative; margin-bottom:20px;">
-                <i class="fas fa-search" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:16px;"></i>
-                <input type="text" id="liveSearchInput" placeholder="Instant search by title, keyword, author, or specialization..." 
-                    style="width:100%; box-sizing:border-box; padding:14px 44px; border:2px solid #e2e8f0; border-radius:10px; font-size:15px; outline:none; transition:border-color 0.2s;"
-                    onfocus="this.style.borderColor='#800000';" onblur="this.style.borderColor='#e2e8f0';">
-                <button id="clearSearchBtn" onclick="clearSearch()" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; display:none; font-size:16px;">&times;</button>
-            </div>
+            <!-- Enhanced Search Input with Field Scope -->
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <select id="searchScopeSelect" onchange="applyFilters()" style="padding:12px 14px; border:1.5px solid #cbd5e1; border-radius:6px; font-size:13.5px; background:#f8fafc; font-weight:600; color:#334155; outline:none; min-width:160px;">
+                    <option value="all">All Fields</option>
+                    <option value="title">Title Only</option>
+                    <option value="author">Author / Researcher</option>
+                    <option value="subject">Subject / Keyword</option>
+                    <option value="call">Call Number (LCC)</option>
+                </select>
 
-            <!-- Filter Controls -->
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; width:100px;">Colleges:</span>
-                    <button class="dept-btn active" data-dept="ALL" onclick="filterDept('ALL')">All <span class="dept-badge" id="count-ALL">8</span></button>
-                    <button class="dept-btn" data-dept="CICT" onclick="filterDept('CICT')">CICT <span class="dept-badge" id="count-CICT">2</span></button>
-                    <button class="dept-btn" data-dept="CAS" onclick="filterDept('CAS')">CAS <span class="dept-badge" id="count-CAS">1</span></button>
-                    <button class="dept-btn" data-dept="CBA" onclick="filterDept('CBA')">CBA <span class="dept-badge" id="count-CBA">1</span></button>
-                    <button class="dept-btn" data-dept="CED" onclick="filterDept('CED')">CED <span class="dept-badge" id="count-CED">1</span></button>
-                    <button class="dept-btn" data-dept="COE" onclick="filterDept('COE')">COE <span class="dept-badge" id="count-COE">1</span></button>
-                    <button class="dept-btn" data-dept="CCJ" onclick="filterDept('CCJ')">CCJ <span class="dept-badge" id="count-CCJ">1</span></button>
-                    <button class="dept-btn" data-dept="GS" onclick="filterDept('GS')">GS <span class="dept-badge" id="count-GS">1</span></button>
+                <div style="position:relative; flex:1; min-width:260px;">
+                    <i class="fas fa-search" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:15px;"></i>
+                    <input type="text" id="liveSearchInput" placeholder="Search catalog by title, keyword, call number, or adviser..." 
+                        style="width:100%; box-sizing:border-box; padding:12px 40px 12px 42px; border:1.5px solid #cbd5e1; border-radius:6px; font-size:14.5px; outline:none; transition:border-color 0.2s;"
+                        onfocus="this.style.borderColor='var(--tcu-maroon)';" onblur="this.style.borderColor='#cbd5e1';">
+                    <button id="clearSearchBtn" onclick="clearSearch()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; display:none; font-size:16px;">&times;</button>
                 </div>
 
-                <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap; border-top:1px solid #f1f5f9; padding-top:12px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:13px; color:#64748b; font-weight:600;">Category:</span>
-                        <select id="categoryFilter" onchange="applyFilters()" style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;">
-                            <option value="ALL">All Categories</option>
-                            <option value="Undergraduate">Undergraduate (7)</option>
-                            <option value="Graduate">Graduate (1)</option>
-                        </select>
-                    </div>
-
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:13px; color:#64748b; font-weight:600;">Publication Year:</span>
-                        <select id="yearFilter" onchange="applyFilters()" style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;">
-                            <option value="ALL">All Years</option>
-                            <option value="2025">2025</option>
-                            <option value="2024">2024</option>
-                        </select>
-                    </div>
-
-                    <div style="margin-left:auto; font-size:13px; color:#64748b;">
-                        Showing <strong id="resultsCount" style="color:#800000;">8</strong> research studies
-                    </div>
-                </div>
+                <select id="sortSelect" onchange="applyFilters()" style="padding:12px 14px; border:1.5px solid #cbd5e1; border-radius:6px; font-size:13.5px; background:#fff; font-weight:600; color:#334155; outline:none;">
+                    <option value="date-desc">Sort by: Defense Date (Newest)</option>
+                    <option value="date-asc">Sort by: Defense Date (Oldest)</option>
+                    <option value="title-asc">Sort by: Title (A-Z)</option>
+                    <option value="views-desc">Sort by: Consultations & Views</option>
+                </select>
             </div>
         </div>
 
-        <!-- Theses Catalog List -->
-        <div id="catalogListContainer">
-            <!-- Dynamically populated -->
-        </div>
+        <!-- 2-Column Faceted Library Grid -->
+        <div style="display:grid; grid-template-columns: 280px 1fr; gap:24px; align-items:start;" id="facetedCatalogLayout">
+            
+            <!-- LEFT COLUMN: Faceted Filters (Standard Academic OPAC) -->
+            <aside>
+                <!-- Collection Facet -->
+                <div class="facet-box">
+                    <div class="facet-title">
+                        <span>Collegiate Faculty</span>
+                        <i class="fas fa-graduation-cap" style="color:var(--tcu-gold);"></i>
+                    </div>
+                    <ul class="facet-list">
+                        <li>
+                            <button class="facet-item-btn active" data-dept="ALL" onclick="filterDept('ALL')">
+                                <span>All Collegiate Units</span>
+                                <span class="facet-count" id="count-ALL">8</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-dept="CICT" onclick="filterDept('CICT')">
+                                <span>CICT (Info & Computing)</span>
+                                <span class="facet-count" id="count-CICT">2</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-dept="CAS" onclick="filterDept('CAS')">
+                                <span>CAS (Arts & Sciences)</span>
+                                <span class="facet-count" id="count-CAS">1</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-dept="CBA" onclick="filterDept('CBA')">
+                                <span>CBA (Business & Admin)</span>
+                                <span class="facet-count" id="count-CBA">1</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-dept="CED" onclick="filterDept('CED')">
+                                <span>CED (Education)</span>
+                                <span class="facet-count" id="count-CED">1</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-dept="COE" onclick="filterDept('COE')">
+                                <span>COE (Engineering)</span>
+                                <span class="facet-count" id="count-COE">1</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-dept="CCJ" onclick="filterDept('CCJ')">
+                                <span>CCJ (Criminology)</span>
+                                <span class="facet-count" id="count-CCJ">1</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-dept="GS" onclick="filterDept('GS')">
+                                <span>GS (Graduate Studies)</span>
+                                <span class="facet-count" id="count-GS">1</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
 
-        <!-- Empty State -->
-        <div id="emptyCatalogState" style="display:none; text-align:center; padding:60px 20px; background:#fff; border-radius:12px; border:1px solid #e2e8f0;">
-            <i class="fas fa-search" style="font-size:48px; color:#cbd5e1; margin-bottom:16px;"></i>
-            <h3 style="color:#1e293b; margin-bottom:8px;">No matching research papers found</h3>
-            <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Try adjusting your keywords or clearing the active filters.</p>
-            <button onclick="resetAllFilters()" style="background:#800000; color:#fff; border:none; padding:8px 20px; border-radius:6px; cursor:pointer; font-weight:600;">
-                Reset All Filters
-            </button>
+                <!-- Academic Level Facet -->
+                <div class="facet-box">
+                    <div class="facet-title">
+                        <span>Academic Degree Level</span>
+                        <i class="fas fa-layer-group" style="color:var(--tcu-gold);"></i>
+                    </div>
+                    <ul class="facet-list">
+                        <li>
+                            <button class="facet-item-btn active" data-cat="ALL" onclick="filterCategory('ALL')">
+                                <span>All Levels</span>
+                                <span class="facet-count">8</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-cat="Undergraduate" onclick="filterCategory('Undergraduate')">
+                                <span>Undergraduate Theses</span>
+                                <span class="facet-count">7</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-cat="Graduate" onclick="filterCategory('Graduate')">
+                                <span>Masteral Dissertations</span>
+                                <span class="facet-count">1</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Publication Year Facet -->
+                <div class="facet-box">
+                    <div class="facet-title">
+                        <span>Year of Defense</span>
+                        <i class="far fa-calendar-alt" style="color:var(--tcu-gold);"></i>
+                    </div>
+                    <ul class="facet-list">
+                        <li>
+                            <button class="facet-item-btn active" data-year="ALL" onclick="filterYear('ALL')">
+                                <span>All Academic Years</span>
+                                <span class="facet-count">8</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-year="2025" onclick="filterYear('2025')">
+                                <span>2025 (AY 2024–2025)</span>
+                                <span class="facet-count">5</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="facet-item-btn" data-year="2024" onclick="filterYear('2024')">
+                                <span>2024 (AY 2023–2024)</span>
+                                <span class="facet-count">3</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Archival Notice Box -->
+                <div style="background:#fff; border:1px dashed #cbd5e1; border-radius:8px; padding:16px; font-size:12px; color:#64748b; line-height:1.6;">
+                    <div style="font-weight:700; color:#334155; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-shield-alt" style="color:var(--tcu-maroon);"></i> Access Protocol
+                    </div>
+                    Manuscripts are indexed under Republic Act No. 8293. Direct file downloading is restricted to preserve student author rights.
+                </div>
+            </aside>
+
+            <!-- RIGHT COLUMN: Catalog Search Results -->
+            <div>
+                <!-- Active Filters Toolbar -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; font-size:13px; color:#64748b; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        Showing <strong id="resultsCount" style="color:var(--tcu-maroon); font-size:15px;">8</strong> cataloged bibliographic entries
+                    </div>
+                    <button onclick="resetAllFilters()" style="background:none; border:none; color:var(--tcu-maroon); font-weight:700; cursor:pointer; font-size:12.5px; display:inline-flex; align-items:center; gap:5px;">
+                        <i class="fas fa-redo-alt"></i> Reset All Filters
+                    </button>
+                </div>
+
+                <!-- Dynamic Catalog List -->
+                <div id="catalogListContainer">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <!-- Empty Search State -->
+                <div id="emptyCatalogState" style="display:none; text-align:center; padding:60px 20px; background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                    <i class="fas fa-book-reader" style="font-size:48px; color:#cbd5e1; margin-bottom:16px;"></i>
+                    <h3 style="font-family:var(--lib-font-serif); font-size:1.4rem; color:#1e293b; margin-bottom:8px;">No Bibliographic Records Match Your Query</h3>
+                    <p style="color:#64748b; font-size:14px; margin-bottom:20px; max-width:480px; margin-left:auto; margin-right:auto;">
+                        Try searching by alternate keywords, checking your spelling, or removing active department and year filters.
+                    </p>
+                    <button onclick="resetAllFilters()" style="background:var(--tcu-maroon); color:#fff; border:none; padding:10px 22px; border-radius:6px; cursor:pointer; font-weight:700; font-size:13px;">
+                        Clear Search Query & Filters
+                    </button>
+                </div>
+            </div>
         </div>
 
     </main>
+
+    <!-- Academic Library Footer -->
+    <footer class="main-footer" style="background:#1e293b; color:#cbd5e1; padding:48px 0 24px 0; border-top:4px solid var(--tcu-gold); margin-top:60px;">
+        <div style="max-width:1200px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:36px;">
+            <div>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--tcu-gold);">
+                    <div>
+                        <h4 style="color:#fff; font-size:1.1rem; margin:0; font-family:var(--lib-font-serif);">Taguig City University</h4>
+                        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--tcu-gold); display:block;">University Library & Digital Archives</span>
+                    </div>
+                </div>
+                <p style="font-size:13px; line-height:1.7; color:#94a3b8; margin:0;">
+                    Centralized intellectual repository preserving academic research, theses, and capstone dissertations produced by the students and faculty of Taguig City University.
+                </p>
+            </div>
+            <div>
+                <h4 style="color:#fff; font-size:14px; font-weight:700; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px;">Archival Discovery</h4>
+                <ul style="list-style:none; padding:0; margin:0; font-size:13px; line-height:2;">
+                    <li><a href="categories.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-search" style="width:16px;"></i> Browse All Accessions</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Information+and+Communication+Technology" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-laptop-code" style="width:16px;"></i> ICT & Computer Science</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Engineering" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-microchip" style="width:16px;"></i> Engineering Studies</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Education" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-graduation-cap" style="width:16px;"></i> Education & Pedagogy</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="color:#fff; font-size:14px; font-weight:700; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px;">Institutional Standards</h4>
+                <ul style="list-style:none; padding:0; margin:0; font-size:13px; line-height:2;">
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-book" style="width:16px;"></i> Dublin Core Schema</a></li>
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-stamp" style="width:16px;"></i> LCC Classification System</a></li>
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-gavel" style="width:16px;"></i> Republic Act 8293 (IP Code)</a></li>
+                    <li><a href="admin_preview.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-user-shield" style="width:16px;"></i> Archivist Verification Portal</a></li>
+                </ul>
+            </div>
+        </div>
+        <div style="max-width:1200px; margin:32px auto 0 auto; padding:20px 24px 0 24px; border-top:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; font-size:12px; color:#94a3b8;">
+            <div>&copy; 2024 Taguig City University. All rights reserved. University Library & Digital Archives.</div>
+            <div style="display:flex; gap:16px;">
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">Privacy Policy</a>
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">Terms of Archival Use</a>
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">OAI-PMH Documentation</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Unified Auth Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-card" id="auth-card" style="max-width:460px; margin:auto; border-top:4px solid var(--tcu-maroon);">
+            <span id="closeModal" class="close-modal">&times;</span>
+            <div class="auth-header">
+                <h2 style="font-family:var(--lib-font-serif); color:var(--tcu-maroon);">Institutional Single Sign-On</h2>
+                <p>Select a simulated university persona to evaluate the repository:</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin:20px 0;">
+                <button class="btn btn-primary" onclick="setDemoRole('student'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#800000;">
+                    <i class="fas fa-user-graduate"></i> <strong>Student Author:</strong> Juan Dela Cruz (CICT)
+                </button>
+                <button class="btn btn-primary" onclick="setDemoRole('professor'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#500000;">
+                    <i class="fas fa-chalkboard-teacher"></i> <strong>Faculty Adviser:</strong> Dr. Ramon Del Rosario
+                </button>
+                <button class="btn btn-primary" onclick="setDemoRole('librarian'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#3b0002;">
+                    <i class="fas fa-book-reader"></i> <strong>Chief Cataloger:</strong> Maria Santos, RL
+                </button>
+                <button class="btn btn-primary" onclick="setDemoRole('admin'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#1e293b;">
+                    <i class="fas fa-shield-alt"></i> <strong>System Administrator:</strong> TCU Library Oversight
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Citation Modal -->
+    <div id="citationModal" class="auth-modal">
+        <div class="auth-card" style="max-width:620px; margin:auto;">
+            <span class="close-modal" onclick="document.getElementById('citationModal').classList.remove('active');">&times;</span>
+            <div class="auth-header" style="text-align:left; margin-bottom:15px;">
+                <h3 style="font-family:var(--lib-font-serif); font-size:1.4rem; color:var(--tcu-maroon); margin:0;">Export Bibliographic Citation</h3>
+                <p style="font-size:13px; color:#64748b; margin:4px 0 0 0;" id="citationModalTitle"></p>
+            </div>
+            <div class="citation-tab-bar">
+                <button class="citation-tab active" onclick="switchCitationTab('apa')">APA 7th</button>
+                <button class="citation-tab" onclick="switchCitationTab('mla')">MLA 9th</button>
+                <button class="citation-tab" onclick="switchCitationTab('ieee')">IEEE</button>
+                <button class="citation-tab" onclick="switchCitationTab('chicago')">Chicago</button>
+                <button class="citation-tab" onclick="switchCitationTab('bibtex')">BibTeX</button>
+            </div>
+            <div class="citation-box" id="citationBoxText"></div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+                <button onclick="copyActiveCitation()" style="background:var(--tcu-maroon); color:#fff; border:none; padding:8px 18px; border-radius:6px; cursor:pointer; font-weight:700; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="fas fa-copy"></i> Copy Citation
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="assets/js/demo.js"></script>
     <script>
         let currentDept = 'ALL';
+        let currentCategory = 'ALL';
+        let currentYear = 'ALL';
+        let activeCitationThesis = null;
+        let activeCitationStyle = 'apa';
 
         function filterDept(dept) {
             currentDept = dept;
-            document.querySelectorAll('.dept-btn').forEach(b => {
+            document.querySelectorAll('[data-dept]').forEach(b => {
                 b.classList.toggle('active', b.dataset.dept === dept);
+            });
+            applyFilters();
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('[data-cat]').forEach(b => {
+                b.classList.toggle('active', b.dataset.cat === cat);
+            });
+            applyFilters();
+        }
+
+        function filterYear(yr) {
+            currentYear = yr;
+            document.querySelectorAll('[data-year]').forEach(b => {
+                b.classList.toggle('active', b.dataset.year === yr);
             });
             applyFilters();
         }
@@ -267,38 +423,102 @@
 
         function resetAllFilters() {
             currentDept = 'ALL';
-            document.querySelectorAll('.dept-btn').forEach(b => {
-                b.classList.toggle('active', b.dataset.dept === 'ALL');
-            });
+            currentCategory = 'ALL';
+            currentYear = 'ALL';
             document.getElementById('liveSearchInput').value = '';
-            document.getElementById('categoryFilter').value = 'ALL';
-            document.getElementById('yearFilter').value = 'ALL';
+            document.getElementById('searchScopeSelect').value = 'all';
+            document.getElementById('sortSelect').value = 'date-desc';
             document.getElementById('clearSearchBtn').style.display = 'none';
+
+            document.querySelectorAll('[data-dept]').forEach(b => b.classList.toggle('active', b.dataset.dept === 'ALL'));
+            document.querySelectorAll('[data-cat]').forEach(b => b.classList.toggle('active', b.dataset.cat === 'ALL'));
+            document.querySelectorAll('[data-year]').forEach(b => b.classList.toggle('active', b.dataset.year === 'ALL'));
+
             applyFilters();
+        }
+
+        function openCitationModal(id, e) {
+            if (e) e.stopPropagation();
+            const thesis = SAMPLE_THESES.find(t => t.id === id);
+            if (!thesis) return;
+            activeCitationThesis = thesis;
+            document.getElementById('citationModalTitle').textContent = thesis.title;
+            switchCitationTab('apa');
+            document.getElementById('citationModal').classList.add('active');
+        }
+
+        function switchCitationTab(style) {
+            activeCitationStyle = style;
+            document.querySelectorAll('.citation-tab').forEach(b => {
+                b.classList.toggle('active', b.textContent.toLowerCase().includes(style));
+            });
+            if (activeCitationThesis) {
+                const text = generateCitation(activeCitationThesis, style);
+                document.getElementById('citationBoxText').textContent = text;
+            }
+        }
+
+        function copyActiveCitation() {
+            const text = document.getElementById('citationBoxText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showDemoNotification('Citation copied to clipboard!', 'success');
+            }).catch(() => {
+                showDemoNotification('Citation copied!', 'success');
+            });
         }
 
         function applyFilters() {
             const query = (document.getElementById('liveSearchInput').value || '').trim().toLowerCase();
-            const category = document.getElementById('categoryFilter').value;
-            const year = document.getElementById('yearFilter').value;
+            const scope = document.getElementById('searchScopeSelect').value;
+            const sort = document.getElementById('sortSelect').value;
 
             document.getElementById('clearSearchBtn').style.display = query ? 'block' : 'none';
 
-            const filtered = SAMPLE_THESES.filter(t => {
+            let filtered = SAMPLE_THESES.filter(t => {
                 if (currentDept !== 'ALL' && t.department !== currentDept) return false;
-                if (category !== 'ALL' && t.category !== category) return false;
-                if (year !== 'ALL' && t.year.toString() !== year) return false;
+                if (currentCategory !== 'ALL' && t.category !== currentCategory) return false;
+                if (currentYear !== 'ALL' && t.year.toString() !== currentYear) return false;
+
                 if (query) {
-                    const haystack = (t.title + ' ' + t.author + ' ' + t.abstract + ' ' + t.keywords.join(' ') + ' ' + t.specialization + ' ' + t.course).toLowerCase();
-                    if (!haystack.includes(query)) return false;
+                    if (scope === 'title') {
+                        if (!t.title.toLowerCase().includes(query)) return false;
+                    } else if (scope === 'author') {
+                        const authors = (t.author + ' ' + t.author_plain + ' ' + t.coauthors.map(c => c.name).join(' ') + ' ' + t.supervisor).toLowerCase();
+                        if (!authors.includes(query)) return false;
+                    } else if (scope === 'subject') {
+                        const subj = (t.keywords.join(' ') + ' ' + t.lcsh_subjects.join(' ') + ' ' + t.specialization).toLowerCase();
+                        if (!subj.includes(query)) return false;
+                    } else if (scope === 'call') {
+                        if (!t.lc_classification.toLowerCase().includes(query)) return false;
+                    } else {
+                        const full = (t.title + ' ' + t.author + ' ' + t.author_plain + ' ' + t.abstract + ' ' + t.keywords.join(' ') + ' ' + t.lcsh_subjects.join(' ') + ' ' + t.course + ' ' + t.lc_classification).toLowerCase();
+                        if (!full.includes(query)) return false;
+                    }
                 }
                 return true;
             });
 
-            renderTheses(filtered);
+            // Sorting
+            if (sort === 'date-desc') {
+                filtered.sort((a, b) => b.year - a.year || b.id - a.id);
+            } else if (sort === 'date-asc') {
+                filtered.sort((a, b) => a.year - b.year || a.id - b.id);
+            } else if (sort === 'title-asc') {
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (sort === 'views-desc') {
+                filtered.sort((a, b) => b.views_count - a.views_count);
+            }
+
+            renderTheses(filtered, query);
         }
 
-        function renderTheses(theses) {
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<mark style="background:#fef08a; padding:1px 3px; border-radius:2px;">$1</mark>');
+        }
+
+        function renderTheses(theses, query) {
             const container = document.getElementById('catalogListContainer');
             const empty = document.getElementById('emptyCatalogState');
             const counter = document.getElementById('resultsCount');
@@ -313,47 +533,71 @@
 
             empty.style.display = 'none';
             container.innerHTML = theses.map(t => {
-                const spineClass = 'spine-' + t.dept_code;
+                const coauthorText = t.coauthors.length > 0 ? t.coauthors.map(c => c.name).join('; ') : 'None';
                 return `
-                <div class="thesis-catalog-card" onclick="window.location.href='thesis_detail.html?id=${t.id}'" style="cursor:pointer;">
-                    <div class="dept-spine ${spineClass}"></div>
-                    <div style="flex:1;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:12px;">
-                            <span style="font-size:12px; font-weight:700; color:#800000; background:rgba(128,0,0,0.08); padding:3px 10px; border-radius:12px; text-transform:uppercase;">
-                                ${t.dept_name}
+                <article class="catalog-entry-card" onclick="window.location.href='thesis_detail.html?id=${t.id}'" style="cursor:pointer;">
+                    
+                    <!-- Library Identification Header -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #f1f5f9; padding-bottom:10px;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span class="call-number-badge" title="Library of Congress Classification Call Number">
+                                <i class="fas fa-barcode"></i> ${t.lc_classification}
                             </span>
-                            <span style="font-size:13px; font-weight:700; color:#475569;"><i class="far fa-calendar-alt"></i> ${t.year}</span>
+                            <span class="accession-pill" title="Institutional Accession Identifier">
+                                <i class="fas fa-fingerprint"></i> ${t.accession_no}
+                            </span>
                         </div>
-                        <h3 style="font-size:1.25rem; color:#1e293b; margin:0 0 10px 0; line-height:1.4;">
-                            <a href="thesis_detail.html?id=${t.id}" style="color:inherit; text-decoration:none;" onmouseover="this.style.color='#800000'" onmouseout="this.style.color='#1e293b'">${t.title}</a>
-                        </h3>
-                        <div style="display:flex; flex-wrap:wrap; gap:15px; font-size:13px; color:#64748b; margin-bottom:12px;">
-                            <span><i class="fas fa-user-edit" style="color:#800000;"></i> <strong>Lead Author:</strong> ${t.author}</span>
-                            ${t.coauthors.length ? `<span><i class="fas fa-user-friends"></i> <strong>Co-Authors:</strong> ${t.coauthors.join(', ')}</span>` : ''}
-                            <span><i class="fas fa-graduation-cap"></i> ${t.course}</span>
-                        </div>
-                        <p style="font-size:14px; color:#475569; line-height:1.6; margin:0 0 16px 0;">
-                            ${t.abstract}
-                        </p>
-                        <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; border-top:1px solid #f1f5f9; padding-top:14px;">
-                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                                ${t.keywords.map(k => `<span style="font-size:11px; background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:4px;"><i class="fas fa-tag" style="font-size:9px; color:#94a3b8;"></i> ${k}</span>`).join('')}
-                            </div>
-                            <div style="display:flex; align-items:center; gap:15px;">
-                                <span style="font-size:12px; color:#94a3b8;"><i class="fas fa-barcode"></i> ${t.lc_classification}</span>
-                                <span style="color:#800000; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-                                    View Full Record <i class="fas fa-arrow-right"></i>
-                                </span>
-                            </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="open-access-pill"><i class="fas fa-unlock-alt"></i> Open Access</span>
+                            <span style="font-size:12px; font-weight:700; color:#64748b;"><i class="far fa-calendar-check"></i> ${t.year}</span>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Title & Authors -->
+                    <div>
+                        <h3 class="catalog-entry-title">
+                            <a href="thesis_detail.html?id=${t.id}">${highlightMatch(t.title, query)}</a>
+                        </h3>
+                        <div class="catalog-author-statement" style="margin-top:6px;">
+                            <strong>Author:</strong> ${highlightMatch(t.author, query)}
+                            ${t.coauthors.length ? ` • <strong>Co-Authors:</strong> ${highlightMatch(coauthorText, query)}` : ''}
+                            • <strong>Adviser:</strong> ${t.supervisor}
+                        </div>
+                        <div style="font-size:12.5px; color:#64748b; margin-top:3px;">
+                            <i class="fas fa-university" style="color:var(--tcu-maroon);"></i> ${t.dept_name} • <em>${t.degree}</em>
+                        </div>
+                    </div>
+
+                    <!-- Abstract -->
+                    <p class="catalog-abstract-snippet">
+                        ${highlightMatch(t.abstract.length > 240 ? t.abstract.substring(0, 240) + '...' : t.abstract, query)}
+                    </p>
+
+                    <!-- Subjects & Actions -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-top:1px solid #f8fafc; padding-top:12px;">
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                            ${t.keywords.map(k => `
+                                <span style="font-size:11.5px; background:#f1f5f9; color:#334155; padding:2px 8px; border-radius:4px; border:1px solid #e2e8f0;">
+                                    <i class="fas fa-tag" style="font-size:9px; color:#94a3b8;"></i> ${highlightMatch(k, query)}
+                                </span>
+                            `).join('')}
+                        </div>
+                        
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <button onclick="openCitationModal(${t.id}, event)" style="background:#fff; border:1px solid #cbd5e1; color:#334155; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px;">
+                                <i class="fas fa-quote-right" style="color:var(--tcu-maroon);"></i> Cite
+                            </button>
+                            <a href="thesis_detail.html?id=${t.id}" onclick="event.stopPropagation();" style="background:var(--tcu-maroon); color:#fff; text-decoration:none; padding:6px 14px; border-radius:4px; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                                View Record <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </article>
                 `;
             }).join('');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Read URL search params
             const params = new URLSearchParams(window.location.search);
             const initialSearch = params.get('search');
             const initialDept = params.get('dept');
@@ -363,7 +607,7 @@
             }
             if (initialDept) {
                 currentDept = initialDept.toUpperCase();
-                document.querySelectorAll('.dept-btn').forEach(b => {
+                document.querySelectorAll('[data-dept]').forEach(b => {
                     b.classList.toggle('active', b.dataset.dept === currentDept);
                 });
             }

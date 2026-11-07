@@ -3,257 +3,479 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thesis Details - TCU Library</title>
-    <!-- Fonts & CSS -->
+    <title id="pageTitle">Bibliographic Record - TCU Theses Library</title>
+    
+    <!-- Dublin Core & Highwire Press Meta Tags for Google Scholar & Library Harvesters -->
+    <meta name="DC.title" content="TCU Institutional Repository Manuscript Record" id="dcTitle">
+    <meta name="DC.creator" content="Taguig City University Researchers" id="dcCreator">
+    <meta name="DC.publisher" content="Taguig City University">
+    <meta name="DC.type" content="Text.Thesis">
+    <meta name="DC.format" content="application/pdf">
+    <meta name="DC.rights" content="In Copyright - Educational Use Permitted (RA 8293)">
+    
+    <!-- Scholarly Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/thesis_detail.css">
     <link rel="stylesheet" href="assets/css/mobile.css">
     <link rel="icon" type="image/png" href="assets/images/tcu_official_logo.png">
     <link rel="stylesheet" href="assets/css/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="assets/css/demo-nav.css">
     <style>
-        .top-nav-wrapper {
-            position: sticky;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100000;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        }
-        .top-nav-wrapper .demo-bar {
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            z-index: 2;
-            margin: 0;
-            box-shadow: none;
-            background: linear-gradient(90deg, #400000 0%, #800000 50%, #500000 100%);
-            color: #fff;
-            padding: 8px 16px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #C5B358;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .top-nav-wrapper .main-header {
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            z-index: 1 !important;
-            width: 100% !important;
-            margin: 0 !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
-            background: #fff !important;
-        }
-        main, .main-content {
-            margin-top: 0 !important;
-        }
-        .demo-bar-badge {
-            background: #C5B358;
-            color: #400000;
+        .record-tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
             font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            font-size: 11px;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-family: var(--lib-font-sans);
+            transition: all 0.2s;
         }
-        .reader-frame {
-            border: 2px solid #cbd5e1;
-            border-radius: 8px;
-            background: #475569;
-            height: 480px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .record-tab-btn:hover {
+            color: var(--tcu-maroon);
         }
-        .reader-watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-30deg);
-            font-size: 2.5rem;
-            color: rgba(255, 255, 255, 0.12);
-            font-weight: 900;
-            letter-spacing: 4px;
-            pointer-events: none;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-        .reader-content {
-            background: #fff;
-            width: 80%;
-            height: 90%;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            font-family: 'Crimson Pro', Georgia, serif;
-            color: #1e293b;
-            overflow-y: auto;
-            position: relative;
-            line-height: 1.8;
+        .record-tab-btn.active {
+            color: var(--tcu-maroon);
+            border-bottom-color: var(--tcu-maroon);
         }
     </style>
 </head>
-<body style="background: #f8fafc; font-family: 'Atkinson Hyperlegible', sans-serif;">
+<body style="background: #f8fafc; font-family: var(--lib-font-sans); color: #1e293b;">
 
     <!-- Sticky Unified Navigation Wrapper -->
     <div class="top-nav-wrapper">
-        <!-- Top Live Demo Bar -->
+        <!-- Institutional Demonstration Ribbon -->
         <div class="demo-bar">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span class="demo-bar-badge">Live Demo</span>
-                <span>TCU Thesis Manuscript Viewer</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="demo-bar-badge"><i class="fas fa-university"></i> TCU-IR ARCHIVE</span>
+                <span style="font-size:12px; color:rgba(255,255,255,0.9);">Digital Institutional Theses & Dissertations Repository • Record Accession Viewer</span>
             </div>
-            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                <a href="categories.html" style="color:#fff; text-decoration:none;"><i class="fas fa-arrow-left"></i> Back to Catalog</a>
-                <a href="admin_preview.html" style="color:#fff; text-decoration:none;"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
-                <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" style="background:#238636; color:#fff; padding:4px 10px; border-radius:6px; font-weight:600; text-decoration:none; font-size:12px;">
-                    <i class="fas fa-terminal"></i> Open in Codespaces
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:11.5px; color:var(--tcu-gold); font-weight:700;"><i class="fas fa-id-badge"></i> Persona:</span>
+                    <select class="demo-role-select" onchange="setDemoRole(this.value)">
+                        <option value="guest">Guest Researcher</option>
+                        <option value="student">Student Author (Juan Dela Cruz)</option>
+                        <option value="professor">Faculty Adviser (Dr. Ramon Del Rosario)</option>
+                        <option value="librarian">Chief Librarian (Maria Santos, RL)</option>
+                        <option value="admin">System Administrator (TCU Library)</option>
+                    </select>
+                </div>
+                <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" class="demo-codespaces-btn">
+                    <i class="fas fa-server"></i> Run Full Backend (Codespaces)
                 </a>
             </div>
         </div>
 
-        <!-- Header -->
-        <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 24px;">
-            <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
-                <a href="index.html" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
-                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%;">
-                    <h1 style="font-size:1.2rem; color:#800000; margin:0;">TCU Theses Library</h1>
+        <!-- Academic Library Header -->
+        <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 28px;">
+            <div style="max-width:1300px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+                <a href="index.html" style="display:flex; align-items:center; gap:14px; text-decoration:none;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU University Seal" style="width:44px; height:44px; border-radius:50%; border:2px solid var(--tcu-gold);">
+                    <div>
+                        <h1 style="font-family:var(--lib-font-serif); font-size:1.35rem; font-weight:700; color:var(--tcu-maroon); margin:0; line-height:1.2;">Taguig City University</h1>
+                        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:700; display:block;">University Library & Digital Archives</span>
+                    </div>
                 </a>
                 <nav class="main-nav">
-                    <ul style="display:flex; gap:20px; list-style:none; margin:0; padding:0;">
-                        <li><a href="index.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Home</a></li>
-                        <li><a href="categories.html" class="nav-link" style="text-decoration:none; color:#800000; font-weight:700;">Categories</a></li>
-                        <li><a href="admin_preview.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">Admin</a></li>
-                        <li><a href="about.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600;">About</a></li>
+                    <ul style="display:flex; gap:24px; list-style:none; margin:0; padding:0; align-items:center;">
+                        <li><a href="index.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Home</a></li>
+                        <li><a href="categories.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Browse Catalog</a></li>
+                        <li><a href="admin_preview.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Archivist Portal</a></li>
+                        <li><a href="about.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Archival Policies</a></li>
                     </ul>
                 </nav>
-                <div>
-                    <button class="btn btn-outline btn-trigger-login" style="padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer;">
-                        <i class="fas fa-user-circle"></i> Demo Login
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="demo-user-role-label" style="font-size:12px; font-weight:700; color:var(--tcu-maroon); background:var(--tcu-gold-light); border:1px solid var(--tcu-gold-border); padding:4px 10px; border-radius:12px;"></span>
+                    <button class="btn btn-outline btn-trigger-login" style="padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600; border:1px solid #cbd5e1; background:#fff;">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
                     </button>
                 </div>
             </div>
         </header>
     </div>
 
-    <main style="max-width:1100px; margin:30px auto; padding:0 20px;">
-        <a href="categories.html" style="display:inline-flex; align-items:center; gap:6px; color:#800000; text-decoration:none; font-weight:700; margin-bottom:20px; font-size:14px;">
-            <i class="fas fa-arrow-left"></i> Return to Research Archive
-        </a>
+    <!-- Breadcrumbs -->
+    <div style="background:#fff; border-bottom:1px solid #e2e8f0; padding:10px 0;">
+        <div style="max-width:1300px; margin:0 auto; padding:0 24px; font-size:12px; color:#64748b; display:flex; align-items:center; gap:8px;">
+            <a href="index.html" style="color:var(--tcu-maroon); text-decoration:none; font-weight:600;"><i class="fas fa-home"></i> Institutional Repository</a>
+            <span>/</span>
+            <a href="categories.html" style="color:#64748b; text-decoration:none;">Theses & Dissertations</a>
+            <span>/</span>
+            <span id="breadcrumbDept" style="color:#64748b;">CICT</span>
+            <span>/</span>
+            <strong id="breadcrumbAccession" style="color:#1e293b;">Accession Record</strong>
+        </div>
+    </div>
 
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px;" id="detailLayout">
-            <!-- Left Column: Main Thesis Content -->
-            <div>
-                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:32px; box-shadow:0 2px 10px rgba(0,0,0,0.03); margin-bottom:24px;">
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                        <span id="detailDeptBadge" style="font-size:12px; font-weight:700; color:#800000; background:rgba(128,0,0,0.08); padding:4px 10px; border-radius:12px; text-transform:uppercase;"></span>
-                        <span id="detailYearBadge" style="font-size:13px; font-weight:600; color:#64748b;"></span>
-                    </div>
-
-                    <h1 id="detailTitle" style="font-size:1.8rem; color:#1e293b; line-height:1.4; margin:0 0 16px 0;"></h1>
-
-                    <div style="background:#f8fafc; border-radius:8px; padding:16px; margin-bottom:24px; border-left:4px solid #800000;">
-                        <div style="display:flex; flex-direction:column; gap:8px; font-size:14px;">
-                            <div><i class="fas fa-user-edit" style="color:#800000; width:20px;"></i> <strong>Lead Author:</strong> <span id="detailAuthor"></span></div>
-                            <div id="detailCoauthorsRow"><i class="fas fa-user-friends" style="color:#800000; width:20px;"></i> <strong>Co-Authors:</strong> <span id="detailCoauthors"></span></div>
-                            <div><i class="fas fa-chalkboard-teacher" style="color:#800000; width:20px;"></i> <strong>Adviser / Supervisor:</strong> <span id="detailSupervisor"></span></div>
-                        </div>
-                    </div>
-
-                    <h3 style="font-size:1.1rem; color:#1e293b; margin:0 0 10px 0;">Abstract</h3>
-                    <p id="detailAbstract" style="font-size:15px; color:#334155; line-height:1.8; text-align:justify; margin:0 0 24px 0; font-family:'Crimson Pro', Georgia, serif; font-size:1.15rem;"></p>
-
-                    <h4 style="font-size:0.95rem; color:#1e293b; margin:0 0 8px 0;">Indexed Keywords:</h4>
-                    <div id="detailKeywords" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px;"></div>
-                </div>
-
-                <!-- Protected Document Reader Preview -->
-                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h3 style="margin:0; font-size:1.1rem; color:#1e293b;"><i class="fas fa-file-pdf" style="color:#ef4444;"></i> Manuscript Digital Preview</h3>
-                        <span style="font-size:12px; background:#fef2f2; color:#ef4444; border:1px solid #fecaca; padding:4px 8px; border-radius:4px; font-weight:600;">
-                            <i class="fas fa-lock"></i> Protected View-Only Mode
-                        </span>
-                    </div>
-
-                    <div class="reader-frame">
-                        <div class="reader-watermark">TCU ARCHIVES - VIEW ONLY</div>
-                        <div class="reader-content">
-                            <div style="text-align:center; border-bottom:1px solid #e2e8f0; padding-bottom:15px; margin-bottom:20px;">
-                                <h4 style="margin:0 0 5px 0; font-size:1.1rem;" id="readerTitle"></h4>
-                                <p style="font-size:13px; color:#64748b; margin:0;" id="readerAuthor"></p>
-                                <p style="font-size:12px; color:#94a3b8; margin:4px 0 0 0;">Taguig City University Digital Repository Accession</p>
-                            </div>
-                            <h5 style="margin:0 0 8px 0;">Chapter 1: Problem Background & Synthesis</h5>
-                            <p style="font-size:14px; text-indent:30px; margin-bottom:15px;" id="readerExcerpt"></p>
-                            <div style="margin-top:30px; padding:15px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; text-align:center;">
-                                <p style="font-size:12px; color:#64748b; margin:0 0 8px 0;">
-                                    <i class="fas fa-info-circle"></i> Direct file downloading is restricted to protect academic integrity.
-                                </p>
-                                <button onclick="showDemoNotification('Viewing full dissertation requires active student or faculty authorization.', 'info')" style="background:#800000; color:#fff; border:none; padding:6px 14px; border-radius:4px; font-size:12px; cursor:pointer;">
-                                    Request Full Institutional Access
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <main style="max-width:1300px; margin:28px auto; padding:0 24px;">
+        
+        <!-- Record Navigation Header -->
+        <div style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;">
+            <a href="categories.html" style="display:inline-flex; align-items:center; gap:6px; color:var(--tcu-maroon); text-decoration:none; font-weight:700; font-size:13.5px;">
+                <i class="fas fa-arrow-left"></i> Return to Theses Catalog Search
+            </a>
+            <div style="font-size:12.5px; color:#64748b;">
+                Permanent Handle: <a href="javascript:void(0)" id="metaHandleLink" style="color:var(--tcu-maroon); font-family:var(--lib-font-mono); font-weight:600;"></a>
             </div>
+        </div>
 
-            <!-- Right Column: Metadata Sidebar -->
+        <!-- 2-Column Bibliographic Record Layout -->
+        <div style="display:grid; grid-template-columns: 1fr 340px; gap:28px; align-items:start;">
+            
+            <!-- LEFT COLUMN: Main Academic Record -->
             <div>
-                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.03); position:sticky; top:80px;">
-                    <h3 style="font-size:1.1rem; color:#1e293b; margin:0 0 16px 0; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">Archival Metadata</h3>
+                <!-- Primary Bibliographic Card -->
+                <article style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:32px; box-shadow:0 1px 4px rgba(0,0,0,0.03); margin-bottom:24px;">
+                    
+                    <!-- Call Number & Accession Strip -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span class="call-number-badge" id="badgeLC"><i class="fas fa-barcode"></i> LCC</span>
+                            <span class="accession-pill" id="badgeAccession"><i class="fas fa-fingerprint"></i> Accession</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="open-access-pill"><i class="fas fa-lock-open"></i> Institutional Open Access</span>
+                            <span class="peer-reviewed-pill"><i class="fas fa-certificate"></i> Approved & Cataloged</span>
+                        </div>
+                    </div>
 
-                    <div style="display:flex; flex-direction:column; gap:16px; font-size:13px;">
-                        <div>
-                            <span style="color:#64748b; display:block; margin-bottom:2px;">Library Classification (LC):</span>
-                            <strong style="color:#1e293b; font-family:monospace; font-size:14px;" id="metaLC"></strong>
+                    <!-- Title -->
+                    <h1 id="recordTitle" style="font-family:var(--lib-font-serif); font-size:2rem; color:#0f172a; line-height:1.3; margin:0 0 16px 0; font-weight:700;"></h1>
+
+                    <!-- Author & Responsibility Statement -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:18px; margin-bottom:24px;">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; font-size:13.5px;">
+                            <div>
+                                <span style="color:#64748b; font-size:12px; text-transform:uppercase; font-weight:700; display:block;">Principal Researcher:</span>
+                                <strong id="recordAuthor" style="color:#1e293b; font-size:14.5px;"></strong>
+                                <span id="recordAuthorId" style="color:#64748b; font-size:12px; display:block; font-family:var(--lib-font-mono);"></span>
+                            </div>
+                            <div id="coauthorsBlock">
+                                <span style="color:#64748b; font-size:12px; text-transform:uppercase; font-weight:700; display:block;">Co-Researchers:</span>
+                                <div id="recordCoauthors" style="color:#1e293b; font-size:13.5px;"></div>
+                            </div>
+                            <div>
+                                <span style="color:#64748b; font-size:12px; text-transform:uppercase; font-weight:700; display:block;">Faculty Thesis Adviser:</span>
+                                <span id="recordSupervisor" style="color:#1e293b; font-weight:600;"></span>
+                            </div>
+                            <div>
+                                <span style="color:#64748b; font-size:12px; text-transform:uppercase; font-weight:700; display:block;">Academic Department & Degree:</span>
+                                <span id="recordDeptDegree" style="color:#1e293b; font-weight:600;"></span>
+                            </div>
                         </div>
-                        <div>
-                            <span style="color:#64748b; display:block; margin-bottom:2px;">Academic College:</span>
-                            <span style="color:#1e293b; font-weight:600;" id="metaDept"></span>
+                    </div>
+
+                    <!-- Library Record Navigation Tabs -->
+                    <div style="display:flex; border-bottom:2px solid #e2e8f0; margin-bottom:24px;">
+                        <button class="record-tab-btn active" onclick="switchRecordTab('abstract', this)">
+                            <i class="fas fa-align-left"></i> Abstract & Summary
+                        </button>
+                        <button class="record-tab-btn" onclick="switchRecordTab('dublin-core', this)">
+                            <i class="fas fa-table"></i> Dublin Core Metadata
+                        </button>
+                        <button class="record-tab-btn" onclick="switchRecordTab('reader', this)">
+                            <i class="fas fa-file-pdf" style="color:#ef4444;"></i> Manuscript Viewer
+                        </button>
+                        <button class="record-tab-btn" onclick="switchRecordTab('citations', this)">
+                            <i class="fas fa-quote-right" style="color:var(--tcu-maroon);"></i> Citations & Export
+                        </button>
+                    </div>
+
+                    <!-- TAB 1: Abstract & Summary -->
+                    <div id="tabAbstract" class="record-tab-content">
+                        <h3 style="font-family:var(--lib-font-serif); font-size:1.35rem; color:#1e293b; margin:0 0 12px 0;">Executive Research Abstract</h3>
+                        <div id="recordAbstract" style="font-family:var(--lib-font-serif); font-size:1.15rem; line-height:1.85; color:#334155; text-align:justify; margin-bottom:24px;"></div>
+
+                        <h4 style="font-size:13px; text-transform:uppercase; color:#64748b; letter-spacing:0.6px; font-weight:700; margin:0 0 8px 0;">
+                            Library of Congress Subject Headings (LCSH):
+                        </h4>
+                        <div id="recordLCSH" style="display:flex; flex-direction:column; gap:6px; margin-bottom:20px;"></div>
+
+                        <h4 style="font-size:13px; text-transform:uppercase; color:#64748b; letter-spacing:0.6px; font-weight:700; margin:0 0 8px 0;">
+                            Author Keywords:
+                        </h4>
+                        <div id="recordKeywords" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+                    </div>
+
+                    <!-- TAB 2: Complete Dublin Core Metadata Table -->
+                    <div id="tabDublinCore" class="record-tab-content" style="display:none;">
+                        <h3 style="font-family:var(--lib-font-serif); font-size:1.35rem; color:#1e293b; margin:0 0 14px 0;">Complete Dublin Core Item Metadata</h3>
+                        <table class="dc-table">
+                            <tbody>
+                                <tr>
+                                    <th class="dc-label">dc.title</th>
+                                    <td class="dc-value" id="dcTitleVal"></td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.creator</th>
+                                    <td class="dc-value" id="dcCreatorVal"></td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.contributor.advisor</th>
+                                    <td class="dc-value" id="dcAdvisorVal"></td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.date.issued</th>
+                                    <td class="dc-value" id="dcDateVal"></td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.type</th>
+                                    <td class="dc-value" id="dcTypeVal"></td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.publisher</th>
+                                    <td class="dc-value">Taguig City University</td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.subject.classification</th>
+                                    <td class="dc-value" id="dcClassVal"></td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.identifier.uri</th>
+                                    <td class="dc-value" id="dcUriVal"></td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.format.extent</th>
+                                    <td class="dc-value" id="dcExtentVal"></td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.language.iso</th>
+                                    <td class="dc-value">en-PH</td>
+                                </tr>
+                                <tr>
+                                    <th class="dc-label">dc.rights</th>
+                                    <td class="dc-value" id="dcRightsVal"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAB 3: Interactive Protected Manuscript Reader -->
+                    <div id="tabReader" class="record-tab-content" style="display:none;">
+                        <div class="manuscript-viewer-container">
+                            <div class="manuscript-toolbar">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-weight:700; color:var(--tcu-gold);"><i class="fas fa-file-pdf"></i> PDF Digital Copy</span>
+                                    <span>•</span>
+                                    <span style="color:#94a3b8;" id="viewerPagination">Page 1 of 142</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="background:#450a0a; color:#fca5a5; font-size:11px; padding:3px 8px; border-radius:4px; border:1px solid #7f1d1d; font-weight:700;">
+                                        <i class="fas fa-shield-alt"></i> RA 8293 Anti-Download Active
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div style="background:#475569; padding:30px 15px; max-height:680px; overflow-y:auto;">
+                                <div class="manuscript-sheet">
+                                    <div class="manuscript-watermark-overlay">
+                                        TCU LIBRARY • VIEW ONLY • ARCHIVE RECORD
+                                    </div>
+                                    <div style="text-align:center; margin-bottom:40px; border-bottom:2px solid #0f172a; padding-bottom:30px;">
+                                        <img src="assets/images/tcu_official_logo.png" alt="University Seal" style="width:75px; height:75px; margin-bottom:12px;">
+                                        <h2 style="font-size:1.35rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 6px 0; color:#0f172a;">TAGUIG CITY UNIVERSITY</h2>
+                                        <p style="font-size:13px; margin:0 0 4px 0; color:#334155;" id="viewerDept"></p>
+                                        <p style="font-size:12px; margin:0; color:#64748b; font-style:italic;">Official Undergraduate Capstone Manuscript</p>
+                                    </div>
+
+                                    <div style="text-align:center; margin-bottom:45px;">
+                                        <h3 style="font-size:1.5rem; line-height:1.4; color:#0f172a; margin:0 0 20px 0;" id="viewerTitle"></h3>
+                                        <p style="font-size:14px; margin:0 0 6px 0;">Presented to the Faculty of the University</p>
+                                        <p style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 25px 0;" id="viewerDegree"></p>
+                                        <p style="font-size:14px; margin:0 0 4px 0;">In Partial Fulfillment of the Requirements for the Degree by:</p>
+                                        <p style="font-size:15px; font-weight:700; color:#0f172a; margin:0;" id="viewerAuthor"></p>
+                                    </div>
+
+                                    <div style="border-top:1px solid #cbd5e1; padding-top:30px; font-size:15px; text-align:justify;">
+                                        <h4 style="text-align:center; font-size:1.15rem; margin-bottom:16px;">ABSTRACT</h4>
+                                        <p style="text-indent:35px; line-height:1.9;" id="viewerAbstractExcerpt"></p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <span style="color:#64748b; display:block; margin-bottom:2px;">Degree Course:</span>
-                            <span style="color:#1e293b; font-weight:600;" id="metaCourse"></span>
+                    </div>
+
+                    <!-- TAB 4: Citations & Export -->
+                    <div id="tabCitations" class="record-tab-content" style="display:none;">
+                        <h3 style="font-family:var(--lib-font-serif); font-size:1.35rem; color:#1e293b; margin:0 0 12px 0;">Formatted Bibliographic Citations</h3>
+                        <p style="font-size:13.5px; color:#64748b; margin-bottom:16px;">
+                            Select your required academic referencing standard and copy the citation below:
+                        </p>
+                        
+                        <div class="citation-tab-bar">
+                            <button class="citation-tab active" onclick="setDetailCitationStyle('apa', this)">APA 7th Edition</button>
+                            <button class="citation-tab" onclick="setDetailCitationStyle('mla', this)">MLA 9th Edition</button>
+                            <button class="citation-tab" onclick="setDetailCitationStyle('ieee', this)">IEEE Standard</button>
+                            <button class="citation-tab" onclick="setDetailCitationStyle('chicago', this)">Chicago / Turabian</button>
+                            <button class="citation-tab" onclick="setDetailCitationStyle('bibtex', this)">BibTeX Entry</button>
                         </div>
-                        <div>
-                            <span style="color:#64748b; display:block; margin-bottom:2px;">Specialization:</span>
-                            <span style="color:#1e293b; font-weight:600;" id="metaSpec"></span>
-                        </div>
-                        <div>
-                            <span style="color:#64748b; display:block; margin-bottom:2px;">Academic Level:</span>
-                            <span style="color:#1e293b; font-weight:600;" id="metaCategory"></span>
-                        </div>
-                        <div style="border-top:1px solid #f1f5f9; padding-top:16px;">
-                            <span style="color:#64748b; display:block; margin-bottom:8px;">Citation Format:</span>
-                            <button onclick="copyCitation()" style="width:100%; background:#f8fafc; border:1px solid #cbd5e1; padding:8px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; color:#334155; display:flex; align-items:center; justify-content:center; gap:6px;">
-                                <i class="fas fa-quote-right" style="color:#800000;"></i> Copy APA Citation
+                        <div class="citation-box" id="detailCitationBox"></div>
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
+                            <button onclick="copyDetailCitation()" style="background:var(--tcu-maroon); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:700; font-size:13px; display:inline-flex; align-items:center; gap:8px;">
+                                <i class="fas fa-clipboard-check"></i> Copy Citation to Clipboard
                             </button>
                         </div>
                     </div>
-                </div>
+
+                </article>
             </div>
+
+            <!-- RIGHT COLUMN: Library Operations Sidebar -->
+            <aside>
+                <!-- Archival Status Card -->
+                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:22px; margin-bottom:20px; box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+                    <h4 style="font-size:12.5px; font-weight:800; color:var(--tcu-maroon); text-transform:uppercase; letter-spacing:0.8px; margin:0 0 14px 0; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
+                        <i class="fas fa-university"></i> Catalog Information
+                    </h4>
+                    
+                    <div style="display:flex; flex-direction:column; gap:14px; font-size:13px;">
+                        <div>
+                            <span style="color:#64748b; font-size:11.5px; text-transform:uppercase; font-weight:700; display:block;">Call Number (LCC):</span>
+                            <span id="sideLC" style="font-family:var(--lib-font-mono); font-weight:700; color:#0f172a; font-size:13.5px;"></span>
+                        </div>
+                        <div>
+                            <span style="color:#64748b; font-size:11.5px; text-transform:uppercase; font-weight:700; display:block;">Dewey Classification:</span>
+                            <span id="sideDewey" style="font-family:var(--lib-font-mono); font-weight:600; color:#334155;"></span>
+                        </div>
+                        <div>
+                            <span style="color:#64748b; font-size:11.5px; text-transform:uppercase; font-weight:700; display:block;">Accession Number:</span>
+                            <span id="sideAccession" style="font-family:var(--lib-font-mono); font-weight:700; color:var(--tcu-maroon);"></span>
+                        </div>
+                        <div>
+                            <span style="color:#64748b; font-size:11.5px; text-transform:uppercase; font-weight:700; display:block;">Format Extent:</span>
+                            <span id="sidePagination" style="color:#334155;"></span>
+                        </div>
+                        <div>
+                            <span style="color:#64748b; font-size:11.5px; text-transform:uppercase; font-weight:700; display:block;">Consultation Metrics:</span>
+                            <span id="sideMetrics" style="color:#334155; font-weight:600;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Copyright & Anti-Download Notice -->
+                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:22px; margin-bottom:20px; box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+                    <h4 style="font-size:12.5px; font-weight:800; color:#1e293b; text-transform:uppercase; letter-spacing:0.8px; margin:0 0 10px 0; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-copyright" style="color:var(--tcu-maroon);"></i> Rights & Permissions
+                    </h4>
+                    <p style="font-size:12.5px; color:#475569; line-height:1.6; margin:0 0 14px 0;">
+                        This intellectual work is preserved under the Taguig City University Academic Policy and the Philippine IP Code (RA 8293). Viewing is restricted to educational consultation.
+                    </p>
+                    <button onclick="showDemoNotification('Full manuscript printing requires University Librarian approval.', 'info')" style="width:100%; background:#f8fafc; border:1px solid #cbd5e1; padding:9px; border-radius:6px; font-size:12.5px; font-weight:700; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <i class="fas fa-print" style="color:var(--tcu-maroon);"></i> Print Call Slip
+                    </button>
+                </div>
+            </aside>
+
         </div>
     </main>
+
+    <!-- Academic Library Footer -->
+    <footer class="main-footer" style="background:#1e293b; color:#cbd5e1; padding:48px 0 24px 0; border-top:4px solid var(--tcu-gold); margin-top:60px;">
+        <div style="max-width:1200px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:36px;">
+            <div>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--tcu-gold);">
+                    <div>
+                        <h4 style="color:#fff; font-size:1.1rem; margin:0; font-family:var(--lib-font-serif);">Taguig City University</h4>
+                        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--tcu-gold); display:block;">University Library & Digital Archives</span>
+                    </div>
+                </div>
+                <p style="font-size:13px; line-height:1.7; color:#94a3b8; margin:0;">
+                    Centralized intellectual repository preserving academic research, theses, and capstone dissertations produced by the students and faculty of Taguig City University.
+                </p>
+            </div>
+            <div>
+                <h4 style="color:#fff; font-size:14px; font-weight:700; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px;">Archival Discovery</h4>
+                <ul style="list-style:none; padding:0; margin:0; font-size:13px; line-height:2;">
+                    <li><a href="categories.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-search" style="width:16px;"></i> Browse All Accessions</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Information+and+Communication+Technology" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-laptop-code" style="width:16px;"></i> ICT & Computer Science</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Engineering" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-microchip" style="width:16px;"></i> Engineering Studies</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Education" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-graduation-cap" style="width:16px;"></i> Education & Pedagogy</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="color:#fff; font-size:14px; font-weight:700; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px;">Institutional Standards</h4>
+                <ul style="list-style:none; padding:0; margin:0; font-size:13px; line-height:2;">
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-book" style="width:16px;"></i> Dublin Core Schema</a></li>
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-stamp" style="width:16px;"></i> LCC Classification System</a></li>
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-gavel" style="width:16px;"></i> Republic Act 8293 (IP Code)</a></li>
+                    <li><a href="admin_preview.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-user-shield" style="width:16px;"></i> Archivist Verification Portal</a></li>
+                </ul>
+            </div>
+        </div>
+        <div style="max-width:1200px; margin:32px auto 0 auto; padding:20px 24px 0 24px; border-top:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; font-size:12px; color:#94a3b8;">
+            <div>&copy; 2024 Taguig City University. All rights reserved. University Library & Digital Archives.</div>
+            <div style="display:flex; gap:16px;">
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">Privacy Policy</a>
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">Terms of Archival Use</a>
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">OAI-PMH Documentation</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Unified Auth Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-card" id="auth-card" style="max-width:460px; margin:auto;">
+            <span id="closeModal" class="close-modal">&times;</span>
+            <div class="auth-header">
+                <h2 style="font-family:var(--lib-font-serif); color:var(--tcu-maroon);">Institutional Single Sign-On</h2>
+                <p>Select a simulated university persona to evaluate the repository:</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin:20px 0;">
+                <button class="btn btn-primary" onclick="setDemoRole('student'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#800000;">
+                    <i class="fas fa-user-graduate"></i> <strong>Student Author:</strong> Juan Dela Cruz
+                </button>
+                <button class="btn btn-primary" onclick="setDemoRole('professor'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#500000;">
+                    <i class="fas fa-chalkboard-teacher"></i> <strong>Faculty Adviser:</strong> Dr. Ramon Del Rosario
+                </button>
+                <button class="btn btn-primary" onclick="setDemoRole('librarian'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#3b0002;">
+                    <i class="fas fa-book-reader"></i> <strong>Chief Cataloger:</strong> Maria Santos, RL
+                </button>
+                <button class="btn btn-primary" onclick="setDemoRole('admin'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#1e293b;">
+                    <i class="fas fa-shield-alt"></i> <strong>System Administrator:</strong> TCU Library Oversight
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="assets/js/demo.js"></script>
     <script>
-        let currentThesis = SAMPLE_THESES[0];
+        let currentRecord = SAMPLE_THESES[0];
+        let currentCitationStyle = 'apa';
 
-        function copyCitation() {
-            const citation = `${currentThesis.author} (${currentThesis.year}). ${currentThesis.title}. Taguig City University Library Digital Archives. LC: ${currentThesis.lc_classification}`;
-            navigator.clipboard.writeText(citation).then(() => {
-                showDemoNotification('APA citation copied to clipboard!', 'success');
+        function switchRecordTab(tabName, btn) {
+            document.querySelectorAll('.record-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            document.getElementById('tabAbstract').style.display = tabName === 'abstract' ? 'block' : 'none';
+            document.getElementById('tabDublinCore').style.display = tabName === 'dublin-core' ? 'block' : 'none';
+            document.getElementById('tabReader').style.display = tabName === 'reader' ? 'block' : 'none';
+            document.getElementById('tabCitations').style.display = tabName === 'citations' ? 'block' : 'none';
+        }
+
+        function setDetailCitationStyle(style, btn) {
+            currentCitationStyle = style;
+            document.querySelectorAll('.citation-tab').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            updateCitationDisplay();
+        }
+
+        function updateCitationDisplay() {
+            if (currentRecord) {
+                document.getElementById('detailCitationBox').textContent = generateCitation(currentRecord, currentCitationStyle);
+            }
+        }
+
+        function copyDetailCitation() {
+            const text = document.getElementById('detailCitationBox').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showDemoNotification('Bibliographic citation copied to clipboard!', 'success');
             }).catch(() => {
                 showDemoNotification('Citation copied!', 'success');
             });
@@ -263,37 +485,73 @@
             const params = new URLSearchParams(window.location.search);
             const id = parseInt(params.get('id')) || 1;
             const found = SAMPLE_THESES.find(t => t.id === id);
-            if (found) currentThesis = found;
+            if (found) currentRecord = found;
 
-            document.getElementById('detailTitle').textContent = currentThesis.title;
-            document.getElementById('detailDeptBadge').textContent = currentThesis.dept_name;
-            document.getElementById('detailYearBadge').textContent = currentThesis.year;
-            document.getElementById('detailAuthor').textContent = currentThesis.author;
+            // Page & Meta Tags
+            document.getElementById('pageTitle').textContent = `${currentRecord.title} - TCU Theses Library`;
+            document.getElementById('dcTitle').content = currentRecord.title;
+            document.getElementById('dcCreator').content = currentRecord.author;
 
-            if (currentThesis.coauthors.length) {
-                document.getElementById('detailCoauthors').textContent = currentThesis.coauthors.join(', ');
+            // Breadcrumbs
+            document.getElementById('breadcrumbDept').textContent = currentRecord.department;
+            document.getElementById('breadcrumbAccession').textContent = currentRecord.accession_no;
+            document.getElementById('metaHandleLink').textContent = currentRecord.handle;
+
+            // Primary Header
+            document.getElementById('badgeLC').innerHTML = `<i class="fas fa-barcode"></i> LCC: ${currentRecord.lc_classification}`;
+            document.getElementById('badgeAccession').innerHTML = `<i class="fas fa-fingerprint"></i> ${currentRecord.accession_no}`;
+            document.getElementById('recordTitle').textContent = currentRecord.title;
+            document.getElementById('recordAuthor').textContent = currentRecord.author;
+            document.getElementById('recordAuthorId').textContent = `Student ID: ${currentRecord.author_id}`;
+
+            if (currentRecord.coauthors.length > 0) {
+                document.getElementById('recordCoauthors').innerHTML = currentRecord.coauthors.map(c => 
+                    `<div>${c.name} <span style="color:#64748b; font-size:11px; font-family:var(--lib-font-mono);">(${c.id})</span></div>`
+                ).join('');
             } else {
-                document.getElementById('detailCoauthorsRow').style.display = 'none';
+                document.getElementById('coauthorsBlock').style.display = 'none';
             }
 
-            document.getElementById('detailSupervisor').textContent = currentThesis.supervisor + ' (' + currentThesis.supervisor_email + ')';
-            document.getElementById('detailAbstract').textContent = currentThesis.abstract;
+            document.getElementById('recordSupervisor').textContent = `${currentRecord.supervisor} (${currentRecord.supervisor_role})`;
+            document.getElementById('recordDeptDegree').textContent = `${currentRecord.dept_name} • ${currentRecord.degree} (${currentRecord.year})`;
 
-            document.getElementById('detailKeywords').innerHTML = currentThesis.keywords.map(k => `
-                <span style="font-size:12px; background:#f1f5f9; color:#475569; padding:4px 10px; border-radius:6px;"><i class="fas fa-tag" style="font-size:10px; color:#94a3b8;"></i> ${k}</span>
-            `).join('');
+            // Tab 1: Abstract & LCSH
+            document.getElementById('recordAbstract').textContent = currentRecord.abstract;
+            document.getElementById('recordLCSH').innerHTML = currentRecord.lcsh_subjects.map(s => 
+                `<span style="font-size:13px; color:#334155;"><i class="fas fa-chevron-right" style="color:var(--tcu-maroon); font-size:10px;"></i> ${s}</span>`
+            ).join('');
+            document.getElementById('recordKeywords').innerHTML = currentRecord.keywords.map(k => 
+                `<span style="font-size:12px; background:#f1f5f9; color:#334155; padding:3px 10px; border-radius:4px; border:1px solid #e2e8f0;"><i class="fas fa-tag" style="font-size:10px; color:#94a3b8;"></i> ${k}</span>`
+            ).join('');
 
-            // Reader
-            document.getElementById('readerTitle').textContent = currentThesis.title;
-            document.getElementById('readerAuthor').textContent = currentThesis.author + ' et al.';
-            document.getElementById('readerExcerpt').textContent = currentThesis.abstract;
+            // Tab 2: Dublin Core
+            document.getElementById('dcTitleVal').textContent = currentRecord.title;
+            document.getElementById('dcCreatorVal').textContent = currentRecord.author + (currentRecord.coauthors.length ? '; ' + currentRecord.coauthors.map(c => c.name).join('; ') : '');
+            document.getElementById('dcAdvisorVal').textContent = currentRecord.supervisor;
+            document.getElementById('dcDateVal').textContent = `${currentRecord.date_accepted} (${currentRecord.year})`;
+            document.getElementById('dcTypeVal').textContent = currentRecord.thesis_type;
+            document.getElementById('dcClassVal').textContent = `${currentRecord.lc_classification} (LCC) / ${currentRecord.dewey_classification} (DDC)`;
+            document.getElementById('dcUriVal').innerHTML = `<a href="${currentRecord.handle}" style="color:var(--tcu-maroon);">${currentRecord.handle}</a>`;
+            document.getElementById('dcExtentVal').textContent = currentRecord.pagination;
+            document.getElementById('dcRightsVal').textContent = currentRecord.rights;
 
-            // Metadata
-            document.getElementById('metaLC').textContent = currentThesis.lc_classification;
-            document.getElementById('metaDept').textContent = currentThesis.dept_name;
-            document.getElementById('metaCourse').textContent = currentThesis.course;
-            document.getElementById('metaSpec').textContent = currentThesis.specialization;
-            document.getElementById('metaCategory').textContent = currentThesis.category;
+            // Tab 3: Reader
+            document.getElementById('viewerPagination').textContent = currentRecord.pagination.split(':')[0].trim();
+            document.getElementById('viewerDept').textContent = currentRecord.dept_name.toUpperCase();
+            document.getElementById('viewerTitle').textContent = currentRecord.title;
+            document.getElementById('viewerDegree').textContent = currentRecord.degree.toUpperCase();
+            document.getElementById('viewerAuthor').textContent = currentRecord.author_plain.toUpperCase() + (currentRecord.coauthors.length ? ' ET AL.' : '');
+            document.getElementById('viewerAbstractExcerpt').textContent = currentRecord.abstract;
+
+            // Tab 4: Citation
+            updateCitationDisplay();
+
+            // Sidebar
+            document.getElementById('sideLC').textContent = currentRecord.lc_classification;
+            document.getElementById('sideDewey').textContent = currentRecord.dewey_classification;
+            document.getElementById('sideAccession').textContent = currentRecord.accession_no;
+            document.getElementById('sidePagination').textContent = currentRecord.pagination;
+            document.getElementById('sideMetrics').textContent = `${currentRecord.views_count.toLocaleString()} Consultations • ${currentRecord.downloads_prevented} Downloads Protected`;
         });
     </script>
 </body>

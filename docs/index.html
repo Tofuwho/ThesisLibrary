@@ -3,167 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TCU Theses Library - Live Demo</title>
-    <!-- Fonts & CSS -->
+    <title>TCU Theses Library - Digital Institutional Repository</title>
+    <!-- Google Fonts for Scholarly Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/landing.css?v=4.0">
     <link rel="stylesheet" href="assets/css/categories.css?v=2.0">
     <link rel="stylesheet" href="assets/css/mobile.css">
     <link rel="icon" type="image/png" href="assets/images/tcu_official_logo.png">
     <link rel="stylesheet" href="assets/css/fontawesome/css/all.min.css">
-    <style>
-        /* Top demo banner */
-        .top-nav-wrapper {
-            position: sticky;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100000;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        }
-        .top-nav-wrapper .demo-bar {
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            z-index: 2;
-            margin: 0;
-            box-shadow: none;
-            background: linear-gradient(90deg, #400000 0%, #800000 50%, #500000 100%);
-            color: #fff;
-            padding: 8px 16px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #C5B358;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .top-nav-wrapper .main-header {
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            z-index: 1 !important;
-            width: 100% !important;
-            margin: 0 !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
-            background: #fff !important;
-        }
-        .hero-section {
-            margin-top: 0 !important;
-        }
-        main, .main-content {
-            margin-top: 0 !important;
-        }
-        .demo-bar-badge {
-            background: #C5B358;
-            color: #400000;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-        }
-        .demo-bar-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .demo-role-select {
-            background: rgba(255,255,255,0.15);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 4px;
-            padding: 3px 8px;
-            font-size: 12px;
-            cursor: pointer;
-            outline: none;
-        }
-        .demo-role-select option {
-            background: #400000;
-            color: #fff;
-        }
-        .demo-codespaces-btn {
-            background: #238636;
-            color: #fff !important;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        .demo-codespaces-btn:hover {
-            background: #2ea043;
-            transform: translateY(-1px);
-        }
-        .nav-right-demo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/demo-nav.css">
 </head>
-<body class="landing-page">
+<body class="landing-page" style="background:#f8fafc; font-family:var(--lib-font-sans); color:#1e293b;">
 
     <!-- Sticky Unified Navigation Wrapper -->
     <div class="top-nav-wrapper">
-        <!-- Top Live Demo Bar -->
+        <!-- Institutional Demonstration Ribbon -->
         <div class="demo-bar">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span class="demo-bar-badge">Live Demo</span>
-                <span>Taguig City University Digital Theses Repository</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="demo-bar-badge"><i class="fas fa-university"></i> TCU-IR ARCHIVE</span>
+                <span style="font-size:12px; color:rgba(255,255,255,0.9);">Digital Institutional Theses & Dissertations Repository • Demonstration Mode</span>
             </div>
-            <div class="demo-bar-actions">
-                <span>Simulate User:</span>
-                <select class="demo-role-select" onchange="setDemoRole(this.value)">
-                    <option value="guest">Guest / Visitor</option>
-                    <option value="student">Student (Juan Dela Cruz)</option>
-                    <option value="professor">Faculty (Dr. Ramon Del Rosario)</option>
-                    <option value="librarian">Librarian (Maria Santos)</option>
-                    <option value="admin">Admin (TCU Administrator)</option>
-                </select>
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:11.5px; color:var(--tcu-gold); font-weight:700;"><i class="fas fa-id-badge"></i> Persona:</span>
+                    <select class="demo-role-select" onchange="setDemoRole(this.value)">
+                        <option value="guest">Guest Researcher</option>
+                        <option value="student">Student Author (Juan Dela Cruz)</option>
+                        <option value="professor">Faculty Adviser (Dr. Ramon Del Rosario)</option>
+                        <option value="librarian">Chief Librarian (Maria Santos, RL)</option>
+                        <option value="admin">System Administrator (TCU Library)</option>
+                    </select>
+                </div>
                 <a href="https://codespaces.new/Tofuwho/ThesisLibrary" target="_blank" class="demo-codespaces-btn">
-                    <i class="fas fa-terminal"></i> Run Full Backend (Codespaces)
-                </a>
-                <a href="https://github.com/Tofuwho/ThesisLibrary" target="_blank" style="color:#C5B358; font-weight:600; text-decoration:none;">
-                    <i class="fab fa-github"></i> Repository
+                    <i class="fas fa-server"></i> Run Full Backend (Codespaces)
                 </a>
             </div>
         </div>
 
-        <!-- Main Header -->
-        <header class="main-header">
-            <div class="main-header-inner">
-                <a href="index.html" class="logo-container" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
-                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" class="logo-image">
-                    <h1 style="margin: 0; font-size: 1.3rem;">TCU Theses Library</h1>
+        <!-- Academic Library Header -->
+        <header class="main-header" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 28px;">
+            <div style="max-width:1300px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+                <a href="index.html" style="display:flex; align-items:center; gap:14px; text-decoration:none;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Seal" style="width:44px; height:44px; border-radius:50%; border:2px solid var(--tcu-gold);">
+                    <div>
+                        <h1 style="font-family:var(--lib-font-serif); font-size:1.35rem; font-weight:700; color:var(--tcu-maroon); margin:0; line-height:1.2;">Taguig City University</h1>
+                        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:700; display:block;">University Library & Digital Archives</span>
+                    </div>
                 </a>
-                <div class="header-flex-center">
-                    <nav class="main-nav">
-                        <ul>
-                            <li><a href="index.html" class="nav-link active">Home</a></li>
-                            <li><a href="categories.html" class="nav-link">Categories & Browse</a></li>
-                            <li><a href="admin_preview.html" class="nav-link demo-auth-only">Admin Dashboard</a></li>
-                            <li><a href="about.html" class="nav-link">About</a></li>
-                        </ul>
-                    </nav>
-                </div>
-                <div class="auth-buttons nav-right-demo">
-                    <span class="demo-user-role-label demo-auth-only" style="font-size: 13px; font-weight:600; color:#800000; background:rgba(128,0,0,0.08); padding:4px 10px; border-radius:12px;"></span>
-                    <button class="btn btn-outline demo-guest-only btn-trigger-login" id="loginButton" style="padding: 6px 16px; border-radius: 6px; cursor: pointer;">
+                <nav class="main-nav">
+                    <ul style="display:flex; gap:24px; list-style:none; margin:0; padding:0; align-items:center;">
+                        <li><a href="index.html" class="nav-link active" style="text-decoration:none; color:var(--tcu-maroon); font-weight:700; font-size:14px; border-bottom:2px solid var(--tcu-maroon); padding-bottom:4px;">Home</a></li>
+                        <li><a href="categories.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Browse Catalog</a></li>
+                        <li><a href="admin_preview.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Archivist Portal</a></li>
+                        <li><a href="about.html" class="nav-link" style="text-decoration:none; color:#475569; font-weight:600; font-size:14px;">Archival Policies</a></li>
+                    </ul>
+                </nav>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="demo-user-role-label" style="font-size:12px; font-weight:700; color:var(--tcu-maroon); background:var(--tcu-gold-light); border:1px solid var(--tcu-gold-border); padding:4px 10px; border-radius:12px;"></span>
+                    <button class="btn btn-outline btn-trigger-login" style="padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600; border:1px solid #cbd5e1; background:#fff;">
                         <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
-                    <button class="btn btn-outline demo-auth-only" onclick="setDemoRole('guest')" style="padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size:12px;">
-                        <i class="fas fa-sign-out-alt"></i> Exit Demo Role
                     </button>
                 </div>
             </div>
@@ -171,155 +72,177 @@
     </div>
 
     <div class="main-content">
-        <!-- Hero Section with Spotlight and Particle Canvas -->
-        <section class="hero-section">
+        <!-- Scholarly Hero Section with Interactive Particles -->
+        <section class="hero-section" style="height: auto; min-height: 540px; padding: 70px 20px;">
             <canvas id="heroCanvas" class="hero-canvas"></canvas>
             <div class="hero-glow-1"></div>
             <div class="hero-glow-2"></div>
             <div class="hero-spotlight" data-bg="assets/images/tcu_building.svg"></div>
             <div class="hero-overlay">
-                <div class="hero-content">
-                    <h1>Welcome to TCU Theses Library</h1>
-                    <p>Discover, explore, and access peer-reviewed academic research from the colleges of Taguig City University</p>
-                    
-                    <div class="welcome-strip demo-auth-only">
-                        <span class="ws-pill">
-                            <i class="fas fa-user-check"></i> <span class="demo-user-role-label">Logged In</span>
-                        </span>
-                        <span class="ws-greeting">Welcome to the University Academic Digital Repository</span>
-                        <span class="ws-dot"></span>
-                        <span class="ws-tagline">Access approved publications, upload capstone projects, and review manuscripts</span>
-                    </div>
-
-                    <div class="hero-buttons">
-                        <a href="categories.html" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
-                            <i class="fas fa-search"></i> Browse Theses Catalog
-                        </a>
-                        <a href="admin_preview.html" class="btn btn-outline demo-auth-only" style="display:inline-flex; align-items:center; gap:8px;">
-                            <i class="fas fa-tachometer-alt"></i> Admin Dashboard Preview
-                        </a>
-                        <button class="btn btn-outline demo-guest-only btn-trigger-login" style="display:inline-flex; align-items:center; gap:8px;">
-                            <i class="fas fa-user-lock"></i> University Portal Login
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Search Bar Section -->
-        <section class="hero university-hero" style="background:#fff; border-bottom:1px solid #e2e8f0; padding: 40px 0;">
-            <div class="container" style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
-                <div class="hero-content" style="text-align: center;">
-                    <span class="hero-eyebrow" style="color: #800000; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:1px;">Official Digital Archives</span>
-                    <h2 class="hero-title" style="margin-top:8px; font-size: 2rem;">Search Research Theses & Capstone Projects</h2>
-                    <p class="hero-subtitle" style="color: #64748b; max-width:650px; margin: 8px auto 25px auto;">
-                        Instant keyword and title lookup across computer science, engineering, business, education, criminology, and psychology.
+                <div class="hero-content" style="max-width: 900px; margin: 0 auto; text-align: center;">
+                    <span style="display:inline-block; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:var(--tcu-gold); margin-bottom:12px; background:rgba(197,179,88,0.15); padding:4px 14px; border-radius:20px; border:1px solid var(--tcu-gold-border);">
+                        Official Academic Repository • Dublin Core & LCC Compliant
+                    </span>
+                    <h1 style="font-family:var(--lib-font-serif); font-size:2.6rem; color:#fff; line-height:1.25; margin:0 0 16px 0; font-weight:700;">
+                        Taguig City University Digital Theses & Dissertations Repository
+                    </h1>
+                    <p style="font-size:16px; color:#e2e8f0; line-height:1.7; max-width:760px; margin:0 auto 28px auto;">
+                        Preserving and disseminating scholarly capstones, theses, and dissertations from the collegiate faculties of Taguig City University under Philippine Intellectual Property standards (RA 8293).
                     </p>
 
-                    <div class="hero-search-container" style="max-width: 750px; margin: 0 auto;">
-                        <form action="categories.html" method="GET" class="hero-search-form" style="position:relative;">
-                            <div class="search-input-group" style="display:flex; box-shadow:0 10px 25px rgba(0,0,0,0.08); border-radius:50px; overflow:hidden; border:2px solid #800000;">
-                                <i class="fas fa-search search-icon" style="position:absolute; left:20px; top:50%; transform:translateY(-50%); color:#800000;"></i>
-                                <input type="text" name="search" placeholder="Search by title, author, Edge AI, FinTech, Criminology..."
-                                    aria-label="Search TCU Archives" style="width:100%; padding:16px 20px 16px 50px; border:none; outline:none; font-size:16px;">
-                                <button type="submit" class="search-submit" style="background:#800000; color:#fff; border:none; padding:0 30px; font-weight:600; cursor:pointer;">Search</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Live Stats Counters -->
-                    <div class="hero-stats" style="display:flex; justify-content:center; gap:40px; margin-top:40px; flex-wrap:wrap;">
-                        <div class="stat-item" style="text-align:center;">
-                            <span class="stat-number" style="font-size:2rem; font-weight:800; color:#800000; display:block;">8</span>
-                            <span class="stat-label" style="font-size:13px; color:#64748b;">Sample Theses</span>
-                        </div>
-                        <div class="stat-divider" style="width:1px; background:#e2e8f0;"></div>
-                        <div class="stat-item" style="text-align:center;">
-                            <span class="stat-number" style="font-size:2rem; font-weight:800; color:#800000; display:block;">8</span>
-                            <span class="stat-label" style="font-size:13px; color:#64748b;">University Colleges</span>
-                        </div>
-                        <div class="stat-divider" style="width:1px; background:#e2e8f0;"></div>
-                        <div class="stat-item" style="text-align:center;">
-                            <span class="stat-number" style="font-size:2rem; font-weight:800; color:#800000; display:block;">100%</span>
-                            <span class="stat-label" style="font-size:13px; color:#64748b;">Open Access</span>
-                        </div>
-                        <div class="stat-divider" style="width:1px; background:#e2e8f0;"></div>
-                        <div class="stat-item" style="text-align:center;">
-                            <span class="stat-number" style="font-size:2rem; font-weight:800; color:#800000; display:block;">24</span>
-                            <span class="stat-label" style="font-size:13px; color:#64748b;">Submissions Logged</span>
-                        </div>
+                    <div class="hero-buttons" style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+                        <a href="categories.html" class="btn btn-primary" style="background:linear-gradient(135deg, #800000 0%, #a51c30 100%); color:#fff; font-weight:700; padding:12px 28px; border-radius:6px; display:inline-flex; align-items:center; gap:8px; border:1px solid var(--tcu-gold); font-size:14.5px;">
+                            <i class="fas fa-search"></i> Search Theses Catalog
+                        </a>
+                        <a href="about.html" class="btn btn-outline" style="border:1.5px solid rgba(255,255,255,0.4); color:#fff; padding:12px 24px; border-radius:6px; font-weight:600; font-size:14.5px; background:rgba(0,0,0,0.25);">
+                            <i class="fas fa-book-reader"></i> Archiving Protocols
+                        </a>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Featured Publications Section -->
-        <section class="recently-added" style="padding: 60px 0; background: #f8fafc;">
-            <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-                <div class="section-header-flex" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 30px;">
-                    <div>
-                        <h2 class="section-title" style="font-size: 1.8rem; color:#1e293b; margin-bottom:6px;">Featured Research Publications</h2>
-                        <p class="section-subtitle" style="color: #64748b;">Recently submitted and approved studies from university scholars.</p>
+        <!-- OPAC Search & Fast Discovery Bar -->
+        <section style="background:#fff; border-bottom:1px solid #e2e8f0; padding: 36px 0;">
+            <div style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
+                <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:20px 24px; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
+                    <form action="categories.html" method="GET" style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <div style="position:relative; flex:1; min-width:280px;">
+                            <i class="fas fa-search" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:16px;"></i>
+                            <input type="text" name="search" placeholder="Search by title, keyword, researcher, or Call Number (e.g. Edge AI, QA76.9, Criminology)..."
+                                style="width:100%; box-sizing:border-box; padding:14px 20px 14px 44px; border:1px solid #cbd5e1; border-radius:6px; font-size:15px; outline:none;"
+                                onfocus="this.style.borderColor='var(--tcu-maroon)';" onblur="this.style.borderColor='#cbd5e1';">
+                        </div>
+                        <button type="submit" style="background:var(--tcu-maroon); color:#fff; border:none; padding:0 30px; border-radius:6px; font-weight:700; cursor:pointer; font-size:14.5px; display:inline-flex; align-items:center; gap:8px;">
+                            <i class="fas fa-search"></i> Search Archives
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Verified Library Repository Metrics -->
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:30px; text-align:center;">
+                    <div style="padding:16px; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+                        <span style="font-family:var(--lib-font-mono); font-size:2rem; font-weight:700; color:var(--tcu-maroon); display:block;">8</span>
+                        <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Approved Theses</span>
                     </div>
-                    <a href="categories.html" class="view-all-link" style="color:#800000; font-weight:700; text-decoration:none;">
-                        Browse All (8) <i class="fas fa-arrow-right"></i>
+                    <div style="padding:16px; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+                        <span style="font-family:var(--lib-font-mono); font-size:2rem; font-weight:700; color:var(--tcu-maroon); display:block;">8</span>
+                        <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Academic Faculties</span>
+                    </div>
+                    <div style="padding:16px; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+                        <span style="font-family:var(--lib-font-mono); font-size:2rem; font-weight:700; color:#15803d; display:block;">100%</span>
+                        <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Open Access Compliance</span>
+                    </div>
+                    <div style="padding:16px; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+                        <span style="font-family:var(--lib-font-mono); font-size:2rem; font-weight:700; color:var(--tcu-maroon); display:block;">4,820+</span>
+                        <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Scholarly Consultations</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Accessions Section -->
+        <section style="padding: 60px 0; background: #f8fafc;">
+            <div style="max-width: 1300px; margin: 0 auto; padding: 0 24px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 24px; border-bottom:2px solid #e2e8f0; padding-bottom:14px;">
+                    <div>
+                        <h2 style="font-family:var(--lib-font-serif); font-size: 1.85rem; color:#0f172a; margin:0 0 4px 0; font-weight:700;">
+                            Recent Bibliographic Accessions
+                        </h2>
+                        <p style="color: #64748b; font-size:13.5px; margin:0;">Latest peer-reviewed theses and capstones deposited by graduating scholars.</p>
+                    </div>
+                    <a href="categories.html" style="color:var(--tcu-maroon); font-weight:700; text-decoration:none; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+                        Browse Complete Catalog (8) <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
 
-                <div class="cat-thesis-list" id="featuredThesesList" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
+                <div id="homeRecentAccessionsGrid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px;">
                     <!-- Rendered by JS -->
                 </div>
             </div>
         </section>
 
-        <!-- Colleges and Departments Grid -->
-        <section class="departments university-departments" style="padding: 60px 0; background:#fff;">
-            <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-                <div style="text-align:center; margin-bottom: 40px;">
-                    <h2 style="font-size: 1.8rem; color:#1e293b;">Colleges & Academic Departments</h2>
-                    <p style="color: #64748b;">Browse research records by specific academic department</p>
+        <!-- Collegiate Faculties & Collections Directory -->
+        <section style="padding: 60px 0; background:#fff; border-top:1px solid #e2e8f0;">
+            <div style="max-width: 1300px; margin: 0 auto; padding: 0 24px;">
+                <div style="text-align:center; margin-bottom: 36px;">
+                    <h2 style="font-family:var(--lib-font-serif); font-size: 1.85rem; color:#0f172a; margin:0 0 6px 0; font-weight:700;">
+                        Collegiate Faculties & Research Repositories
+                    </h2>
+                    <p style="color: #64748b; font-size:14px; margin:0;">Access localized digital collections categorized by collegiate academic unit.</p>
                 </div>
 
-                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;">
-                    <a href="categories.html?dept=CICT" style="text-decoration:none; padding:24px; border-radius:12px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='#800000'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
-                        <i class="fas fa-laptop-code" style="font-size:24px; color:#800000;"></i>
-                        <h4 style="color:#1e293b; margin:4px 0 0 0;">CICT</h4>
-                        <p style="color:#64748b; font-size:13px; margin:0;">College of Information and Communications Technology</p>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                    <a href="categories.html?dept=CICT" style="text-decoration:none; padding:24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.02); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='var(--tcu-maroon)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <i class="fas fa-laptop-code" style="font-size:22px; color:var(--tcu-maroon);"></i>
+                            <span class="accession-pill">2 Studies</span>
+                        </div>
+                        <h4 style="color:#0f172a; margin:6px 0 0 0; font-size:1.05rem;">CICT</h4>
+                        <p style="color:#64748b; font-size:12.5px; margin:0;">College of Information and Communications Technology</p>
                     </a>
-                    <a href="categories.html?dept=CAS" style="text-decoration:none; padding:24px; border-radius:12px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='#800000'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
-                        <i class="fas fa-brain" style="font-size:24px; color:#800000;"></i>
-                        <h4 style="color:#1e293b; margin:4px 0 0 0;">CAS</h4>
-                        <p style="color:#64748b; font-size:13px; margin:0;">College of Arts and Sciences</p>
+
+                    <a href="categories.html?dept=CAS" style="text-decoration:none; padding:24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.02); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='var(--tcu-maroon)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <i class="fas fa-brain" style="font-size:22px; color:var(--tcu-maroon);"></i>
+                            <span class="accession-pill">1 Study</span>
+                        </div>
+                        <h4 style="color:#0f172a; margin:6px 0 0 0; font-size:1.05rem;">CAS</h4>
+                        <p style="color:#64748b; font-size:12.5px; margin:0;">College of Arts and Sciences</p>
                     </a>
-                    <a href="categories.html?dept=CBA" style="text-decoration:none; padding:24px; border-radius:12px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='#800000'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
-                        <i class="fas fa-chart-line" style="font-size:24px; color:#800000;"></i>
-                        <h4 style="color:#1e293b; margin:4px 0 0 0;">CBA</h4>
-                        <p style="color:#64748b; font-size:13px; margin:0;">College of Business and Administration</p>
+
+                    <a href="categories.html?dept=CBA" style="text-decoration:none; padding:24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.02); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='var(--tcu-maroon)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <i class="fas fa-chart-line" style="font-size:22px; color:var(--tcu-maroon);"></i>
+                            <span class="accession-pill">1 Study</span>
+                        </div>
+                        <h4 style="color:#0f172a; margin:6px 0 0 0; font-size:1.05rem;">CBA</h4>
+                        <p style="color:#64748b; font-size:12.5px; margin:0;">College of Business and Administration</p>
                     </a>
-                    <a href="categories.html?dept=CED" style="text-decoration:none; padding:24px; border-radius:12px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='#800000'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
-                        <i class="fas fa-book-reader" style="font-size:24px; color:#800000;"></i>
-                        <h4 style="color:#1e293b; margin:4px 0 0 0;">CED</h4>
-                        <p style="color:#64748b; font-size:13px; margin:0;">College of Education</p>
+
+                    <a href="categories.html?dept=CED" style="text-decoration:none; padding:24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.02); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='var(--tcu-maroon)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <i class="fas fa-book-reader" style="font-size:22px; color:var(--tcu-maroon);"></i>
+                            <span class="accession-pill">1 Study</span>
+                        </div>
+                        <h4 style="color:#0f172a; margin:6px 0 0 0; font-size:1.05rem;">CED</h4>
+                        <p style="color:#64748b; font-size:12.5px; margin:0;">College of Education</p>
                     </a>
-                    <a href="categories.html?dept=COE" style="text-decoration:none; padding:24px; border-radius:12px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='#800000'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
-                        <i class="fas fa-drafting-compass" style="font-size:24px; color:#800000;"></i>
-                        <h4 style="color:#1e293b; margin:4px 0 0 0;">COE</h4>
-                        <p style="color:#64748b; font-size:13px; margin:0;">College of Engineering and Technology</p>
+
+                    <a href="categories.html?dept=COE" style="text-decoration:none; padding:24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.02); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='var(--tcu-maroon)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <i class="fas fa-drafting-compass" style="font-size:22px; color:var(--tcu-maroon);"></i>
+                            <span class="accession-pill">1 Study</span>
+                        </div>
+                        <h4 style="color:#0f172a; margin:6px 0 0 0; font-size:1.05rem;">COE</h4>
+                        <p style="color:#64748b; font-size:12.5px; margin:0;">College of Engineering and Technology</p>
                     </a>
-                    <a href="categories.html?dept=CCJ" style="text-decoration:none; padding:24px; border-radius:12px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='#800000'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
-                        <i class="fas fa-balance-scale" style="font-size:24px; color:#800000;"></i>
-                        <h4 style="color:#1e293b; margin:4px 0 0 0;">CCJ</h4>
-                        <p style="color:#64748b; font-size:13px; margin:0;">College of Criminology</p>
+
+                    <a href="categories.html?dept=CCJ" style="text-decoration:none; padding:24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.02); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='var(--tcu-maroon)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <i class="fas fa-balance-scale" style="font-size:22px; color:var(--tcu-maroon);"></i>
+                            <span class="accession-pill">1 Study</span>
+                        </div>
+                        <h4 style="color:#0f172a; margin:6px 0 0 0; font-size:1.05rem;">CCJ</h4>
+                        <p style="color:#64748b; font-size:12.5px; margin:0;">College of Criminology</p>
                     </a>
-                    <a href="categories.html?dept=CHTM" style="text-decoration:none; padding:24px; border-radius:12px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='#800000'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
-                        <i class="fas fa-hotel" style="font-size:24px; color:#800000;"></i>
-                        <h4 style="color:#1e293b; margin:4px 0 0 0;">CHTM</h4>
-                        <p style="color:#64748b; font-size:13px; margin:0;">College of Hospitality and Tourism</p>
+
+                    <a href="categories.html?dept=CHTM" style="text-decoration:none; padding:24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.02); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='var(--tcu-maroon)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <i class="fas fa-hotel" style="font-size:22px; color:var(--tcu-maroon);"></i>
+                            <span class="accession-pill">Cataloged</span>
+                        </div>
+                        <h4 style="color:#0f172a; margin:6px 0 0 0; font-size:1.05rem;">CHTM</h4>
+                        <p style="color:#64748b; font-size:12.5px; margin:0;">College of Hospitality and Tourism Management</p>
                     </a>
-                    <a href="categories.html?dept=GS" style="text-decoration:none; padding:24px; border-radius:12px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='#800000'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
-                        <i class="fas fa-graduation-cap" style="font-size:24px; color:#800000;"></i>
-                        <h4 style="color:#1e293b; margin:4px 0 0 0;">GS</h4>
-                        <p style="color:#64748b; font-size:13px; margin:0;">Graduate Studies</p>
+
+                    <a href="categories.html?dept=GS" style="text-decoration:none; padding:24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.02); transition:all 0.2s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.borderColor='var(--tcu-maroon)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <i class="fas fa-graduation-cap" style="font-size:22px; color:var(--tcu-maroon);"></i>
+                            <span class="accession-pill">1 Thesis</span>
+                        </div>
+                        <h4 style="color:#0f172a; margin:6px 0 0 0; font-size:1.05rem;">GS</h4>
+                        <p style="color:#64748b; font-size:12.5px; margin:0;">Graduate School of Studies</p>
                     </a>
                 </div>
             </div>
@@ -328,88 +251,69 @@
 
     <!-- Unified Auth Modal -->
     <div id="authModal" class="auth-modal">
-        <div class="auth-card" id="auth-card" style="max-width:440px; margin:auto;">
+        <div class="auth-card" id="auth-card" style="max-width:460px; margin:auto;">
             <span id="closeModal" class="close-modal">&times;</span>
             <div class="auth-header">
-                <h2>Demo Sign In</h2>
-                <p>Select any demo account to test the system:</p>
+                <h2 style="font-family:var(--lib-font-serif); color:var(--tcu-maroon);">Institutional Single Sign-On</h2>
+                <p>Select an authorized university persona for demo exploration:</p>
             </div>
             <div style="display:flex; flex-direction:column; gap:10px; margin:20px 0;">
-                <button class="btn btn-primary" onclick="setDemoRole('student'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:10px 14px;">
-                    <i class="fas fa-user-graduate"></i> <strong>Student Account:</strong> student (Juan Dela Cruz)
+                <button class="btn btn-primary" onclick="setDemoRole('student'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#800000;">
+                    <i class="fas fa-user-graduate"></i> <strong>Student Author:</strong> Juan Dela Cruz (CICT)
                 </button>
-                <button class="btn btn-primary" onclick="setDemoRole('professor'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:10px 14px; background:#500000;">
-                    <i class="fas fa-chalkboard-teacher"></i> <strong>Faculty Account:</strong> professor (Dr. Ramon)
+                <button class="btn btn-primary" onclick="setDemoRole('professor'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#500000;">
+                    <i class="fas fa-chalkboard-teacher"></i> <strong>Faculty Adviser:</strong> Dr. Ramon Del Rosario
                 </button>
-                <button class="btn btn-primary" onclick="setDemoRole('librarian'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:10px 14px; background:#400000;">
-                    <i class="fas fa-book"></i> <strong>Librarian Account:</strong> librarian (Maria Santos)
+                <button class="btn btn-primary" onclick="setDemoRole('librarian'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#3b0002;">
+                    <i class="fas fa-book-reader"></i> <strong>Chief Cataloger:</strong> Maria Santos, RL
                 </button>
-                <button class="btn btn-primary" onclick="setDemoRole('admin'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:10px 14px; background:#2C2C2C;">
-                    <i class="fas fa-shield-alt"></i> <strong>Admin Account:</strong> admin (Full Access)
+                <button class="btn btn-primary" onclick="setDemoRole('admin'); document.getElementById('authModal').classList.remove('active');" style="text-align:left; padding:11px 16px; background:#1e293b;">
+                    <i class="fas fa-shield-alt"></i> <strong>System Administrator:</strong> TCU Library Oversight
                 </button>
-            </div>
-            <p style="font-size:12px; color:#64748b; text-align:center;">
-                Note: In the full backend (Codespaces / Docker), all accounts are seeded with password: <code>admin12345</code> or <code>student12345</code>.
-            </p>
-        </div>
-    </div>
-
-    <!-- Submission Guide Modal -->
-    <div id="guideModal" class="auth-modal">
-        <div class="auth-card" style="max-width:600px; margin:auto; max-height:85vh; overflow-y:auto;">
-            <span class="close-modal">&times;</span>
-            <div class="auth-header">
-                <h2>TCU Archiving Policy & Guide</h2>
-                <p>Standards for Capstone & Thesis Submissions</p>
-            </div>
-            <div style="padding:15px; font-size:14px; line-height:1.6; color:#334155;">
-                <h4>1. Document Requirements</h4>
-                <p>All manuscripts must be submitted in standard PDF format including signed approval sheet, abstract, chapters 1-5, and complete references.</p>
-                <h4>2. View-Only Anti-Leak Protection</h4>
-                <p>Published manuscripts are viewable only within the university reader with watermarking to prevent unauthorized redistribution.</p>
-                <h4>3. Approval Workflow</h4>
-                <p>Submissions undergo faculty adviser vetting, followed by college dean endorsement and final librarian accession cataloging.</p>
             </div>
         </div>
     </div>
 
-    <!-- Main Footer -->
-    <footer class="main-footer">
-        <div class="footer-grid">
-            <div class="footer-section">
-                <div class="footer-brand">
-                    <a href="index.html" class="footer-brand-title" style="text-decoration: none; display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                        <img src="assets/images/log-tcu.jpg" alt="TCU Logo" class="footer-logo" style="width: 50px; height: 50px; border-radius: 50%;">
-                        <h3 style="margin: 0; color: #fff;">TCU Theses Library</h3>
-                    </a>
-                    <p>The official digital repository of Taguig City University. Preserving and disseminating the academic heritage and research innovations of our students and faculty.</p>
+    <!-- Academic Library Footer -->
+    <footer class="main-footer" style="background:#1e293b; color:#cbd5e1; padding:48px 0 24px 0; border-top:4px solid var(--tcu-gold); margin-top:60px;">
+        <div style="max-width:1200px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:36px;">
+            <div>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                    <img src="assets/images/log-tcu.jpg" alt="TCU Logo" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--tcu-gold);">
+                    <div>
+                        <h4 style="color:#fff; font-size:1.1rem; margin:0; font-family:var(--lib-font-serif);">Taguig City University</h4>
+                        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--tcu-gold); display:block;">University Library & Digital Archives</span>
+                    </div>
                 </div>
+                <p style="font-size:13px; line-height:1.7; color:#94a3b8; margin:0;">
+                    Centralized intellectual repository preserving academic research, theses, and capstone dissertations produced by the students and faculty of Taguig City University.
+                </p>
             </div>
-
-            <div class="footer-section">
-                <h4>University Archives</h4>
-                <ul>
-                    <li><a href="categories.html">Research Catalog</a></li>
-                    <li><a href="about.html">Archiving Policy</a></li>
-                    <li><a href="admin_preview.html">Admin Dashboard</a></li>
+            <div>
+                <h4 style="color:#fff; font-size:14px; font-weight:700; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px;">Archival Discovery</h4>
+                <ul style="list-style:none; padding:0; margin:0; font-size:13px; line-height:2;">
+                    <li><a href="categories.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-search" style="width:16px;"></i> Browse All Accessions</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Information+and+Communication+Technology" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-laptop-code" style="width:16px;"></i> ICT & Computer Science</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Engineering" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-microchip" style="width:16px;"></i> Engineering Studies</a></li>
+                    <li><a href="categories.html?faculty=Faculty+of+Education" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-graduation-cap" style="width:16px;"></i> Education & Pedagogy</a></li>
                 </ul>
             </div>
-
-            <div class="footer-section">
-                <h4>Support & Help</h4>
-                <ul>
-                    <li><a href="javascript:void(0)" id="openGuideModal">Submission Guide</a></li>
-                    <li><a href="about.html">About Repository</a></li>
+            <div>
+                <h4 style="color:#fff; font-size:14px; font-weight:700; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px;">Institutional Standards</h4>
+                <ul style="list-style:none; padding:0; margin:0; font-size:13px; line-height:2;">
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-book" style="width:16px;"></i> Dublin Core Schema</a></li>
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-stamp" style="width:16px;"></i> LCC Classification System</a></li>
+                    <li><a href="about.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-gavel" style="width:16px;"></i> Republic Act 8293 (IP Code)</a></li>
+                    <li><a href="admin_preview.html" style="color:#cbd5e1; text-decoration:none;"><i class="fas fa-user-shield" style="width:16px;"></i> Archivist Verification Portal</a></li>
                 </ul>
             </div>
-
-            <div class="footer-section">
-                <h4>Contact TCU Library</h4>
-                <div class="contact-info">
-                    <p><i class="fas fa-envelope"></i> library@tcu.edu.ph</p>
-                    <p><i class="fas fa-phone-alt"></i> (02) 835 1555</p>
-                    <p><i class="fas fa-map-marker-alt"></i> Gen. Santos Ave, Central Bicutan, Taguig City, Philippines</p>
-                </div>
+        </div>
+        <div style="max-width:1200px; margin:32px auto 0 auto; padding:20px 24px 0 24px; border-top:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; font-size:12px; color:#94a3b8;">
+            <div>&copy; 2024 Taguig City University. All rights reserved. University Library & Digital Archives.</div>
+            <div style="display:flex; gap:16px;">
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">Privacy Policy</a>
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">Terms of Archival Use</a>
+                <a href="about.html" style="color:#94a3b8; text-decoration:none;">OAI-PMH Documentation</a>
             </div>
         </div>
     </footer>
@@ -417,32 +321,28 @@
     <!-- Scripts -->
     <script src="assets/js/demo.js"></script>
     <script>
-        // Render 4 featured theses
         document.addEventListener('DOMContentLoaded', () => {
-            const list = document.getElementById('featuredThesesList');
-            if (list) {
-                const featured = SAMPLE_THESES.slice(0, 4);
-                list.innerHTML = featured.map(t => `
-                    <div class="cat-thesis-item" onclick="window.location.href='thesis_detail.html?id=${t.id}'" style="cursor:pointer; background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 4px 15px rgba(0,0,0,0.04); transition:all 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.04)'">
-                        <div style="background:linear-gradient(135deg, #800000 0%, #500000 100%); color:#fff; padding:16px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-weight:700; font-size:12px; letter-spacing:1px; background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:4px;">${t.department}</span>
-                            <span style="font-size:13px; font-weight:600; color:#C5B358;">${t.year}</span>
+            const grid = document.getElementById('homeRecentAccessionsGrid');
+            if (grid) {
+                const sample = SAMPLE_THESES.slice(0, 4);
+                grid.innerHTML = sample.map(t => `
+                    <div class="catalog-entry-card" onclick="window.location.href='thesis_detail.html?id=${t.id}'" style="cursor:pointer; margin-bottom:0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <span class="call-number-badge"><i class="fas fa-barcode"></i> ${t.lc_classification}</span>
+                            <span class="open-access-pill"><i class="fas fa-lock-open"></i> ${t.year}</span>
                         </div>
-                        <div style="padding:20px; display:flex; flex-direction:column; flex:1;">
-                            <h3 style="font-size:1.1rem; color:#1e293b; margin-bottom:10px; line-height:1.4;">${t.title}</h3>
-                            <div style="font-size:13px; color:#64748b; margin-bottom:12px;">
-                                <i class="fas fa-user-edit" style="color:#800000;"></i> <strong>Lead:</strong> ${t.author}
-                            </div>
-                            <p style="font-size:13px; color:#475569; line-height:1.6; margin-bottom:16px; flex:1;">
-                                ${t.abstract.substring(0, 140)}...
-                            </p>
-                            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;">
-                                ${t.keywords.slice(0, 3).map(k => `<span style="font-size:11px; background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:4px;">${k}</span>`).join('')}
-                            </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:12px;">
-                                <span style="font-size:12px; color:#94a3b8;"><i class="fas fa-barcode"></i> ${t.lc_classification}</span>
-                                <span style="color:#800000; font-size:13px; font-weight:700;">View Study <i class="fas fa-chevron-right"></i></span>
-                            </div>
+                        <h3 class="catalog-entry-title" style="font-size:1.25rem;">
+                            <a href="thesis_detail.html?id=${t.id}">${t.title}</a>
+                        </h3>
+                        <div class="catalog-author-statement">
+                            <strong>Author:</strong> ${t.author} • <strong>Adviser:</strong> ${t.supervisor}
+                        </div>
+                        <p class="catalog-abstract-snippet">
+                            ${t.abstract.substring(0, 150)}...
+                        </p>
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f8fafc; padding-top:10px; margin-top:auto;">
+                            <span style="font-size:12px; color:#64748b;"><i class="fas fa-university" style="color:var(--tcu-maroon);"></i> ${t.department}</span>
+                            <span style="color:var(--tcu-maroon); font-size:12.5px; font-weight:700;">View Record <i class="fas fa-chevron-right"></i></span>
                         </div>
                     </div>
                 `).join('');
@@ -456,13 +356,13 @@
                 let height = canvas.height = canvas.offsetHeight;
 
                 const particles = [];
-                const particleCount = 45;
+                const particleCount = 40;
                 for (let i = 0; i < particleCount; i++) {
                     particles.push({
                         x: Math.random() * width,
                         y: Math.random() * height,
-                        vx: (Math.random() - 0.5) * 0.8,
-                        vy: (Math.random() - 0.5) * 0.8,
+                        vx: (Math.random() - 0.5) * 0.7,
+                        vy: (Math.random() - 0.5) * 0.7,
                         radius: Math.random() * 2 + 1
                     });
                 }
